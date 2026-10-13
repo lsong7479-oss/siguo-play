@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>死国开拓者 · 免费像素塔防</title>
+<meta name="description" content="死国开拓者：免费的像素风塔防 + 英雄 + 肉鸽卡牌游戏。27 张地图、39 位英雄、66 种建筑，经营开拓地，守住亡灵之国。">
+<link rel="icon" href="media/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#120d14;--panel:#1d1620;--line:#4a3a2a;--gold:#e8c66a;--gold2:#c8a050;--bone:#efe4cc;--ash:#a8998a;--blood:#a8323a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--bone);font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.65}
+a{color:var(--gold)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+header.hero{position:relative;min-height:88vh;display:flex;align-items:flex-end;background:#0b080d url(media/keyart.webp) center 20%/cover no-repeat}
+header.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,13,20,.1) 0%,rgba(18,13,20,.35) 45%,var(--bg) 96%)}
+.hero .wrap{position:relative;z-index:1;padding-bottom:48px;width:100%}
+h1{font-family:"Noto Serif SC",serif;font-weight:900;font-size:clamp(44px,9vw,88px);margin:0;letter-spacing:.08em;color:var(--gold);text-shadow:0 4px 0 #3a2410,0 8px 30px rgba(0,0,0,.8)}
+.tag{font-size:clamp(17px,2.6vw,22px);margin:6px 0 22px;color:var(--bone);text-shadow:0 2px 6px #000}
+.btns{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;flex-direction:column;justify-content:center;min-width:170px;padding:12px 22px;text-decoration:none;font-weight:700;font-size:18px;color:var(--bone);background:var(--panel);box-shadow:inset 0 0 0 2px var(--line),0 6px 20px rgba(0,0,0,.5)}
+.btn small{font-weight:400;font-size:13px;color:var(--ash)}
+.btn.main{background:linear-gradient(180deg,#e8c66a,#b8862e);color:#24160a;box-shadow:inset 0 0 0 2px #fff2c0,0 6px 24px rgba(232,198,106,.35)}
+.btn.main small{color:#4a3214}
+.btn.off{opacity:.75;cursor:default}
+section{padding:48px 0}
+h2{font-family:"Noto Serif SC",serif;font-size:28px;color:var(--gold);margin:0 0 18px;letter-spacing:.06em}
+video{width:100%;display:block;background:#000;box-shadow:0 0 0 2px var(--line),0 10px 40px rgba(0,0,0,.6)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+.card img{width:100%;display:block;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated}
+.card div{padding:10px 14px 14px}
+.card b{display:block;font-size:17px;color:var(--gold)}
+.card span{font-size:14px;color:var(--ash)}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin:6px 0 0;padding:0;list-style:none;color:var(--ash)}
+.facts b{color:var(--bone);font-size:22px;margin-right:4px}
+footer{padding:36px 0 48px;border-top:1px solid #2a2028;color:var(--ash);font-size:14px}
+footer p{margin:4px 0}
+.free{color:var(--bone);font-weight:700}
+@media (max-width:760px){.grid{grid-template-columns:1fr 1fr}.btn{min-width:0;flex:1 1 140px}header.hero{min-height:78vh}}
+@media (max-width:460px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <h1>死国开拓者</h1>
+  <p class="tag">像素塔防 · 英雄操控 · 肉鸽卡牌 —— 亡灵之国，筑城求生</p>
+  <div class="btns">
+    <a class="btn main" href="play/">在线试玩<small>浏览器直接玩，电脑、手机都行</small></a>
+    <a class="btn" href="download/siguo-kaituozhe-0.9.52-pc.zip">下载电脑版<small>Windows · v0.9.52 · 约 9MB</small></a>
+    <span class="btn off">安卓版<small>测试中，进 QQ 群获取</small></span>
+  </div>
+  <ul class="facts"><li><b>27</b>张地图</li><li><b>39</b>位英雄</li><li><b>66</b>种建筑</li><li><b>136</b>张卡牌</li><li><b>免费</b>无内购</li></ul>
+</div></header>
+
+<section><div class="wrap">
+  <h2>宣传片</h2>
+  <video src="media/trailer.mp4" poster="media/poster.webp" controls preload="metadata" playsinline></video>
+</div></section>
+
+<section><div class="wrap">
+  <h2>玩什么</h2>
+  <div class="grid">
+    <div class="card"><img src="media/map.webp" alt="冰原地图" loading="lazy"><div><b>27 张地图</b><span>荒野、冰原、沙漠神殿、蒸汽重工、绝望孤岛……天气、地形、亡灵和首领各不相同</span></div></div>
+    <div class="card"><img src="media/heroes.webp" alt="英雄立绘" loading="lazy"><div><b>39 位英雄</b><span>骑士、法师、弓手、工程师、道士……各有三个技能，可以亲自操控，也能交给 AI</span></div></div>
+    <div class="card"><img src="media/skills.webp" alt="英雄技能" loading="lazy"><div><b>技能与卡牌</b><span>每波打完三选一，136 张卡里构筑你的流派</span></div></div>
+    <div class="card"><img src="media/towers.webp" alt="塔楼防线" loading="lazy"><div><b>66 种建筑</b><span>塔楼、兵营、城墙、陷阱，都能升级、选进化路线，摆法自己定</span></div></div>
+    <div class="card"><img src="media/gacha.webp" alt="英雄奖池" loading="lazy"><div><b>养成</b><span>科技树、建筑科技、英雄升星进阶、装备打造强化；金币全靠游戏里打</span></div></div>
+    <div class="card"><img src="media/settle.webp" alt="开拓地" loading="lazy"><div><b>开拓地</b><span>盖工坊、民居产出资源，布好城墙和塔楼迎战入侵；大地图上贸易、出征</span></div></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p class="free">游戏完全免费，抵制倒卖。如果你是花钱从别人那里买到的，请联系作者。</p>
+  <p>QQ 游戏交流群：1126694396 · 当前版本 v0.9.52 测试版</p>
+  <p>存档保存在你自己的浏览器 / 设备里；网页版和电脑版、安卓版的存档互不相通。</p>
+</div></footer>
+</body>
+</html>
