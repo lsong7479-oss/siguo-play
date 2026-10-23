@@ -8970,11 +8970,12 @@ CFG.snowShrine={
   ring:[13,29],        // 两圈石垣的半径（格；y 方向 × ringY，山是南北长一点的椭圆）
   ringY:1.08,
   river:{y:84, amp:4, w:2},   // 冻溪：中心 y、左右摆的幅度、宽（格）
-  dark:{every:[5,10], lit:[2,3], hold:0.55, fadeIn:1.2},   // 闪电间隔、亮多久（秒）、全亮占多少、波次开始时多久暗下来
+  dark:{every:[8,12], lit:[2,3], hold:0, fadeIn:1.2, max:0.5, ecl:0.85},   // 用户 2026-10-23：画面亮度 50%(max = 暗层最浓 0.5，玩家看得见全图；只有士兵、建筑、英雄自己的视野受限)，电光每 8～12 秒一次，亮度跳到 100% 后 2～3 秒平滑暗回去；ecl：天狗吞日时暗层浓度(Claude 定 0.85)   // 闪电间隔、亮多久（秒）、全亮占多少、波次开始时多久暗下来
   boltLit:{r:5, dur:2.5, edge:1.5},   // 雷雨落雷照亮的圈（格、秒；edge：圈边渐变的宽度，格）
 };
 CFG.weather.smStorm=Object.assign({},CFG.weather.storm,{name:'雷雨', tint:'#0e1428', a:0.2});   // 用户定：正常的雷雨（视野、火焰、灼烧、下雨、落雷全同雷暴 CFG.weather.storm），只是夜色偏蓝一点
-CFG.maps.snowShrine={name:'雪夜神社', req:CFG.mapPages[6].maps.slice(), theme:'snowShrine', size:108, center:CFG.snowShrine.base,   // 开放：通关任意一张七阶地图（用户 2026-10-23 定；同血族城堡、废弃佛窟、教廷王宫）
+CFG.maps.snowShrine={name:'雪夜神社', countMul:1.5, bountyK:2/3,   // 用户 2026-10-23：难度偏低 → 敌人数量 +50%、击杀赏金 −1/3（bountyK：地图的击杀铜币倍率，game/game.newGame 乘进 G.bountyMul）
+  req:CFG.mapPages[6].maps.slice(), theme:'snowShrine', size:108, center:CFG.snowShrine.base,   // 开放：通关任意一张七阶地图（用户 2026-10-23 定；同血族城堡、废弃佛窟、教廷王宫）
   desc:'雪夜里的山顶神社：主堡守在正殿前，一条石阶主路穿过三座鸟居通往山下，几条小路绕过竹林和冻住的溪流；雷云压在山头，只有闪电亮起的那一刻才看得清四周',
   resNote:'战斗中完全黑屏，每隔 5～10 秒天上闪一道电(只是闪屏，没有伤害)，屏幕亮起 2～3 秒；雷雨的落雷照常有伤害，落点半径 5 格会亮起一会儿；我方建筑、士兵、英雄视野不共享：每个单位只能攻击自己视野里的亡灵(射程最大为自身视野)，'+
           '狄龙「明察秋毫」的公共视野除外；两圈石垣只在路口有台阶，冻住的溪流只能从木桥过；永远是夜晚，天气只有雷雨',
@@ -44193,7 +44194,8 @@ function smTick(dt){if(G.phase!=='wave')return;if(!(G.smLt>-1e9))smWaveStart();i
   G.smLt-=dt;if(G.smLt>0)return;G.smN=(G.smN|0)+1;G.smLt=smGap();
   const L=SMC.dark.lit;G.smLD=G.smLit=L[0]+(L[1]-L[0])*hash2(G.smN,G.wave|0,72);G.smBT=G.time}   // 只是闪屏（用户定）：不落地、没有伤害、不留火坑
 // 现在黑屏盖多浓（0 = 看得见，1 = 全黑）：准备阶段 0；波次开始后 fadeIn 秒内暗下来；闪电后 lit 秒：前 hold 全亮，之后渐暗
-function smDarkA(){if(G.phase!=='wave')return 0;if(tgEclA()>=1)return 1;const D=SMC.dark,b=Math.min(1,Math.max(0,(G.time-(G.smW0||0))/D.fadeIn));if(!(G.smLit>0)||!(G.smLD>0))return b;   // 代理 TG：tgEclA 天狗吞日时全黑（maps/tg_tengu）
+function smDarkA(){return smDarkA0()*(tgEclA()>=1?1:SMC.dark.max||1)}   // max：用户 10-23 改成最暗 50%
+function smDarkA0(){if(G.phase!=='wave')return 0;if(tgEclA()>=1)return SMC.dark.ecl||1;const D=SMC.dark,b=Math.min(1,Math.max(0,(G.time-(G.smW0||0))/D.fadeIn));if(!(G.smLit>0)||!(G.smLD>0))return b;   // 代理 TG：tgEclA 天狗吞日时全黑（maps/tg_tengu）
   const p=1-G.smLit/G.smLD,v=p<D.hold?1:1-(p-D.hold)/(1-D.hold);return b*(1-v*v*(3-2*v))}
 const K_SMDK=C('#000000'),K_SMBL=C('#dcecff'),K_SMBL2=C('#7fb6ff');
 const SM_CS=4;   // 落雷照亮的圈按 4 × 4 像素一格画黑屏（圈外整块画）
@@ -44220,7 +44222,7 @@ function smDrawTop(cx0,cy0,cx1,cy1){if(SM_DBG)return;const a=smDarkA();if(a>0.00
     x=nx;y=ny}}
 function smHud(){if(G.phase!=='wave')return'雪夜：开战后黑屏，闪电亮起 2～3 秒 · 各单位视野不共享';{const t=tgEclHud();if(t)return t}return G.smLit>0?`<span style="color:#cfe4ff">电光</span> · 还亮 ${G.smLit.toFixed(1)} 秒`:'黑夜 · 只能打到自己视野里的亡灵'}   // 代理 TG：tgEclHud 天狗吞日
 // ================= 视野不共享 =================
-function smEVis(i){const u=DS_CUR;if(!u)return IN_DRAW&&smDarkA()*smBlK(E.x[i],E.y[i])>0.5?false:undefined;const r=u.visR;if(!(r>0))return;   // 画面上黑着的时候（画面期间 DS_CUR 是空的）：小地图、血条也不显示亡灵；落雷照亮的圈里照常画
+function smEVis(i){const u=DS_CUR;if(!u)return;const r=u.visR;if(!(r>0))return;   // 画面上黑着的时候（画面期间 DS_CUR 是空的）：小地图、血条也不显示亡灵；落雷照亮的圈里照常画
   const dx=E.x[i]-u.x,dy=E.y[i]-u.y,R=r+E.r[i];if(dx*dx+dy*dy<=R*R)return;
   for(let k=0;k<HB_VZ.length;k++){const z=HB_VZ[k],zx=E.x[i]-z.x,zy=E.y[i]-z.y,zr=z.r*16+E.r[i];if(zx*zx+zy*zy<=zr*zr)return}   // 公共视野（狄龙「明察秋毫」）
   return false}
@@ -55309,7 +55311,7 @@ function newGame(opts){if(typeof pickReset==='function')pickReset();
     terrain:new Uint8Array(NT),structAt:new Array(NT).fill(null),trapAt:new Array(NT).fill(null),dist:new Float32Array(NT),sdist:new Uint8Array(NT),
     structs:[],traps:[],soldiers:[],proj:[],eproj:[],zones:[],fx:[],miasma:[],jret:[],javs:[],trees:[],spawns:[],friends:[],legions:[],legionSeq:0,corpses:0,bosses:[],hotS:null,
     queue:[],waveT:0,nextPlan:null,lastPlan:null,curSides:[],flowDirty:true,flowT:0,flowVer:0,structVer:1,navVer:0,flowCool:0,sdistVer:0,visT:0,visDirty:true,night:0,shake:0,dayIdx:0,weather:'sunny',flashT:0,boltT:null,tA:0,wA:0,cleared:[],
-    globalMode:'guard',towerMode:'free',heroMode:'guard',heroModes:{},heroCmd:{},autoNext:!!SET.autoNext,rush:false,tunnels:[],tunnelN:0,tombN:0,bountyMul:(CFG.run.tierBounty||[])[Math.max(0,CFG.mapPages.findIndex(p=>p.maps.includes(CFG.maps[opts.map]?opts.map:'wild')))]||1,keepHit:{},keepHitW:{},mv:(CFG.maps[opts.map]&&CFG.maps[opts.map].moveMul)||1,lowT:0,base:null,hero:null,cardOpts:null,ecardOpts:null,meta:{建材:0,科研点:0,设计点:0,银币:0,金币:0},
+    globalMode:'guard',towerMode:'free',heroMode:'guard',heroModes:{},heroCmd:{},autoNext:!!SET.autoNext,rush:false,tunnels:[],tunnelN:0,tombN:0,bountyMul:((CFG.run.tierBounty||[])[Math.max(0,CFG.mapPages.findIndex(p=>p.maps.includes(CFG.maps[opts.map]?opts.map:'wild')))]||1)*((CFG.maps[opts.map]&&CFG.maps[opts.map].bountyK)||1),keepHit:{},keepHitW:{},mv:(CFG.maps[opts.map]&&CFG.maps[opts.map].moveMul)||1,lowT:0,base:null,hero:null,cardOpts:null,ecardOpts:null,meta:{建材:0,科研点:0,设计点:0,银币:0,金币:0},
     lineup:null,heroes:[],twoP:false,loadout:(opts.loadout||currentLoadout()).slice(),terr:CFG.maps[opts.terr]?opts.terr:null,mdo:opts.mdo&&CFG.maps[opts.map]?Object.assign({},CFG.maps[opts.map],opts.mdo):null,   // terr / mdo：v0.7.3 剧情（圣堂墓园第一章在王都）：地形长成 terr 那张图的样子；mdo 改掉这张图的部分设定（开局套件、墓园……）
     total:MODE==='regular'?(opts.total||regWavesOf(DIFF,opts.map)):Infinity,stMap:!!opts.stMap,oathOn:!!opts.oath,oaths:[],oAsk:-1,oBupo:0,prepEvOn:!!opts.prepEv,mcP:0,mc:null,mcOwn:[],mcN:{},pots:{},wares:{}});   // GState：PF 加（v0.11.2）先按字段表 core/gshape 建好全部字段（undefined），再填字面量的值   // prepEvOn：v0.9.4 准备阶段事件（商人，game/merchant094）   // oathOn：v0.9.4 誓约（出征设置的开关，game/oath094）
   {const t=mapTierOf(G.map),C=CFG.combat,dt=CFG.diffTier&&CFG.diffTier[DIFF.id];G.ePenB=((C.ePenTier&&C.ePenTier[t])||0)*((C.ePenDiff&&C.ePenDiff[DIFF.id])||1);G.ePenD=(C.ePenDiff&&C.ePenDiff[DIFF.id])||1;G.eTough=C.regTough[t]||100;G.eDefl=C.regDefl[t]||0;G.eDflD=null;G.eDflE=null;G.dHp=dt?dt.hp[t]:DIFF.stat;G.dDmg=dt?dt.dmg[t]:DIFF.stat}   // dHp / dDmg：v0.8.14 难度倍率按地区阶（CFG.diffTier，数值第二轮）
@@ -59407,7 +59409,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.11.2',GAME_TAG='测试版',GAME_BUILD="4a5e33a",GAME_BUILT=1792719322634,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
+const GAME_VER='0.11.2',GAME_TAG='测试版',GAME_BUILD="f79cf81+",GAME_BUILT=1792720490670,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
