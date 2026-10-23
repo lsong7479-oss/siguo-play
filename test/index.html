@@ -8953,32 +8953,34 @@ CFG.drops.items=Object.assign(CFG.drops.items||{},{
 /* ---------- v0.12.0 八阶地区「雪夜神社」（用户 2026-10-23 策划上半部分：地图大小、主堡在山上神社旁、一条主路 + 几条小路下山、黑屏闪电、视野不共享、夜晚暴雷；
    其余 Claude 定，代理 SM 写）。逻辑见 maps/sm_shrine.js，摆设的图见 art/sm_deco.js（用 art/jp_deco.js 的原型改成雪夜版），配色 THEME_PAL.snowShrine（art/jp_theme.js）。
    亡灵（ss 开头）、小首领酒吞童子、掉落由别的代理写（data/map_snowshrine_e1.js / _e2.js / 酒吞童子那份）；临时波次、精英、小首领、地区物资在 data/map_snowshrine_fin.js（排在所有数据后面，按阶自动收集 ss 亡灵）
-   地图（Claude 定）：108 × 108；山顶在北边正中，主堡在山顶平台上、神社正殿的南边；两圈石垣（山顶平台、半山）把山围成台地，石垣只在路口有台阶；
-     出怪口：山下的南（主路）、西南、东南、西、东；北边山后是悬崖和竹林（不出怪）；半山下一条冻住的溪流横穿（不能走），过溪只能走木桥
+   地图（Claude 定）：108 × 108；山顶在北边正中，主堡在山顶平台上、神社正殿的南边；（第二轮用户取消了两圈石垣）；
+     出怪口：山下的南（主路）、西南、东南、西、东；北边山后是悬崖和竹林（不出怪）；半山下一条冻住的溪流横穿（不能走），溪上 9 座木桥
      山上：神社正殿、拜殿、鸟居（主路上一路三座）、石灯笼（主路两边）、枯山水；半山：竹林、雪中樱、地藏小庙；山脚：一排町屋 / 武家屋敷 / 土藏（村子）
-     雪不减速（moveMul 1，用户没提）；永远是夜晚，天气只有「雷雨」（用户 2026-10-23 定：游戏里正常的雷雨，落雷照常有伤害、留火坑，由 engine/env.updateWeather 放）
+     亡灵移速 ×1.25（moveMul，用户 10-23 要求上调；我方不受影响）；永远是夜晚，天气只有「雷雨」（用户 2026-10-23 定：游戏里正常的雷雨，落雷照常有伤害、留火坑，由 engine/env.updateWeather 放）
    机制（用户定，口径 Claude 定）：
      dark  波次开始时完全黑屏（准备阶段照常看得见）；每隔 every 秒（5～10）天上闪一道电（用户 2026-10-23 定：只是闪屏，没有伤害、不落地、不留火坑），屏幕在 lit 秒（2～3）内亮起：
            前 hold 比例全亮，之后渐暗回黑；黑屏是玩家看到的画面（迷雾照旧），不影响谁能打谁
      boltLit 天气的落雷（真雷）落下时，落点半径 r 格（用户定 5）在黑屏里亮起 dur 秒（Claude 定 2.5 = 闪屏 2～3 秒取中），亮度变化和闪屏一样（前 hold 全亮、之后渐暗），边上 edge 格渐变
      视野不共享：我方每个建筑、士兵、英雄只能打到自己视野里的亡灵（目标离它的距离 − 目标半径 ≤ 它自己的视野半径）；
            「射程最大为自身视野」= 打不到视野外的 → 有效射程 = min(射程, 自身视野)；士兵的视野按半径的圆算（不按朝向的扇形）；
-           公共视野（狄龙「明察秋毫」）里的亡灵所有单位都看得见；陷阱、没有视野的东西（弹道、区域技能以外）照旧；画面、小地图照旧按所有单位视野的并集 */
+           公共视野（狄龙「明察秋毫」）里的亡灵所有单位都看得见；亡灵打中我方单位 / 建筑后 3 秒内暴露给受伤的那一个（攻击一次刷新）；陷阱、没有视野的东西（弹道、区域技能以外）照旧；画面、小地图照旧按所有单位视野的并集 */
 CFG.snowShrine={
   summit:[54,30],      // 山顶（格）：两圈石垣的圆心
   base:[54,36],        // 主堡（格；主堡占 base−1 起的 2 × 2）
-  ring:[13,29],        // 两圈石垣的半径（格；y 方向 × ringY，山是南北长一点的椭圆）
+  ring:[13,29],        // 山顶平台的半径（格；y 方向 × ringY）：平台里不长竹子；用户 10-23 取消了石垣，第二个数不再用
+  bridges:[7,32,43,65,76,101],   // 用户 10-23「河流多架几座桥」：路以外另架的 6 座（x，格；Claude 定），加上主路、两条小路的 3 座一共 9 座，间隔约 11 格
   ringY:1.08,
   river:{y:84, amp:4, w:2},   // 冻溪：中心 y、左右摆的幅度、宽（格）
   dark:{every:[8,12], lit:[2,3], hold:0, fadeIn:1.2, max:0.5, ecl:0.85},   // 用户 2026-10-23：画面亮度 50%(max = 暗层最浓 0.5，玩家看得见全图；只有士兵、建筑、英雄自己的视野受限)，电光每 8～12 秒一次，亮度跳到 100% 后 2～3 秒平滑暗回去；ecl：天狗吞日时暗层浓度(Claude 定 0.85)   // 闪电间隔、亮多久（秒）、全亮占多少、波次开始时多久暗下来
-  boltLit:{r:5, dur:2.5, edge:1.5},   // 雷雨落雷照亮的圈（格、秒；edge：圈边渐变的宽度，格）
+  boltLit:{r:5, dur:2.5, edge:1.5},
+  exposeT:3,   // 用户 10-23：亡灵攻击我方单位 / 建筑时暴露给受伤者 3 秒（Claude 定；每打一次刷新），受伤者在这段时间里能看到并攻击它   // 雷雨落雷照亮的圈（格、秒；edge：圈边渐变的宽度，格）
 };
 CFG.weather.smStorm=Object.assign({},CFG.weather.storm,{name:'雷雨', tint:'#0e1428', a:0.2});   // 用户定：正常的雷雨（视野、火焰、灼烧、下雨、落雷全同雷暴 CFG.weather.storm），只是夜色偏蓝一点
-CFG.maps.snowShrine={name:'雪夜神社', countMul:1.5, bountyK:2/3,   // 用户 2026-10-23：难度偏低 → 敌人数量 +50%、击杀赏金 −1/3（bountyK：地图的击杀铜币倍率，game/game.newGame 乘进 G.bountyMul）
+CFG.maps.snowShrine={name:'雪夜神社', countMul:1.5, bountyK:2/3, moveMul:1.25,   // moveMul：亡灵移速 ×1.25（我方不受影响），用户 10-23 K≈1   // 用户 2026-10-23：难度偏低 → 敌人数量 +50%、击杀赏金 −1/3（bountyK：地图的击杀铜币倍率，game/game.newGame 乘进 G.bountyMul）
   req:CFG.mapPages[6].maps.slice(), theme:'snowShrine', size:108, center:CFG.snowShrine.base,   // 开放：通关任意一张七阶地图（用户 2026-10-23 定；同血族城堡、废弃佛窟、教廷王宫）
   desc:'雪夜里的山顶神社：主堡守在正殿前，一条石阶主路穿过三座鸟居通往山下，几条小路绕过竹林和冻住的溪流；雷云压在山头，只有闪电亮起的那一刻才看得清四周',
   resNote:'战斗中完全黑屏，每隔 5～10 秒天上闪一道电(只是闪屏，没有伤害)，屏幕亮起 2～3 秒；雷雨的落雷照常有伤害，落点半径 5 格会亮起一会儿；我方建筑、士兵、英雄视野不共享：每个单位只能攻击自己视野里的亡灵(射程最大为自身视野)，'+
-          '狄龙「明察秋毫」的公共视野除外；两圈石垣只在路口有台阶，冻住的溪流只能从木桥过；永远是夜晚，天气只有雷雨',
+          '狄龙「明察秋毫」的公共视野除外；亡灵攻击后 3 秒内会暴露给被它打中的单位或建筑，被打的一方能还击；冻住的溪流上有 9 座木桥；永远是夜晚，天气只有雷雨',
   round:25,   // 临时（等下半部分）：同废弃佛窟、教廷王宫
   elites:[], boss:[],   // data/map_snowshrine_fin.js 按阶收集（临时，等下半部分）
   day:{seq:[3], every:1}, weather:{smStorm:100},
@@ -18106,6 +18108,7 @@ S('ssTengu',85000,210,40,40);   // 雪夜神社 · 大天狗（小首领）· �
 S('ssSanada',90000,170,45,35);   // 雪夜神社 · 真田武（小首领）· 新：八阶小首领标准线 生命 80000 / 每秒伤害 200（攻击 160、间隔 0.8 秒）——v0.12.0 雪夜神社，代理 ZT，Claude 定   // 用户 10-23：生命太低，对齐同阶 → Claude 定 90000 / 170（原 80000 / 160）
 S('ssKyubi',60000,250,30,45);   // 雪夜神社 · 九尾狐（小首领）· 新：能复活 8 次、每次上限 −10%(合计约 14 万 ≈ 八阶小首领标准线 80000 × 1.75)，每秒伤害 200（攻击 240、间隔 1.2 秒，远程法术）——v0.12.0 代理 KY，Claude 定   // 用户 10-23：生命太低，对齐同阶 → Claude 定 60000 / 250（原 26000 / 240）
 S('ssXiangliu',240000,280,50,45);   // 雪夜神社 · 相柳（大首领，主头；8 个副头各 50%，标称合计 320000）· 新：八阶首领标准线附近，攻击 260、间隔 2 秒（用户定 0.5 次 / 秒）——v0.12.0 雪夜神社，代理 XL，Claude 定   // 用户 10-23：生命太低，对齐同阶 → Claude 定 240000 / 280（原 64000 / 260）
+{const HM=2.5;for(const k in E)if(/^ss[A-Z]/.test(k)&&E[k].hp>0)E[k].hp=Math.round(E[k].hp*HM)}   // 雪夜神社全部亡灵（含小首领、相柳）生命 ×HM：用户 10-23 K≈1（diffk 普通：×1 时 0.545）
 }
 
 // ---------- 代理 OP（用户 2026-10-22「游戏优化与反馈」）的数据：商店装备价格、圣灵品质的显示、商店专属英雄槽 ----------
@@ -18492,7 +18495,7 @@ silU
 hbJy hbJyK hbJyN hbBsCd hbBsN hbBsT
 gwRg0 gwRgB gwV0 gwK
 bw deflE bwSpT bwFrU bwUdU bwUdN bwAuT bwDs bwCd bwMo
-visR`.trim().split(/\s+/);
+visR smXi smXd smXt`.trim().split(/\s+/);
 // 英雄的全部字段：前面是 makeHero 字面量、heroRecalc 写的，后面是各技能、装备、地图机制写的
 const HERO_KEYS=`
 id d mnt spr star spec slot isHero ctl x y hp maxHp def dodge block shield resist facing dx dy dir aimA weapons wi ws swapT offhand armorList accList
@@ -18549,7 +18552,7 @@ exU jtCScr jtCRobeF jtCTal jtCUd jtCUdU jtCUdC jtCImp jtCImpM jtCImpC jtCImpR fx
 fearX fearY
 hbCh hbR0 hbAc
 haSmP haSmT haWhD haWhT haWhP gwRnD gwRnT gwRnP gwClD gwClP gwAc
-visR
+visR smXi smXd smXt
 sdYoK sdGd sdGdM sdGdU
 tmFox tmN tmCd tmEmp tmQ tmFull tmSwT tmAiT
 tgFan tgFanM tgFanU tgMal
@@ -18589,7 +18592,7 @@ m3Hp m3U m3Cd m3Sk m3W
 gt gtV
 chOcc
 haFg
-visR`.trim().split(/\s+/);
+visR smXi smXd smXt`.trim().split(/\s+/);
 const SOLDIER_NUM='x y hp maxHp baseHp chp def dodge block shield stagMul taunt vision facing dir anim flash stag atkCd shotCd ammo rel think ti tid recoil thrust swing calm chg patrolT px py slot statMul lastHit slA layer elev atkAdd atkMul rgMul critAdd critMulAdd pierceN mvSp kiteK gdTile gdSeen gdV mgA mgK mgU s2Dr s2Chg'.split(' ');
 const HERO_NUM='star slot x y hp maxHp def dodge block shield facing dx dy dir aimA wi swapT atkCd swing swingA thrust recoil ammo rel shieldHp shieldMax shieldT reflect whirlT whirlTk whirlA dashT dvx dvy inv flash anim respawn aiT aiTi aiTid tgtI tgtId lastHit layer elev calm vision tvNx'.split(' ');
 const STRUCT_NUM='tx ty x y level flash cd ammo rel aim recoil mgA mgK mgU stEff shcU shcF xgVn xgRgT'.split(' ');
@@ -44072,7 +44075,7 @@ feat('jtCBoss',{ord:494,on:()=>!!G&&(G.map==='papalPalace'||!!G.jtCOn),hooks:{
 // ---------- v0.12.0 八阶地区「雪夜神社」（代理 SM）：山顶神社的地形、黑屏与闪电、视野不共享 ----------
 // 数据见 data/map_snowshrine.js（地图、机制的口径写在文件开头），临时波次在 data/map_snowshrine_fin.js；摆设的图见 art/sm_deco.js（SPR.smDeco）
 // 地形：G.smK 每格是什么（SK_*，画地面用）；G.smE 每格离山顶的「椭圆距离」（格；石垣、台阶、明暗用）；G.smPI 每格最近的那段路（SM_SEG 的下标，画路面用）；G.smRv 每列冻溪的中心 y（格）
-//   石垣、冻溪、房子 / 正殿 / 枯山水 / 石灯笼的占地 = T_TWALL；路、台阶、木桥 = 1（土路，亡灵爱走）；竹林、雪中樱 = 2（树木，能清障）
+//   （v0.12 第二轮：用户取消了石垣、台阶，冻溪上多架了桥，SK_WALL / SK_STAIR 不再生成，画法留着）冻溪、房子 / 正殿 / 枯山水 / 石灯笼的占地 = T_TWALL；路、台阶、木桥 = 1（土路，亡灵爱走）；竹林、雪中樱 = 2（树木，能清障）
 // 黑屏：G.smW0 这一波开始的时间、G.smLt 离下一道闪电几秒、G.smLit 这一道还亮几秒（G.smLD 一共亮几秒）、G.smN 第几道（间隔按它和波次取 hash，不吃逻辑随机数）、
 //   G.smBT 这一道什么时候闪（画闪电用；用户 2026-10-23 定：只是闪屏，不落地、没有伤害；G.smBx / smBy 不再用）；画面在钩子 drawTop（迷雾、天气、血条都画完以后）盖一层黑；调试：控制台 SM_DBG = 1 不画黑屏
 // 雷雨落雷照亮：天气的真雷（engine/env.boltStrike → 钩子 bolt）落下时记进 SM_BL（[x, y, 时刻]…，只是画面，不存档），落点半径 boltLit.r 格在黑屏里亮起，亮度随时间同闪屏
@@ -44082,16 +44085,16 @@ feat('jtCBoss',{ord:494,on:()=>!!G&&(G.map==='papalPalace'||!!G.jtCOn),hooks:{
 const SMC=CFG.snowShrine,SM_SX=SMC.summit[0],SM_SY=SMC.summit[1],SM_RY=SMC.ringY;
 const SK_GND=0,SK_WALL=1,SK_STAIR=2,SK_RIVER=3,SK_BRIDGE=4,SK_BLD=5,SK_ROAD=6,SK_PATH=7;
 let SM_DBG=0;   // 调试用：1 = 不画黑屏（截图看地图）
+const smRvAt=x=>SMC.river.y+SMC.river.amp*Math.sin(x*0.085+0.9)+1.2*Math.sin(x*0.23);   // 冻溪中线（格；x 可以是小数，画的时候按像素连续变）
 // 路（格，点坐标；主路 4 格宽、参道 2 格、小路 2 格）：[[x, y]…], 半宽, 种类；东边的两条是西边的镜像（x → 108 − x）
 const SM_PATHS=(()=>{const W=108,mir=L=>L.map(([x,y])=>[W-x,y]);
   const west=[[0,62.5],[9,57],[18,46],[24,35],[29,31],[36,30.5],[42,31.5],[48,34],[52.5,35.6]];
   const sw=[[0,104.5],[8,100],[15,94.5],[21,90],[21,78.5],[27,72],[32,63],[35,55],[40,52.6],[46,52.4],[52,52]];   // 过溪那一段（x 21）正南正北，桥是直的
   return[{p:[[54,108],[54,36.6]],hw:2,k:SK_ROAD},{p:[[54,36],[54,24.5]],hw:1.1,k:SK_ROAD},
-    {p:west,hw:1.15,k:SK_PATH},{p:mir(west),hw:1.15,k:SK_PATH},{p:sw,hw:1.15,k:SK_PATH},{p:mir(sw),hw:1.15,k:SK_PATH}]})();
+    {p:west,hw:1.15,k:SK_PATH},{p:mir(west),hw:1.15,k:SK_PATH},{p:sw,hw:1.15,k:SK_PATH},{p:mir(sw),hw:1.15,k:SK_PATH}].concat(SMC.bridges.map(x=>({p:[[x,smRvAt(x)-3.4],[x,smRvAt(x)+3.4]],hw:1.1,k:SK_PATH})))})();   // bridges：用户 10-23「河流多架几座桥」，路以外另架的桥（每座一段 2 格宽、正南北的短路）
 // 拆成线段：[ax, ay, ux, uy, 1/长度², 半宽, 种类]（像素算的时候也用）
 const SM_SEG=(()=>{const a=[];for(const P of SM_PATHS)for(let q=0;q+1<P.p.length;q++){const[x0,y0]=P.p[q],[x1,y1]=P.p[q+1],ux=x1-x0,uy=y1-y0;a.push([x0,y0,ux,uy,1/(ux*ux+uy*uy||1),P.hw,P.k])}return a})();
 const smEd=(x,y)=>Math.hypot(x-SM_SX,(y-SM_SY)/SM_RY);
-const smRvAt=x=>SMC.river.y+SMC.river.amp*Math.sin(x*0.085+0.9)+1.2*Math.sin(x*0.23);   // 冻溪中线（格；x 可以是小数，画的时候按像素连续变）
 // 每段路过溪的地方：沿路走多远（像素）是桥的正中、桥半长（像素）；不过溪的段 = null
 const SM_XC=SM_SEG.map(S=>{const L=1/Math.sqrt(S[4]);let pv=null;for(let q=0;q<=200;q++){const t=q/200,x=S[0]+S[2]*t,y=S[1]+S[3]*t,d=y-smRvAt(x);if(pv!==null&&(d>0)!==(pv>0))return[t*L*16,(SMC.river.w*0.6*16+9)/Math.max(0.35,Math.abs(S[3])/L)];pv=d}return null});   // 离山顶的椭圆距离（格；x、y 是点坐标）
 function smSegD(s,x,y){let t=((x-s[0])*s[2]+(y-s[1])*s[3])*s[4];t=t<0?0:t>1?1:t;return Math.hypot(x-s[0]-s[2]*t,y-s[1]-s[3]*t)}
@@ -44103,7 +44106,7 @@ function genSm(T,MG){const W=MAP_W,H=MAP_H,N=W*H,K=G.smK=new Uint8Array(N),EE=G.
   for(let ty=0;ty<H;ty++)for(let tx=0;tx<W;tx++){const i=ty*W+tx,x=tx+0.5,y=ty+0.5;EE[i]=smEd(x,y);let bd=1e9,bs=-1;
     for(let q=0;q<SM_SEG.length;q++){const s=SM_SEG[q],d=smSegD(s,x,y)-s[5];if(d<bd){bd=d;bs=q}}PD[i]=bd;PI[i]=bs}
   const D=[],put=(tx,ty,k)=>{if(tx>=0&&ty>=0&&tx<W&&ty<H)K[ty*W+tx]=k};
-  for(let ty=0;ty<H;ty++)for(let tx=0;tx<W;tx++){const i=ty*W+tx,e=EE[i],road=PD[i]<0,rv=Math.abs(ty+0.5-RV[tx]),riv=rv<RIV.w*0.6+0.5,ring=Math.abs(e-R1)<0.8||Math.abs(e-R2)<0.8;
+  for(let ty=0;ty<H;ty++)for(let tx=0;tx<W;tx++){const i=ty*W+tx,e=EE[i],road=PD[i]<0,rv=Math.abs(ty+0.5-RV[tx]),riv=rv<RIV.w*0.6+0.5,ring=false;   // 用户 10-23：取消两圈石垣（R1 只用来给山顶平台留空）
     if(road)K[i]=rv<RIV.w*0.6+1.5?SK_BRIDGE:ring?SK_STAIR:SM_SEG[PI[i]][6];else if(ring)K[i]=PD[i]<0.7?SK_STAIR:SK_WALL;else if(riv)K[i]=SK_RIVER}
   // 摆设：正殿（4 × 3 格占地，图 5 格宽）、正殿前的鸟居、主路上三座鸟居、枯山水、主路两边的石灯笼、山脚的村子
   const bld=(x0,y0,w,h,o)=>{for(let y=y0;y<y0+h;y++)for(let x=x0;x<x0+w;x++)put(x,y,SK_BLD);o.y=(y0+h)*16;D.push(o)};
@@ -44148,7 +44151,7 @@ function smOnBr(x,y,si){const X=si>=0?SM_XC[si]:null;if(!X)return false;const S=
 // 木桥格里这一点在不在桥面（含栏杆）外面
 function smBrOff(px,py,tx,ty){const si=G.smPI[ty*MAP_W+tx];if(si<0)return true;const S=SM_SEG[si];return smSegD(S,px/16,py/16)*16>S[5]*16+2}
 function smPix(P,px,py,t,lx,ly,tx,ty,h){const K=G.smK;if(!K)return;const i=ty*MAP_W+tx;let k=K[i];const x=px/16,y=py/16,e=smEd(x,y),R1=SMC.ring[0],R2=SMC.ring[1];
-  const n=SM_NZ(px/90,py/90),lv=e<R1?1.04:e<R2?0.98:0.93-Math.min(0.06,(e-R2)*0.004);   // 台地：越低越暗
+  const n=SM_NZ(px/90,py/90),lv=1.04-Math.min(0.12,e*0.0024);   // 越往山下越暗一点（不再有台地的分界）
   if(k===SK_WALL){   // 石垣：块石（一行 7 像素高、每块 9～15 宽，错开），顶上积雪、下沿暗
     const row=Math.floor(py/7),ox=px+Math.floor(hash2(row,3,57)*13),sw=9+Math.floor(hash2(row,Math.floor(ox/12),58)*6),st=Math.floor(ox/sw),ix=ox-st*sw,iy=py-row*7,v=hash2(st,row,59);
     const up=smK(tx,ty-1)!==SK_WALL,dn=smK(tx,ty+1)!==SK_WALL;
@@ -44238,9 +44241,15 @@ function smHud(){if(G.phase!=='wave')return'雪夜：开战后黑屏，闪电亮
 // ================= 视野不共享 =================
 function smEVis(i){const u=DS_CUR;if(!u)return;const r=u.visR;if(!(r>0))return;   // 画面上黑着的时候（画面期间 DS_CUR 是空的）：小地图、血条也不显示亡灵；落雷照亮的圈里照常画
   const dx=E.x[i]-u.x,dy=E.y[i]-u.y,R=r+E.r[i];if(dx*dx+dy*dy<=R*R)return;
+  const now=G.time;if((u.smXt>now&&u.smXi===i&&u.smXd===E.id[i])||(SM_XT[i]>now&&SM_XU[i]===u&&SM_XD[i]===E.id[i]))return;   // 打过它的亡灵：暴露给它
   for(let k=0;k<HB_VZ.length;k++){const z=HB_VZ[k],zx=E.x[i]-z.x,zy=E.y[i]-z.y,zr=z.r*16+E.r[i];if(zx*zx+zy*zy<=zr*zr)return}   // 公共视野（狄龙「明察秋毫」）
   return false}
-MAP_FX.snowShrine={gen:genSm,pixW:smPix,start:smStart,bolt:smBolt,tick:smTick,waveStart:smWaveStart,waveEnd:smWaveEnd,hud:smHud,eVisF:smEVis,drawTop:smDrawTop};
+// 视野暴露（用户 10-23）：亡灵打中我方单位 / 建筑（近战、弹道、炮击、溅射都算），exposeT 秒内受伤的那一个能看到并攻击它，即使在自身视野外；每打一次刷新
+//   两头都记（各记最近的一个）：受伤者身上 smXi / smXd / smXt（最近打它的亡灵），亡灵这边 SM_XU / SM_XD / SM_XT[下标]（最近被它打的单位）；smEVis 查的时候 O(1)
+const SM_XU=[],SM_XD=new Float64Array(ECAP),SM_XT=new Float64Array(ECAP);
+function smExpose(v,o){if(!o)return;const i=o.src>=0?o.src:o.bsrc>=0?o.bsrc:-1;if(i<0||i>=ECAP||!E.alive[i])return;const id=o.sid!=null?o.sid:E.id[i];if(E.id[i]!==id)return;
+  const t=G.time+SMC.exposeT;v.smXi=i;v.smXd=id;v.smXt=t;SM_XU[i]=v;SM_XD[i]=id;SM_XT[i]=t}
+MAP_FX.snowShrine={afterHurtF:(u,d,o)=>smExpose(u,o),afterHurtS:(s,d,o)=>smExpose(s,o),gen:genSm,pixW:smPix,start:smStart,bolt:smBolt,tick:smTick,waveStart:smWaveStart,waveEnd:smWaveEnd,hud:smHud,eVisF:smEVis,drawTop:smDrawTop};
 
 // ---------- v0.12.0 雪夜神社·三阶、四阶亡灵的能力（代理 E2 加；数据 data/map_snowshrine_e2.js，样子 art/hd_e2.js）----------
 // 别的能力都走现成的写法：种子岛铁炮 / 大筒队 = 弹道 aoe（大筒队 siege 优先轰建筑）、真田赤备 = 骑兵冲锋 charge、幽魂群 = 穿墙 phase（maps/temple.phaseStep）、
@@ -59423,7 +59432,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.11.2',GAME_TAG='测试版',GAME_BUILD="ea0a818+",GAME_BUILT=1792725677391,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
+const GAME_VER='0.11.2',GAME_TAG='测试版',GAME_BUILD="21b7e66",GAME_BUILT=1792728584878,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
