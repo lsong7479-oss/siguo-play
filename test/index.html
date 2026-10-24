@@ -59964,7 +59964,10 @@ function elRecalc(h){const e=elById(h.elite);if(!e)return;const S=h.d.elS||{},w=
   h.gDmg+=(S.dmg||0)+(mag?S.dmgS||0:rg?S.dmgR||0:S.dmgM||0)+elMemK();h.gCritDmg+=S.critDmg||0;h.gCdr+=S.cd||0;
   h.elRng=(S.rng||0)+(rg?S.rngP||0:0);h.elHit=S.hit||0;h.elHitK=(S.hitK||0)+(S.hitR||0);h.kbA=Math.min(1,S.kbA||0);if(h.d.elRes)h.resist=h.d.elRes;
   if(S.critTaken>0){h.ax=Object.assign({},h.ax||{});h.ax.critDmgRes=(h.ax.critDmgRes||0)+S.critTaken/(1-S.critTaken)}
-  if(S.regen)h.regen=Math.max(0,(h.regen||0)*(1+S.regen));h.unlE=1}
+  if(S.regen)h.regen=Math.max(0,(h.regen||0)*(1+S.regen));h.unlE=1;
+  {const t=(typeof TM!=='undefined'&&TM)||{},r=h.maxHp>0?h.hp/h.maxHp:1;   // 训练类科技（用户定：精英能享受）：士兵的生命、移速、近战 / 远程伤害、攻速、防御、法防、偏斜
+    if(t.uHp){h.maxHp*=1+t.uHp;h.hp=h.maxHp*r}if(t.uMove)h.speed*=1+t.uMove;h.gDmg+=w.cls==='melee'?(t.uMelee||0):rg?(t.uRanged||0):0;h.aspd+=w.cls==='melee'?(t.uMeleeSpd||0):rg?(t.uRgSpd||0):0;
+    h.def+=t.uDef||0;h.mdef+=t.uMDef||0;h.dodge+=t.uDodge||0}}
 // —— 克劳德「我都记得」（用户定）：名册（含删掉的）每到第 n 层需要 1 + n(n−1)/2 名，每层克劳德自己和精英 +1% 增伤、减伤，至多 1000% ——
 function elMemLv(){if(!META||!META.el)return 0;const N=elRollN();let n=0;while(n<1000&&1+(n+1)*n/2<=N)n++;return n}
 const elMemOn=()=>!!(G&&G.heroes&&G.heroes.some(h=>h.id==='scribe'));
@@ -62057,7 +62060,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.11.3',GAME_TAG='测试版',GAME_BUILD="6bf6a96",GAME_BUILT=1792872956682,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
+const GAME_VER='0.11.3',GAME_TAG='测试版',GAME_BUILD="3289adc+",GAME_BUILT=1792873096617,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
