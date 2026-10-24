@@ -18406,6 +18406,65 @@ CFG.btech.towers.campBw={base:CFG.olv.lists.camp.slice(), baseOld:['ctrain','chp
     kiri:  {name:'列装切纲', desc:'影武者 / 疾风剑豪造成伤害的 10% 改为真实伤害(无视防御和减伤)，并按这部分伤害削减目标的生命上限', bwKiri:{p:0.1}},
   }};
 
+// ---------- 0.11.3 英雄战斗力的技能折算（tools/stats/herocp.py 生成，别手改；算法见 game/hero_cp.js）----------
+// rate[英雄][星级−1] = [a, b]：输出 = a + b × 普攻每秒伤害（a 技能的固定部分，b 属性折算系数）；refAtk：有效承伤用的参照攻击；refDef / refMdef：普攻输出用的参照防御（= 木桩的物防 / 法防，约五阶）；dummy / dummyHp：测量用的木桩（亡灵种类、最大生命）
+CFG.heroCP={refAtk:60, refDef:18.5, refMdef:17, dummy:'efMutantBear', dummyHp:10000, rate:{
+  "akagiJiro":[[237.4, 4.041], [395.8, 4.091], [766.0, 3.891], [1491.0, 5.174], [3113.6, 4.573]],
+  "alibaba":[[14.2, 0.807], [16.4, 0.802], [33.6, 0.782], [38.7, 0.807], [62.5, 0.771]],
+  "andrew":[[87.8, 3.363], [201.9, 2.432], [223.3, 4.377], [406.1, 2.556], [430.0, 5.577]],
+  "anyang":[[118.0, 2.698], [153.3, 2.63], [318.2, 3.184], [411.2, 3.437], [575.7, 3.144]],
+  "apocKnight":[[5.6, 0.294], [5.9, 0.337], [6.5, 0.374], [7.3, 0.411], [8.4, 0.451]],
+  "archDruid":[[16.3, 0.263], [19.1, 0.27], [90.3, 0.713], [166.3, 1.043], [404.5, 1.091]],
+  "arthur2":[[27.5, 2.594], [41.0, 2.825], [127.2, 3.398], [185.6, 3.698], [266.5, 4.606]],
+  "ashna":[[55.9, 1.557], [93.5, 1.553], [196.8, 2.046], [366.9, 2.508], [756.3, 3.524]],
+  "assassin":[[18.0, 1.417], [32.9, 1.823], [234.2, 5.713], [237.8, 8.214], [419.2, 14.605]],
+  "camelKnight":[[7.9, 0.819], [7.3, 0.885], [12.1, 0.959], [11.1, 1.166], [10.2, 1.443]],
+  "caroline":[[6.5, 0.99], [7.3, 0.968], [7.1, 0.978], [7.0, 0.989], [6.3, 1.015]],
+  "commodore":[[6.6, 0.993], [6.5, 1.002], [7.1, 0.971], [7.6, 0.96], [6.6, 0.994]],
+  "conqKnight":[[658.8, 9.672], [805.0, 19.472], [852.2, 0], [826.5, 0.108], [886.2, 0]],
+  "desertHermit":[[14.2, 1.08], [16.3, 1.125], [36.6, 1.559], [51.0, 1.525], [77.9, 1.535]],
+  "dilong":[[9.1, 1.606], [13.4, 1.648], [188.1, 2.326], [283.2, 2.355], [383.0, 2.317]],
+  "dracula":[[117.0, 2.195], [305.8, 2.346], [542.0, 2.807], [958.4, 4.639], [1928.7, 7.745]],
+  "dragonLord":[[86.6, 0.501], [105.6, 0.496], [180.3, 0.543], [216.8, 0.558], [270.4, 0.605]],
+  "dreadKnight":[[24.9, 1.36], [28.5, 1.457], [35.3, 1.454], [42.1, 1.534], [51.4, 1.544]],
+  "elemArcher":[[14.1, 1.333], [20.4, 1.43], [38.2, 1.816], [59.9, 1.931], [77.0, 2.538]],
+  "fane":[[21.4, 1.998], [24.0, 3.227], [104.1, 5.711], [160.7, 6.773], [262.4, 11.716]],
+  "graveRaider":[[6.5, 1.023], [6.6, 1.007], [6.8, 0.993], [6.8, 1.003], [6.5, 1.0]],
+  "gunslinger":[[6.5, 0.913], [6.5, 0.918], [6.3, 0.931], [10.6, 1.073], [21.8, 1.333]],
+  "gwen":[[166.8, 0.91], [180.8, 1.799], [316.8, 0.744], [555.7, 0], [872.2, 0]],
+  "hunter":[[24.8, 1.254], [55.6, 1.477], [76.2, 1.838], [92.4, 1.631], [119.6, 1.95]],
+  "ironMarshal":[[6.8, 0.979], [6.4, 1.004], [6.9, 0.978], [6.9, 0.98], [6.2, 1.004]],
+  "jack":[[33.8, 0.315], [70.3, 0.301], [110.1, 0.326], [153.7, 0.36], [202.1, 0.436]],
+  "jaguar":[[48.6, 4.661], [130.2, 3.872], [129.3, 0], [0, 4.741], [65.6, 2.295]],
+  "judgeKnight":[[45.7, 1.48], [57.1, 1.614], [89.4, 1.524], [109.5, 1.587], [136.8, 1.444]],
+  "kan":[[31.2, 0.374], [67.9, 0.42], [95.5, 0.476], [167.5, 0.523], [306.5, 0.634]],
+  "kazamiYuki":[[143.0, 2.131], [275.9, 2.983], [726.9, 4.844], [1293.2, 5.86], [2957.7, 8.663]],
+  "leng":[[78.6, 1.659], [105.3, 1.705], [476.3, 5.632], [674.1, 2.972], [763.0, 5.304]],
+  "lethe":[[34.2, 0.608], [47.9, 0.6], [61.4, 0.598], [76.5, 0.56], [98.8, 0.564]],
+  "liko":[[278.1, 1.252], [494.7, 1.546], [850.2, 2.274], [1354.4, 3.051], [3067.9, 3.434]],
+  "lilian":[[371.7, 5.472], [536.2, 6.425], [1970.2, 8.296], [2456.6, 9.432], [2984.2, 10.273]],
+  "lola":[[477.6, 11.48], [961.5, 16.342], [2662.7, 34.657], [6571.4, 71.195], [13028.4, 152.421]],
+  "marshall":[[4.9, 0.274], [4.8, 0.281], [4.7, 0.289], [4.7, 0.291], [4.6, 0.297]],
+  "merchant":[[6.3, 1], [0.0, 67.46], [0.0, 15.178], [0.0, 7.635], [0.0, 4.261]],
+  "merlin2":[[59.8, 1.292], [81.4, 1.487], [158.5, 2.047], [259.7, 1.65], [403.1, 3.338]],
+  "napoleon":[[10.5, 0.202], [10.2, 0.235], [17.8, 0.241], [26.5, 0.32], [69.1, 0.316]],
+  "paladin":[[6.3, 1.008], [7.0, 0.975], [21.2, 1.543], [29.6, 1.578], [39.4, 1.787]],
+  "poisoner":[[32.5, 1.032], [41.4, 1.025], [91.7, 1.026], [131.6, 1.022], [176.5, 1.029]],
+  "priest":[[4.7, 0.32], [4.7, 0.328], [4.6, 0.329], [4.5, 0.344], [4.5, 0.346]],
+  "robin2":[[11.3, 1.594], [19.5, 1.957], [39.6, 2.817], [77.7, 4.005], [126.7, 4.898]],
+  "saintKnight":[[6.8, 0.99], [5.9, 1.022], [67.9, 1.962], [104.4, 2.384], [188.1, 1.304]],
+  "scribe":[[4.2, 0.377], [6.7, 0.423], [13.9, 0.52], [28.6, 0.623], [60.1, 0.755]],
+  "sniper":[[180.7, 0.743], [292.4, 0], [313.5, 0.15], [141.7, 1.656], [442.0, 0.022]],
+  "tamamo":[[289.7, 2.456], [561.9, 4.191], [24670.1, 0], [43052.0, 0], [62616.9, 49.515]],
+  "taoMaster":[[9.8, 0.994], [13.2, 0.987], [120.3, 0.999], [176.7, 0.991], [258.6, 1.0]],
+  "vanessa":[[27.4, 0.881], [42.5, 1.437], [56.4, 1.634], [66.8, 2.111], [84.8, 2.303]],
+  "versatile":[[18.6, 1.498], [24.2, 1.752], [33.9, 3.429], [77.4, 3.692], [144.6, 6.094]],
+  "watt":[[7.3, 0.256], [8.0, 0.251], [20.9, 0.241], [30.6, 0.246], [92.4, 0.247]],
+  "wayne":[[73.2, 1.403], [130.8, 1.693], [346.1, 1.365], [559.3, 3.284], [1302.0, 5.967]],
+  "weidemann":[[8.6, 0.999], [10.2, 1.022], [13.2, 1.023], [16.4, 1.05], [19.1, 1.046]],
+  "wolfSon":[[120.5, 2.257], [178.9, 2.368], [305.7, 2.393], [418.2, 2.454], [752.5, 2.535]],
+  "xuanzang":[[23.3, 0.524], [47.0, 0.608], [79.0, 0.701], [120.2, 0.791], [308.1, 1.15]]}};
+
 /* ---------- v0.8.6（用户 2026-10-09 要求）阵营系统的数据：逻辑在 engine/faction.js ----------
    每个单位都属于一个阵营。阵营的 side：
      def = 守方，按我方士兵 / 英雄那一套跑（和我方是一伙，互相不打）；atk = 攻方，按亡灵那一套跑（和我方敌对）。
@@ -56877,6 +56936,23 @@ function exitGame(){
   setTimeout(()=>{if(!document.hidden)showExited()},250);
 }
 
+// ---------- 0.11.3 英雄战斗力（用户 2026-10-23 定）----------
+// 只算英雄个人：星级、局外等级、装备（含词条、强化、套装）；不算局外科技、局内卡牌和临时 buff；统御 / 光环 / 给钱这类给全队的效果不折算（只看个人）
+// 战斗力 = √(输出 × 有效承伤) ÷ CP_K（同《组战力表》的算法，两边数字可以对着看）
+//   输出 = a + b × 普攻每秒伤害（按参照防御 refDef / refMdef 打折）：tools/stats/herocp.py 实测（自动放技能打木桩 30 秒，单体 50% + 六个木桩 50%），三套装备拟合出 a（技能的固定部分）、b（属性折算系数），按星级存在 data/hero_cp.js
+//   有效承伤 = 最大生命 × 参照攻击 ÷ 防御公式后的伤害（物理、法术各一半）÷ (1 − 偏斜) ÷ (1 − 格挡期望)——直接按属性算（用户定）
+const CP_K=10;
+function cpBaseDps(h){const w=h&&h.ws;if(!w||!(w.int>0))return 0;const cm=heroCritMul(h)||CFG.combat.critMul,C=CFG.heroCP,mg=w.magic||w.cls==='magic';   // 普攻一下按参照防御 / 法防打折（同木桩的防御）
+  return defF(w.dmg||0,mg?C.refMdef:C.refDef)*(1+(h.gAtk||0)+(h.aspd||0))/w.int*(1+Math.min(1,h.crit||0)*(cm-1))}
+function cpEhp(h){const A=CFG.heroCP.refAtk,f=d=>A/Math.max(A*0.05,defF(A,d||0)),dg=Math.min(0.9,h.dodge||0),bl=Math.min(0.9,(h.block||0)*Math.min(1,(h.shield||0)/A));
+  return (h.maxHp||0)*0.5*(f(h.def)+f(h.mdef))/(1-dg)/(1-bl)}
+function cpOut(h){const R=CFG.heroCP.rate[h.id],v=cpBaseDps(h);if(!R)return v;const r=R[Math.max(0,Math.min(R.length-1,(h.star||1)-1))];return r[0]+r[1]*v}
+// h：makeHero 出来的英雄（heroPreview 或局内的）；返回整数战斗力
+function heroCPOf(h){if(!h)return 0;return Math.round(Math.sqrt(Math.max(0,cpOut(h))*cpEhp(h))/CP_K)}
+function heroCP(id){return heroCPOf(heroPreview(id))}
+// 换装备、强化、升星后的提示：「 · 战斗力 A → B (+X)」；plain：toast 用的纯文字
+function cpDeltaTxt(a,b,plain){if(!(a>0||b>0)||a===b)return'';const d=b-a,t=` · 战斗力 ${a} → ${b} (${d>0?'+':''}${d})`;return plain?t:`<span class="${d>0?'ok':'warn'}">${t}</span>`}
+
 // ---------- v0.8.14 局外等级、经验分配、基础加成（数据在 data/olv.js；规则见《数值策划案》3.2 / 3.6 / 3.8）----------
 // META.olv = {b:{建筑种类:{lv,exp,use}}, h:{英雄（原版 id）:{lv,exp,use}}, pend:{exp,b:[种类],h:[英雄]}}
 //   lv = 已达等级；exp = 这一级攒了多少；use = 使用等级（0 = 跟着已达等级；调试模式下可以超过已达等级，最多 70）
@@ -59572,7 +59648,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.11.3',GAME_TAG='测试版',GAME_BUILD="2496d65+",GAME_BUILT=1792785439043,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
+const GAME_VER='0.11.3',GAME_TAG='测试版',GAME_BUILD="c713ae6+",GAME_BUILT=1792807081285,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -60781,7 +60857,7 @@ function onSheetClick(e){
   else if(a==='hstardn'){const H=META.heroes[v];if(SET.devOn&&H&&H.star>1){H.star--;saveMeta();toast(`${CFG.heroes[v].name}降到 ${H.star}★(测试)`)}showHub('hero')}   // v0.8.13 调试：降星，不返还英雄之魄
   else if(a==='skbuy'){const r=skinBuy(v);if(r.err)toast(r.err);else{sfx('levelup');toast(`兑换成功：${CFG.skins[v].name}，已换上`)}showHub('hero')}   // v0.9.51 皮肤
   else if(a==='sknext')skinNext();   // v0.10.2 英雄页立绘右上角的「切换皮肤」
-  else if(a==='hstar'){if(starUp(v)){sfx('pick');toast(`${CFG.heroes[v].name}升到 ${META.heroes[v].star}★`)}showHub('hero')}
+  else if(a==='hstar'){const c0=heroCP(v);if(starUp(v)){sfx('pick');toast(`${CFG.heroes[v].name}升到 ${META.heroes[v].star}★${cpDeltaTxt(c0,heroCP(v),true)}`)}showHub('hero')}   // 0.11.3 战斗力变化
   else if(a==='tgive'){const[k,base]=v.split(':'),it=newItem(null,base,null,{book:k==='b',craft:tgCraft||undefined});saveMeta();toast(`获得：${craftOf(it).name} · ${itemName(it)}`);sfx('pick');showHub('store')}
   else if(a==='tgcraft'){tgCraft=v;showHub('store')}
   else if(a==='tgbook'){tgBook=v==='1';showHub('store')}   // v0.4.8
@@ -61442,7 +61518,7 @@ Object.assign(HELP,{
   'design':()=>{const L=CFG.loadout;return{t:'建筑',b:hpL(['解锁建筑和建筑科技都花设计点与银币；有的还要先解锁前置建筑或通关某张地图',
     `出征最多携带 ${L.base} 种建筑；科技「记忆图纸」每级 +${L.perTech}，最多 ${L.max}`,'城门总是自带，不占携带名额；城门和同种城墙共用一套建筑科技',
     '点建筑上的「科技 ›」看属性、研究建筑科技',`预设：最多存 ${L.presets} 套携带配置，点空位保存现在的，点存过的换成它`])}},
-  'hero-stat':()=>{const P=CFG.proficiency;return{t:'英雄属性',b:hpL(['属性已经算上科技和装备，局内选的卡牌另算',
+  'hero-stat':()=>{const P=CFG.proficiency;return{t:'英雄属性',b:hpL(['属性已经算上科技和装备，局内选的卡牌另算','战斗力：英雄自己的单兵参考——按「输出 × 有效承伤」开方算，输出含技能(按每位英雄实测打木桩的折算)、单体和群体各占一半；只算星级、局外等级和装备，不算科技、卡牌，也不算给全队的统御、光环、铜币这类效果(统御型英雄的价值主要在统御，战斗力只看个人)',
     `不熟练的武器：攻速 ×${P.weapon.spd}、暴击率 ×${P.weapon.crit}、偏移 ×${P.weapon.spread}，盾的格挡率 ×${P.weapon.block}`,`不熟练的护甲：移速 ×${P.armor.speed}、技能冷却 ×${P.armor.cd}`,
     '升星花这位英雄的英雄之魄，星级越高技能越强'])}},
   'hero-enh':()=>{const SM=CFG.smith;return{t:'强化',b:hpL([`武器、副手、护甲可以强化，最高 +${SM.maxEnh}；饰品只能洗词条`,'换英雄就看他身上的装备','要银币 + 对应阶数的强化石；X 阶装备要 X 阶强化石',
@@ -61564,7 +61640,7 @@ function heroInfoHTML(id){const f=heroForm(id),H=CFG.heroes[f],MH=META.heroes[id
   // v0.8.24（用户定）物攻、法攻、物防、法防显示「合计(+装备)」：物攻 = 英雄物攻 + 武器伤害 + 武器攻击词条（法器算在法攻上）+ 饰品基础属性；防御的装备部分 = 护甲、盾牌、词条、饰品
   const gq=(v,g)=>g>0.05?`${f1g(v+g)}(+${f1g(g)})`:f1g(v),mgW=!!(h&&h.ws.magic),wg=h?(h.ws.wdB||0)+(h.ws.xaB||0):0,tk=1+(TM.hDef||0);
   const base=gt(h?Math.round(h.maxHp):Math.round(heroStat(hs,'hp',0)),'hp')+'|'+gt(gq(heroStat(hs,'atk',0),(mgW?0:wg)+((h&&h.gAcc&&h.gAcc.atk)||0)),'atk')+'|'+gt(gq(heroStat(hs,'ap',0),(mgW?wg:0)+((h&&h.gAcc&&h.gAcc.ap)||0)),'ap')+'|'+gt(h?gq(heroStat(h,'def')*tk,h.def-heroStat(h,'def')*tk):f1g(heroStat(hs,'def',0)),'def')+'|'+gt(h?gq(heroStat(h,'mdef')*tk,h.mdef-heroStat(h,'mdef')*tk):f1g(heroStat(hs,'mdef',0)),'mdef'),B=base.split('|');
-  const stats=cell('生命',B[0])+cell('物攻',B[1])+cell('法攻',B[2])+cell('物防',B[3])+cell('法防',B[4])+cell('攻速',H.aspd?'+'+pc1(H.aspd):'—')+cell('精准',pc1(H.prec||1))+(h?cell('偏斜',pc1(h.dodge))+cell('暴击',pc1(h.crit)+(heroCritMul(h)?` · ×${f2_(heroCritMul(h))}`:''))+cell('移速',f2_(h.speed))+cell('视野',h.vision)+
+  const stats=(h?cell('战斗力',`<span class="cpv">${heroCPOf(h)}</span>`):'')+cell('生命',B[0])+cell('物攻',B[1])+cell('法攻',B[2])+cell('物防',B[3])+cell('法防',B[4])+cell('攻速',H.aspd?'+'+pc1(H.aspd):'—')+cell('精准',pc1(H.prec||1))+(h?cell('偏斜',pc1(h.dodge))+cell('暴击',pc1(h.crit)+(heroCritMul(h)?` · ×${f2_(heroCritMul(h))}`:''))+cell('移速',f2_(h.speed))+cell('视野',h.vision)+
       cell(h.ws.cls==='magic'?'普攻 AP':'普攻 AD',Math.round(h.ws.dmg))+cell('攻击间隔',f2_(h.ws.int/(1+(h.gAtk||0)+(h.aspd||0)))+' 秒')+(h.block?cell('格挡',`${pc1(h.block)} 减 ${f1g(h.shield)}`):'')+(h.ws.mag?cell(h.ws.type==='bow'?'箭袋':'弹匣',h.ws.mag):'')+cell('技能冷却',`×${f2_(h.cdMul/(1+(h.gCdr||0)))}`)+cell('出战',`${(META.heroUse&&META.heroUse[id])||0} 次`)
     :cell('偏斜',pc1(H.dodge))+cell('暴击',pc1(H.crit))+cell('移速',H.speed)+cell('视野',H.vision));
   const fx=[];if(h){for(const k in h.gSet)fx.push(CFG.setFxText({[k]:h.gSet[k]}));const af=Object.entries(h.gA||{}).map(([k,v])=>afText({k,v}));if(af.length)fx.push('饰品：'+af.join(' · '));
@@ -61709,9 +61785,9 @@ function itemAct(a,v){const hid=hubHero||META.hero;eqMsg='';if(a!=='ibulk')bulkA
   if(a==='eqslot'){heroSub='gear';eqSlot=v;bagTab=SLOT_KIND[v];bagPart=bagTab==='a'?v:'';bagPage=0;eqSel=slotUidOf(META.gear[hid],v)||0;sellArm=0}
   else if(a==='ibag'){bagTab=v;bagPage=0;if(v!=='a')bagPart='';sellArm=0}
   else if(a==='itsel'){eqSel=+v;sellArm=0;const it=itemByUid(eqSel);if(it&&!it.book){const k=itemKind(it);if(SLOT_KIND[eqSlot]!==k||(k==='a'&&eqSlot!==CFG.armors[it.base].part))eqSlot=slotFor(hid,it)}}
-  else if(a==='ieq'){const r=equipItem(hid,v,eqSel);eqMsg=r||`已装备到${SLOT_NAMES[v]}`;eqSlot=v}
-  else if(a==='iuneq'){unequipSlot(hid,v);eqMsg='已卸下'}
-  else if(a==='ienh'){const it=itemByUid(eqSel),r=enhance(eqSel);eqMsg=enhResText(it,r);sfx(r.ok?'build':'clank')}
+  else if(a==='ieq'){const c0=heroCP(hid),r=equipItem(hid,v,eqSel);eqMsg=r||`已装备到${SLOT_NAMES[v]}${cpDeltaTxt(c0,heroCP(hid))}`;eqSlot=v}   // cpDeltaTxt：0.11.3 战斗力变化（game/hero_cp）
+  else if(a==='iuneq'){const c0=heroCP(hid);unequipSlot(hid,v);eqMsg='已卸下'+cpDeltaTxt(c0,heroCP(hid))}
+  else if(a==='ienh'){const it=itemByUid(eqSel),c0=heroCP(hid),r=enhance(eqSel);eqMsg=enhResText(it,r)+cpDeltaTxt(c0,heroCP(hid));sfx(r.ok?'build':'clank')}
   else if(a==='isell'){if(sellArm!==eqSel){sellArm=eqSel}else{const it=itemByUid(eqSel),p=it?sellPrice(it):0,bk=it&&it.book?bookKey(it):'',r=sellItem(eqSel);eqMsg=r||`已出售，获得 ${p} 银币`;if(!r){const nx=bk&&META.inv.books.find(x=>bookKey(x)===bk);eqSel=nx?nx.uid:0}sellArm=0}}   // v0.4.8 打造书：卖掉一本后继续选着同一叠
   else if(a==='iforge'){const r=forgeBook(eqSel);if(r.err)eqMsg=`<span class="warn">${r.err}</span>`;else{eqSel=r.item.uid;bagTab=itemKind(r.item);bagPage=0;eqMsg=`<b class="ok">打造完成：</b><b style="color:${itemQ(r.item).color}">${itemQ(r.item).name} · ${craftOf(r.item).name} · ${itemName(r.item)}</b>`;sfx('build')}}
   else if(a==='ilock'){toggleLock(eqSel);sellArm=0}
