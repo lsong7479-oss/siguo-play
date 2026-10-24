@@ -18800,7 +18800,7 @@ CFG.heroCP={refAtk:60, refDef:18.5, refMdef:17, dummy:'efMutantBear', dummyHp:10
 /* ---------- 0.11.4 新英雄：笑面谋主·黄虎（代理 hh，用户 2026-10-24 的策划第三部分）----------
    逻辑：heroes/hh_huanghu.js（局内）、ui/hh_ui.js（选卡弹窗、英雄栏）；小人 art/hd_hh.js（hdHuanghu）；技能图标 art/ski_hh.js；立绘 art/portraits/huanghu.png（原图 art/立绘原图/huanghu.png）
    用户定：上古品质，招募 / 升星的英雄之魄 120 / 200 / 300 / 400 / 600；不上战场（编进出征阵容、所在槽位生效后技能才生效，例如 3 号位要主堡 3 级）；始终保持最大等级；
-     三个技能的效果和 1★～5★ 数值（献计三策、宏图三略、运筹帷幄）
+     四个被动的效果和 1★～5★ 数值（献计三策、宏图三略、算无遗策（原运筹帷幄）、望穿千年（0.11.4 补充，50 / 60 / 70 / 85 / 100%））
    Claude 定（细节见 heroes/hh_huanghu.js 开头）：
      品质「上古」CFG.heroQualities.ancient 的名字、颜色同装备的上古（土黄）；不进英雄奖池（奖池按 qOrder 抽品质，没有上古档）；英雄商店价格 64 金币 / 个（红 32 的两倍）
      来源：英雄商店（普通槽、专属槽），通关任意八阶地区后出现（shopReq.tier 8；九阶「不老之泉」做好后由主会话改掉落）
@@ -18819,20 +18819,25 @@ Object.assign(CFG.skills,{
   // 被动：出场时从三略里选一张，这一局一直有效
   hhHongtu:{name:'宏图三略', passive:true, cd:0, aim:'self', byStar:{ds:[0.4,0.5,0.6,0.7,0.8], res:[0.8,0.9,1,1.2,1.5], drop:[0.4,0.45,0.5,0.6,0.75], luck:[3,3.5,4,4.5,5], rr:[1,1.25,1.5,1.75,2]},
     desc:p=>`被动：黄虎出场时从三略中选一张，这一局一直有效。定四方：所有英雄、士兵(建筑除外)的生命、物攻、法攻、物防、法防 +${pc_(p.ds)}；筹万物：结算的银币、建材、设计点、科研点 +${pc_(p.res)}，装备、打造书、道具的掉落概率 +${pc_(p.drop)}；夺天命：每波结束后幸运 +${p.luck}、卡牌刷新次数 +${p.rr}`},
-  // 被动：每波卡牌可选数 +opt；每波第一次常规选卡拿到的卡牌数值 ×(1 + val)（用户最终版「首个选卡」）；每 every 波（波次是 every 的倍数）多一次选卡，只出数值卡，效果 × xk
-  hhYunchou:{name:'运筹帷幄', passive:true, cd:0, aim:'self', byStar:{opt:[1,1,2,2,3], val:[0.2,0.25,0.3,0.4,0.5], every:[3,3,2,2,1], xk:[0.5,0.6,0.7,0.85,1]},
-    desc:p=>`被动：黄虎出场后，每波可选的卡牌 +${p.opt} 张，每波第一次常规选卡拿到的卡牌数值效果 +${pc_(p.val)}；每 ${p.every} 波额外获得一次选卡机会(只出数值卡，效果 ×${p.xk})`},
+  // 被动「算无遗策」（技能键沿用 hhYunchou，原名「运筹帷幄」，和同名科技、卡牌重名，用户改名）：每一批卡牌可选数 +opt；每一批第一次常规选卡拿到的卡牌数值 ×(1 + val)
+  //   用户 0.11.4 去掉了原来的「每 N 波额外选卡」（多卡留给德拉贡）
+  hhYunchou:{name:'算无遗策', passive:true, cd:0, aim:'self', byStar:{opt:[1,1,2,2,3], val:[0.2,0.25,0.3,0.4,0.5]},
+    desc:p=>`被动：黄虎出场后，每一批可选的卡牌 +${p.opt} 张；每一批的第一次选卡，选到的常规数值卡效果 +${pc_(p.val)}`},
+  // 被动「望穿千年」（用户 0.11.4 加的第四个被动）：每波开始按前几波（最多三波）的记录看穿亡灵的路数，这一波生效观兵、辨性、料势三项（逻辑 heroes/hh_huanghu.js）
+  hhWangchuan:{name:'望穿千年', passive:true, cd:0, aim:'self', byStar:{x:[0.5,0.6,0.7,0.85,1]},
+    desc:p=>`被动：黄虎出场后，每波开始时按前三波的平均看穿亡灵的路数(第 2 波看第 1 波，第 3 波看前两波，第 4 波起看前三波；第 1 波不生效)，这一波生效三项：观兵：物理近战、物理远程、法术近战、法术远程四种里我方受到伤害最多的一种，这种伤害减免 +${pc_(p.x)}；亡灵治疗率 ≥ ${pc_(CFG.hhWc.healR)} 时改为禁疗：所有亡灵受到的治疗 ÷ (1 + ${pc_(p.x)})(治疗率 = 这几波亡灵的总治疗量 ÷ 出场亡灵的生命上限总和)；辨性：所有属性伤害里我方受到最多的一种，这种属性的伤害(含持续伤害)减免 +${pc_(p.x)}；料势：我方被施加总时长最长的一种状态，持续时间 ÷ (1 + ${pc_(p.x)})。伤害减免加进我方的减伤池子；某一类这几波里没出现就不生效`},
 });
+CFG.hhWc={healR:0.35, n:3};   // 望穿千年：治疗率 ≥ 35% 时观兵改禁疗、看前 3 波（用户定）
 CFG.heroes.huanghu={name:'黄虎', title:'笑面谋主', quality:'ancient', look:'huanghu', recruit:true, shopOnly:true, shopReq:{tier:8}, noSortie:true, allSkills:true, hhOff:true,   // hhOff：不上战场（heroes/hh_huanghu 的 hhJoin 接管 joinHero）
   hp:300, def:1.5, dodge:0.05, crit:0, speed:4.3, vision:8, tough:105,
   prof:{weapon:[], armor:['cloth','leather']},
   start:{weapons:[], offhand:null, armor:'cloth'},
-  skills:['hhXianji','hhHongtu','hhYunchou'],
+  skills:['hhXianji','hhHongtu','hhYunchou','hhWangchuan'],
   stars:[null,
-    {desc:'献计三策：刷新 +0.25、铜币 +50%、保底精良，布武 / 御敌 +50%；宏图三略：定四方 +50%，筹万物 +90% / 掉落 +45%，夺天命 幸运 +3.5、刷新 +1.25；运筹帷幄：可选卡 +1、首次选卡数值 +25%、每 3 波额外选卡(×0.6)'},
-    {desc:'献计三策：刷新 +0.5、铜币 +60%、保底史诗，布武 / 御敌 +60%；宏图三略：定四方 +60%，筹万物 +100% / 掉落 +50%，夺天命 幸运 +4、刷新 +1.5；运筹帷幄：可选卡 +2、首次选卡数值 +30%、每 2 波额外选卡(×0.7)'},
-    {desc:'献计三策：刷新 +0.75、铜币 +70%、保底传说，布武 / 御敌 +70%；宏图三略：定四方 +70%，筹万物 +120% / 掉落 +60%，夺天命 幸运 +4.5、刷新 +1.75；运筹帷幄：可选卡 +2、首次选卡数值 +40%、每 2 波额外选卡(×0.85)'},
-    {q:true, desc:'【质变 · 运筹千里】献计三策：刷新 +1、铜币 +80%、保底 5% 神话 / 95% 传说，布武 / 御敌 +80%；宏图三略：定四方 +80%，筹万物 +150% / 掉落 +75%，夺天命 幸运 +5、刷新 +2；运筹帷幄：可选卡 +3、首次选卡数值 +50%、每波额外选卡(×1)'}],
+    {desc:'献计三策：刷新 +0.25、铜币 +50%、保底精良，布武 / 御敌 +50%；宏图三略：定四方 +50%，筹万物 +90% / 掉落 +45%，夺天命 幸运 +3.5、刷新 +1.25；算无遗策：可选卡 +1、首次选卡数值 +25%；望穿千年 +60%'},
+    {desc:'献计三策：刷新 +0.5、铜币 +60%、保底史诗，布武 / 御敌 +60%；宏图三略：定四方 +60%，筹万物 +100% / 掉落 +50%，夺天命 幸运 +4、刷新 +1.5；算无遗策：可选卡 +2、首次选卡数值 +30%；望穿千年 +70%'},
+    {desc:'献计三策：刷新 +0.75、铜币 +70%、保底传说，布武 / 御敌 +70%；宏图三略：定四方 +70%，筹万物 +120% / 掉落 +60%，夺天命 幸运 +4.5、刷新 +1.75；算无遗策：可选卡 +2、首次选卡数值 +40%；望穿千年 +85%'},
+    {q:true, desc:'【质变 · 运筹千里】献计三策：刷新 +1、铜币 +80%、保底 5% 神话 / 95% 传说，布武 / 御敌 +80%；宏图三略：定四方 +80%，筹万物 +150% / 掉落 +75%，夺天命 幸运 +5、刷新 +2；算无遗策：可选卡 +3、首次选卡数值 +50%；望穿千年 +100%'}],
   lore:'总是背着手站在城楼的阴影里，一身黑色长风衣，立领竖到耳根，很少有人见过他的正脸；见过的人说，他说话的时候一直在笑。他不上阵，也不拿兵器，只在每一波亡灵退去以后说上几句，城里的人就照着去做。黄虎不会出现在战场上：编进出征阵容、所在的位置生效后(例如 3 号位要主堡升到对应等级)，他的谋略才生效；他始终是最高等级。英雄之魄只在商店出现：通关八阶地区后，商店的英雄之魄栏才会出现他。'};
 CFG.heroStats.huanghu={atk:6, ap:6, mdef:2, defG:0.05, mdefG:0.05, aspd:0, prec:1};
 Object.assign(CFG.heroes.huanghu,CFG.heroStats.huanghu);
@@ -21018,7 +21023,7 @@ Object.assign(SKI,{
 });
 
 // ---------- 0.11.4 技能图标：笑面谋主·黄虎（代理 hh；画法同 art/ski_core 的规矩：32×32 ic32，三个都是被动，右下角 3×3 小菱形 #d8c890，先挖空一圈）----------
-// 献计三策 = 三根捆起来的竹简 + 一支毛笔；宏图三略 = 摊开的地图卷轴（山、河、红色行军线和小旗）；运筹帷幄 = 扇形摊开的三张卡牌
+// 献计三策 = 三根捆起来的竹简 + 一支毛笔；宏图三略 = 摊开的地图卷轴（山、河、红色行军线和小旗）；算无遗策（原运筹帷幄，键 hhYunchou）= 扇形摊开的三张卡牌；望穿千年 = 金瞳的眼睛 + 下面三样看穿的东西（剑 = 观兵、火苗 = 辨性、晕眩的星 = 料势）
 function hhSkiPas(S){for(let y=26;y<32;y++)for(let x=26;x<32;x++)if(Math.abs(x-29)+Math.abs(y-29)<=2)S.clr(x,y);for(let y=28;y<=30;y++)for(let x=28;x<=30;x++)if(Math.abs(x-29)+Math.abs(y-29)<=1)S.p(x,y,'#d8c890',1)}
 function hhSkiCard(S,cx,cy,a,face){const c=Math.cos(a),s=Math.sin(a),w=6,h=9,P=(u,v)=>[cx+u*c-v*s,cy+u*s+v*c];   // 一张卡：中心 (cx,cy)，转 a 弧度
   S.poly([P(-w,-h),P(w,-h),P(w,h),P(-w,h)],'#c89a3a');S.poly([P(-w+1.4,-h+1.4),P(w-1.4,-h+1.4),P(w-1.4,h-1.4),P(-w+1.4,h-1.4)],face||'#efe4c4');}
@@ -21035,6 +21040,12 @@ Object.assign(SKI,{
     hhSkiPas(S)},
   hhYunchou:S=>{hhSkiCard(S,10,16,-0.42,'#e2d6b4');hhSkiCard(S,22,16,0.42,'#e2d6b4');hhSkiCard(S,16,14,0,'#f4ead0');   // 三张卡扇形摊开
     S.poly([[16,8],[20,14],[16,20],[12,14]],'#3a3a44',1);S.poly([[16,10.5],[18.4,14],[16,17.5],[13.6,14]],'#d8b048',1);S.glow(16,14,'#fff4c0');   // 中间那张的黑底金菱纹
+    hhSkiPas(S)},
+  hhWangchuan:S=>{for(const[x0,y0,x1,y1]of[[16,1,16,3],[7,3,9,5],[25,3,23,5],[3,9,5,10],[29,9,27,10]])S.line(x0,y0,x1,y1,'#e8c860',1);   // 眼睛上方的光
+    skicEye(S,16,12,13,6.5,'#efe4c4','#c8a24a','#1e1612',false);S.disc(16,12,2,'#1e1612',1);S.glow(18,10,'#ffffff');   // 金瞳的眼睛
+    S.line(5,28,10,20,'#d8dce4');S.line(6,28,11,20,'#9aa0ac');S.line(3,25,7,28,'#8a6a3a',1);S.line(3,30,4,29,'#6a4a2a',1);   // 剑（观兵）
+    skicDrop(S,15,26,3,'#e86a2a');S.disc(15,26.8,1.4,'#ffd25a',1);   // 火苗（辨性）
+    S.r(22,20,1,9,'#f3d47c');S.r(18,24,9,1,'#f3d47c');S.r(21,23,3,3,'#f3d47c');S.glow(22,24,'#fffbe0');spark(S,26,20,'#f3d47c');   // 晕眩的星（料势）
     hhSkiPas(S)},
 });
 
@@ -35090,7 +35101,7 @@ const friendlyFire=()=>diffAtLeast(CFG.drops.nightmare);
 // —— 火坑：火球塔、燃烧地雷、雷暴落雷留下；ff = 会不会烧到守军 ——
 function addFirePit(x,y,P,ff){if(G.efWater)return;const dur=P.dur*ENV.burn*(G.efFire?CFG.elemForest.fire.mul:1);if(dur<0.4)return;addZone({k:'fire',x,y,r:P.r*16,dur,dps:P.dps,tk:0,ff:!!ff,bt:P.bt||0})}   // bt：v0.6.1 地雷「汽油燃烧」——站在里面的亡灵灼烧（离开后再烧 bt 秒），不再按火坑结算
 // 守军着火：每秒 dps，持续 t 秒（雨天时长 ×0.2）
-function burnFriend(u,dps,t){if(u.dead||G.efWater||u.fireImm)return;   // fireImm：v0.7.0 德拉贡不会被灼烧
+function burnFriend(u,dps,t){if(u.dead||G.efWater||u.fireImm)return;if(HH_W)t=hhCc(u,t,'burn');   // hhCc：0.11.4 代理hh 加，黄虎「望穿千年」记灼烧、料势   // fireImm：v0.7.0 德拉贡不会被灼烧
   u.burnT=Math.max(u.burnT||0,t/(1+POT.rf)*ENV.burn*(G.efFire?CFG.elemForest.fire.mul:1));u.burnD=Math.max(u.burnD||0,dps)}
 const FBURN_HIT={magic:true,dot:true,mix:{fire:1}};
 // 火苗粒子由 engine/status_fx.statusFxF 统一画
@@ -35250,7 +35261,7 @@ function eabBuild(){for(let t=0;t<ETYPES.length;t++){const c=ETC[t],L=[];for(con
 function eReset(){E.n=0;E.count=0;efreeN=0;E.alive.fill(0);E.ft.fill(null);E.st.fill(null);gHead.fill(-1);DEV_TRAIL.clear();facReset()}   // DEV_TRAIL：v0.5.0 沙漠吞噬者身体的轨迹（maps/temple）
 const eOk=(i,id)=>i>=0&&E.alive[i]===1&&E.id[i]===id;
 // 亡灵受到的治疗倍率：禁疗 = 0；v0.6.1 重伤（尖刺二阶）= 1 − hwF
-const eHK=i=>(E.hcT[i]>0?0:E.hwT[i]>0?1-E.hwF[i]:1)*(G.eHealK||1);   // hwT / hwF：v0.7.0 修复——重伤原来和腐化皇家骑兵的撤退共用 hrT，被尖刺「重伤」的亡灵会乱走   // eHealK：v0.9.0 亡灵受到的治疗的整体倍率（无尽沙漠的水之碑）
+const eHK=i=>(E.hcT[i]>0?0:E.hwT[i]>0?1-E.hwF[i]:1)*(G.eHealK||1)*HH_HK;   // HH_HK：0.11.4 代理hh 加，黄虎「望穿千年」观兵·禁疗   // hwT / hwF：v0.7.0 修复——重伤原来和腐化皇家骑兵的撤退共用 hrT，被尖刺「重伤」的亡灵会乱走   // eHealK：v0.9.0 亡灵受到的治疗的整体倍率（无尽沙漠的水之碑）
 // 幽灵类：只在守军/建筑附近显形（E.gr），否则看不见、不会被索敌
 // v0.2.3 弱隐身（目前所有隐身亡灵）：受到伤害或造成伤害都会显形 CFG.combat.stealthReveal 秒（E.rvT）；陷阱不看隐身，照样能炸到
 // 强隐身（ghostStrong:true，以后的精英 / 首领用）：不会因为伤害显形
@@ -36233,9 +36244,9 @@ const ECLIMB=ETYPES.map(k=>CFG.enemies[k].climb?1:0),EFLY=ETYPES.map(k=>CFG.enem
 const isJungle=()=>!!(G&&CFG.maps[G.map]&&CFG.maps[G.map].theme==='jungle');
 // —— 守军中毒（毒蜂、瘴气）：每层每秒 fpD，持续 fpT 秒；平时只刷新不叠层，蜂后附近可以叠（最多 CFG.jungle.poison.maxStack）——
 const FPOISON_HIT={magic:true,dot:true,mix:{poison:1}};
-function poisonF(u,V,stack){if(u.dead||u.psnImm)return;const mx=typeof stack==='number'?stack:stack?CFG.jungle.poison.maxStack:1;   // v0.5.0 stack 是数字 = 一直叠，最多这么多层（毒蝎）
+function poisonF(u,V,stack){if(u.dead||u.psnImm)return;const mx=typeof stack==='number'?stack:stack?CFG.jungle.poison.maxStack:1;   // hhCc（下两行）：0.11.4 代理hh 加，黄虎「望穿千年」记中毒、料势   // v0.5.0 stack 是数字 = 一直叠，最多这么多层（毒蝎）
   u.fpN=Math.min(mx,stack?(u.fpN||0)+1:Math.max(1,u.fpN||0));
-  u.fpT=Math.max(u.fpT||0,V.t/(1+POT.rp));u.fpD=Math.max((u.fpT>0&&u.fpD)||0,V.dps)}
+  u.fpT=Math.max(u.fpT||0,(HH_W?hhCc(u,V.t,'poison'):V.t)/(1+POT.rp));u.fpD=Math.max((u.fpT>0&&u.fpD)||0,V.dps)}
 function friendPoisonTick(u,dt){if(!(u.fpT>0))return;u.fpT-=dt;u.fpA=(u.fpA||0)+u.fpN*u.fpD*dt;u.fpK=(u.fpK||0)+dt;   // v0.4.2：累积，每 dotTick 秒结算一次
   if(u.fpK>=DOT_TICK()||u.fpT<=0){const v=u.fpA;u.fpA=0;u.fpK=0;hurtF(u,v,FPOISON_HIT)}if(u.fpT<=0){u.fpN=0;u.fpD=0}
   if(inViewPt(u.x,u.y)&&sfxTick(1.5+0.4*u.fpN,dt))fxPoison(u.x,u.y-(u.elev||0),14)}
@@ -46915,7 +46926,7 @@ function dsRec(a){let r=a?DSM.get(a):DSK['x:other'];if(r)return r;const I=dsInfo
 const dsSrc=o=>o&&(o.hk||o.fu||o.su)||DS_CUR;
 function dsDmg(o,v){if(v>0)dsRec(dsSrc(o)).dmg+=v}
 function dsKill(o){dsRec(dsSrc(o)).kill++}
-function dsTak(u,v){if(v>0)dsRec(u).tak+=v}
+function dsTak(u,v,o){if(v>0){dsRec(u).tak+=v;if(HH_W&&o)hhTk(o,v)}}   // 0.11.4 代理hh 加：o = 这一下的伤害选项，黄虎「望穿千年」按它记我方受到的伤害（heroes/hh_huanghu）
 function dsHeal(a,v){if(v>0&&a)dsRec(a).heal+=v}
 function dsCC(v){if(v>0&&DS_CUR)dsRec(DS_CUR).cc+=v}   // 没有出手单位的（地图机制的减速等）不算
 // 各处直接续减速时间的写法统一走这里：E.slowT[j]=slowMx(j,秒)；按当前的减速幅度 × 新增的秒数记（减速幅度在调用前已经设好）
@@ -46930,7 +46941,7 @@ function dsRows(){const L=Object.values(DSK).filter(r=>r.dmg>0.5||r.tak>0.5||r.h
 // 守军受伤：闪避 → 暴击 → 防御 → 伤害类型抗性 → 格挡（减去盾牌减免值）→ 护盾吸收 → 僵直
 // —— v0.2 冰霜：守军被冰原亡灵命中 → 移速降低（chill）；亡灵被寒冰装备命中 / 寒冰护甲反击 → 减速、降攻速 ——
 const CHILL_SEEN={mix:{frost:1}};   // v0.8.23 冰霜减速也算「受到过寒冰」；抗寒药水按 ÷ (1 + 抗性) 减轻减速
-function chillF(u,c){if(u.frostImm)return;if(HK.ccInF.length){let t=c.t;for(const f of HK.ccInF)t=f(u,t);if(!(t>0))return;c={f:c.f,t}}seenFHit(CHILL_SEEN);if(pm.coldRes>0)c={f:c.f/(1+pm.coldRes),t:c.t};if(POT.rc>0)c={f:c.f,t:c.t/(1+POT.rc)};if(u.iceSlowRes>0)c={f:c.f*(1-Math.min(1,u.iceSlowRes)),t:c.t};if(!(u.chillU>G.time)||c.f>=(u.chillF||0))u.chillF=c.f;u.chillU=Math.max(u.chillU||0,G.time+c.t);   // iceSlowRes：v0.9.0 雪羽袍、狼神套装的冰系减速减免
+function chillF(u,c){if(u.frostImm)return;if(HK.ccInF.length){let t=c.t;for(const f of HK.ccInF)t=f(u,t);if(!(t>0))return;c={f:c.f,t}}if(HH_W){const t=hhCc(u,c.t,'slow');if(!(t>0))return;if(t!==c.t)c={f:c.f,t}}seenFHit(CHILL_SEEN);if(pm.coldRes>0)c={f:c.f/(1+pm.coldRes),t:c.t};if(POT.rc>0)c={f:c.f,t:c.t/(1+POT.rc)};if(u.iceSlowRes>0)c={f:c.f*(1-Math.min(1,u.iceSlowRes)),t:c.t};if(!(u.chillU>G.time)||c.f>=(u.chillF||0))u.chillF=c.f;u.chillU=Math.max(u.chillU||0,G.time+c.t);   // iceSlowRes：v0.9.0 雪羽袍、狼神套装的冰系减速减免   // 0.11.4 代理hh 加：hhCc 黄虎「望穿千年」记减速、料势
   if(inViewPt(u.x,u.y))for(let k=0;k<3;k++)pp(u.x+vr(-4,4),u.y-vr(2,12)-(u.elev||0),0,vr(-8,8),vr(-6,2),vr(4,10),0,0.6,vpick(['#bfefff','#7fe0ff']),1,0,1)}
 // 冰霜减速；科技「保暖衣物」（v0.2.3）按比例减轻（冰霜减速和冰原的地图减速都算）
 // 守军回血（v0.3.0）：木乃伊的「腐朽」让受到的治疗打折
@@ -47063,7 +47074,7 @@ function hurtF(u,raw,o){eRevealHit(o);
   if(u.fbar&&u.hp-dmg<1&&dmg>0){if(u.fbrU>G.time||faithTry(u))dmg=Math.max(0,u.hp-1)}   // v0.6.1 僧侣二阶「信仰屏障」
   if((u.v8||u.mcy)&&dmg>0&&u.hp-dmg<1)dmg=v8Save(u,dmg);   // v0.8.0 不屈意志、慈悲誓约的免死
   if(pm.ironWill>0&&dmg>0&&u.hp-dmg<1&&(u.iwU>0||(u.iwU===undefined&&hvArm(u)&&pmNC(u,1)>0))){if(u.iwU===undefined){u.iwU=CFG.cardFx.ironWill.t;if(inViewPt(u.x,u.y))addFx({k:'ring',x:Math.round(u.x),y:Math.round(u.y-8),r:12,life:0.5,c:'#ff9a3c'})}dmg=Math.max(0,u.hp-1)}   // v0.8.22 卡「不屈意志」：重甲士兵濒死时保持 1 点生命，3 秒后倒下（solTick）；每名士兵一次
-  if(DS_ON)dsTak(u,Math.max(0,Math.min(dmg,u.hp))+Math.max(0,dsSh-(u.shieldHp||0)-(u.mshHp||0)-(u.pshHp||0)));const h0=u.hp;u.hp-=dmg;if(o.nk&&u.hp<=0&&h0>0){u.hp=1;o.nkHit=1}if(u.hp!==u.hp){nanFix(u,'hurt',{h0,dmg,raw,o:Object.keys(o).join(','),src:o.src>=0?ETYPES[E.t[o.src]]:o.kt!=null?ETYPES[o.kt]:'',def:u.def,shield:u.shield,block:u.block,dr:u.bfV?u.bfV.join(','):''});return 0}if(u.v8&&dmg>0&&!o.dot&&u.c.onHurt&&u.hp>0)v8OnHurt(u);if(u.proc&&dmg>0&&(!o.dot||o.field))monkProc(u);if(u.ax&&u.ax.procHeal&&!o.dot&&dmg>0&&u.hp>0)axProcHeal(u);   // v0.8.18 生命变 NaN 按 100%（nanFix）   // axProcHeal：v0.5.9 词条「受击回复」；v0.4.1 僧侣：受到伤害时概率回血；v0.4.2 用户定：燃烧、中毒这类状态不算，攻击、技能、腐化领域算
+  if(DS_ON)dsTak(u,Math.max(0,Math.min(dmg,u.hp))+Math.max(0,dsSh-(u.shieldHp||0)-(u.mshHp||0)-(u.pshHp||0)),o);const h0=u.hp;u.hp-=dmg;if(o.nk&&u.hp<=0&&h0>0){u.hp=1;o.nkHit=1}if(u.hp!==u.hp){nanFix(u,'hurt',{h0,dmg,raw,o:Object.keys(o).join(','),src:o.src>=0?ETYPES[E.t[o.src]]:o.kt!=null?ETYPES[o.kt]:'',def:u.def,shield:u.shield,block:u.block,dr:u.bfV?u.bfV.join(','):''});return 0}if(u.v8&&dmg>0&&!o.dot&&u.c.onHurt&&u.hp>0)v8OnHurt(u);if(u.proc&&dmg>0&&(!o.dot||o.field))monkProc(u);if(u.ax&&u.ax.procHeal&&!o.dot&&dmg>0&&u.hp>0)axProcHeal(u);   // v0.8.18 生命变 NaN 按 100%（nanFix）   // axProcHeal：v0.5.9 词条「受击回复」；v0.4.1 僧侣：受到伤害时概率回血；v0.4.2 用户定：燃烧、中毒这类状态不算，攻击、技能、腐化领域算   // 0.11.4 代理hh 加：dsTak 带上 o
   if(dmg>0&&!u.isHero&&(TM.potHeal>0||TM.potIron>0))potAfterHurt(u);   // v0.8.1 科技「治疗药水」「铁皮药水」
   if(o.chill&&dmg>0)chillF(u,o.chill);
   if(dmg>0){const L=HK.afterHurtF;for(let k=0;k<L.length;k++)L[k](u,dmg,o,raw)}   // v0.8.10 各地图受击后的效果（熔岩灼烧、尸毒、陷阵之志、堕化、海鸥 / 海藻……）
@@ -47109,7 +47120,7 @@ function eCardHit(u,j){const F=CFG.eCardFx;
   if(em.frostA>0&&!u.frostImm&&!(u.frzT>0)){chillF(u,{f:em.frostA,t:F.frostT});if(em.frostN>0){if(!(u.fsU>G.time))u.fsN=0;u.fsN=(u.fsN||0)+1;u.fsU=G.time+F.frostT;
     if(u.fsN>=em.frostN){u.fsN=0;freezeF(u,F.freezeT);if(inViewPt(u.x,u.y))addFx({k:'ring',x:Math.round(u.x),y:Math.round(u.y-8),r:10,life:0.4,c:'#bfefff'})}}}}
 // v0.8.25 守军的冰冻（通用）：冻住 t 秒，不能动、不能攻击；寒冰极地、堕落圣堂自己有冰冻计时（解冻伤害等），别的地图走 friendCCTick
-function freezeF(u,t){if(u.dead||u.frostImm)return;if(HK.ccInF.length){for(const f of HK.ccInF)t=f(u,t);if(!(t>0))return}u.frzT=Math.max(u.frzT||0,t);u.fsThaw=0;if(u.isHero){u.cv=0;u.dashT=0}else u.stag=Math.max(u.stag||0,0.05)}
+function freezeF(u,t){if(u.dead||u.frostImm)return;if(HK.ccInF.length){for(const f of HK.ccInF)t=f(u,t);if(!(t>0))return}if(HH_W)t=hhCc(u,t,'freeze');u.frzT=Math.max(u.frzT||0,t);u.fsThaw=0;if(u.isHero){u.cv=0;u.dashT=0}else u.stag=Math.max(u.stag||0,0.05)}   // 0.11.4 代理hh 加：hhCc 记冰冻、料势
 const frzMapTick=()=>HK.friend.includes(polarFriend)||HK.friend.includes(fsFriend);
 function friendCCTick(u,dt){if(u.frzT>0&&!frzMapTick()){u.frzT=Math.max(0,u.frzT-dt);u.stag=Math.max(u.stag||0,0.05)}}   // 士兵（英雄的在 heroes/hero.js）
 // v0.9.1（用户定）我方受到的控制时间：卡「心如止水」÷ (1 + ccRes)，亡灵卡「摄魂之术」× (1 + ccUp)；
@@ -47136,10 +47147,10 @@ function hurtS(s,raw,o){eRevealHit(o);
   if(s.rsh>0&&dmg>0){const ab=Math.min(s.rsh,dmg);s.rsh-=ab;dmg-=ab;if(dmg<=0){s.flash=0.05;return 0}}   // v0.5.7 工程师维修溢出的护盾；v0.6.1 城墙一阶「紧急加固」的护盾也是它
   // 众城一体（v0.3.1）：由相连的整段城墙（八方向相连）平摊；v0.8.23（用户定）固若金汤 +100%、众城一体 +20% 城墙减伤，v0.10.11 并进建筑的减伤池子（ufDrS）
   if(pm.wallLink>0&&isWallT(s.type)){const C=wallComp(s);if(C&&C.length>1){const per=dmg/C.length;
-    for(const w of C){if(w.dead||w.hp<=0)continue;if(DS_ON)dsTak(w,Math.min(per,w.hp));w.hp-=per;w.flash=0.08;if(w.hp<=0&&!wallSave(w))destroyStruct(w,true)}if(o.src>=0&&!o.dot)wallHitBack(s,dmg,o);return dmg}}
+    for(const w of C){if(w.dead||w.hp<=0)continue;if(DS_ON)dsTak(w,Math.min(per,w.hp),o);w.hp-=per;w.flash=0.08;if(w.hp<=0&&!wallSave(w))destroyStruct(w,true)}if(o.src>=0&&!o.dot)wallHitBack(s,dmg,o);return dmg}}   // 0.11.4 代理hh 加：dsTak 带上 o
   // 战报：记下这一波是谁在打主堡（o.kt = 亡灵类型）
   if(s===G.base&&o.kt>=0&&dmg>0){const k=o.kt,v=Math.min(dmg,s.hp);G.keepHitW[k]=(G.keepHitW[k]||0)+v;G.keepHit[k]=(G.keepHit[k]||0)+v}   // o.kt >= 0：v0.9.1 修——绝壁峭崖的落石原来传 kt:-1，记成「-1 号亡灵」，战报读名字报错
-  if(DS_ON)dsTak(s,Math.max(0,Math.min(dmg,s.hp)));s.hp-=dmg;s.flash=0.08;if(dmg>0){const L=HK.afterHurtS;for(let k=0;k<L.length;k++)L[k](s,dmg,o)}   // v0.8.3 赤血关隘：陷阵之志、摧城之志
+  if(DS_ON)dsTak(s,Math.max(0,Math.min(dmg,s.hp)),o);s.hp-=dmg;s.flash=0.08;if(dmg>0){const L=HK.afterHurtS;for(let k=0;k<L.length;k++)L[k](s,dmg,o)}   // v0.8.3 赤血关隘：陷阵之志、摧城之志   // 0.11.4 代理hh 加：dsTak 带上 o
   if(chance(0.5)&&inViewPt(s.x,s.y))pp(s.x+vr(-6,6),s.y-vr(4,14),0,vr(-20,20),vr(-6,6),vr(10,30),160,vr(0.4,0.8),vpick(['#a49f93','#6e6a62','#86573a']),1,0,0);
   if(o.src>=0&&!o.dot&&dmg>0&&isWallT(s.type))wallHitBack(s,dmg,o);   // v0.6.1 城墙二阶「魔法反弹」「魔法电击」
   if(s.hp<=0&&!wallSave(s))destroyStruct(s,true);   // wallSave：v0.6.1 铁血城墙二阶「不败铁血」
@@ -47675,15 +47686,15 @@ function bkC0(kt,atk,x,y,a){return{i:-1,sid:-1,kt,atk,x,y,a:a||0,sm:kt>=0&&ETC[k
 const bkSrcOk=C=>C.h?!C.h.dead:E.alive[C.i]&&E.id[C.i]===C.sid;   // 施法者还在（亡灵按 id 核对，下标会复用）
 
 // ================= 守军的控制（统一，都吃控制抗性 ccInF）=================
-const bkCcIn=(u,t)=>{if(HK.ccInF.length){const L=HK.ccInF;for(let k=0;k<L.length;k++)t=L[k](u,t)}return t};
+const bkCcIn=(u,t,ck)=>{if(HK.ccInF.length){const L=HK.ccInF;for(let k=0;k<L.length;k++)t=L[k](u,t)}if(HH_W)t=hhCc(u,t,ck);return t};   // 0.11.4 代理hh 加：ck 状态种类，hhCc 黄虎「望穿千年」记状态、料势
 // @bk 守军控制 | bkFStun(u,t) | 眩晕：英雄不能动、不能攻击、不能放技能（u.frzT，u.stnU 标记画星星）；士兵 stag | bkFStun(u,2)
-function bkFStun(u,t){t=bkCcIn(u,t);if(!(t>0)||u.dead)return;if(u.isHero){if(!(u.frzT>0))u.fsThaw=0;u.frzT=Math.max(u.frzT||0,t);u.cv=0;u.dashT=0;u.stnU=Math.max(u.stnU||0,G.time+t)}else u.stag=Math.max(u.stag||0,t)}
+function bkFStun(u,t){t=bkCcIn(u,t,'stun');if(!(t>0)||u.dead)return;if(u.isHero){if(!(u.frzT>0))u.fsThaw=0;u.frzT=Math.max(u.frzT||0,t);u.cv=0;u.dashT=0;u.stnU=Math.max(u.stnU||0,G.time+t)}else u.stag=Math.max(u.stag||0,t)}
 // @bk 守军控制 | bkFRoot(u,t) | 定身：不能走，能攻击、能放技能 | bkFRoot(u,1.5)
-function bkFRoot(u,t){t=bkCcIn(u,t);if(t>0&&!u.dead){u.rootT=Math.max(u.rootT||0,t);u.cv=0}}
+function bkFRoot(u,t){t=bkCcIn(u,t,'root');if(t>0&&!u.dead){u.rootT=Math.max(u.rootT||0,t);u.cv=0}}
 // @bk 守军控制 | bkFFear(u,t,x,y) | 恐惧：从 (x,y) 跑开 | bkFFear(u,3,E.x[i],E.y[i])
-function bkFFear(u,t,x,y){t=bkCcIn(u,t);if(t>0&&!u.dead){u.fearT=Math.max(u.fearT||0,t);u.fearX=x;u.fearY=y}}
+function bkFFear(u,t,x,y){t=bkCcIn(u,t,'fear');if(t>0&&!u.dead){u.fearT=Math.max(u.fearT||0,t);u.fearX=x;u.fearY=y}}
 // @bk 守军控制 | bkFBlind(u,t) | 致盲 | bkFBlind(u,3)
-function bkFBlind(u,t){t=bkCcIn(u,t);if(t>0&&!u.dead)u.blT=Math.max(u.blT||0,t)}
+function bkFBlind(u,t){t=bkCcIn(u,t,'blind');if(t>0&&!u.dead)u.blT=Math.max(u.blT||0,t)}
 // @bk 守军控制 | bkFKnock(u,ux,uy,dist,boom) | 击退 dist 像素（每步不超过 6 像素，穿不过城墙；吃击退抗性 kbA；城墙上、飞行的不动） | bkFKnock(u,dx/d,dy/d,32)
 function bkFKnock(u,ux,uy,dist,boom){if(!u||u.dead||u.layer||u.fly||u.elev>4)return;const res=Math.min(1,(boom?pm.kbBoom||0:0)+(u.kbA||0)+(u.lkKb||0));dist*=1-res;if(dist<1)return;
   if(typeof jbKnock==='function'&&G.jbOn){jbKnock(u,ux,uy,dist/(1-res||1),boom);return}const n=Math.max(1,Math.ceil(dist/6)),k=dist/n;for(let s=0;s<n;s++)moveFriend(u,ux*k,uy*k)}
@@ -55758,7 +55769,7 @@ HFX.marshall={under(h){if(!h.mshOn||G.phase!=='wave')return;const T=G.time,p=skP
 // 状态 G.hhS（进存档，save / load 钩子）：on 出场了、st 星级、k 槽位、ht 宏图（'ds' 定四方 / 'cw' 筹万物 / 'dt' 夺天命 / '' 还没选）、pend 宏图待选、
 //   xj 当前的献计（'yc' 运筹 / 'bw' 布武 / 'yd' 御敌）、gq 下一批卡牌的保底品质、wa / wx 这一波做过「额外选卡」/「献计」的波次
 // 选卡流程（Claude 定）：每波结束 → 普通选卡（宝库、誓约、龙之贪婪……照旧）→ afterPlayerCard 开头 hhAfter：
-//   ① 宏图还没选就先选宏图 ② 这一波是 every 的倍数：运筹帷幄额外选卡（只出数值卡，效果 × xk，吃幸运）③ 献计三策 → 再接亡灵选卡 / 准备阶段
+//   ① 宏图还没选就先选宏图 ② 献计三策 → 再接亡灵选卡 / 准备阶段（0.11.4 用户去掉了运筹帷幄的「每 N 波额外选卡」，多卡留给德拉贡）
 //   黄虎的卡和普通卡用同一个选卡弹窗（G.cardOpts，o.hh = 'xj' / 'ht'），pickCard 开头 hhPickCard 接走
 //   宏图三略「出场时」选：开局在 beginRun 的提问链里（ui/menus，排在无尽挑战、誓约、五神法前面）；局中主堡升级让黄虎生效时当场弹；弹不出来的（别的弹窗开着）留到这一波结束
 // 效果的算法（Claude 定）：
@@ -55769,25 +55780,26 @@ HFX.marshall={under(h){if(!h.mshOn||G.phase!=='wave')return;const T=G.time,p=skP
 //   布武之策：统一 buff 'hhBw' {atkI, cdSpd, aspd, rld} 挂英雄、士兵、有武器的建筑（每 0.5 秒同步，新来的也有）
 //   御敌之策：独立减伤 = feat 的 dmgRedF（英雄、士兵）/ dmgDefS（建筑）÷(1 + v)；射程 HH_RK（英雄 heroRange、士兵 updateSoldiers、建筑 towerW 独立乘）；
 //     视野 HH_VIS（env.visMul / visMulB 和卡牌视野相加）；施法距离 HH_CR（hero.skP 和别的施法距离加成相加）
-//   运筹帷幄：可选卡数 HH_OPT（game.cardOptN）；卡牌数值 HH_CV 只加每波第一次常规选卡（game.applyCard，数量类 flat 卡、负数不放大；G.hhS.vw 记这一波用过）
+//   算无遗策（原名运筹帷幄，技能键还是 hhYunchou）：可选卡数 HH_OPT（game.cardOptN）；卡牌数值 HH_CV 只加每一批（每波）第一次常规选卡（game.applyCard，数量类 flat 卡、负数不放大；G.hhS.vw 记这一波用过）
 let HH_GK=0,HH_RK=1,HH_RA=0,HH_VIS=0,HH_CR=0,HH_DR=0,HH_OPT=0,HH_CV=0,HH_DS=0,HH_DFK=1,HH_CTX=null,HH_BWE=null,HH_DSE=null;
 const HH_ID='huanghu',HH_EF=new Map();
 const hhIn=()=>!!(G&&G.lineup&&G.lineup.some(sp=>sp&&CFG.heroes[sp.id]&&CFG.heroes[sp.id].hhOff));
-const hhS=()=>G.hhS||(G.hhS={on:0,st:1,k:-1,ht:'',pend:0,xj:'',gq:'',wa:-1,wx:-1,vw:-1});
+const HH_S0=()=>({on:0,st:1,k:-1,ht:'',pend:0,xj:'',gq:'',wa:-1,wx:-1,vw:-1,wh:[],wr:null,wc:null});   // wh / wr / wc：望穿千年的前几波记录、这一波的记录、这一波看穿的三项（见下面「望穿千年」）
+const hhS=()=>G.hhS||(G.hhS=HH_S0());
 const hhOn=()=>!!(G&&G.hhS&&G.hhS.on);
 const hhP=sid=>skillParams(HH_ID,(G&&G.hhS&&G.hhS.st)||1,sid);
 function hhEff(k,v){const key=k+v;let e=HH_EF.get(key);if(!e){e=k==='bw'?{atkI:v,cdSpd:v,aspd:v,rld:v}:{atkI:v};HH_EF.set(key,e)}return e}   // eff 当常量用
 // 从 G.hhS 算出各处读的全局倍率（开局、读档、出场、选卡后；hkBuild 时 feat 的 on 也调一次，上一局留下的值不会带进来）
 // v0.11.4（用户定）御敌之策：只有减伤是独立的，射程（HH_RA）、视野、施法范围都和别的加成相加；HH_RK 不再用（留着 = 1）
-function hhCalc(){HH_GK=0;HH_RK=1;HH_RA=0;HH_VIS=0;HH_CR=0;HH_DR=0;HH_OPT=0;HH_CV=0;HH_DS=0;HH_DFK=1;HH_BWE=null;HH_DSE=null;
+function hhCalc(){hhWcOff();HH_GK=0;HH_RK=1;HH_RA=0;HH_VIS=0;HH_CR=0;HH_DR=0;HH_OPT=0;HH_CV=0;HH_DS=0;HH_DFK=1;HH_BWE=null;HH_DSE=null;
   if(!hhOn())return;const S=G.hhS,Y=hhP('hhYunchou');HH_OPT=Y.opt||0;HH_CV=Y.val||0;
   if(S.ht==='ds'){HH_DS=hhP('hhHongtu').ds;HH_DFK=1+HH_DS;HH_DSE=hhEff('ds',HH_DS)}
   if(S.xj){const X=hhP('hhXianji');if(S.xj==='yc')HH_GK=X.gold;else if(S.xj==='bw')HH_BWE=hhEff('bw',X.bw);else if(S.xj==='yd'){HH_DR=X.yd;HH_RA=X.yd;HH_VIS=X.yd;HH_CR=X.yd}}
-  G.visDirty=true}
+  hhWcCalc();G.visDirty=true}
 // —— 出场 ——
 // joinHero(k) 开头调：第 k 位是黄虎 → 记出场、返回 true（不生成英雄）
 function hhJoin(k,quiet){const sp=G.lineup[k],d=sp&&CFG.heroes[sp.id];if(!d||!d.hhOff)return false;const S=hhS();if(S.on)return true;
-  S.on=1;S.st=sp.star||1;S.k=k;if(!S.ht)S.pend=1;hhCalc();hhSync();
+  S.on=1;S.st=sp.star||1;S.k=k;if(!S.ht)S.pend=1;if(G.phase==='wave')hhWcNew();hhCalc();hhSync();   // 波次中途出场：这一波剩下的部分就开始记（望穿千年）
   if(!quiet){banner('笑面谋主·黄虎出谋',S.pend?'选一张「宏图三略」，这一局一直有效':'');sfx('horn');if(UI.ready)refreshHeroBar();if(G.phase!=='reward')hhAsk('field')}
   return true}
 // 开局：1 号位是黄虎（老存档、别处传进来的阵容）→ 和后面第一位换；只有黄虎一位 → 换成第一位已拥有的英雄
@@ -55817,10 +55829,7 @@ function hhAsk(ctx){if(!G||!G.hhS||!G.hhS.on||!G.hhS.pend||!UI.ready||settleOn()
 function hhAfter(){if(!hhOn()||G.invade)return false;const S=G.hhS;
   if(S.pend)return hhAsk('reward');
   S.vw=G.wave;   // 这一波的第一次常规选卡已经选过（或这一波没有常规卡）
-  if(S.wa!==G.wave){S.wa=G.wave;S.gq='';   // 上一次运筹之策的保底：这一波的普通卡已经抽过了（用过或没用上都作废）
-    const Y=hhP('hhYunchou');if(Y.every>0&&G.wave%Y.every===0){DG_DRAW=true;try{G.cardOpts=drawCards(cardOptN())}finally{DG_DRAW=false}
-      for(const x of G.cardOpts){x.mul=(x.c.q==='all'||Array.isArray(x.c.q)?CFG.cardQ[x.q].mul:1)*Y.xk;x.dg=true}
-      if(G.cardOpts.length){showCards(G.lastReward,`运筹帷幄(效果 ×${Y.xk})`);return true}}}
+  if(S.wa!==G.wave){S.wa=G.wave;S.gq=''}   // 上一次运筹之策的保底：这一波的普通卡已经抽过了（用过或没用上都作废）
   if(S.wx!==G.wave){HH_CTX='reward';G.cardOpts=hhCards('xj');hhShowCards();return true}
   return false}
 // pickCard 开头：黄虎的卡在这里处理，返回 true
@@ -55842,7 +55851,7 @@ function hhGuarAdd(out,used,plain){const S=G&&G.hhS;if(!S||!S.gq||plain||DG_DRAW
   used.delete(out[low].c.id);let o=q==='myth'?offerAt('myth',used,mr):null;if(!o)o=offerAt(rollQuality(Math.min(mr,QRANK('legend'))),used,Math.min(mr,QRANK('legend')));o=o&&polarize(o);
   if(o){out[low]=o;o.guar=true}else used.add(out[low].c.id)}
 // —— 各处读的小函数 ——
-const hhCardV=(o,v)=>HH_CV>0&&v>0&&!o.c.flat&&!o.hh&&!o.dg&&!G.mcDraw&&G.phase==='reward'&&G.hhS.vw!==G.wave?v*(1+HH_CV):v;   // game.applyCard：每波第一次常规选卡的卡牌数值 ×(1 + 运筹帷幄)；额外抽卡（o.dg）、商人的不算；hhAfter 记下这一波用过（vw）
+const hhCardV=(o,v)=>HH_CV>0&&v>0&&!o.c.flat&&!o.hh&&!o.dg&&!G.mcDraw&&G.phase==='reward'&&G.hhS.vw!==G.wave?v*(1+HH_CV):v;   // game.applyCard：每一批第一次常规选卡的卡牌数值 ×(1 + 算无遗策)；德拉贡的额外抽卡（o.dg）、商人的不算；hhAfter 记下这一波用过（vw）
 const hhRes=()=>hhOn()&&G.hhS.ht==='cw'?hhP('hhHongtu').res:0;   // meta.awardMeta：结算资源
 const hhDrop=()=>hhOn()&&G.hhS.ht==='cw'?hhP('hhHongtu').drop:0;   // merchant.dropMul：掉落概率
 function hhHeroHp(h,fill){if(!(HH_DS>0))return;const r=h.maxHp>0?h.hp/h.maxHp:1;h.maxHp*=1+HH_DS;h.hp=fill?h.maxHp:Math.min(h.maxHp,h.maxHp*r)}   // hero.heroRecalc 末尾
@@ -55857,14 +55866,60 @@ function hhTick(dt){G.hhT=(G.hhT||0)-dt;if(G.hhT<=0){G.hhT=0.5;if(HH_BWE||HH_DSE
 feat('hh',{on:()=>{hhCalc();return hhIn()},hooks:{
   start:()=>{hhCalc()},
   save:o=>{if(G.hhS)o.hhS=Object.assign({},G.hhS)},
-  load:d=>{const R=d.hhS;if(R&&typeof R==='object')G.hhS=Object.assign({on:0,st:1,k:-1,ht:'',pend:0,xj:'',gq:'',wa:-1,wx:-1,vw:-1},R)},
-  loadAfter:()=>{hhCalc();hhSync()},
-  waveStart:()=>{hhSync()},
-  waveEnd:()=>{if(!hhOn()||G.hhS.ht!=='dt')return;const H=hhP('hhHongtu');pm.luck+=H.luck;pm.reroll+=H.rr},   // 夺天命：选卡之前加，这一波的卡就吃到
-  tick:dt=>hhTick(dt),
+  load:d=>{const R=d.hhS;if(R&&typeof R==='object'){G.hhS=Object.assign(HH_S0(),R);if(!Array.isArray(G.hhS.wh))G.hhS.wh=[]}},
+  loadAfter:()=>{hhCalc();hhSync();hhWcSeen()},
+  waveStart:()=>{hhWcStart();hhSync()},
+  waveEnd:()=>{hhWcEnd();if(!hhOn()||G.hhS.ht!=='dt')return;const H=hhP('hhHongtu');pm.luck+=H.luck;pm.reroll+=H.rr},   // 夺天命：选卡之前加，这一波的卡就吃到
+  tick:dt=>{hhTick(dt);if(HH_W){hhWcTick();hhWcMsg()}},
+  eSpawn:i=>{if(HH_W)hhWcSpawn(i)},
+  afterHpE:i=>{if(HH_W)HH_EHP[i]=E.hp[i]},   // 望穿千年：扣血之后记下生命，之后涨上去的才算治疗
+  dmgInF:(u,dmg,o)=>{if(HH_W){const a=hhWAdd(o);if(a>0)UF_DR+=a}return dmg},   // 望穿千年：观兵、辨性加进减伤池子（英雄、士兵）
+  dmgInS:(s,dmg,o)=>{if(HH_W){const a=hhWAdd(o);if(a>0)UF_DR+=a}return dmg},   // 建筑
   dmgRedF:(u,dmg,o)=>HH_DR>0&&!ufNoRed(o)?dmg/(1+HH_DR):dmg,   // 御敌之策：英雄、士兵的独立减伤
   dmgDefS:(s,dmg,o)=>HH_DR>0&&!(o&&o.tru)?dmg/(1+HH_DR):dmg}});   // 建筑
-Object.assign(SK,{hhXianji:PASSIVE_SK,hhHongtu:PASSIVE_SK,hhYunchou:PASSIVE_SK});
+Object.assign(SK,{hhXianji:PASSIVE_SK,hhHongtu:PASSIVE_SK,hhYunchou:PASSIVE_SK,hhWangchuan:PASSIVE_SK});
+// —— 望穿千年（用户 0.11.4 补充的第四个被动）——
+// 记录（只在黄虎出场后，HH_W）：G.hhS.wr = 这一波的 {g:[物理近战, 物理远程, 法术近战, 法术远程], e:{属性:伤害}, s:{状态:秒}, h:亡灵治疗, m:出场亡灵生命上限}；波次结束推进 wh（最多 CFG.hhWc.n 波）
+//   我方受伤：engine/dstat.dsTak 末尾调 hhTk（英雄、士兵、建筑实际掉的生命 + 被打掉的护盾，众城一体平摊、玄钢城墙分担的也算）
+//   Claude 定：观兵只算直接伤害（持续伤害没有近战 / 远程之分），按 ufMg 分物理 / 法术（爆炸算物理）、o.melee 分近战 / 远程；
+//     属性 = 伤害类型里除了斩击、刺击、钝击、无属性以外的（冲击按「爆炸」显示；没写 mix 的爆炸算冲击），一下里有几种就按占比分；持续伤害也算
+//     记的是看穿减免之前的量（实际掉血 × (1 + 这一下看穿加的减伤)，近似），不然看穿了这一类、下一波它就变少，三项来回跳
+//   亡灵治疗：每帧比一次生命（HH_EHP：生成时、每次扣血之后、每帧末记下），涨上去的部分算治疗（吸血、回血、复活回满都在里面；回满以后溢出的不算）
+//   状态：守军控制的入口调 hhCc（blk.bkCcIn 的晕眩 / 定身 / 恐惧 / 致盲，combat.freezeF 冰冻、chillF 减速，env.burnFriend 灼烧，jungle.poisonF 中毒），
+//     记新增的秒数（已经在这个状态里的部分不重复算，同数据详情的控制），在别的控制抗性之后、料势之前；直接改 u.stag / u.frzT 的少数地图机制没走入口，不算
+// 生效（这一波，G.hhS.wc = {g, e, s, x}）：g 0～3 = 观兵那一类，4 = 禁疗（治疗率 ≥ CFG.hhWc.healR），-1 = 没有；e 辨性的属性、s 料势的状态（'' = 没有）
+//   观兵、辨性：dmgInF / dmgInS 里往 UF_DR 加（辨性按这一下里那种属性的占比，同守藏档案）；禁疗：engine/enemy.eHK 乘 HH_HK；料势：hhCc 里 ÷ (1 + x)
+let HH_W=false,HH_HK=1,HH_WG=-1,HH_WE='',HH_WS='',HH_WX=0,HH_WM='';   // HH_WM：这一波开始要提示的那一行（等波次横幅弹过再提示）
+const HH_EHP=new Float32Array(ECAP);
+const HH_GB=['物理近战','物理远程','法术近战','法术远程'],HH_PHY={slash:1,pierce:1,blunt:1,arcane:1};
+const HH_CCN={stun:'晕眩',slow:'减速',freeze:'冰冻',burn:'灼烧',poison:'中毒',fear:'恐惧',root:'定身',blind:'致盲'};
+const hhElN=k=>k==='impact'?'爆炸':(CFG.dmgTypes[k]||{}).name||k;
+function hhWcOff(){HH_W=false;HH_HK=1;HH_WG=-1;HH_WE='';HH_WS='';HH_WX=0}
+function hhWcCalc(){hhWcOff();if(!hhOn())return;HH_W=true;const c=G.hhS.wc;if(!c)return;HH_WX=c.x||0;HH_WG=c.g;HH_WE=c.e||'';HH_WS=c.s||'';if(HH_WG===4)HH_HK=1/(1+HH_WX)}
+const hhGb=o=>o.dot?-1:(ufMg(o)?2:0)+(o.melee?0:1);
+function hhElSh(o,k){const m=o.mix;if(!m)return k==='impact'&&(o.blast||o.boom)?1:0;let s=0;for(const q in m)s+=m[q];return s>0?(m[k]||0)/s:0}
+const hhWAdd=o=>(HH_WG>=0&&HH_WG<4&&hhGb(o)===HH_WG?HH_WX:0)+(HH_WE?HH_WX*hhElSh(o,HH_WE):0);   // 这一下看穿加的减伤
+function hhTk(o,v){const R=G.hhS&&G.hhS.wr;if(!R)return;const w=v*(1+hhWAdd(o)),g=hhGb(o);if(g>=0)R.g[g]+=w;
+  const m=o.mix;if(m){let s=0;for(const q in m)s+=m[q];if(s>0)for(const q in m)if(!HH_PHY[q]&&m[q]>0)R.e[q]=(R.e[q]||0)+w*m[q]/s}else if(o.blast||o.boom)R.e.impact=(R.e.impact||0)+w}
+function hhCcOld(u,k){switch(k){case'stun':return u.isHero?Math.max(0,(u.stnU||0)-G.time):u.stag||0;case'root':return u.rootT||0;case'fear':return u.fearT||0;case'blind':return u.blT||0;
+  case'freeze':return u.frzT||0;case'slow':return Math.max(0,(u.chillU||0)-G.time);case'burn':return u.burnT||0;case'poison':return u.fpT||0}return 0}
+function hhCc(u,t,k){if(!(t>0)||!u||u.dead)return t;const R=G.hhS&&G.hhS.wr;if(R){const a=t-hhCcOld(u,k);if(a>0)R.s[k]=(R.s[k]||0)+a}return k===HH_WS&&HH_WX>0?t/(1+HH_WX):t}   // 守军被施加状态的入口调（HH_W 时）：记下，料势那种 ÷ (1 + x)
+function hhWcSeen(){for(let i=0;i<E.n;i++)HH_EHP[i]=E.hp[i]}
+function hhWcSpawn(i){HH_EHP[i]=E.hp[i];const R=G.hhS.wr;if(R)R.m+=E.mhp[i]}
+function hhWcTick(){const R=G.hhS.wr;if(!R)return;let h=0;for(let i=0;i<E.n;i++){if(!E.alive[i])continue;const d=E.hp[i]-HH_EHP[i];if(d>0)h+=d;HH_EHP[i]=E.hp[i]}R.h+=h}
+function hhWcNew(){const S=G.hhS;S.wr={g:[0,0,0,0],e:{},s:{},h:0,m:0};hhWcSeen()}
+function hhWcEnd(){const S=G.hhS;if(!S||!S.wr)return;S.wh.push(S.wr);S.wr=null;while(S.wh.length>CFG.hhWc.n)S.wh.shift()}
+const hhArg=O=>{let b='',v=0;for(const k in O)if(O[k]>v){v=O[k];b=k}return b};   // 最多的一种（全是 0 = ''）
+// 每波开始：上一波没结算的先收进记录，按记录（最多前三波）选这一波的三项
+function hhWcStart(){if(!hhOn())return;const S=G.hhS;hhWcEnd();S.wc=null;const L=S.wh;
+  if(L.length){const g=[0,0,0,0],e={},s={};let h=0,m=0;
+    for(const R of L){for(let k=0;k<4;k++)g[k]+=R.g[k]||0;for(const q in R.e)e[q]=(e[q]||0)+R.e[q];for(const q in R.s)s[q]=(s[q]||0)+R.s[q];h+=R.h||0;m+=R.m||0}
+    let gi=-1;if(m>0&&h/m>=CFG.hhWc.healR)gi=4;else{let v=0;for(let k=0;k<4;k++)if(g[k]>v){v=g[k];gi=k}}
+    S.wc={g:gi,e:hhArg(e),s:hhArg(s),x:hhP('hhWangchuan').x,hr:m>0?h/m:0}}
+  hhWcNew();hhCalc();HH_WM=S.wc?hhWcTxt(S.wc):''}
+function hhWcTxt(c){if(!c)return'';const x='+'+pc_(c.x),P=[];if(c.g===4)P.push(`观兵·禁疗 ${x}`);else if(c.g>=0)P.push(`观兵·${HH_GB[c.g]} ${x}`);
+  if(c.e)P.push(`辨性·${hhElN(c.e)} ${x}`);if(c.s)P.push(`料势·${HH_CCN[c.s]||c.s} ${x}`);return P.length?'黄虎看穿：'+P.join('｜'):''}
+function hhWcMsg(){if(HH_WM&&G.waveT>0.3){const m=HH_WM;HH_WM='';if(UI.ready)toast(m)}}   // 波次横幅之后再提示（同一帧弹的 toast 会被别的盖掉）
 
 // ---------- v0.11.2 皮肤的技能特效补充 + 铁索横江的常驻画面（用户 2026-10-22：皮肤的技能特效做一波优化、给英雄补一些技能特效；代理 SB，顶层名字 sb / skin 开头）----------
 // 换色的机制在 engine/vfx（fxSkD / FX_TINT / FX_DT）和 game/skins 的 hSkD；这里是皮肤单独的画法（data/skins 的 fx.sk[技能].look、fx.halo）
@@ -56601,7 +56656,7 @@ function twDrS(s){const e=twE3(s);return(TM.wallDRT||0)+(e&&e.twDR||0)}
 function twCap(s,v){const e=twE3(s),C=e&&e.twCap;if(!C||!(v>0))return v;if(!(s.twCT>G.time-1)){s.twCT=G.time;s.twCD=0}const left=Math.max(0,s.maxHp*C-(s.twCD||0)),d=Math.min(v,left);s.twCD=(s.twCD||0)+d;return d}
 // 分过来的那份：直接扣（魔法护盾只挡法术、再扣护盾、再扣生命），不再分摊、不反伤、不叠铁血层数；被打掉照常摧毁（不败铁血照算）
 function twTake(w,v,o){if(!(v>0)||w.dead||w.hp<=0)return;v=twCap(w,v);if(w.msh>0&&(ufMg(o)||o.mgS))v=wallMShield(w,v);if(w.rsh>0&&v>0){const ab=Math.min(w.rsh,v);w.rsh-=ab;v-=ab}if(!(v>0))return;
-  if(DS_ON)dsTak(w,Math.min(v,w.hp));w.hp-=v;w.flash=0.08;if(w.hp<=0&&!wallSave(w))destroyStruct(w,true)}
+  if(DS_ON)dsTak(w,Math.min(v,w.hp),o);w.hp-=v;w.flash=0.08;if(w.hp<=0&&!wallSave(w))destroyStruct(w,true)}   // 0.11.4 代理hh 加：dsTak 带上 o
 // 延伸屏障：带着这个三阶、够门槛的玄钢城墙 / 城门（建筑变动才重做）
 let TWB_V=-1,TWB_G=null,TWB_L=[];
 function twBarList(){if(TWB_V===G.structVer&&TWB_G===G)return TWB_L;TWB_V=G.structVer;TWB_G=G;TWB_L=[];const e=btEvo3('xgWall');if(!e||!e.twBarrier)return TWB_L;
@@ -57893,7 +57948,7 @@ function offerAt(q,used,minRank,list,m,N){
   for(const qq of tryList){if(minRank!==undefined&&QRANK(qq)<minRank)continue;const c=cardOfQ(qq,used,list,m,N);if(c)return{c,q:qq,mul:cardMul(c,qq,N)}}
   return null}
 // 可选卡牌数：3 + 抉择之机 + v0.5.7 科技「多重选择」
-const cardOptN=()=>CFG.cardRules.options+pm.choice+(TM.cardOpt||0)+HH_OPT;   // 0.11.4 代理hh 加：HH_OPT 运筹帷幄
+const cardOptN=()=>CFG.cardRules.options+pm.choice+(TM.cardOpt||0)+HH_OPT;   // 0.11.4 代理hh 加：HH_OPT 算无遗策
 // v0.8.24（用户定）固定概率的品质：每一批可选卡只判一次（这一批里最多一张），例：神话 1% = 一批卡有 1% 概率其中一张是神话；保底抽、剧情、德拉贡 / 格拉的额外抽不判
 function rollFixedQ(){const Q=CFG.cardQ;let r=rng();for(const q in Q){const f=Q[q].fixed;if(!f||(q==='saint'&&!saintOk()))continue;if(r<f)return q;r-=f}return null}   // saint：v0.8.23 圣灵只在有圣灵卡可出时才判
 function drawCards(n,minQ,plain){
@@ -57963,7 +58018,7 @@ function drawEnemyCards(n){const out=[],used=new Set();
   for(let k=0;k<n*4&&out.length<n;k++){const o=offerAt(rollEnemyQ(),used,undefined,CFG.enemyCards,em,G.epickN);if(o){used.add(o.c.id);if(o.c.unique&&out.some(x=>x.c.unique))continue;out.push(o)}}   // v0.9.1（用户定）一批最多一张唯一卡
   return out}
 function afterPlayerCard(){
-  if(hhAfter())return;   // 0.11.4 代理hh 加：宏图 / 运筹帷幄额外选卡 / 献计（heroes/hh_huanghu）
+  if(hhAfter())return;   // 0.11.4 代理hh 加：宏图 / 献计（heroes/hh_huanghu）
   const mode=G.story&&stC(G.story.c).C.noECard?null:DIFF.enemyCards;   // noECard：v0.6.3 剧情「亡灵如潮」深渊难度但亡灵不抽卡
   if(mode){const opts=drawEnemyCards(mode==='all'?3:3+(em.eChoice>0?1:0));   // eChoice：v0.8.25 亡灵卡「抉择之机」可选 +1（深渊三项全部生效，不吃）
     if(opts.length){
@@ -62002,7 +62057,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.11.3',GAME_TAG='测试版',GAME_BUILD="bcccbd3+",GAME_BUILT=1792871906416,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
+const GAME_VER='0.11.3',GAME_TAG='测试版',GAME_BUILD="6bf6a96",GAME_BUILT=1792872956682,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -64050,7 +64105,7 @@ function heroInfoHTML(id){const f=heroForm(id),H=CFG.heroes[f],MH=META.heroes[id
       ${testOn()?`<button class="px" type="button" data-act="hsoul" data-v="${f}">测试：英雄之魄 +50</button>`:''}</div>
     ${advLine(id)}<p class="lore">${H.lore}</p>
     <h4 class="sh">技能</h4><div class="skl big">${[H.passiveSk,H.passiveSk2,H.passiveSk3].filter(Boolean).map(ps=>(q=>`<div class="got psv">${skIcoH(ps)}<b>${q.name}</b><span class="cd">被动</span><br>${skHL(CFG.skills[ps].desc(q))}</div>`)(skillParams(f,star,ps))).join('')}${H.skills.concat(H.formSk||[]).map((s,k)=>{const p=skillParams(f,star,s),un=skillUnlocked(f,star,k%3);return`<div class="${un?'got':'no'}">${skIcoH(s)}<b>${H.formSk?(k<3?'人形 · ':'狐形 · '):''}${p.name}</b><span class="cd">${p.passive?'被动':p.chan?(p.cd?`按住释放 · 冷却 ${p.cd} 秒`:'按住释放 · 无冷却'):`冷却 ${p.cd} 秒`}${p.req?' · 需'+(p.req==='melee'?'近战':'远程')+'武器':''}${un?'':' · 3★ 解锁'}</span><br>${skHL(CFG.skills[s].desc(p))}</div>`}).join('')}</div><p class="meta sknote">技能数值里的 AD / AP 加成、技能伤害怎么随局内加成和波次成长，见「公式」。</p>
-    <h4 class="sh">升星 <span class="meta">英雄之魄 ${souls}${cost!==null&&MH.owned?` / 下一星 ${cost}`:''}</span></h4><div class="starlist">${H.stars.map((mm,k)=>k===0?`<span class="${star>=1?'got':'no'}">1★ 初始：${H.allSkills?'三个技能都有':'技能 1、2'}</span>`:`<span class="${star>k?'got':'no'}">${k+1}★ ${skHL(mm.desc)}</span>`).join('')}</div>`}
+    <h4 class="sh">升星 <span class="meta">英雄之魄 ${souls}${cost!==null&&MH.owned?` / 下一星 ${cost}`:''}</span></h4><div class="starlist">${H.stars.map((mm,k)=>k===0?`<span class="${star>=1?'got':'no'}">1★ 初始：${H.hhOff?'四个被动都有':H.allSkills?'三个技能都有':'技能 1、2'}</span>`:`<span class="${star>k?'got':'no'}">${k+1}★ ${skHL(mm.desc)}</span>`).join('')}</div>`}   // hhOff：0.11.4 代理hh 加，黄虎四个被动
 // —— 装备子页：仓库（右边）——
 function bagList(hid){opFltLoad();let L=invView(bagTab).filter(x=>itemKind(x)===bagTab&&!elOwnerOf(x.uid));   // elOwnerOf：v0.11.4 精英穿着的不在英雄装备栏出现（用户定）
   if(bagTab==='a'&&bagPart)L=L.filter(x=>CFG.armors[x.base].part===bagPart);
@@ -65729,7 +65784,7 @@ function hhBarFix(els){if(!G||!G.hhS||!G.hhS.on)return;const k=G.lineup.findInde
 function hhBarClick(k){const sp=G.lineup[k],d=sp&&CFG.heroes[sp.id];if(!d||!d.hhOff)return false;const S=G.hhS;
   if(!S||!S.on){toast(`主堡升到 Lv${heroNeedLv(k)} 后黄虎出谋(他不上战场)`);return true}
   const nm=(L,x)=>(L.find(e=>e[0]===x)||[0,'还没选'])[1];
-  toast(`黄虎(不上战场)：宏图三略「${nm(HH_HT,S.ht)}」 · 献计三策「${S.xj?nm(HH_XJ,S.xj):'还没献计'}」`);return true}
+  toast(`黄虎(不上战场)：宏图三略「${nm(HH_HT,S.ht)}」 · 献计三策「${S.xj?nm(HH_XJ,S.xj):'还没献计'}」${S.wc&&hhWcTxt(S.wc)?' · '+hhWcTxt(S.wc):''}`);return true}   // 望穿千年：这一波看穿的三项
 Object.assign(F1_BN,{hhBw:'布武之策',hhDs:'定四方'});   // 选中士兵 / 英雄头像下的 buff 名字（ui/f1_fbuf）
 // 始终满级（用户定）：局外等级记录直接设成上限，不再分经验
 META_LATE.push(['hhOlvMax',m=>{if(!m)return;const O=m.olv||(m.olv={b:{},h:{}}),H=O.h||(O.h={}),r=H[HH_ID]||(H[HH_ID]={lv:1,exp:0,use:0});r.lv=CFG.olv.capMax;r.exp=0}]);
