@@ -19049,15 +19049,15 @@ CFG.elite.regions={
   elemForest:  {culture:'elf',    fam:['林语','星叶','溪风','晨露','苍木'], st:{ap:0.08}, desc:'法攻 +8%'},
   ironFort:    {culture:'german', fam:['克莱因','沃格尔','齐默','布劳恩','克吕格'], st:{atk:0.05, def:0.05}, desc:'物攻 +5%、物防 +5%'},
 };
-// 名字（Claude 定）：各风格的名字池；格式 名·姓
+// 名字（Claude 定）：各风格的名字池，m 男 / f 女（0.11.4 用户定加性别；老存档按名字认性别，game/el_core.elSexOf）；格式 名·姓
 CFG.elite.names={
-  west:  ['艾伦','布莱恩','卡尔','丹尼','埃德温','弗兰克','盖瑞','哈罗德','伊万','杰克','凯尔','莱昂','马丁','诺曼','奥斯卡','彼得','罗伊','塞缪尔','托马斯','沃特','艾米','贝丝','克拉拉','黛西','艾玛','汉娜','露西','莫莉'],
-  north: ['比约恩','埃里克','弗雷','哈拉尔','伊瓦尔','克努特','莱夫','马格努斯','尼尔斯','奥拉夫','拉格纳','西格德','托尔','乌尔夫','维达','阿斯特丽','英格丽','西格丽','索薇','赫尔加'],
-  jungle:['阿卡','巴伦','科瓦','伊察','卡洛','马亚','纳瓦','奥科','帕恰','特佐','约洛','西佩','伊希','纳尔'],
-  desert:['阿里','巴希尔','达乌德','法里斯','哈桑','伊德里斯','贾马尔','卡里姆','马利克','纳迪尔','奥马尔','拉希德','萨利姆','塔里克','优素福','扎伊德','莱拉','法蒂玛','亚斯敏','萨尔玛'],
-  latin: ['安塞姆','巴托罗','克莱门','多米尼克','尤斯塔斯','费利克斯','格雷戈里','伊格内修','卢修斯','马库斯','奥古斯丁','塞巴斯蒂安','瓦伦丁','塞西莉亚','露西娅','玛蒂尔达','卡特琳'],
-  german:['阿达尔贝特','伯恩哈德','迪特里希','恩斯特','弗里茨','古斯塔夫','海因里希','卡尔','路德维希','马克斯','奥托','鲁道夫','沃尔夫冈','格蕾塔','希尔德','莉泽尔','乌苏拉'],
-  elf:   ['艾兰','贝洛','凯兰','达里安','埃莱','菲恩','伊瑞','莱拉','米瑞','奈恩','索伦','塔林','薇拉','希琳'],
+  west:  {m:['艾伦','布莱恩','卡尔','丹尼','埃德温','弗兰克','盖瑞','哈罗德','伊万','杰克','凯尔','莱昂','马丁','诺曼','奥斯卡','彼得','罗伊','塞缪尔','托马斯','沃特'], f:['艾米','贝丝','克拉拉','黛西','艾玛','汉娜','露西','莫莉','艾琳','格蕾丝','安娜','罗莎']},
+  north: {m:['比约恩','埃里克','弗雷','哈拉尔','伊瓦尔','克努特','莱夫','马格努斯','尼尔斯','奥拉夫','拉格纳','西格德','托尔','乌尔夫','维达'], f:['阿斯特丽','英格丽','西格丽','索薇','赫尔加','弗蕾雅','西格恩','卡雅']},
+  jungle:{m:['阿卡','巴伦','科瓦','卡洛','纳瓦','奥科','帕恰','特佐','约洛','纳尔'], f:['伊察','马亚','伊希','西佩','雅拉','蒂卡','娜伊','露玛']},
+  desert:{m:['阿里','巴希尔','达乌德','法里斯','哈桑','伊德里斯','贾马尔','卡里姆','马利克','纳迪尔','奥马尔','拉希德','萨利姆','塔里克','优素福','扎伊德'], f:['莱拉','法蒂玛','亚斯敏','萨尔玛','努尔','哈娜','扎拉','阿米拉']},
+  latin: {m:['安塞姆','巴托罗','克莱门','多米尼克','尤斯塔斯','费利克斯','格雷戈里','伊格内修','卢修斯','马库斯','奥古斯丁','塞巴斯蒂安','瓦伦丁'], f:['塞西莉亚','露西娅','玛蒂尔达','卡特琳','伊莎贝拉','罗莎琳','阿德莱德','艾莉诺']},
+  german:{m:['阿达尔贝特','伯恩哈德','迪特里希','恩斯特','弗里茨','古斯塔夫','海因里希','卡尔','路德维希','马克斯','奥托','鲁道夫','沃尔夫冈'], f:['格蕾塔','希尔德','莉泽尔','乌苏拉','伊尔莎','弗丽达','玛尔塔','安娜莉丝']},
+  elf:   {m:['艾兰','贝洛','凯兰','达里安','菲恩','奈恩','索伦','塔林'], f:['埃莱','伊瑞','莱拉','米瑞','薇拉','希琳']},
 };
 // 科技（用户定）
 Object.assign(CFG.techs,{
@@ -35195,6 +35195,241 @@ function eaEngineer(fr){return hdFig(32,32,S=>{
 Object.assign(HD_HEROES,{el_recruit:eaRecruit,el_assassin:eaAssassin,el_berserker:eaBerserker,el_spearman:eaSpearman,el_shieldGuard:eaShieldGuard,el_marksman:eaMarksman,
   el_cannoneer:eaCannoneer,el_musketeer:eaMusketeer,el_lightCav:eaLightCav,el_heavyCav:eaHeavyCav,el_horseArcher:eaHorseArcher,el_gunCav:eaGunCav,
   el_mage:eaMage,el_priest:eaPriest,el_engineer:eaEngineer});
+
+// ---------- 0.11.4 精英士兵的女性小人（代理 EF）：SPR.heroes['elf_<职业>']，键和男性版 el_<职业> 一一对应 ----------
+// 用户定：「各做一个女性版本，用发型、配色区分就够，不用重画」。所以骨架、尺寸、两帧、盔甲武器思路都照 art/ea_elite 的男性版
+//   （步兵 32×32、骑兵 48×46，骑兵借用 eaRider，三角帽 / 护鼻盔 / 尖帽借用 eaTricorn / eaNasal / eaWizHat），
+//   区别靠：长发 / 马尾 / 发辫从盔帽下露出、脸稍柔和（眼角一根睫毛、浅色细眉、一点唇色、没胡子）、换一套同样朴素的配色。
+// 前缀用 efe（elemforest 已经占了 ef / EF_）。登记进 HD_HEROES，art/art.js 的 buildSprites 运行时做成 SPR.heroes。
+const EFE_SKIN='#f0c8a8',EFE_LIP='#c0645a';
+// 女性的脸：和 hdFace 同样的眼睛位置，外眼角各多一根睫毛，眉毛细而浅，嘴是一点唇色
+function efeFace(S,o){const y=o.ey||10.8,e=o.eye||'#2a1e1a';hdFace(S,{skin:o.skin,ey:y,eye:e,brow:o.brow||'#7a5a40',mouth:false});
+  S.px(21,y,e);S.px(16,y,e);if(o.mouth!==false)S.px(19,y+4,EFE_LIP)}
+// 头顶的头发 + 盖住耳朵的鬓发（不戴帽子的职业用）；fx 刘海往右盖到哪
+function efeTop(S,hair,fx){fx=fx||19;S.part(hair,{},p=>{p.ell(14.8,8,6.8,4.7);p.ell(11.6,11.8,2.9,4.6);p.cut.poly([[fx,9],[24,8],[24,17],[fx-1,17]]);p.cut.rect(13,10.2,12,8)})}
+// 披在背后（压住后肩）的长发：y1 发梢的高度；画在身体之后、头之前
+function efeLong(S,hair,y1){S.part(hair,{},p=>p.poly([[8.2,8.6],[14,8.6],[14,15],[12.8,y1],[10,y1+0.8],[7.6,y1-1.6],[7.2,13]]));S.ln(10.4,12.4,9.8,y1-0.6,[hair,1]);S.ln(12.4,13,12,y1-0.6,[hair,1])}
+// 马尾：从后脑往左后方垂下，迈步帧甩开一点；tie 发绳颜色
+function efePony(S,fr,hair,tie){const ex=fr?4.4:5.4;S.part(hair,{},p=>{p.cap(10,6.8,6.6,9.2,2.1,1.8);p.cap(6.6,9.2,ex,15.6,1.8,0.9)});S.ln(7.4,10.6,ex+0.6,15,[hair,1]);if(tie)S.rc(8.6,7.4,1.6,2,tie)}
+// 发辫：沿折线一节一节画，节缝点暗色；tie 末端的发绳
+function efeBraid(S,hair,pts,tie){S.part(hair,{},p=>{for(let i=0;i<pts.length-1;i++)p.cap(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],1.4,1.2)});
+  for(let i=0;i<pts.length-1;i++){const[x0,y0]=pts[i],[x1,y1]=pts[i+1];for(let t=0.5;t<1;t+=0.5)S.px(x0+(x1-x0)*t,y0+(y1-y0)*t,[hair,0])}
+  if(tie){const[x,y]=pts[pts.length-1];S.rc(x-0.8,y-0.4,2,1.4,tie)}}
+
+// ===== 新兵：没戴盔，赤褐色长发编成一条粗辫搭在后肩、浅灰绿粗布短衫（肩上补丁）、麻绳腰带、灰褐裤、旧布鞋 =====
+function efeRecruit(fr){return hdFig(32,32,S=>{
+  const tun=hm('#a8ae8c','cloth'),tunD=hm('#80866a','cloth'),patch=hm('#8a7a5a','cloth'),rope=hm('#b09a6a','wood'),pants=hm('#5e5648','cloth'),boot=hm('#6a4a30','leather'),skin=hm(EFE_SKIN,'skin'),hair=hm('#8a4a2a','hair');
+  hdU_body(S,fr,{pants,boot,bootH:2,sleeve:tun,hand:skin,body:tun,belt:rope,
+    torso:S=>{S.part(tunD,{R:1},p=>p.poly([[13.5,15],[18.5,15],[16,18.4]]));S.ln(16,18.4,16,22.4,[tunD,1]);S.rect(18.6,16.4,3,2.6,patch,{R:0.5});S.px(19,17,[patch,4])}});   // 领口、补丁
+  S.ln(9,23,9.6,25.4,[rope,1]);   // 绳头
+  efeBraid(S,hair,[[10.4,12],[9.6,15.6],[9,18.6],[8.6,21.4]],hm('#c8b48a','cloth'));   // 粗辫
+  hdHead(S,{skin});
+  efeTop(S,hair,19);
+  efeFace(S,{skin,brow:'#6a3a20'});
+})}
+// ===== 刺客：深紫灰尖兜帽、同色面巾、灰紫短打、斜挎皮带上一排小刀、短斗篷；兜帽下垂出一条深栗色长辫 =====
+function efeAssassin(fr){return hdFig(32,32,S=>{
+  const hood=hm('#5a4e5e','cloth'),cloak=hm('#463c4a','cloth'),mask=hm('#2e2832','cloth'),cloth=hm('#4c4452','cloth'),dark=hm('#2a262e','leather'),lea=hm('#4a3a2c','leather'),steel=hdM('steel'),skin=hm('#ecc6a4','skin'),hair=hm('#6a3424','hair');
+  S.part(cloak,{R:2},p=>p.poly(fr?[[9,13],[15,14],[12.6,25],[9,23.6],[5,25],[5,18]]:[[9,13],[15,14],[13.4,26],[9.6,24.6],[6,26],[6,18]]));   // 短斗篷
+  hdU_body(S,fr,{pants:dark,boot:dark,bootH:5,cuff:true,sleeve:cloth,hand:dark,body:cloth,belt:lea,buckle:[steel,2],
+    torso:S=>{S.part(lea,{},p=>p.poly([[19.5,15.5],[21.5,15.5],[13,23.5],[11,23]]));for(const[x,y]of[[18,18],[16,20]])S.rc(x,y,1,2,[steel,3])}});   // 斜挎皮带 + 小刀
+  hdHead(S,{skin,noEar:true});
+  S.part(mask,{},p=>p.poly([[14,12.4],[22.8,11.8],[22.4,16.4],[14.4,17]]));   // 面巾
+  hdU_hood(S,hood,{tip:true});
+  S.part(hood,{},p=>p.poly([[10,5.2],[14.6,1.4],[17,3.6]]));   // 尖兜帽的尖
+  efeBraid(S,hair,fr?[[11,16.4],[10,19.6],[8.6,22.6],[7.6,25]]:[[11,16.4],[10.4,19.6],[9.6,22.6],[9,25.2]],hm('#8a3a3a','cloth'));   // 兜帽下的长辫（迈步帧往后甩）
+  S.part(hair,{},p=>p.poly([[16.8,9.4],[19.4,9],[17,11.2]]));   // 兜帽口露出的一绺刘海
+  efeFace(S,{skin,ey:10.6,mouth:false,eye:'#14161a',brow:'#3a3040'});
+})}
+// ===== 狂战士：不戴盔，蓬乱的铜红长发披满后背、两条小辫，额头一道赭红战纹；皮裹胸 + 灰白狼皮肩、皮护腕、皮短裙、毛皮靴 =====
+function efeBerserker(fr){return hdFig(32,32,S=>{
+  const skin=hm('#e6b490','skin'),hair=hm('#a0522d','hair'),fur=hm('#9a968c','hair'),furL=hm('#c8c4b8','hair'),lea=hm('#6a4a30','leather'),leaD=hm('#4a3020','leather'),pants=hm('#4a3a2c','cloth'),bone=hdM('bone');
+  hdU_body(S,fr,{pants,boot:fur,bootH:4,sleeve:skin,hand:skin,body:skin,belt:leaD,buckle:[bone,2],
+    torso:S=>{S.part(leaD,{R:1},p=>p.poly([[9.6,16.4],[22.4,16.4],[22.4,20.6],[9.6,20.6]]));S.ln(10,18.4,22,18.4,[leaD,0]);for(const x of[12,16,20])S.px(x,17.4,[bone,2]);   // 皮裹胸（骨扣）
+      S.ln(16.2,21.6,16.2,22.6,[skin,1]);
+      S.part(lea,{R:1},p=>p.poly([[9,23.6],[23,23.6],[23.6,27],[8.4,27]]));for(const x of[12,16,20])S.ln(x,24.4,x,26.6,[lea,0]);   // 皮短裙
+      S.part(fur,{},p=>{p.ell(11,15.6,4.2,2.6);p.ell(16,15,6.6,1.8)});S.part(furL,{},p=>p.ell(9.6,15,1.8,1.2))},   // 狼皮肩
+    after:S=>{for(const[x,y]of[[9.2,21],[23.2,21]])S.rect(x-2.1,y-1.4,4.2,2.4,leaD,{R:0.8,edge:false})}});   // 护腕
+  S.part(hair,{},p=>p.poly([[7.6,8],[14,8],[14,14],[13,20.6],[10.6,22],[7.4,21],[6.2,16],[6.6,11]]));S.ln(9,12,8.4,20.4,[hair,1]);S.ln(11.6,13,11.4,21,[hair,1]);   // 披满后背的乱发
+  hdHead(S,{skin});
+  S.part(hair,{},p=>{p.ell(14.6,7.6,7.2,4.9);p.ell(11.4,11.6,3.2,4.6);p.cut.poly([[18.8,9.2],[24,8.4],[24,17],[17.8,17]]);p.cut.rect(13,10.2,12,8);p.ell(19.6,4.6,2.2,1.6);p.ell(9,5,2.2,1.8)});   // 蓬乱的头顶
+  efeBraid(S,hair,[[11.6,14],[11.8,16.4],[11.6,18.6]],[bone,2]);   // 耳边垂下的小辫
+  S.ln(16.6,8.6,20.6,8.4,'#a03a2a');   // 赭红战纹（横过额头）
+  efeFace(S,{skin,ey:10.4,mouth:false,brow:'#6a2e18'});
+})}
+// ===== 长枪手：尖顶护鼻盔、锁子甲、灰蓝罩衫、深色裤；盔下垂出一条深棕长辫 =====
+function efeSpearman(fr){return hdFig(32,32,S=>{
+  const steel=hm('#9aa2ae','metal'),mail=hm('#868e9a','metal'),tab=hm('#5a6a7a','cloth'),tabD=hm('#44505e','cloth'),pants=hm('#4a3e38','cloth'),boot=hm('#4a3020','leather'),skin=hm(EFE_SKIN,'skin'),hair=hm('#7a4a2a','hair');
+  hdU_body(S,fr,{pants,boot,bootH:4,cuff:true,sleeve:mail,hand:hm('#6a4a30','leather'),body:mail,belt:hm('#4a3020','leather'),buckle:[steel,2],
+    torso:S=>{S.part(tab,{R:2},p=>p.poly([[12,15.4],[20,15.4],[20.6,26.4],[11.4,26.4]]));S.ln(16,16.4,16,26,[tabD,2]);   // 罩衫（垂到大腿）
+      for(let y=16;y<25;y+=2){S.px(10,y,[mail,1]);S.px(21.6,y+1,[mail,1])}},
+    after:S=>{for(let y=17;y<21;y+=2){S.px(9,y,[mail,4]);S.px(22,y+1,[mail,4])}}});
+  S.part(mail,{},p=>p.poly([[10,13.6],[22,13.6],[21,16.4],[11,16.4]]));for(let x=11;x<21;x+=2)S.px(x,15,[mail,1]);   // 锁甲护颈
+  efeBraid(S,hair,[[10.6,11.6],[9.4,15],[8.6,18.4],[8.2,21.4]],hm('#a08a52','cloth'));   // 盔下的长辫
+  hdHead(S,{skin});
+  S.part(hair,{},p=>p.ell(11.8,11.8,2.6,3.6));
+  S.part(hair,{},p=>p.poly([[17,9.4],[20,9.4],[17.4,11]]));   // 盔沿下的刘海
+  eaNasal(S,steel);
+  efeFace(S,{skin,brow:'#5a3a24'});
+})}
+// ===== 大盾卫：灰钢板甲、大圆护肩、甲裙、钢护腿，掀起面甲的大头盔（露出脸）、墨绿罩衫只露一条；护颈下垂出浅棕长辫 =====
+function efeShieldGuard(fr){return hdFig(32,32,S=>{
+  const plate=hm('#8e929a','metal'),plateL=hm('#acb0b6','metal'),dark=hm('#54565c','metal'),grn=hm('#2e4a3a','cloth'),skin=hm(EFE_SKIN,'skin'),brass=hdM('brass'),hair=hm('#9a6a40','hair');
+  hdU_body(S,fr,{pants:dark,boot:dark,bootH:4,sleeve:dark,hand:plate,body:dark,belt:hm('#2a1a10','leather'),buckle:[brass,2],
+    legs:S=>{for(const x of fr?[10.5,21.5]:[12,20])S.ell(x,26.2,2.4,2,plate)},
+    torso:S=>{S.part(plate,{R:3},p=>p.poly([[10,15],[22,15],[22.5,20],[20,23.4],[12,23.4],[9.5,20]]));S.ln(16,16,16,22.6,[plate,4]);for(const y of[18,21])S.ln(11,y,21,y,[plate,1]);
+      S.part(grn,{R:1},p=>p.poly([[13.4,24],[18.6,24],[18.4,27.6],[13.6,27.6]]));   // 罩衫垂片
+      S.part(plate,{R:1},p=>{p.poly([[9.4,24],[13.2,24],[13,27],[9,27]]);p.poly([[18.8,24],[22.6,24],[23,27],[19,27]])})}});   // 甲裙
+  hdHead(S,{skin});
+  S.part(hair,{},p=>p.poly([[13.6,9.6],[17.2,9.6],[14.4,12.6],[13.6,14]]));   // 盔里露出的鬓发
+  S.part(plate,{},p=>{p.ell(15.6,8.6,7.4,6.4);p.cut.rect(13.6,8.6,12,9);p.poly([[8.2,9],[13.6,9],[13.6,16],[7.6,15.4]])});   // 盔顶 + 护颈 + 护颊（脸露在外）
+  S.part(plateL,{R:1},p=>p.poly([[12,6.4],[22.6,5],[24.8,7.4],[23.4,9],[13,8.8]]));S.rc(14,7.4,9,1,HD_INK);   // 掀起的面甲（视缝朝上）
+  S.ell(9.4,17.6,4.2,3,plateL);S.ell(22.6,17.6,4.2,3,plateL);for(const x of[9.4,22.6]){S.ln(x-3,19,x+3,19,[plateL,1]);S.px(x,16.6,[brass,3])}   // 大护肩
+  efeBraid(S,hair,[[9,15.4],[7.4,18.6],[6.6,21.6],[6.4,24]],[grn,2]);   // 护颈下的长辫（压在护肩外）
+  efeFace(S,{skin,brow:'#6a4a2c'});
+})}
+// ===== 神射手：深棕皮甲（铆钉）、赭褐兜帽和披肩、背后箭袋露出白羽、皮护臂；兜帽口露出金棕刘海，帽下垂出马尾 =====
+function efeMarksman(fr){return hdFig(32,32,S=>{
+  const hood=hm('#7a4a34','cloth'),lea=hm('#6e5a40','leather'),leaD=hm('#4a3a28','leather'),pants=hm('#3e3a34','cloth'),boot=hm('#4a3020','leather'),skin=hm(EFE_SKIN,'skin'),brass=hdM('brass'),hair=hm('#c8a060','hair');
+  hdU_body(S,fr,{pants,boot,bootH:5,cuff:true,sleeve:leaD,hand:leaD,body:lea,belt:hm('#3a2418','leather'),buckle:[brass,2],
+    back:S=>{S.part(leaD,{R:1},p=>p.poly([[6.4,13],[9.8,12.2],[12.6,22],[9.4,22.6]]));for(const[x,y]of[[4.6,10.6],[6.4,9.6],[8.2,10]]){S.ln(x+1.4,y+4,x,y,'#5a3a22');S.rc(x-0.6,y-1,1.6,2,'#ece6d6')}},   // 箭袋 + 白羽
+    torso:S=>{for(const[x,y]of[[12,17],[20,17],[12,21],[20,21],[16,19]])S.px(x,y,[brass,3]);S.ln(16,15.6,16,22.4,[leaD,1])},
+    after:S=>{S.rect(21.4,19.4,3.6,2.4,leaD,{R:0.8,edge:false});S.part(hood,{R:2},p=>p.poly([[9,14],[23,14],[21.5,18.6],[11,18.6]]))}});   // 护臂、披肩
+  hdHead(S,{skin,noEar:true});
+  hdU_hood(S,hood);
+  efeBraid(S,hair,fr?[[9.8,16.4],[8.4,19.4],[7,22.4]]:[[9.8,16.4],[8.8,19.6],[8,22.8]],[hood,1]);   // 帽下垂出的发辫
+  S.part(hair,{},p=>p.poly([[16.8,9.4],[20.6,9],[18.4,10.6],[17.2,12.6]]));   // 兜帽口的刘海
+  efeFace(S,{skin,brow:'#7a5a30'});
+})}
+// ===== 火炮手：灰蓝毛线帽、熏黑的脸颊、厚深褐棉外套（长到大腿）、斜挎火药包、皮手套；帽下两条短辫 =====
+function efeCannoneer(fr){return hdFig(32,32,S=>{
+  const coat=hm('#5e4a3c','cloth'),coatD=hm('#46362c','cloth'),cap=hm('#4a5a6a','cloth'),capD=hm('#36424e','cloth'),bag=hm('#2e2a28','leather'),strap=hm('#4a3020','leather'),pants=hm('#3a3632','cloth'),boot=hm('#2e2420','leather'),glove=hm('#6a4a30','leather'),skin=hm(EFE_SKIN,'skin'),hair=hm('#2e2420','hair'),brass=hdM('brass');
+  hdU_body(S,fr,{pants,boot,bootH:4,cuff:true,sleeve:coat,hand:glove,body:coat,belt:strap,buckle:[brass,2],
+    torso:S=>{hdSkirt(S,coat,27);S.ln(16,15.6,16,26.6,[coatD,2]);for(const y of[17,20,25])S.px(17,y,[brass,2]);   // 厚外套（对襟、铜扣）
+      for(const y of[18,21])S.ln(10,y,21.6,y,[coat,1]);   // 绗线
+      S.part(strap,{},p=>p.poly([[19.5,15.5],[21.5,15.5],[12.6,23],[10.8,22.4]]))},
+    after:S=>{S.part(bag,{R:1},p=>p.rect(7.6,22.2,5.4,5,1.2));S.ln(8.2,23.4,12.4,23.4,[bag,3]);S.ln(10.4,22.4,12.6,20.2,'#c8b48a');S.px(13,20,'#f0a040')}});   // 火药包 + 导火索
+  efeBraid(S,hair,[[10,11.6],[8.4,14.4],[7.6,17]],[cap,2]);   // 后面那条短辫
+  hdHead(S,{skin});
+  S.part(hair,{},p=>{p.ell(11.8,11.8,2.6,3.4);p.poly([[17,9],[21,9],[18,11]])});   // 鬓发 + 帽沿下的刘海
+  efeBraid(S,hair,[[12.4,13.4],[12.6,15.6],[12.4,17.4]],[cap,2]);   // 耳边的短辫
+  S.part(cap,{},p=>{p.ell(15.6,7.2,7.2,4.4);p.cut.rect(0,8.4,32,9)});S.rect(8.4,7.4,14.6,2.2,capD,{R:1});for(let x=10;x<22;x+=2)S.px(x,8.4,[capD,0]);   // 毛线帽 + 卷边
+  S.px(21,13,'#5a4a40');   // 脸上的火药灰
+  efeFace(S,{skin,brow:'#3a2a20'});
+})}
+// ===== 火枪手：黑色三角帽（白边）、石板灰军装外套 + 白色交叉肩带、浅灰马甲、灰白马裤、黑绑腿；帽下黑缎带束的长马尾 =====
+function efeMusketeer(fr){return hdFig(32,32,S=>{
+  const coat=hm('#4a4e5e','cloth'),coatD=hm('#363a48','cloth'),vest=hm('#c4c0b4','cloth'),white=hm('#e6e2d6','cloth'),pants=hm('#cfcabc','cloth'),boot=hm('#24222a','leather'),hat=hm('#26242c','cloth'),skin=hm(EFE_SKIN,'skin'),hair=hm('#7a4a2a','hair'),brass=hdM('brass');
+  hdU_body(S,fr,{pants,boot,bootH:6,sleeve:coat,hand:skin,body:coat,belt:hm('#3a2418','leather'),buckle:[brass,2],
+    back:S=>S.part(coat,{R:2},p=>p.poly(fr?[[9,20],[13,20],[11,27.4],[7.4,27]]:[[9,20],[13,20],[11.6,28],[8,27.6]])),   // 外套后摆
+    torso:S=>{S.part(vest,{R:2},p=>p.poly([[13.4,15],[18.6,15],[18.2,23],[13.8,23]]));for(const y of[16.6,18.6,20.6])S.px(16,y,[brass,3]);
+      S.part(white,{},p=>{p.poly([[10.4,15.4],[12.4,15.4],[21.6,23],[20,23.6]]);p.poly([[19.6,15.4],[21.6,15.4],[12,23.6],[10.4,23]])});S.dt(16,19.4,1,[brass,3])}});   // 白色交叉肩带
+  S.rect(21.2,20.4,3.6,1.6,coatD,{edge:false});   // 袖口
+  efePony(S,fr,hair,'#16141a');   // 长马尾 + 黑缎带
+  hdHead(S,{skin});
+  S.part(hair,{},p=>{p.ell(11.8,11.8,2.6,3.8);p.poly([[17,9],[21,9],[17.6,11.2]])});   // 鬓发 + 刘海
+  eaTricorn(S,hat,'#e6e2d6');
+  efeFace(S,{skin,brow:'#5a3a22'});
+})}
+// ===== 轻骑兵：敞口钢帽、深灰皮上衣 + 锁甲袖、锈红领巾往后飘、帽下甩出黑马尾，骑灰褐马（锈红鞍毯） =====
+function efeLightCav(fr){return hdFig(48,46,S=>{
+  const steel=hm('#9aa2ae','metal'),mail=hm('#868e9a','metal'),lea=hm('#5e5650','leather'),leaD=hm('#3e3a36','leather'),scarf=hm('#9a5a3a','cloth'),skin=hm(EFE_SKIN,'skin'),hair=hm('#241c1a','hair');
+  eaRider(S,fr,{coat:hm('#8a7a64','leather'),far:hm('#5e5242','leather'),mane:hm('#2a2420','hair'),cloth:scarf,trim:hm('#c8b48a','cloth')},
+    {sleeve:mail,hand:leaD,body:lea,belt:hm('#2a1e18','leather'),buckle:[steel,2],leg:hm('#4a4038','cloth'),boot:leaD,
+     back:R=>R.part(scarf,{},p=>p.poly(fr?[[11,14],[4,16],[2.6,18.6],[6,17.6],[11,16.6]]:[[11,14],[4.6,17],[3.6,19.6],[7,18.4],[11,16.6]])),   // 领巾的尾巴
+     torso:R=>{R.ln(16,15.6,16,22.4,[leaD,1]);for(const y of[17,19.6])R.ln(11,y,21,y,[lea,1])},
+     head:R=>{R.part(scarf,{R:1},p=>p.ell(16,15,6.4,1.8));efePony(R,1,hair,scarf);hdHead(R,{skin});R.part(hair,{},p=>{p.ell(11.8,11.8,2.6,3.6);p.poly([[17,9],[21,9],[17.6,11]])});   // 骑马时马尾总是往后甩
+       R.part(steel,{},p=>{p.ell(16,7.4,6.4,4.8);p.cut.rect(0,8.4,32,9)});R.rect(8.6,7.6,14.8,1.6,steel,{R:0.8});R.ln(16,3,16,7.6,[steel,4]);   // 敞口钢帽
+       efeFace(R,{skin,brow:'#3a2a24'})}});
+})}
+// ===== 重骑兵：灰钢板甲、敞面盔 + 暗红缨、墨绿鞍毯（铜边）、盔下垂出浅金长辫，骑披甲黑马 =====
+function efeHeavyCav(fr){return hdFig(48,46,S=>{
+  const steel=hm('#a4aab4','metal'),steelD=hm('#767c88','metal'),bright=hm('#c4c8d0','metal'),grn=hm('#2e4a3a','cloth'),brass=hdM('brass'),skin=hm(EFE_SKIN,'skin'),plume=hm('#8a3a30','hair'),hair=hm('#c8a868','hair');
+  eaRider(S,fr,{coat:hm('#3a3436','leather'),far:hm('#262224','leather'),mane:hm('#1a1618','hair'),cloth:grn,trim:[brass,2],big:true,barded:true,plate:hm('#8e949e','metal'),hoof:hm('#3a3442','metal')},
+    {sleeve:steelD,hand:steelD,body:steel,belt:hm('#2a1a10','leather'),buckle:[brass,2],leg:steelD,boot:steelD,pad:bright,
+     torso:R=>{R.ln(16,15.5,16,23,[steel,4]);R.ln(10,19,22,19,[steel,1]);R.ln(10,21.5,22,21.5,[steel,1])},
+     head:R=>{S.ell(28,30.4,2,1.8,bright);   // 护膝
+       hdHead(R,{skin});
+       R.part(hair,{},p=>p.poly([[13.8,9.6],[17.4,9.6],[14.6,12.6],[13.8,14]]));   // 盔里露出的鬓发
+       R.part(plume,{},p=>{p.cap(15,3,11,0.6,1.4,2);p.cap(12,1.4,7.6,2.6,1.4,0.8)});   // 暗红缨
+       R.part(steel,{},p=>{p.ell(15.6,8.6,7.2,6.2);p.cut.rect(13.8,9.2,12,9);p.poly([[8.2,9],[13.8,9],[14,16.4],[7.6,15.6]])});R.part(steel,{R:1},p=>p.rect(13,8.4,11,1.6,0.8));   // 敞面盔
+       R.rect(19.2,9.6,1.6,3.4,steel,{flat:0.5});   // 护鼻
+       efeBraid(R,hair,[[9.4,15.6],[8,18.4],[7,21],[6.6,23.2]],[grn,2]);   // 护颈下的长辫
+       efeFace(R,{skin,ey:11,brow:'#8a6a3a'})}});
+})}
+// ===== 骑射手：毛边圆皮帽、灰青短袍（毛边）、两条黑长辫、背后箭袋，骑栗色马（灰青鞍毯） =====
+function efeHorseArcher(fr){return hdFig(48,46,S=>{
+  const robe=hm('#3e6a6a','cloth'),robeD=hm('#2c4e4e','cloth'),fur=hm('#c8b496','hair'),cap=hm('#5a4a3a','cloth'),lea=hm('#5a3a24','leather'),skin=hm('#ecc09c','skin'),hair=hm('#1e1816','hair');
+  eaRider(S,fr,{coat:hm('#8a4e2e','leather'),far:hm('#5e341e','leather'),mane:hm('#3a2214','hair'),cloth:hm('#5a7a76','cloth'),trim:robeD,quiver:lea},
+    {sleeve:robe,hand:lea,body:robe,belt:hm('#2a1a10','leather'),buckle:[fur,2],leg:hm('#4a3e34','cloth'),boot:lea,
+     torso:R=>{R.part(fur,{},p=>p.poly([[12.6,15],[15,15],[19.6,23],[17.4,23]]));R.ln(10,23,22,23,[fur,1])},   // 斜襟的毛边
+     head:R=>{efeBraid(R,hair,[[10,12],[8.6,15.6],[8,19],[7.8,22]],hm('#a03a2a','cloth'));   // 后面那条长辫
+       hdHead(R,{skin});R.part(hair,{},p=>{p.ell(11.8,11.8,2.8,3.6);p.poly([[17,8.6],[21,8.6],[17.6,10.8]])});
+       efeBraid(R,hair,[[12.6,13.6],[13,16.6],[13.2,19.6]],hm('#a03a2a','cloth'));   // 搭在胸前的长辫
+       R.part(cap,{},p=>{p.ell(15.6,6.4,6.6,4.2);p.cut.rect(0,8,32,9)});R.part(fur,{R:1},p=>p.rect(8.4,6.6,15,3,1.4));for(let x=10;x<23;x+=2)R.px(x,7.6,[fur,0]);   // 毛边圆皮帽
+       efeFace(R,{skin,ey:11,brow:'#2a1e18'})}});
+})}
+// ===== 火枪骑兵：黑三角帽（铜边）、暗酒红骑兵外套 + 黄扣、白领巾、浅黄马裤、帽下深棕马尾，骑灰斑马（暗酒红鞍毯） =====
+function efeGunCav(fr){return hdFig(48,46,S=>{
+  const red=hm('#6a3a3a','cloth'),redD=hm('#4e2a2c','cloth'),white=hm('#e6e2d6','cloth'),hat=hm('#26242c','cloth'),brass=hdM('brass'),lea=hm('#2a1e18','leather'),skin=hm(EFE_SKIN,'skin'),hair=hm('#5a3a24','hair');
+  eaRider(S,fr,{coat:hm('#9a9690','leather'),far:hm('#6e6a66','leather'),mane:hm('#3a3634','hair'),cloth:redD,trim:[brass,2],hoof:lea},
+    {sleeve:red,hand:lea,body:red,belt:lea,buckle:[brass,2],leg:hm('#d8c896','cloth'),boot:lea,
+     torso:R=>{R.ln(16,15.6,16,22.6,[redD,1]);for(const y of[17,19,21])R.px(18,y,[brass,3]);R.part(white,{R:1},p=>p.poly([[13,14.6],[19,14.6],[17.6,18],[14.4,18]]))},
+     head:R=>{efePony(R,1,hair,'#16141a');hdHead(R,{skin});R.part(hair,{},p=>{p.ell(11.8,11.8,2.6,3.6);p.poly([[17,9],[21,9],[17.6,11]])});eaTricorn(R,hat,[brass,3]);efeFace(R,{skin,brow:'#4a3020'})}});
+  S.part(hm('#5e5a56','hair'),{},p=>{p.ell(18,30,2.2,1.6);p.ell(13,32.6,1.8,1.4)});   // 马身上的灰斑
+})}
+// ===== 魔法师：暗紫灰长袍 + 同色宽檐尖帽（帽尖往后折、灰白帽带）、浅灰前襟、皮挎包、浅栗色长发垂到腰 =====
+function efeMage(fr){return hdFig(32,32,S=>{
+  const robe=hm('#54486a','cloth'),robeD=hm('#3c3450','cloth'),inner=hm('#b8b4bc','cloth'),band=hm('#c8c0b0','cloth'),bag=hm('#7a5232','leather'),skin=hm(EFE_SKIN,'skin'),hair=hm('#9a6a44','hair');
+  hdLegs2(S,fr,{pants:robe,boot:hm('#4a3424','leather'),bootH:2,skirt:true});
+  hdArmBack(S,{sleeve:robe,hand:skin});
+  S.part(robe,{R:3},p=>p.poly([[9.5,15],[22.5,15],[24.6,29.5],[7.4,29.5]]));   // 长袍
+  S.part(inner,{R:2},p=>p.poly([[14.4,17],[18.6,17],[19.6,29.5],[13.4,29.5]]));   // 前襟
+  S.rect(8,28,17,1.8,robeD,{edge:false});
+  hdBelt(S,21.4,hm('#4a3424','leather'),null);S.part(bag,{R:1},p=>p.rect(8.4,21.8,4.4,4,1));S.ln(9,15.4,10,22,[bag,1]);   // 腰带、挎包
+  hdArmFront(S,{sleeve:robe,hand:skin});S.ell(23.6,20.4,2.8,2.3,robe);   // 宽袖口
+  efeLong(S,hair,21);   // 垂到腰的长发
+  hdHead(S,{skin});
+  S.part(hair,{},p=>{p.ell(12,11.8,3,4.4);p.poly([[17,9],[21,9],[17.6,11.4]])});   // 鬓发 + 刘海
+  eaWizHat(S,robe,band);
+  efeFace(S,{skin,brow:'#6a4a30'});
+})}
+// ===== 牧师：浅金长发披肩 + 素白头巾、白袍、暗红圣带垂在胸前、木框铜色日轮圣徽、棕色绳腰带 =====
+function efePriest(fr){return hdFig(32,32,S=>{
+  const white=hm('#e6e0d2','cloth'),whiteD=hm('#c4bca8','cloth'),stole=hm('#8a4a3a','cloth'),rope=hm('#8a6a44','wood'),brass=hdM('brass'),skin=hm(EFE_SKIN,'skin'),hair=hm('#d0b070','hair'),veil=hm('#ece8dc','cloth');
+  hdLegs2(S,fr,{pants:white,boot:hm('#7a5232','leather'),bootH:2,skirt:true});
+  hdArmBack(S,{sleeve:white,hand:skin});
+  S.part(white,{R:3},p=>p.poly([[9.5,15],[22.5,15],[24.4,29.5],[7.6,29.5]]));S.ln(8.4,28.6,23.6,28.6,[whiteD,2]);
+  S.part(stole,{R:1},p=>{p.poly([[12.4,15],[14.6,15],[14,28],[11.8,28]]);p.poly([[17.4,15],[19.6,15],[20.2,28],[18,28]])});   // 圣带
+  hdBelt(S,21.6,rope,null);S.cap(19,23,19.6,26.4,0.7,0.6,rope);   // 绳腰带 + 垂下的绳头
+  hdArmFront(S,{sleeve:white,hand:skin});S.ell(23.6,20.4,2.6,2.2,white);
+  S.ln(14.4,14.6,16,17.4,'#5a3a22');S.ln(17.6,14.6,16,17.4,'#5a3a22');   // 圣徽的绳
+  S.dt(16,19,2.2,[brass,2]);S.dt(16,19,1.2,[brass,4]);for(const[dx,dy]of[[0,-3],[0,3],[-3,0],[3,0]])S.px(16+dx,19+dy,[brass,3]);   // 日轮圣徽
+  efeLong(S,hair,19);   // 披肩长发
+  hdHead(S,{skin});
+  efeTop(S,hair,20);
+  S.part(veil,{R:1},p=>{p.ell(14.6,6.6,6.6,3.4);p.cut.rect(0,7.6,32,9);p.poly([[8,5.6],[12.6,5.6],[11.4,11],[8.6,15],[7,13]])});S.ln(9,7.4,21,7.4,[veil,1]);   // 素白头巾（盖头顶、后面垂一角）
+  efeFace(S,{skin,eye:'#3a4a6a',brow:'#a08a5a'});
+})}
+// ===== 工程师：护目镜推到额头、黑发在后脑挽成发髻（插一根铅笔）、卷袖锈褐衬衫、厚皮围裙、工具腰带（扳手、工具袋） =====
+function efeEngineer(fr){return hdFig(32,32,S=>{
+  const shirt=hm('#8a5a44','cloth'),apron=hm('#6a5a4a','leather'),apronD=hm('#4a3e34','leather'),pants=hm('#4a4440','cloth'),boot=hm('#3a2a20','leather'),skin=hm(EFE_SKIN,'skin'),hair=hm('#2e2420','hair'),brass=hdM('brass'),steel=hdM('steel');
+  hdU_body(S,fr,{pants,boot,bootH:4,cuff:true,sleeve:shirt,hand:skin,body:shirt,belt:hm('#3a2418','leather'),beltY:22.4,buckle:[brass,2],
+    torso:S=>{S.part(apron,{R:2},p=>p.poly([[11.6,16.4],[20.4,16.4],[21.6,27.6],[10.4,27.6]]));S.ln(12,16.4,13,14.6,[apronD,2]);S.ln(20,16.4,19,14.6,[apronD,2]);   // 围裙 + 挂带
+      S.rect(14,18,4,2.6,apronD,{R:0.6,edge:false})},   // 胸前口袋
+    after:S=>{S.part(steel,{},p=>{p.rect(8.6,23,1.6,4.6,0.6);p.ell(9.4,22.6,1.6,1.2)});S.part(hm('#6a4a30','leather'),{R:1},p=>p.rect(19.6,22.6,3.6,3.4,1));   // 扳手、工具袋
+      S.ln(21.6,18.6,24.6,18.6,[shirt,4])}});   // 卷起的袖口
+  S.ln(6.4,3.6,10.4,7.6,'#c8a040');S.px(6,3,'#3a2a20');   // 插在发髻里的铅笔
+  S.part(hair,{},p=>p.ell(8.6,8.4,3.2,3));   // 后脑的发髻
+  hdHead(S,{skin});
+  efeTop(S,hair,20);
+  S.ln(9,7.4,23,6.2,'#3a2a20');S.ln(9,8.2,23,7,'#3a2a20');   // 护目镜的皮带
+  for(const x of[17.4,21])S.dt(x,6.6,1.8,[brass,2]);for(const x of[17.4,21])S.dt(x,6.6,1,'#5fb0b0');S.px(17,6,'#d8f4f4');S.px(20.6,6,'#d8f4f4');   // 推到额头的护目镜
+  efeFace(S,{skin,brow:'#2e2420'});
+})}
+Object.assign(HD_HEROES,{elf_recruit:efeRecruit,elf_assassin:efeAssassin,elf_berserker:efeBerserker,elf_spearman:efeSpearman,elf_shieldGuard:efeShieldGuard,elf_marksman:efeMarksman,
+  elf_cannoneer:efeCannoneer,elf_musketeer:efeMusketeer,elf_lightCav:efeLightCav,elf_heavyCav:efeHeavyCav,elf_horseArcher:efeHorseArcher,elf_gunCav:efeGunCav,
+  elf_mage:efeMage,elf_priest:efePriest,elf_engineer:efeEngineer});
 
 // ---------- 昼夜与天气（v10）----------
 // G.dayIdx：当前时段（准备阶段 = 下一波的时段）；G.weather：天气 id。默认每 3 波换下一个时段，地图可以单独设定
@@ -59938,9 +60173,13 @@ function localDayIdx(){const h=new Date(metaNow()).getHours(),H=SB.dayHours;let 
 //        dep 上阵, cmd 局内指令（'sortie' / 'guard'）, log {n 场, k 杀, d 输出, t 承伤, h 治疗, c 控制, L 最近的战报}, par 父母编号, kids 孩子编号, gen 第几代, learn {k, lv, end}, ly 上次学特性的年龄}
 const EL=()=>CFG.elite;
 const elRi=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),elPick=a=>a[Math.floor(Math.random()*a.length)];
-function elSt(){const m=META.el||(META.el={});if(!(m.t>0))m.t=metaNow();if(!(m.n>0))m.n=1;for(const k of['list','kids','roll','ins'])if(!Array.isArray(m[k]))m[k]=[];if(!(m.del>=0))m.del=0;if(!m.rec||typeof m.rec!=='object')m.rec={};if(!m.opt||typeof m.opt!=='object')m.opt={injOff:true};if(!m.v4){m.v4=1;for(const L of[m.list,m.kids,m.roll])for(const e of L)if(e&&e.sk)for(const k in e.sk)if(e.sk[k]>EL().skMax)e.sk[k]=EL().skMax}return m}   // v4：0.11.4 技能等级改成最高 4 级，老存档的 5 级压到 4 级
+function elSt(){const m=META.el||(META.el={});if(!(m.t>0))m.t=metaNow();if(!(m.n>0))m.n=1;for(const k of['list','kids','roll','ins'])if(!Array.isArray(m[k]))m[k]=[];if(!(m.del>=0))m.del=0;if(!m.rec||typeof m.rec!=='object')m.rec={};if(!m.opt||typeof m.opt!=='object')m.opt={injOff:true};if(!m.v5){m.v5=1;const S=x=>{if(x&&!x.sex)x.sex=elSexOf(x.given)};for(const L of[m.list,m.kids,m.roll])L.forEach(S);for(const r in m.rec)(m.rec[r].offers||[]).forEach(S)}   // v5：0.11.4 加性别，老存档按名字认
+  if(!m.v4){m.v4=1;for(const L of[m.list,m.kids,m.roll])for(const e of L)if(e&&e.sk)for(const k in e.sk)if(e.sk[k]>EL().skMax)e.sk[k]=EL().skMax}return m}   // v4：0.11.4 技能等级改成最高 4 级，老存档的 5 级压到 4 级
 const elById=id=>{const m=elSt();return m.list.find(e=>e.id===id)||m.kids.find(e=>e.id===id)||m.roll.find(e=>e.id===id)||null};
 const elName=e=>e?`${e.given}·${e.fam}`:'';
+// 性别（0.11.4 用户定）：e.sex 'm' / 'f'；老存档按名字在哪个名字池里认（女名池里有就是女，否则男）
+const elSexOf=given=>{for(const c in EL().names){const N=EL().names[c];if(N.f&&N.f.includes(given))return'f'}return'm'};
+const elTa=e=>e&&e.sex==='f'?'她':'他',elSexTxt=e=>e&&e.sex==='f'?'女':'男';
 const elJobD=e=>EL().jobs[e.job]||EL().jobs.recruit;
 const elTier=reg=>CFG.maps[reg]?mapTierOf(reg):0;
 // 上限（用户定）：6 + 6 × 已开放的开拓地
@@ -59952,7 +60191,7 @@ const elDeployMax=()=>EL().deploy+(elTM().elDeploy||0);
 function elTraitsOk(L,k){const T=EL().traits[k];if(!T||L.includes(k))return false;return!(T.x||[]).some(x=>L.includes(x))&&!L.some(x=>(EL().traits[x].x||[]).includes(k))}
 function elRollTraits(n){const K=Object.keys(EL().traits),L=[];let t=0;while(L.length<n&&t++<60){const k=elPick(K);if(elTraitsOk(L,k))L.push(k)}return L}
 function elGen(reg,o){o=o||{};const R=EL().regions[reg]||EL().regions.wild,P=EL().names[R.culture]||EL().names.west,F=EL().family;
-  const e={id:0,given:elPick(P),fam:o.fam||elPick(R.fam),reg,job:'recruit',age:o.age!=null?o.age:elRi(EL().recruit.age[0],EL().recruit.age[1])+Math.random(),life:elRi(EL().life[0],EL().life[1]),
+  const sex=o.sex||(Math.random()<0.5?'f':'m'),e={id:0,sex,given:elPick(P[sex]||P.m),fam:o.fam||elPick(R.fam),reg,job:'recruit',age:o.age!=null?o.age:elRi(EL().recruit.age[0],EL().recruit.age[1])+Math.random(),life:elRi(EL().life[0],EL().life[1]),
     merit:0,rank:1,pers:elPick(Object.keys(EL().personality)),tr:[],tt:[],sk:{},ea:[],ep:[],lock:false,gear:{},inj:{},dep:false,cmd:'sortie',log:{n:0,k:0,d:0,t:0,h:0,c:0,L:[]},par:o.par||0,kids:[],gen:o.gen||1,learn:null,ly:-1};
   if(o.inherit){for(const k of o.inherit)if(Math.random()<F.inherit&&elTraitsOk(e.tr,k))e.tr.push(k)}
   else{const n=elRi(EL().normalN[0],EL().normalN[1]);e.tr=elRollTraits(n)}
@@ -60082,16 +60321,16 @@ function elStatSum(e){const S={},add=st=>{if(!st)return;for(const k in st){const
   const R=EL().regions[e.reg];if(R)add(R.st);for(const k of e.tr)add(EL().traits[k].st);for(const k of e.tt)add(EL().train[k].st);
   for(const k in e.inj){const I=EL().injuries[k];if(I)add(I.st[(e.inj[k].lv||1)-1])}for(const k of e.ep)if(elSkOk(e,k)){const P=EL().skills[k];add(P.stL?P.stL[clamp(e.sk[k]||1,1,P.stL.length)-1]:P.st)}return S}   // stL：0.11.4 被动按 1～4 级
 function elDef(e){const J=elJobD(e),S=elStatSum(e),R=EL().regions[e.reg]||{},p=k=>Math.max(0.1,1+(S[k]||0));
-  return{name:elName(e),title:J.name,quality:'white',look:'el_'+e.job,elite:true,allSkills:true,stars:[null,{},{},{},{}],skills:[EL_NONE,EL_NONE,EL_NONE],lore:'',
+  return{name:elName(e),title:J.name,quality:'white',look:elSpr(e.job,e.sex),elite:true,allSkills:true,stars:[null,{},{},{},{}],skills:[EL_NONE,EL_NONE,EL_NONE],lore:'',
     hp:J.hp*p('hp'),atk:J.atk*p('atk'),ap:J.ap*p('ap'),def:J.def*p('def'),mdef:J.mdef*p('mdef'),speed:J.speed*p('speed'),vision:J.vision*p('vision'),prec:J.prec*p('prec'),aspd:J.aspd+(S.aspd||0),
     dodge:Math.max(0,(1+J.dodge+(S.dodge||0)/100)*(1+(S.dodgeK||0))-1+(S.dodgeR||0)+(S.eva||0)),crit:Math.max(0,(1+J.crit+(S.crit||0)/100)*(1+(S.critK||0))-1+(S.critR||0)),
     tough:Math.max(1,(100+(S.tough||0))*(1+(S.toughK||0))+100*(S.toughR||0)),prof:{weapon:J.weapon.slice(),armor:J.armor.slice()},backstab:!!S.backstab,elS:S,elRes:R.res||null}}
 // 小人：职业的图（art 里 el_<职业>）；还没画的先借一位英雄的
 const EL_SPR_FB={recruit:'arthur',assassin:'assassin',berserker:'arthur',spearman:'arthur',shieldGuard:'paladin',marksman:'robin',cannoneer:'gunslinger',musketeer:'gunslinger',lightCav:'camelKnight',heavyCav:'camelKnight',horseArcher:'robin',gunCav:'gunslinger',mage:'merlin',priest:'priest',engineer:'engineer'};
-const elSpr=job=>SPR.heroes['el_'+job]?'el_'+job:EL_SPR_FB[job]||'arthur';
+const elSpr=(job,sex)=>sex==='f'&&SPR.heroes['elf_'+job]?'elf_'+job:SPR.heroes['el_'+job]?'el_'+job:EL_SPR_FB[job]||'arthur';   // sex：0.11.4 女性小人 elf_<职业>（art/ef_elite）
 // 出征用的配置（同英雄的 currentHeroSpec）
 function elSpec(e){const it=u=>{const x=itemByUid(u);return x&&!x.book?{base:x.base,enh:x.enh||0,q:x.q||'common',roll:x.roll||null,ax:x.ax&&x.ax.length?x.ax.map(a=>Object.assign({},a)):null}:null};
-  const w=it(e.gear.w);return{id:'el'+e.id,d:elDef(e),el:e.id,star:1,weapons:w?[w]:[],offhand:it(e.gear.o),armor:['head','body','feet'].map(s=>it(e.gear[s])).filter(Boolean),acc:[],spc:null,spr:elSpr(e.job)}}
+  const w=it(e.gear.w);return{id:'el'+e.id,d:elDef(e),el:e.id,star:1,weapons:w?[w]:[],offhand:it(e.gear.o),armor:['head','body','feet'].map(s=>it(e.gear[s])).filter(Boolean),acc:[],spc:null,spr:elSpr(e.job,e.sex)}}
 // heroRecalc 末尾调：技能、按武器的伤害加成、射程、命中、抗性
 function elRecalc(h){const e=elById(h.elite);if(!e)return;const S=h.d.elS||{},w=h.ws;
   const A=e.ea.filter(k=>e.sk[k]>0&&elSkOk(e,k)&&!EL().skills[k].pas).slice(0,3);
@@ -62237,7 +62476,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.11.4',GAME_TAG='测试版',GAME_BUILD="21950e1",GAME_BUILT=1792880497716,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
+const GAME_VER='0.11.4',GAME_TAG='测试版',GAME_BUILD="47ba018",GAME_BUILT=1792883369001,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -66020,7 +66259,7 @@ let EL_TOP='settle',EL_SUB='list',EL_POP=null,EL_SORT='id',EL_Q='';
 .elss i{position:absolute;top:0;right:2px;font-style:normal;font-family:Georgia,serif;font-weight:700;font-size:.78rem;color:#fff;text-shadow:1px 1px 0 #000,-1px 0 0 #000,0 -1px 0 #000}
 .elss.emp{background:#120f17;box-shadow:inset 0 0 0 1px var(--iron);opacity:.7}.elssr.big .elss{width:50px;height:50px}.elssr.big .elss img{width:42px;height:42px}.elssr.big .elss i{font-size:.95rem}
 .elrecr{margin:0 0 12px}.elrecr h5{margin:0 0 4px}
-.elinfo p{margin:4px 0;line-height:1.6}
+.elinfo p{margin:4px 0;line-height:1.6}.elsx{color:#8ab4e8;margin-left:3px}.elsx.f{color:#e89ab8}
 .eltree{overflow-x:auto;padding:4px 0 10px;touch-action:pan-x pan-y}.eltree ul{display:flex;justify-content:center;position:relative;margin:0;padding:14px 0 0}.eltree>ul{padding-top:0;min-width:max-content}
 .eltree li{list-style:none;display:flex;flex-direction:column;align-items:center;position:relative;padding:14px 4px 0}
 .eltree li::before,.eltree li::after{content:'';position:absolute;top:0;right:50%;width:50%;height:14px;border-top:2px solid var(--iron-hi,#5a5068)}.eltree li::after{right:auto;left:50%;border-left:2px solid var(--iron-hi,#5a5068)}
@@ -66029,7 +66268,8 @@ let EL_TOP='settle',EL_SUB='list',EL_POP=null,EL_SORT='id',EL_Q='';
 .eltree .eltn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;background:#1a1622;box-shadow:inset 0 0 0 1px var(--iron);font-size:.76rem;cursor:pointer;min-width:5.5em}
 .eltree .eltn img{width:32px;height:32px;image-rendering:pixelated;object-fit:contain}.eltree .eltn.me{box-shadow:inset 0 0 0 2px var(--brass)}.eltree .eltn.dead{opacity:.55}.eltree .eltn i{font-style:normal;color:var(--bone-dim,#a89c8a)}
 `,st=document.createElement('style');st.textContent=css;document.head.appendChild(st)}
-const elIcon=e=>heroIcon(elSpr(e.job),2);
+const elIcon=e=>heroIcon(elSpr(e.job,e.sex),2);
+const elSexI=e=>e&&e.sex==='f'?'<span class="elsx f" title="女">♀</span>':'<span class="elsx" title="男">♂</span>';
 const elChip=(t,c,ti)=>`<span class="elchip${c?' '+c:''}"${ti?` title="${ti}"`:''}>${t}</span>`;
 const elTraitChips=e=>e.tr.map(k=>{const T=EL().traits[k];return elChip(T.name,T.q<0?'bad':'',T.desc)}).join('')+e.tt.map(k=>{const T=EL().train[k];return elChip(T.name,'tt',T.desc)}).join('');
 const elInjChips=e=>Object.keys(e.inj).map(k=>{const J=e.inj[k],I=EL().injuries[k];return elChip(I.name[J.lv-1],'inj',J.lv===1?`${Math.max(0,Math.ceil((J.t+EL().injury.healH*3600000-metaNow())/3600000))} 小时后恢复`:'残疾，不会自己恢复')}).join('');
@@ -66048,7 +66288,7 @@ function elListHTML(){const m=elSt(),dep=m.list.filter(e=>e.dep).length;
 function elCardHTML(e){const J=elJobD(e),hurt=elHurt(e);
   const L=e.learn?` · 正在学${EL().skills[e.learn.k].name} ${elRoman(e.learn.lv)} 级`:'';
   return`<div class="elcard${e.dep?' dep':''}${hurt?' hurt':''}"><div class="elpic"><img alt="" src="${elIcon(e)}"></div><div class="elmain">
-    <div><b class="nm">${elName(e)}</b> <span class="meta">${J.name} · Lv${elLv(e)} · ${elAgeTxt(e)} · 功勋 ${e.rank} 阶${e.lock?' · 已锁定配置':''}${L}</span></div>
+    <div><b class="nm">${elName(e)}</b>${elSexI(e)} <span class="meta">${J.name} · Lv${elLv(e)} · ${elAgeTxt(e)} · 功勋 ${e.rank} 阶${e.lock?' · 已锁定配置':''}${L}</span></div>
     <div class="elchips">${elTraitChips(e)}${elInjChips(e)}</div>${elSlotsHTML(e)}
     <div class="elbtns">${elBtn('elxdep',e.id,e.dep?'上阵中':'待命',{on:e.dep})}${elBtn('elxpop','info:'+e.id,'属性详情')}${elBtn('elxpop','eq:'+e.id,'装备')}${elBtn('elxpop','sk:'+e.id,'技能')}${elBtn('elxpop','job:'+e.id,'转职')}${elBtn('elxpop','log:'+e.id,'日志')}${elBtn('elxpop','inj:'+e.id,'伤病')}${elBtn('elxpop','tree:'+e.id,'族谱')}${elBtn('elxpop','ret:'+e.id,'退休')}</div></div></div>`}
 // —— 弹窗 ——
@@ -66094,7 +66334,7 @@ function elSkHTML(e){const sl=elSlots(e),N=elRankNeed(e),av=elSkAvail(e);
 function elJobHTML(e){const J=EL().jobs,c=e.job==='recruit'?EL().jobSilver:EL().jobChange;
   return`<p class="meta">现在：<b>${elJobD(e).name}</b>。转职花 ${c} 银币(新兵第一次转职 ${EL().jobSilver}，之后换职业 ${EL().jobChange})；换职业后，新职业用不了的技能、装备会卸下(技能等级保留)。</p>
     <div class="elgrid">${Object.keys(J).filter(k=>k!=='recruit').map(k=>{const j=J[k];   // 0.11.4（用户定）平铺：名字在上、小人在中、转职按钮在下
-      return`<div class="hst${k===e.job?' on':''}" title="生命 ${j.hp} · 物攻 ${j.atk} · 法攻 ${j.ap} · 物防 ${j.def} · 移速 ${j.speed}"><b>${j.name}</b><img class="gp" alt="" src="${heroIcon(elSpr(k),2)}"><span class="meta">${j.fam.map(f=>EL().famName[f]).join(' / ')}<br>${j.weapon.map(t=>CFG.weaponTypes[t].name).join('、')}</span>${elBtn('elxjob',e.id+':'+k,k===e.job?'当前':'转职',{dis:k===e.job})}</div>`}).join('')}</div>`}
+      return`<div class="hst${k===e.job?' on':''}" title="生命 ${j.hp} · 物攻 ${j.atk} · 法攻 ${j.ap} · 物防 ${j.def} · 移速 ${j.speed}"><b>${j.name}</b><img class="gp" alt="" src="${heroIcon(elSpr(k,e.sex),2)}"><span class="meta">${j.fam.map(f=>EL().famName[f]).join(' / ')}<br>${j.weapon.map(t=>CFG.weaponTypes[t].name).join('、')}</span>${elBtn('elxjob',e.id+':'+k,k===e.job?'当前':'转职',{dis:k===e.job})}</div>`}).join('')}</div>`}
 function elLogHTML(e){const g=e.log;
   return`<p>出战 <b>${g.n}</b> 次 · 击杀 <b>${g.k}</b> · 输出 <b>${numK(g.d)}</b> · 承伤 <b>${numK(g.t)}</b> · 治疗 <b>${numK(g.h)}</b> · 控制 <b>${f1g(g.c)}</b> 秒</p>
     <table class="ellog"><tr><th>时间</th><th>地图</th><th>波</th><th>击杀</th><th>输出</th><th>承伤</th><th>治疗</th><th>控制</th><th>功勋</th></tr>${g.L.map(L=>`<tr><td>${new Date(L.at).toLocaleString()}${L.dead?' (倒下)':''}</td><td>${CFG.maps[L.map]?CFG.maps[L.map].name:''}</td><td>${L.w}</td><td>${L.k}</td><td>${numK(L.d)}</td><td>${numK(L.t)}</td><td>${numK(L.h)}</td><td>${L.c}</td><td>+${L.m}</td></tr>`).join('')}</table>`}
@@ -66110,7 +66350,7 @@ function elTreeHTML(e){let root=e;const up=new Set([e.id]);while(root.par){const
   const st=x=>x.kid?`${Math.floor(x.age)} 岁`:x.st==='retired'?'退休':x.st==='dead'?'已故':'在役',seen=new Set();
   const node=(id,d)=>{const x=typeof id==='object'?id:elById(id);if(!x)return'<li><div class="eltn dead"><i>(名册已清除)</i></div></li>';if(seen.has(x.id)||d>12)return'';seen.add(x.id);
     const K=(x.kids||[]).map(c=>node(c,d+1)).join('');
-    return`<li><div class="eltn${x.id===e.id?' me':''}${x.st==='dead'?' dead':''}" role="button" data-act="elxpop" data-v="tree:${x.id}"><img alt="" src="${elIcon(x)}"><b>${elName(x)}</b><i>${st(x)} · 第 ${x.gen||1} 代</i></div>${K?`<ul>${K}</ul>`:''}</li>`};
+    return`<li><div class="eltn${x.id===e.id?' me':''}${x.st==='dead'?' dead':''}" role="button" data-act="elxpop" data-v="tree:${x.id}"><img alt="" src="${elIcon(x)}"><b>${elName(x)}${elSexI(x)}</b><i>${st(x)} · 第 ${x.gen||1} 代</i></div>${K?`<ul>${K}</ul>`:''}</li>`};
   return`<p class="meta">${root.par?'更早的祖先已从名册清除。':'最上面是招募来的第一代。'}点名字看那个人的族谱。${e.grandOf?`${elName(e)}接替自祖辈${(elById(e.grandOf)&&elName(elById(e.grandOf)))||''}。`:''}</p><div class="eltree"><ul>${node(root,0)}</ul></div>`}
 // —— 名册（用户定：所有过往士兵，可清除 / 压缩、排序、搜索、看族谱）——
 function elRollHTML(){const m=elSt(),q=EL_Q.trim();let L=m.roll.slice();if(q)L=L.filter(r=>elName(r).includes(q));
@@ -66126,7 +66366,7 @@ function elKidsHTML(){const m=elSt(),F=EL().family;
   return`<p class="meta">精英 ${F.age[0]}～${F.age[1]} 岁每年有概率生孩子(至多 ${F.max} 个)。孩子 ${F.school[0]}～${F.school[1]} 岁在训练所，每年有 ${pc_(F.learnP)} 概率学会一条可学的特性；${F.adult} 岁起可以招进精英(价格减半)，或者等父母退休时接替。</p>
     <div class="elroll">${m.kids.map(c=>{const p=elById(c.par);return`<div><b>${elName(c)}</b><span class="meta">${Math.floor(c.age)} 岁 · 父母 ${p?elName(p):'—'} · ${elTraitChips(c)||'还没有特性'}</span>${c.age>=F.adult?elBtn('elxkid',c.id,'招入精英'):''}${elBtn('elxpop','tree:'+c.id,'族谱')}</div>`}).join('')||'<p class="meta">训练所里还没有孩子。</p>'}</div>`}
 // —— 招募：地区面板的「招募」页签（elRecHTML）、精英页的「招募」页签（elRecAllHTML，0.11.4 用户定：地区竖排，人横排平铺）——
-function elOfferTile(reg,i,e,m){return`<div class="hst elof"><b>${elName(e)}</b><img class="gp" alt="" src="${elIcon(e)}"><span class="meta">${elAgeTxt(e)} · 寿命 ${e.life}<br>性格「${EL().personality[e.pers].name}」</span><div class="elchips">${elTraitChips(e)||'<span class="meta">没有特性</span>'}</div>
+function elOfferTile(reg,i,e,m){return`<div class="hst elof"><b>${elName(e)}${elSexI(e)}</b><img class="gp" alt="" src="${elIcon(e)}"><span class="meta">${elAgeTxt(e)} · 寿命 ${e.life}<br>性格「${EL().personality[e.pers].name}」</span><div class="elchips">${elTraitChips(e)||'<span class="meta">没有特性</span>'}</div>
   ${elBtn('elxhire',reg+':'+i,`招募 ${elPrice(e)} 银`,{dis:(META.wallet.银币||0)<elPrice(e)||m.list.length>=elCap()})}</div>`}
 const elOfferStrip=(reg,m)=>{const R=elRecOf(reg);return R.offers.length?`<div class="hstrip" data-hs="er_${reg}">${R.offers.map((e,i)=>elOfferTile(reg,i,e,m)).join('')}</div>`:'<p class="meta">这一批都招走了，等下次刷新。</p>'};
 function elRecHTML(reg){elTick();const m=elSt(),Rg=EL().regions[reg];
