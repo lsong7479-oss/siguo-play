@@ -18884,7 +18884,9 @@ CFG.elite={
   // 0.12.0（用户定）有配偶才生：15～25 岁 fertP，之后每岁 −fertDrop，双方相乘，每有一个孩子 −fertKid，至多 max 个
   family:{age:[15,50], p:0.125, fertP:0.5, fertAge:25, fertDrop:0.02, fertKid:0.05, max:5, school:[5,15], adult:15, inherit:0.3, heirP:0.6, grandP:0.2, childExp:0.3, childSk:0.3, grandExp:0.15, grandSk:0.15, childAge:[16,24], grandAge:[32,48]},
   // 特性（用户定：普通至多 3 条随机、训练至多 3 条只能学）；0.12.0 起特性只有训练所的孩子跟教官学（insMax 那一段）
-  traitMax:3, trainMax:3, normalN:[0,3],
+  traitMax:3, trainMax:3, normalN:[0,3], negMax:3,
+  // 0.12.0（用户定）近亲成家（配偶是三代以内的血亲：共同祖先隔 1 / 2 / 3 代）生孩子时 kinP 概率得一条遗传缺陷，再 kinSevere 概率变成严重的；特性遗传默认 p = family.inherit（特性里写了 p 的按它）
+  kinP:[0.2,0.1,0.05], kinSevere:0.25, kinGen:[['deform','deform2'],['dull','dull2'],['numb','numb2']],
   // 回城（Claude 定，按性格）：生命低于 back 回主堡旁，每秒回 regen，回到 out 再出去；睿智：压力（10 格内亡灵 ≥ busyN）大时用 backBusy
   personality:{
     timid:{name:'胆怯', back:0.6, out:0.95, dodge:false, desc:'血量较高时就回城'},
@@ -19010,6 +19012,13 @@ CFG.elite.traits={
   kind:   {name:'友善', q:1, learn:true, st:{marry:0.08}, desc:'提亲成功率 +8%，可学习'},
   ascetic:{name:'苦修', q:-1, x:['rake'], st:{mdef:0.25, refuse:0.8, noAuto:1}, desc:'法术防御 +25%；相亲 / 宴会时 80% 拒绝参与(之后 1 年不再参与)，不会自己成家'},
   rake:   {name:'风流', q:-1, x:['ascetic'], st:{fert:0.5, refuse:0.75, noAuto:1}, desc:'生育概率 ×1.5；相亲 / 宴会时 75% 拒绝参与(之后 1 年不再参与)，不会自己成家'},
+  // 0.12.0（用户定）遗传缺陷（gen：不算进普通特性的 3 条上限，负面特性至多 negMax 条；只从近亲成家或父母遗传来，p 遗传概率、x 0 不会自己出现）
+  deform: {name:'畸形', q:-1, gen:1, p:0.25, x:['deform2'], st:{hp:-0.2, atk:-0.2, def:-0.2}, desc:'生命、物攻、物防 −20%(遗传缺陷)'},
+  deform2:{name:'严重畸形', q:-1, gen:1, p:0.25, x:['deform'], st:{hp:-0.4, atk:-0.4, def:-0.4}, desc:'生命、物攻、物防 −40%(遗传缺陷)'},
+  dull:   {name:'弱智', q:-1, gen:1, p:0.25, x:['dull2'], st:{ap:-0.2, mdef:-0.2}, desc:'法攻、法防 −20%(遗传缺陷)'},
+  dull2:  {name:'严重弱智', q:-1, gen:1, p:0.25, x:['dull'], st:{ap:-0.4, mdef:-0.4}, desc:'法攻、法防 −40%(遗传缺陷)'},
+  numb:   {name:'神经迟缓', q:-1, gen:1, p:0.25, x:['numb2'], st:{speed:-0.2, aspd:-0.2, reloadK:-0.2}, desc:'移速、攻速、装填速度 −20%(遗传缺陷)'},
+  numb2:  {name:'神经缺陷', q:-1, gen:1, p:0.25, x:['numb'], st:{speed:-0.4, aspd:-0.4, reloadK:-0.4}, desc:'移速、攻速、装填速度 −40%(遗传缺陷)'},
 };
 // 训练特性（用户定）：只能学；同一系列（line）高级覆盖低级、不重复获得；lv = 要科技「精英训练」几级（通关一、三、五、七阶地区解锁 I～IV）
 //   st 的特殊字段：dmgR 远程物理伤害、dmgM 近战物理伤害、dmgS 法术伤害、dmg 造成伤害、terrain 地形惩罚、critTaken 被暴击伤害、eva 闪避率、rng 射程；
@@ -19055,6 +19064,7 @@ CFG.elite.injuries={
 };
 // 地区（开拓地）：名字风格 culture、家族姓氏 fam、属性偏好 st（Claude 定，小幅差异）、抗性 res
 CFG.elite.regions={
+  royal:       {culture:'west',   fam:['史密斯','怀特','布朗','泰勒','克拉克'], st:{}, desc:'王都'},   // 0.12.0 自建家族在王都
   wild:        {culture:'west',   fam:['布莱克','格林','斯通','伍德','希尔'], st:{hp:0.05}, desc:'生命 +5%'},
   corrupt:     {culture:'west',   fam:['格雷','莫斯','阿什','克罗','费恩'], st:{mdef:0.05}, res:{poison:0.15}, desc:'法防 +5%、毒抗 +15%'},
   tundra:      {culture:'north',  fam:['拉森','汉森','约翰森','彼得森','尼尔森'], st:{hp:0.05}, res:{frost:0.15}, desc:'生命 +5%、冰抗 +15%'},
@@ -19103,13 +19113,23 @@ CFG.heroes.scribe.passiveSk3='scrMemory';
 // 家族特性（用户定规则）：血脉占比到 min 才可能有；父母一方有：1 − (1 − p)，两方有：1 − (1 − p)²；没遗传上的再按 x 自己出现；招募来的家族成员按「一方有」算
 CFG.elite.bloodStats=[['hp','生命'],['atk','物攻'],['ap','法攻'],['def','物防'],['mdef','法防'],['speed','移速'],['aspd','攻速'],['vision','视野'],['rng','射程'],['reload','装填速度']];
 CFG.elite.bloodCap={f:[1.5,1.65,1.8,2,2.2,2.45,2.7,3,3.3], c:[1,1.1,1.2,1.35,1.5,1.7,1.9,2.15,2.4]};
-CFG.elite.bloodLV={'3':0.75,'2':0.5,'1':0.3,'0':0.1,'-1':-0.05,'-2':-0.2};
+CFG.elite.bloodLV={'3':0.75,'2':0.5,'1':0.25};   // 0.12.0 改：家族以同地区平民为底——正档 = 平民 + (家族封顶 − 平民) × 系数，负档 = 平民 − bloodNeg × 档
+CFG.elite.bloodNeg=0.1;
+// 0.12.0（用户定）移速、攻速、装填、射程不吃地区阶（按一阶算），这四项和视野的振幅压到主属性的 bloodMinorK（Claude 定）
+CFG.elite.bloodNoTier=['speed','aspd','reload','rng'];CFG.elite.bloodMinor=['speed','aspd','reload','rng','vision'];CFG.elite.bloodMinorK=0.3;
+// 家族编号（0.12.0：按家族、不按地区，一个地区可以有几个家族；bloodSrc 的 f 可以是数组）；crest = 家徽图标（art/ei_icons 的 cr:… 键）
+CFG.elite.bloodFamKey={wild:'lawrence',corrupt:'osborne',tundra:'ragnarsson',jungle:'goldfeather',desert:'asad',sanctum:'stclair',polar:'hogson',temple:'fahd',factory:'stein',cathedral:'valois',shadowDesert:'nadim',elemForest:'starspeak',ironFort:'eisenberg'};
+// 家族的特别属性（0.12.0 用户定：毒抗、冰抗、火抗、物理减伤、法术减伤、近战增伤、法术增伤、远程增伤；[下限, 上限]，一样就是固定；按血脉占比加权、出生时定下；Claude 定）
+CFG.elite.bloodSpName={resPoison:'毒抗',resFrost:'冰抗',resFire:'火抗',drP:'物理减伤',drM:'法术减伤',dmgM:'近战物理增伤',dmgS:'法术增伤',dmgR:'远程物理增伤'};
+CFG.elite.bloodSpSrc={lawrence:{dmgM:[0.03,0.06]}, osborne:{resPoison:[0.1,0.2]}, ragnarsson:{resFrost:[0.15,0.15]}, goldfeather:{resPoison:[0.1,0.1]}, asad:{resFire:[0.1,0.2]}, stclair:{drM:[0.05,0.1]},
+  hogson:{resFrost:[0.2,0.3]}, fahd:{dmgS:[0.05,0.1]}, stein:{dmgR:[0.05,0.05]}, valois:{dmgS:[0.03,0.08]}, nadim:{resFire:[0.1,0.1]}, starspeak:{drM:[0.03,0.08]}, eisenberg:{drP:[0.05,0.08]}};
 CFG.elite.bloodN=20;   // 一个人的血脉分成 20 份（0.12.0 用户定精度 5%）；孩子从父母各拿 10 份（随机抽，像孟德尔的分配）
-CFG.elite.bloodFamP=0.25;   // 招募时是家族成员的概率；家族成员的家族血脉 8～16 份，其余是这个地区的平民血脉
+CFG.elite.bloodFamP=0;   // 招募时是家族成员的概率（0.12.0 改 0：家族成员只从家族声望的招募出）；家族成员的家族血脉 10～20 份，其余是这个地区的平民血脉
 // 特性的 p / x 按门槛（用户给的劳伦斯家族：40% p20% x5%、60% p15% x4%、80% p10% x4%、100% p5% x3%）
-CFG.elite.bloodTrPX={0.4:[0.2,0.05], 0.6:[0.15,0.04], 0.8:[0.1,0.04], 1:[0.05,0.03]};
+CFG.elite.bloodTrPX={0.2:[0.25,0.05], 0.4:[0.2,0.05], 0.6:[0.15,0.04], 0.8:[0.1,0.04], 1:[0.05,0.03]};   // 0.2：自建家族的 20% 那一格（Claude 定）
 // c：平民血脉 {名字, 档位, 波动}；f：家族 {姓, 档位, 波动, 特性 [[名字, 门槛, 属性, 说明]]}；raw：直接写 [下限, 上限]（劳伦斯家族照用户的例子）
 CFG.elite.bloodSrc={
+  royal:{c:['王都平民',{},0.15]},   // 0.12.0 王都（自建家族的地方）只有平民血脉
   wild:{c:['荒野平民',{hp:1,ap:-1},0.2],
     f:{fam:'劳伦斯',raw:{hp:[0.85,1.05],atk:[0.95,1.15],ap:[0.75,0.95],def:[0.8,1],mdef:[0.75,0.95],speed:[0.85,1.05],aspd:[0.8,1],vision:[0.95,1.05],rng:[1,1],reload:[0.95,1.05]},
       tr:[['劳伦斯之力',0.4,{atk:0.05},'物理攻击 +5%'],['劳伦斯的荣耀',0.6,{dmg:0.15},'造成伤害 +15%'],['致命之握',0.8,{critDmg:0.25},'暴击伤害 +25%'],['天赐神力',1,{atk:0.15},'物理攻击 +15%']]}},
@@ -19139,6 +19159,30 @@ CFG.elite.bloodSrc={
     f:{fam:'艾森贝格',L:{def:3,atk:2,hp:1,speed:-2},v:0.1,tr:[['铁血',0.4,{atk:0.05},'物理攻击 +5%'],['钢铁纪律',0.6,{def:0.1},'物理防御 +10%'],['要塞之盾',0.8,{hp:0.15},'生命上限 +15%'],['铁血统帅',1,{dmg:0.1,def:0.1},'造成伤害、物理防御 +10%']]}},
 };
 
+// 0.12.0（用户定：一个地区 1～4 个家族，通常 2～3 个）：各地区再加的家族（Claude 定）；key 家族键、sp 特别属性 [下限, 上限]（按血脉占比打折）、徽记 cr:f_<key>
+CFG.elite.bloodMore={
+  wild:[{key:'brandon',fam:'布兰登',L:{hp:1,def:2,speed:-1},v:0.2,sp:{drP:[0.02,0.05]},tr:[['拓荒者之躯',0.4,{hp:0.05},'生命上限 +5%'],['篱墙',0.6,{def:0.1},'物理防御 +10%'],['守家',1,{drP:0.05},'物理减伤 +5%']]}],
+  corrupt:[{key:'mordred',fam:'莫德雷德',L:{atk:2,ap:1,hp:-1},v:0.3,sp:{dmgM:[0.03,0.08]},tr:[['腐刃',0.4,{dmgM:0.05},'近战伤害 +5%'],['疫病之握',0.6,{critDmg:0.15},'暴击伤害 +15%'],['黑血',1,{dmg:0.1},'造成伤害 +10%']]},
+    {key:'hollow',fam:'霍洛',L:{mdef:2,hp:1,atk:-1},v:0.2,sp:{resPoison:[0.15,0.25]},tr:[['苔藓护身',0.4,{mdef:0.05},'法术防御 +5%'],['腐土之根',0.8,{regen:0.25},'生命恢复 +25%'],['毒沼之主',1,{hp:0.12},'生命上限 +12%']]}],
+  tundra:[{key:'bjorn',fam:'比约森',L:{def:2,atk:1,speed:-1},v:0.2,sp:{resFrost:[0.1,0.2]},tr:[['雪盾',0.4,{def:0.05},'物理防御 +5%'],['冰原猎手',0.6,{dmgR:0.08},'远程伤害 +8%'],['寒铁之心',1,{drP:0.06},'物理减伤 +6%']]}],
+  jungle:[{key:'jaguar',fam:'豹纹',L:{atk:2,speed:1,mdef:-1},v:0.3,sp:{dmgM:[0.03,0.06]},tr:[['豹之爪',0.4,{critR:0.03},'暴击率 +3%'],['林间突袭',0.6,{dmgM:0.1},'近战伤害 +10%'],['猎豹',1,{speed:0.1},'移动速度 +10%']]},
+    {key:'raindance',fam:'雨歌',L:{ap:2,mdef:1,def:-1},v:0.2,sp:{resPoison:[0.1,0.15]},tr:[['雨林低语',0.4,{ap:0.05},'法术攻击 +5%'],['药草传承',0.6,{regen:0.25},'生命恢复 +25%'],['雨歌祭司',1,{dmgS:0.12},'法术伤害 +12%']]}],
+  desert:[{key:'sultani',fam:'苏丹尼',L:{hp:2,def:1,speed:-1},v:0.1,sp:{resFire:[0.15,0.2]},tr:[['沙堡',0.4,{def:0.05},'物理防御 +5%'],['骆驼之耐',0.6,{hp:0.1},'生命上限 +10%'],['沙漠王裔',1,{drP:0.05},'物理减伤 +5%']]},
+    {key:'zahir',fam:'扎希尔',L:{ap:2,vision:1,hp:-1},v:0.3,sp:{dmgS:[0.03,0.06]},tr:[['星象',0.4,{vision:0.1},'视野 +10%'],['沙之秘术',0.6,{ap:0.1},'法术攻击 +10%'],['海市蜃楼',0.8,{dodgeR:0.05},'偏斜率 +5%']]}],
+  sanctum:[{key:'beaumont',fam:'博蒙',L:{def:2,hp:1,ap:-1},v:0.1,sp:{drP:[0.03,0.06]},tr:[['守墓人',0.4,{def:0.05},'物理防御 +5%'],['圣骑传承',0.6,{hp:0.1},'生命上限 +10%'],['不灭誓言',1,{drP:0.06},'物理减伤 +6%']]}],
+  polar:[{key:'skadi',fam:'斯卡蒂',L:{atk:2,vision:1,def:-1},v:0.2,sp:{dmgR:[0.03,0.06]},tr:[['冰弓',0.4,{dmgR:0.05},'远程伤害 +5%'],['雪盲',0.6,{critR:0.04},'暴击率 +4%'],['霜狩之王',1,{critDmg:0.25},'暴击伤害 +25%']]}],
+  temple:[{key:'khafre',fam:'卡夫拉',L:{hp:2,mdef:2,speed:-2},v:0.2,sp:{drM:[0.03,0.06]},tr:[['石像之躯',0.4,{hp:0.05},'生命上限 +5%'],['神殿守卫',0.6,{mdef:0.1},'法术防御 +10%'],['永恒守望',1,{drM:0.06},'法术减伤 +6%']]},
+    {key:'sakh',fam:'萨赫',L:{atk:3,hp:-1,mdef:-1},v:0.3,sp:{dmgM:[0.04,0.08]},tr:[['狮神之怒',0.4,{atk:0.05},'物理攻击 +5%'],['血祭',0.6,{critDmg:0.2},'暴击伤害 +20%'],['战争女神',0.8,{dmg:0.08},'造成伤害 +8%'],['狮心',1,{atk:0.12},'物理攻击 +12%']]}],
+  factory:[{key:'krupp',fam:'克虏伯',L:{def:2,hp:1,speed:-1},v:0.1,sp:{drP:[0.03,0.05]},tr:[['装甲世家',0.4,{def:0.05},'物理防御 +5%'],['铆钉之躯',0.6,{hp:0.1},'生命上限 +10%'],['钢铁意志',1,{toughK:0.15},'坚韧值 +15%']]}],
+  cathedral:[{key:'montfort',fam:'蒙福尔',L:{hp:2,atk:1,mdef:-1},v:0.2,sp:{dmgM:[0.03,0.06]},tr:[['十字军',0.4,{atk:0.05},'物理攻击 +5%'],['狂信',0.6,{dmg:0.06},'造成伤害 +6%'],['圣战',1,{hp:0.15},'生命上限 +15%']]},
+    {key:'borgia',fam:'博尔吉亚',L:{ap:3,hp:-2},v:0.3,sp:{resPoison:[0.15,0.25]},tr:[['毒杯',0.4,{ap:0.05},'法术攻击 +5%'],['阴谋',0.6,{critR:0.04},'暴击率 +4%'],['教廷之毒',0.8,{dmgS:0.12},'法术伤害 +12%'],['黑弥撒',1,{ap:0.15},'法术攻击 +15%']]}],
+  shadowDesert:[{key:'qasim',fam:'卡西姆',L:{ap:2,mdef:1,hp:-1},v:0.2,sp:{drM:[0.03,0.06]},tr:[['影咒',0.4,{ap:0.05},'法术攻击 +5%'],['黑沙之盾',0.6,{mdef:0.1},'法术防御 +10%'],['影之主',1,{dmgS:0.12},'法术伤害 +12%']]}],
+  elemForest:[{key:'moonleaf',fam:'月叶',L:{vision:2,atk:1,def:-1},v:0.2,sp:{dmgR:[0.03,0.06]},tr:[['月光箭',0.4,{dmgR:0.05},'远程伤害 +5%'],['林地视界',0.6,{vision:0.15},'视野 +15%'],['月神之子',1,{critDmg:0.25},'暴击伤害 +25%']]},
+    {key:'stoneroot',fam:'石根',L:{hp:2,def:2,speed:-2},v:0.1,sp:{drP:[0.03,0.06]},tr:[['树皮肤',0.4,{def:0.05},'物理防御 +5%'],['古树',0.6,{hp:0.1},'生命上限 +10%'],['森之守护',1,{drP:0.06},'物理减伤 +6%']]}],
+  ironFort:[{key:'vonhorn',fam:'冯·霍恩',L:{atk:2,aspd:1,def:-1},v:0.2,sp:{dmgM:[0.03,0.06]},tr:[['铁骑',0.4,{atk:0.05},'物理攻击 +5%'],['冲锋传统',0.6,{dmgM:0.1},'近战伤害 +10%'],['铁血骑士',1,{critDmg:0.25},'暴击伤害 +25%']]},
+    {key:'rhein',fam:'莱茵',L:{atk:1,reload:3,rng:2,speed:-1},v:0.1,sp:{dmgR:[0.04,0.07]},tr:[['炮兵世家',0.4,{dmgR:0.05},'远程伤害 +5%'],['弹道学',0.8,{rng:0.1},'射程 +10%'],['莱茵之火',1,{dmg:0.1},'造成伤害 +10%']]}]};
+for(const reg in CFG.elite.bloodMore){const S=CFG.elite.bloodSrc[reg];if(S)S.f=[].concat(S.f||[],CFG.elite.bloodMore[reg])}
+
 // ---------- 0.12.0 婚配、地区声望、族谱存档（用户《0.12.0策划》第三部分；逻辑 game/el_mar.js）----------
 // 声望（用户定：仇恨、厌恶、冷淡、接纳、信任、尊敬、忠诚、狂热，初始冷淡；数 Claude 定）：每个家族各算各的（META.el.rep[家族血脉] = 点数）
 //   打这个地区的地图：每过一波给这个地区随机一个家族 wave 点（× 结算银币的难度倍率、这一波的银币倍率）；相亲 blind 点给这个地区随机一个家族；宴会给请的家族 feast[档]
@@ -19151,7 +19195,7 @@ CFG.elite.repRec={接纳:[0.2,0,0.2], 信任:[0.4,0,0.3], 尊敬:[0.6,0.2,0.5], 
 //   花费 × (1 + tierK × 地区阶)：银币、谷物（那个地区开拓地的粮仓）、肉类（那个地区开拓地的肉库）、这个家族要的加工品（goods，那个地区阶的）
 // 成家的成功率（0.12.0 用户定）：宴会 = 40% + 声望每级 5%（接纳 5% … 狂热 25%）+ (我方家族血脉 − 对方)% × 1% + 2% × (我方家族特性数 − 对方)；相亲 = 80% + 我方家族血脉 % × 1%
 //   失败后可以补一份彩礼 / 嫁妆再试一次（+20%，宴会花费的 dowryK 倍、相亲花费的 dowryBlind 倍；再失败对方就走了）；花费 × 地区阶的倍率 tierMul（用户定：按地区等阶 × 倍率；Claude 定）
-CFG.elite.mar={age:25, autoDrop:0.25, ageGap:[-5,5], tierMul:[1,1.6,2.4,3.5,5,7,9.5,12.5,16],
+CFG.elite.mar={age:25, autoDrop:0.25, ageGap:[-10,10], feastMin:0.05, tierMul:[1,1.6,2.4,3.5,5,7,9.5,12.5,16],   // ageGap：0.12.0 相亲人选的年龄放宽到 ±10（年龄差的加减才会出现）
   okFeast:0.4, okRep:0.05, okBl:0.01, okTr:0.02, okBlind:0.8, okAgeGap:5, okAge:0.005,   // okAge：0.12.0（用户定）相亲对方比自己大 / 小超过 5 岁，每岁 +/−0.5%
   okTeam:0.5, okTeamAge:0.005, okTeamPure:0.005, refuseMs:86400000,   // 队内婚配（用户定）：50% − 年龄每差 1 岁 0.5% − 血脉纯度（占比最高的一支血脉）每差 1% 0.5%；拒绝参与持续 1 年（现实 24 小时）
   dowry:0.2, dowryK:0.5, dowryBlind:2, okMin:0.05, okMax:0.98,
@@ -19168,6 +19212,22 @@ CFG.elite.bloodGoods={wild:'pgWood', corrupt:'pgCloth', tundra:'pgHide', jungle:
 // 族谱存档（用户定）：在役精英、训练所里的孩子、关注的家族所在的族谱才保留；整支族谱都离队（且没关注）gcHours 小时后删掉不在名册里的人（退学的孩子、族人）
 //   生孩子：在役精英照常；不在队里的族人——没关注的只到在役精英的孙辈（子辈能生），关注的主脉（每代的长子 / 长女）到曾孙、支脉到孙辈；至多关注 followMax 个家族
 CFG.elite.famKeep={gcHours:72, followMax:6, adult:15};
+
+// ---------- 0.12.0 自建家族（用户定；数 Claude 定；逻辑 game/el_cfam.js）----------
+// 至多 max 个，必定在王都；建立时得一名 50% 自家血脉 + 50% 王都平民的精英，默认关注；升阶：消耗当前阶所有地区的特产（core）各 upCore[阶] 个，并且要当前阶的地图全部拿到深渊徽章
+// 属性：每项上限 1～这一阶家族封顶（移速、攻速、装填、射程按一阶封顶），下限 = 上限 − 0.2；可分配的总量 = (封顶 − 1) × allocK（一项堆满、另一项 50%）
+// 特别属性：每阶一个，每个 spStep；家族特性：20 / 40 / 60 / 80 / 100% 各选一个（p、x 按 bloodTrPX 固定），可选的随阶数变多（trOpts 的 t = 要的阶）
+CFG.elite.cfam={max:3, silver:50000, upCore:[20,30,40,50,60,80,100,120], allocK:1.5, lo:0.2, spStep:0.05, step:0.05, thr:[0.2,0.4,0.6,0.8,1],
+  trOpts:{
+    pow:{t:1,name:'家传之力',st:{atk:0.05},desc:'物理攻击 +5%'}, arc:{t:1,name:'家传秘法',st:{ap:0.05},desc:'法术攻击 +5%'}, body:{t:1,name:'家传体魄',st:{hp:0.05},desc:'生命上限 +5%'},
+    wall:{t:1,name:'家传铁壁',st:{def:0.05},desc:'物理防御 +5%'}, ward:{t:1,name:'家传法盾',st:{mdef:0.05},desc:'法术防御 +5%'}, eye:{t:1,name:'家传鹰眼',st:{vision:0.1},desc:'视野 +10%'},
+    tough:{t:2,name:'坚韧家风',st:{toughK:0.1},desc:'坚韧值 +10%'}, aim:{t:2,name:'精准家风',st:{hitK:0.1},desc:'命中值 +10%'}, swift:{t:2,name:'迅捷家风',st:{speed:0.05},desc:'移动速度 +5%'}, learn:{t:2,name:'学者家风',st:{exp:0.2},desc:'经验获取 +20%'},
+    war:{t:3,name:'战意',st:{dmg:0.08},desc:'造成伤害 +8%'}, lethal:{t:3,name:'致命',st:{critDmg:0.2},desc:'暴击伤害 +20%'}, iron:{t:3,name:'铁血',st:{drP:0.05},desc:'物理减伤 +5%'}, aegis:{t:3,name:'秘盾',st:{drM:0.05},desc:'法术减伤 +5%'},
+    glory:{t:4,name:'荣光',st:{dmg:0.12},desc:'造成伤害 +12%'}, immortal:{t:4,name:'不朽',st:{hp:0.15},desc:'生命上限 +15%'}, lead:{t:4,name:'统御',st:{cd:0.15},desc:'冷却速度 +15%'},
+    fate:{t:5,name:'天命',st:{critR:0.05,dodgeR:0.05},desc:'暴击率、偏斜率 +5%'}, charm:{t:5,name:'名门风范',st:{marry:0.15},desc:'提亲成功率 +15%'},
+    titan:{t:6,name:'巨人之血',st:{hp:0.2,def:0.1},desc:'生命上限 +20%、物理防御 +10%'}, sage:{t:6,name:'贤者之血',st:{ap:0.15,cd:0.1},desc:'法术攻击 +15%、冷却速度 +10%'},
+    legend:{t:7,name:'传奇血统',st:{dmg:0.18},desc:'造成伤害 +18%'}, saint:{t:8,name:'圣徒血统',st:{drP:0.08,drM:0.08},desc:'物理、法术减伤 +8%'}, dragon:{t:9,name:'龙裔',st:{atk:0.2,ap:0.2},desc:'物理、法术攻击 +20%'}},
+  crestDef:{shape:'shield',bg:'blue',pat:'lion',fg:'gold'}};
 
 // ---------- 0.11.5 官方渠道（用户定：防止别人改了游戏重新发；有新版本提示去官网或 QQ 群）；逻辑 ui/official.js，安卓签名自检 app/android/…/SiguoGuard.java ----------
 // site 官网；ver 官网上的版本清单（tools/site_ver.py 写）；qq 游戏交流群（官网打不开的玩家从群里拿安装包）；hosts 网页版只认这些域名（空串 = 本地文件 / 电脑版）
@@ -21188,7 +21248,10 @@ Object.assign(SKI,{
 // 界面上缩到 16～20 像素显示，所以造型都画得粗、轮廓清楚。键：'st:<属性>'、'tr:pos' / 'tr:neg' / 'tr:train'、'cr:<家族 id>'
 // EI_CREST_COL：家族主色（徽记盾面用，主会话的血脉条也用这个）
 const EI_CREST_COL={f_wild:'#c0392b',f_corrupt:'#6c7a3a',f_tundra:'#5d8fb8',f_jungle:'#d4a017',f_desert:'#c96f2d',f_sanctum:'#e8e0c8',f_polar:'#9ad0e8',
-  f_temple:'#7a4fb0',f_factory:'#8a8f98',f_cathedral:'#5a1f3a',f_shadowDesert:'#2f2a3a',f_elemForest:'#3fae8a',f_ironFort:'#4a4a52'};
+  f_temple:'#7a4fb0',f_factory:'#8a8f98',f_cathedral:'#5a1f3a',f_shadowDesert:'#2f2a3a',f_elemForest:'#3fae8a',f_ironFort:'#4a4a52',
+  f_brandon:'#7a6a3a',f_mordred:'#3a2a40',f_hollow:'#4f6b3a',f_bjorn:'#8aa6c0',f_jaguar:'#c08a2a',f_raindance:'#2f7a6a',f_sultani:'#b88a3a',f_zahir:'#2a3a6a',   // 0.12.0 第二批 20 个家族（每个地区 1～4 个）
+  f_beaumont:'#5a5a6a',f_skadi:'#c8e0f0',f_khafre:'#c9a55a',f_sakh:'#a0302a',f_krupp:'#3a3a3a',f_montfort:'#8a1a1a',f_borgia:'#2a4a2a',f_qasim:'#4a3a5a',
+  f_moonleaf:'#5a6aa0',f_stoneroot:'#6a5a3a',f_vonhorn:'#5a1a1a',f_rhein:'#4a5a4a'};
 const EI_URL={};
 const EI_D=Math.PI/180;
 function eiAlong(S,x0,y0,x1,y1,f,flat){const dx=x1-x0,dy=y1-y0,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L;   // 沿 (x0,y0)→(x1,y1) 的局部坐标：u 沿线、v 横向
@@ -21211,12 +21274,13 @@ function eiAlm(dx,dy,rx,ry){const t=dx/rx;return t>-1&&t<1&&Math.abs(dy)<=ry*(1-
 function eiHeat(x,y,cx,y0,y1,hw){const yc=y+0.5;if(yc<y0||yc>y1)return false;const ym=y0+(y1-y0)*0.45;
   const w=yc<=ym?hw:hw*Math.pow(Math.max(0,Math.cos((yc-ym)/(y1-ym)*Math.PI/2)),0.8);return Math.abs(x+0.5-cx)<=w}
 // 带图案的盾：盾面 col（左半略亮、右半略暗）、盾边 rim；emb(E) 画图案，E 和 S 用法一样，但画出盾边的像素会被裁掉；图案外面自动描一圈暗边
-function eiCrest(S,col,rim,emb,g){g=g||[16,3,29,12];const[cx,y0,y1,hw]=g,In=(x,y)=>eiHeat(x,y,cx,y0,y1,hw),
+// In0 = 自定外形（(x,y)→是否在里面，自选徽记用；不给就是鸢形盾 g）；ol0 = 图案描边颜色（不给就是盾面压暗）
+function eiPaint(S,col,rim,emb,g,In0,ol0){g=g||[16,3,29,12];const[cx,y0,y1,hw]=g,In=In0||((x,y)=>eiHeat(x,y,cx,y0,y1,hw)),
   Inner=(x,y)=>In(x,y)&&In(x-2,y)&&In(x+2,y)&&In(x,y-2)&&In(x,y+2),M=new Uint8Array(1024);
   for(let y=0;y<32;y++)for(let x=0;x<32;x++)if(In(x,y))S.p(x,y,Inner(x,y)?shd(col,x<cx?0.07:-0.07):rim);
   const E=icPrim({W:32,H:32,p(x,y,c,flat){x=Math.floor(x);y=Math.floor(y);if(!c||!Inner(x,y))return;M[y*32+x]=1;S.p(x,y,c,flat)},clr(){},get:S.get,glow:S.glow});
   emb(E);
-  const ol=shd(col,-0.55);
+  const ol=ol0||shd(col,-0.55);
   for(let y=0;y<32;y++)for(let x=0;x<32;x++){const i=y*32+x;if(M[i]||!Inner(x,y))continue;
     if((x>0&&M[i-1])||(x<31&&M[i+1])||(y>0&&M[i-32])||(y<31&&M[i+32]))S.p(x,y,ol)}
   for(let y=1;y<32;y++)for(let x=1;x<32;x++){const i=y*32+x;if(M[i]&&!M[i-32]&&!M[i-1]){const c=S.get(x,y);if(c&&c[0]==='#'&&c.length===7)S.p(x,y,shd(c,0.25))}}}   // 图案左上沿提亮一点
@@ -21231,7 +21295,7 @@ const EI_DRAW={
     S.disc(21.5,10.5,4,'#8a6ae8');S.disc(20.5,9.5,1.6,'#c8b0ff',1);S.glow(20,9,'#ffffff');spark(S,27,4,'#b07ad8');spark(S,13,6,'#8a6ae8')},
   'st:def':S=>{S.disc(16,16,13.2,MAT.dark);S.disc(16,16,10.8,MAT.iron);S.r(15,4,2,24,'#7c8290');S.r(4,15,24,2,'#7c8290');
     S.disc(16,16,3.6,MAT.steel);S.glow(15,15,'#ffffff');for(const[x,y]of[[16,4],[16,27],[4,16],[27,16],[8,8],[23,8],[8,23],[23,23]])S.p(x,y,MAT.silver,1)},
-  'st:mdef':S=>eiCrest(S,'#3a6ab8','#9fdcf4',E=>{eiArc(E,16,14,5.2,6.6,0,360,'#9fe8ff',1);
+  'st:mdef':S=>eiPaint(S,'#3a6ab8','#9fdcf4',E=>{eiArc(E,16,14,5.2,6.6,0,360,'#9fe8ff',1);
     E.poly([[16,8.5],[18,14],[16,19.5],[14,14]],'#e8f8ff',1);E.r(10,13,12,2,'#9fe8ff',1);E.r(15,21,2,4,'#9fe8ff',1)}),
   'st:speed':S=>{const L='#7a4a2a';S.poly([[11,5],[19,5],[19,17.5],[25.5,19.5],[28,23],[28,26],[10,26],[10,19]],L);
     S.r(10,4,10,3,'#b98552');S.r(10,25,19,2,'#3e2818');S.r(12,9,6,1,'#5e3820',1);S.r(12,12,6,1,'#5e3820',1);
@@ -21262,7 +21326,7 @@ const EI_DRAW={
     S.disc(16,18,11.6,MAT.steel);S.disc(16,18,9.4,MAT.white,1);
     for(let i=0;i<12;i++){const a=i*30*EI_D,r=i%3?8.3:7.8;S.p(16+Math.cos(a)*r,18+Math.sin(a)*r,i%3?'#9aa0ac':IK,1)}
     eiSeg(S,16,18,21.5,11.5,0.7,'#d8303a',1);eiSeg(S,16,18,16,13,0.8,IK,1);S.disc(16,18,1.3,IK,1)},
-  'st:block':S=>{eiCrest(S,MAT.iron,MAT.dark,E=>{E.r(12,9,3,18,'#7c8290');E.disc(13.5,15,2.4,MAT.steel)},[13,5,30,10.5]);
+  'st:block':S=>{eiPaint(S,MAT.iron,MAT.dark,E=>{E.r(12,9,3,18,'#7c8290');E.disc(13.5,15,2.4,MAT.steel)},[13,5,30,10.5]);
     eiStar(S,25,8,8,2.2,6.8,'#f8d040',0.4);S.disc(25,8,2,'#fff8d0',1);S.glow(25,8,'#ffffff');
     for(const[x,y]of[[29,15],[20,2],[30,4]])spark(S,x,y,'#f8a030')},
   'st:mag':S=>{const dx=0.5,dy=-0.866,px=0.866,py=0.5,tx=19.5,ty=10;
@@ -21321,10 +21385,111 @@ const EI_CREST={
   f_elemForest:[MAT.gold,E=>{eiAlong(E,8,26,19,12,(u,v,L)=>{const t=u/L;if(t<0||t>1)return null;const a=Math.abs(v),w=5.2*Math.sin(Math.PI*t);return a<0.55&&t<0.95?'#6a9a30':a<=w?'#d8f0a0':null});
     eiStar(E,21.5,10.5,5,2.1,5.4,'#f8e070',-Math.PI/2,1);E.glow(21,10,'#ffffff')}],   // 叶子 + 星星
   f_ironFort:['#b8343a',E=>{const I='#b8bec8';E.r(10.5,11,11,14,I);E.r(10,9,12,2,I);E.r(10,6,3,3,I);E.r(14.5,6,3,3,I);E.r(19,6,3,3,I);
-    E.r(14,19,4,6,'#2a2733',1);E.r(14.5,18,3,1,'#2a2733',1);E.r(15,13,2,3,'#e0443a',1);E.r(10.5,15.5,11,1,'#8a909c',1)}]};   // 城塔
+    E.r(14,19,4,6,'#2a2733',1);E.r(14.5,18,3,1,'#2a2733',1);E.r(15,13,2,3,'#e0443a',1);E.r(10.5,15.5,11,1,'#8a909c',1)}],   // 城塔
+  // —— 0.12.0 第二批 20 个家族 ——
+  f_brandon:[MAT.bronze,E=>{const W='#d8b070';for(const x of[7.5,14.5,21.5]){E.r(x,9,3,16,W);E.poly([[x,9],[x+3,9],[x+1.5,5.5]],W)}E.r(6,11,20,2,'#b98552');E.r(6,18,20,2,'#b98552')}],   // 篱笆
+  f_mordred:['#8a4a2a',E=>{eiSword(E,16,4.5,16,26,{w:2.2,gw:5.5,c:'#a0582a',gc:'#5f6472',hc:MAT.dleather});E.r(15,13,1,3,'#6a3018',1);E.r(16,18,1,2,'#6a3018',1);
+    E.r(16,19,1,6,'#e0303a',1);eiDrop(E,20,22,1.4,'#e0303a',1);eiDrop(E,11.5,20,1.3,'#e0303a',1)}],   // 滴血的锈剑
+  f_hollow:[MAT.bone,E=>{const B='#8a6a48';eiSeg(E,13,12,8,6,1.2,B);eiSeg(E,19,12,24,6,1.2,B);eiSeg(E,16,12,16,5,1.2,B);E.poly([[11,12],[21,12],[22,24],[24.5,26],[7.5,26],[10,24]],B);
+    E.ell(16,18.5,2.6,3.8,'#1a1410',1);E.r(12,14,1,8,'#6a4a30',1);E.r(19,15,1,7,'#6a4a30',1);
+    for(const x of[8.5,23.5]){E.r(x-0.5,21,1,3,MAT.bone);E.ell(x,20.5,2,1.3,'#e8d0f8')}}],   // 空心树 + 小蘑菇
+  f_bjorn:[MAT.silver,E=>{const B='#6a4a30';E.disc(9.5,9.5,2.7,B);E.disc(22.5,9.5,2.7,B);E.p(9,9,'#a07a50',1);E.p(22,9,'#a07a50',1);E.ell(16,16,7.6,7,B);
+    E.ell(16,19.5,3.8,2.9,'#c8a070');E.ell(16,18,1.7,1.1,IK,1);E.r(12,14,2,2,IK,1);E.r(18,14,2,2,IK,1)}],   // 熊头
+  f_jaguar:['#6a4a1a',E=>{const N='#3a2410';E.ell(16,20,5,3.8,N);E.disc(9.6,13.5,2.1,N);E.disc(13.6,10.5,2.2,N);E.disc(18.4,10.5,2.2,N);E.disc(22.4,13.5,2.1,N);
+    for(const[x,y]of[[9,10],[13,7],[19,7],[23,10]])E.poly([[x-0.8,y+1],[x+0.8,y+1],[x+(x<16?-0.6:0.6),y-2]],MAT.bone,1)}],   // 豹爪印（带爪尖）
+  f_raindance:[MAT.gold,E=>{eiAlong(E,8,25,22,17,(u,v,L)=>{const t=u/L;if(t<0||t>1)return null;const a=Math.abs(v),w=4.2*Math.sin(Math.PI*t);return a<0.5&&t<0.95?'#5a9a30':a<=w?'#a8e070':null});
+    for(const[x,y]of[[11,11],[17,8.5],[22.5,12]])eiDrop(E,x,y,1.9,'#9fe8ff')}],   // 雨滴 + 叶
+  f_sultani:['#6a4a20',E=>{const C='#f4e4bc';E.disc(12,12.5,2.9,C);E.disc(19.5,12.5,2.9,C);E.ell(15.5,16.3,7,2.7,C);eiSeg(E,21.5,16,24.5,9.5,1.3,C);E.ell(25,9,2.3,1.4,C);
+    for(const x of[10,13.5,18,21.5])eiSeg(E,x,17.5,x,25,0.6,C)}],   // 骆驼
+  f_zahir:[MAT.gold,E=>{const G='#f0c040';for(let y=0;y<32;y++)for(let x=0;x<32;x++){if(Math.hypot(x+0.5-14,y+0.5-16)<=8&&Math.hypot(x+0.5-17.5,y+0.5-14)>6.6)E.p(x,y,G)}
+    eiStar(E,21,11,5,1.5,3.8,G,-Math.PI/2,1);E.glow(21,11,'#ffffff')}],   // 金色新月 + 星
+  f_beaumont:['#2e2e38',E=>{const P='#c8c4b8';E.r(10.5,12,11,13,P);E.disc(16,12,5.5,P);E.r(15,10,2,11,'#6a6a78',1);E.r(12.5,13,7,2,'#6a6a78',1);E.r(9,24,14,2,'#8a8a96')}],   // 墓碑十字
+  f_skadi:['#3a6a90',E=>{const N='#2a4f98';for(let k=0;k<6;k++){const a=k*Math.PI/3-Math.PI/2,ex=16+Math.cos(a)*6.5,ey=12+Math.sin(a)*6.5;eiSeg(E,16,12,ex,ey,0.7,N);
+      const mx=16+Math.cos(a)*4,my=12+Math.sin(a)*4;for(const s of[-1,1]){const b=a+s*0.8;E.line(mx,my,mx+Math.cos(b)*2.2,my+Math.sin(b)*2.2,N)}}
+    E.disc(16,12,1.4,N);eiArc(E,16,10,12,13.6,48,132,'#6a4020');E.line(8,20,24,20,'#6a4020',1)}],   // 雪花 + 弓
+  f_khafre:['#8a6a30',E=>{E.poly([[16,5.5],[26,23.5],[6,23.5]],'#f4e8c0');E.poly([[16,5.5],[26,23.5],[17,23.5]],'#8a6a30');for(const y of[11,16,21])E.line(9,y,24,y,'#c9a55a',1);E.r(6,24,20,1,'#8a6a30')}],   // 金字塔
+  f_sakh:[MAT.gold,E=>{const G='#e8b84a',Bl='#2a4f98';E.poly([[9.5,7],[22.5,7],[26,23],[6,23]],(x,y)=>(y%3===0?Bl:G));E.ell(16,14.5,4.6,6,'#f0c860');
+    E.r(13,12,2,1,IK,1);E.r(17,12,2,1,IK,1);E.poly([[15,15],[17,15],[16,17]],'#8a5a20',1);E.r(14,19,4,1,'#8a5a20',1);E.r(14,5,4,2,G)}],   // 埃及式狮头（条纹头巾）
+  f_krupp:[MAT.brass,E=>{const C='#9aa0ac',D=MAT.brass;for(const[x0,y0,x1,y1]of[[7,24,24,7],[25,24,8,7]]){eiAlong(E,x0,y0,x1,y1,(u,v,L)=>{const a=Math.abs(v);if(u<-2||u>L)return null;if(u<0)return Math.hypot(u,v)<=2?D:null;
+      if(u>L-2.2)return a<=2.8?D:null;return a<=2.6-u/L*0.9?(Math.abs(u-L*0.3)<0.7?D:C):null})}E.disc(16,15.5,1.6,MAT.dark);E.disc(23.6,7.4,1,IK,1);E.disc(8.4,7.4,1,IK,1)}],   // 交叉的炮管
+  f_montfort:[MAT.silver,E=>{const W='#f4f0e8';E.r(14,4,4,24,W);E.r(6,10,20,4,W)}],   // 白十字
+  f_borgia:[MAT.gold,E=>{const G='#e8b84a';E.poly([[9.5,7],[22.5,7],[20.5,13],[16,15.5],[11.5,13]],G);E.r(15,15,2,6,G);E.ell(16,22,5,1.6,G);E.r(10,7,12,2,'#7fe05a',1);
+    eiDrop(E,21,12,1.2,'#7fe05a',1);for(const[x,y]of[[13,5],[17,4],[20,5]])E.glow(x,y,'#b8f080')}],   // 毒酒杯
+  f_qasim:[MAT.violet,E=>{const S='#c8a878';eiArc(E,16,15,8.5,10,200,470,S);eiArc(E,16,15,5.5,6.8,20,290,S);
+    for(let y=0;y<32;y++)for(let x=0;x<32;x++){const dx=x+0.5-16,dy=y+0.5-15;if(eiAlm(dx,dy,4.6,2.8))E.p(x,y,Math.hypot(dx,dy)<=1.7?'#b07ad8':MAT.white)}}],   // 黑沙漩涡 + 眼
+  f_moonleaf:[MAT.silver,E=>{for(let y=0;y<32;y++)for(let x=0;x<32;x++){if(Math.hypot(x+0.5-13,y+0.5-14)<=8&&Math.hypot(x+0.5-16.5,y+0.5-12)>6.6)E.p(x,y,MAT.silver)}
+    eiAlong(E,14,25,24,9,(u,v,L)=>{const t=u/L;if(t<0||t>1)return null;const a=Math.abs(v),w=3.6*Math.sin(Math.PI*t);return a<0.5&&t<0.95?'#4f8f3a':a<=w?'#8fcf5a':null})}],   // 月亮 + 叶子
+  f_stoneroot:[MAT.gold,E=>{const T='#a08060';E.disc(16,9,5.5,'#3f7a3a');E.disc(10.5,11.5,4,'#3f7a3a');E.disc(21.5,11.5,4,'#3f7a3a');E.r(14,13,4,9,T);
+    for(const[a,b,c,e]of[[14,21,8,24],[18,21,24,24],[15,22,12,27],[17,22,20,27]])eiSeg(E,a,b,c,e,1,T);eiSeg(E,8,24,6.5,21.5,0.8,T);eiSeg(E,24,24,25.5,21.5,0.8,T);E.p(13,7,'#7ac86a')}],   // 盘根古树
+  f_vonhorn:[MAT.gold,E=>{const Q=t=>[(1-t)*(1-t)*8+2*(1-t)*t*21+t*t*22.5,(1-t)*(1-t)*24+2*(1-t)*t*24+t*t*8.5];   // 号角：吹口在左下、喇叭口在右上（二次曲线，越往喇叭口越粗）
+    eiSeg(E,9,23,22,13,0.6,MAT.leather);
+    for(let t=0;t<=1.001;t+=0.02){const[x,y]=Q(t),band=Math.abs(t-0.4)<0.03||Math.abs(t-0.75)<0.03;E.disc(x,y,0.9+3.2*t,band?MAT.gold:MAT.bone)}
+    E.ell(22.5,8.2,3.2,1.2,'#5a3a20',1);E.disc(8,24,1.1,MAT.gold)}],   // 号角
+  f_rhein:[MAT.silver,E=>{E.disc(16,11,5.2,'#8a909c');E.disc(14.5,9.5,1.8,'#c3cad6',1);E.glow(14,9,'#ffffff');
+    for(const y0 of[19,23.5])for(let y=0;y<32;y++)for(let x=4;x<29;x++){const c=y0+1.6*Math.sin((x+0.5)*0.7),dy=y+0.5-c;if(dy>-1.2&&dy<1.1)E.p(x,y,'#6ab0e8')}}]};   // 炮弹 + 波浪
 function eiIcon(k){if(EI_URL[k]!==undefined)return EI_URL[k];let f=EI_DRAW[k];
-  if(!f&&typeof k==='string'&&k.slice(0,3)==='cr:'){const id=k.slice(3),c=EI_CREST[id];if(c&&EI_CREST_COL[id])f=S=>eiCrest(S,EI_CREST_COL[id],c[0],c[1])}
+  if(!f&&typeof k==='string'&&k.slice(0,3)==='cr:'){const id=k.slice(3),c=EI_CREST[id];if(c&&EI_CREST_COL[id])f=S=>eiPaint(S,EI_CREST_COL[id],c[0],c[1])}
   let u='';if(f)try{u=ic32(f).toDataURL()}catch(e){u=''}return EI_URL[k]=u}
+// ---------- 0.12.0 自选家族徽记（代理 EI，用户：玩家自建家族，徽记 = 形状 + 底色 + 图案 + 图案颜色）----------
+// eiCrest(形状, 底色, 图案, 图案颜色) → 图片地址（32×32，按参数缓存）；颜色传 EI_CREST_COLS 的键（'red'）或 '#rrggbb'；形状不认识返回 ''，图案不认识就只画底
+// 画法同上面 13 个家族盾徽（eiPaint）：形状填底色、深色边、左亮右暗；图案是单色剪影（图案颜色 + 一点暗部 / 亮部），外面描一道和底色拉开的边（同色也看得出轮廓）
+const EI_CREST_SHAPES=[['shield','盾形'],['rect','矩形'],['rectNotch','矩形 + 倒三角缺口'],['rectTri','矩形 + 倒三角延伸'],['rectArc','矩形 + 半圆延伸']];
+const EI_CREST_PATS=[['sword','剑'],['swords','双剑'],['swordShield','剑盾'],['shield','盾'],['moon','月亮'],['sun','太阳'],['scale','天平'],['ship','船'],['mountain','山'],['tree','树木'],['wave','波浪'],['flame','火焰'],['tornado','龙卷风'],['horse','马'],['dragon','西方龙'],['phoenix','凤鸟'],['lion','狮'],['eagle','鹰']];
+const EI_CREST_COLS=[['black','黑','#1e1e24'],['white','白','#ecebe4'],['red','红','#c0392b'],['orange','橙','#d9822b'],['yellow','黄','#e6c229'],['green','绿','#3f9a4a'],['cyan','青','#3fb5b0'],['blue','蓝','#3a6fc4'],['purple','紫','#7a4fb0'],['gold','金','#d4a017'],['silver','银','#a9b0bb'],['brown','棕','#7a5232']];
+const EI_CC_URL={};
+function eiLum(c){const n=parseInt(c.slice(1),16);return(0.299*(n>>16)+0.587*((n>>8)&255)+0.114*(n&255))/255}
+function eiColOf(c){if(typeof c==='string'&&/^#[0-9a-fA-F]{6}$/.test(c))return c.toLowerCase();for(const r of EI_CREST_COLS)if(r[0]===c)return r[2];return '#a9b0bb'}
+const EI_CC_SHAPE={   // 外形：(x,y) → 这个像素在不在里面
+  shield:(x,y)=>eiHeat(x,y,16,3,29,12),
+  rect:(x,y)=>{const a=x+0.5,b=y+0.5;return a>=4&&a<=28&&b>=4&&b<=28},
+  rectNotch:(x,y)=>{const a=x+0.5,b=y+0.5;return a>=4&&a<=28&&b>=3&&b<=29&&b<=21.5+Math.abs(a-16)},
+  rectTri:(x,y)=>{const a=x+0.5,b=y+0.5;if(a<4||a>28||b<3||b>30)return false;return b<=19||Math.abs(a-16)<=12*(30-b)/11},
+  rectArc:(x,y)=>{const a=x+0.5,b=y+0.5;if(a<4||a>28||b<3)return false;return b<=18||Math.hypot(a-16,b-18)<=12}};
+// 图案：f(E, 主色 m, 暗部 d, 亮部 l)，画在 32×32 中间（大约 x 6～26、y 5～26）
+const EI_CC_PAT={
+  sword:(E,m,d,l)=>{eiSword(E,16,27,16,4.5,{w:2.2,gw:6,c:m,gc:d,hc:d})},
+  swords:(E,m,d,l)=>{eiSword(E,7,25.5,25,7,{w:1.9,gw:4.2,c:m,gc:d,hc:d});eiSword(E,25,25.5,7,7,{w:1.9,gw:4.2,c:m,gc:d,hc:d})},
+  swordShield:(E,m,d,l)=>{eiSword(E,8,25,24.5,7,{w:1.8,gw:4,c:m,gc:d,hc:d});
+    for(let y=0;y<32;y++)for(let x=0;x<32;x++)if(eiHeat(x,y,15,10,26,6.5))E.p(x,y,eiHeat(x,y,15,11.5,24.3,5)?m:d);E.r(14,13,2,8,l);E.r(11,15,8,2,l)},
+  shield:(E,m,d,l)=>{for(let y=0;y<32;y++)for(let x=0;x<32;x++)if(eiHeat(x,y,16,6,26.5,8.5))E.p(x,y,eiHeat(x,y,16,7.8,24.5,6.7)?m:d);E.r(15,9,2,14,d);E.r(10,13,12,2,d);E.disc(16,14,2,l)},
+  moon:(E,m,d,l)=>{for(let y=0;y<32;y++)for(let x=0;x<32;x++){const a=Math.hypot(x+0.5-15,y+0.5-15),b=Math.hypot(x+0.5-19.5,y+0.5-12.5);if(a<=9&&b>7.5)E.p(x,y,a>7.6?d:m)}E.p(9,13,l);E.p(9,14,l);E.p(10,18,l)},
+  sun:(E,m,d,l)=>{eiStar(E,16,15,10,5,10,d,0);eiStar(E,16,15,10,4.5,8.6,m,Math.PI/10);E.disc(16,15,5,m);E.disc(15,14,2.2,l)},
+  scale:(E,m,d,l)=>{E.r(15,8,2,16,m);E.r(11,24,10,2,m);E.r(13,23,6,1,m);E.disc(16,7,1.7,m);E.r(6,9,20,2,m);
+    for(const cx of[8,24]){E.line(cx-0.5,11,cx-3,17,d);E.line(cx+0.5,11,cx+3,17,d);for(let y=17;y<=20;y++)for(let x=cx-5;x<=cx+5;x++){const a=(x+0.5-cx)/4.8,b=(y+0.5-17)/3.3;if(a*a+b*b<=1)E.p(x,y,m)}}},
+  ship:(E,m,d,l)=>{E.r(15,4,2,16,d);E.poly([[17,5],[25.5,17],[17,17]],m);E.poly([[14.5,7],[14.5,17],[7.5,17]],m);E.r(14,5,4,1,d);
+    E.poly([[4.5,18.5],[27.5,18.5],[23.5,25],[8.5,25]],m);E.r(7,20,18,1,d);for(const x of[10,14,18,22])E.p(x,22,d)},
+  mountain:(E,m,d,l)=>{E.poly([[4,26],[12,8],[16,15],[20.5,7],[29,26]],m);E.poly([[20.5,7],[29,26],[22,26],[21,16]],d);
+    E.poly([[12,8],[9.6,13],[11,12.3],[12.5,13.6],[14.1,11.6]],l);E.poly([[20.5,7],[18,12],[19.6,11.3],[21,12.8],[23,11.3]],l)},
+  tree:(E,m,d,l)=>{E.r(14,17,4,9,m);E.poly([[11,26],[14,23],[18,23],[21,26]],m);
+    E.disc(16,10,6,m);E.disc(10.5,14,4.6,m);E.disc(21.5,14,4.6,m);E.disc(16,15,5,m);E.ell(16,17.5,9,2,d);E.r(15,19,2,6,d);E.disc(14,8,1.6,l)},
+  wave:(E,m,d,l)=>{for(const y0 of[8.5,15.5,22.5])for(let y=0;y<32;y++)for(let x=4;x<29;x++){const c=y0+2.4*Math.sin((x+0.5)*0.62),dy=y+0.5-c;if(dy>-1.7&&dy<1.5)E.p(x,y,dy<-0.6?l:m)}},
+  flame:(E,m,d,l)=>{E.poly([[16,3.5],[19.5,9],[22.5,7.5],[23.5,15],[22.5,21.5],[16,27],[9.5,21.5],[8.5,14.5],[10.5,9],[13,12]],m);
+    E.poly([[16,12],[19,17],[19.5,21],[16,24.5],[12.5,21],[13,17]],d);E.poly([[16,17],[17.6,20.5],[16,23],[14.4,20.5]],l)},
+  tornado:(E,m,d,l)=>{for(const[cx,cy,rx]of[[16,6.5,11],[15,10.5,9],[16.5,14.5,7],[15.5,18.5,5],[16.5,22,3.4],[16,25.3,2]])E.ell(cx,cy,rx,1.55,m);
+    for(const[x,y]of[[9,6],[22,10],[11,14],[19,18]])E.r(x,y,2,1,d)},
+  horse:(E,m,d,l)=>{E.poly([[10,24],[11,17],[10,12],[12,8],[14,6],[15,3],[17,5.5],[20,7],[24,11],[26.5,14],[25.5,17],[22,17],[19,15.5],[18.5,18.5],[21,24]],m);
+    E.r(8,24,15,3,m);eiSeg(E,12.5,8,11.5,19,1.2,d);E.r(19,10,2,1,d);E.p(24,14,d);E.r(9,24,13,1,d)},
+  dragon:(E,m,d,l)=>{E.poly([[16,15],[23.5,4],[29,7.5],[27.5,11.5],[25.5,10.5],[24.5,14.5],[22.5,13],[21,16.5]],m);eiSeg(E,17,14,23.5,5,0.6,d);eiSeg(E,23.5,5,28,7.8,0.6,d);   // 侧身朝左：背上一扇蝙蝠翼（骨在上沿、膜下沿成扇贝）
+    E.ell(18,18.5,6.5,3.6,m);eiSeg(E,13,17,10,11,2.2,m);E.poly([[3,9.5],[6,6.5],[10.5,5.5],[13,8],[12,11.5],[8,10.5],[5,12.5],[3.5,12]],m);eiSeg(E,11,6,14.5,2.5,0.8,m);E.p(9,8,l);E.line(4,11,8,10,d);
+    eiSeg(E,14,20,12.5,25.5,1.2,m);eiSeg(E,21,20,22,25.5,1.2,m);
+    eiSeg(E,24,19,27,22.5,1.1,m);eiSeg(E,27,22.5,25,26,1,m);E.poly([[25.5,25],[21,26],[23.5,28.5]],m);E.line(13,20,23,20,d)},
+  phoenix:(E,m,d,l)=>{E.poly([[14,13],[4,4],[6,10],[3,12],[7,15],[5,18],[13,18]],m);E.poly([[18,13],[28,4],[26,10],[29,12],[25,15],[27,18],[19,18]],m);
+    E.poly([[14,18],[18,18],[22,28],[16.5,24],[16,28],[15.5,24],[10,28]],m);E.ell(16,15,2.8,5,m);E.disc(16,8.5,2.3,m);
+    E.poly([[15,6.5],[13.5,3],[16,5],[18,2.5],[17,6.5]],m);E.poly([[18,8],[20.5,9],[18,10]],d);
+    E.line(7,7,12,14,d);E.line(25,7,20,14,d);E.line(16,20,16,25,d)},
+  lion:(E,m,d,l)=>{eiStar(E,16,15.5,12,8.4,11,d,0);E.disc(10.5,8.5,2.2,m);E.disc(21.5,8.5,2.2,m);E.ell(16,16,6.3,7,m);
+    E.r(12,13,3,1,d);E.r(17,13,3,1,d);E.poly([[14,17.5],[18,17.5],[16,20]],d);E.line(16,20,16,21,d);E.r(14,22,4,1,d);E.p(14,11,l);E.p(17,11,l)},
+  eagle:(E,m,d,l)=>{const L=[[14,11],[9,8],[4,9],[3,13],[4,17],[6,15.5],[6,19],[8,17],[9,20.5],[11,17.5],[13,18]];
+    E.poly(L,m);E.poly(L.map(([x,y])=>[32-x,y]),m);E.ell(16,15,3.4,5.5,m);E.disc(16,7.5,3,m);E.poly([[18,6],[22.5,7.5],[21,10.5],[18.5,9.5]],m);E.p(22,10,d);   // 头朝右、勾嘴
+    E.poly([[13.5,19.5],[18.5,19.5],[21,26.5],[11,26.5]],m);E.line(16,21,16,26,d);E.line(14,22,13,26,d);E.line(18,22,19,26,d);
+    E.p(17,7,d);E.line(5,12,11,12,d);E.line(27,12,21,12,d);E.line(6,16,11,15,d);E.line(26,16,21,15,d)}};
+function eiCrest(shape,bg,pat,fg){const key=shape+'|'+bg+'|'+pat+'|'+fg;if(EI_CC_URL[key]!==undefined)return EI_CC_URL[key];
+  const In=EI_CC_SHAPE[shape];let u='';
+  if(In)try{const b=eiColOf(bg),f=eiColOf(fg),lb=eiLum(b),lf=eiLum(f),P=EI_CC_PAT[pat],
+      rim=lb<0.3?shd(b,0.45):shd(b,-0.45),dk=lf<0.25?shd(f,0.3):shd(f,-0.35),lt=lf>0.85?shd(f,-0.12):shd(f,0.35),
+      ol=lf-lb>0.15?shd(b,-0.6):lf-lb<-0.15?shd(b,-0.3):lb<0.45?shd(b,0.6):shd(b,-0.6);   // 图案描边：图案比底亮 → 压暗底色；比底暗 → 稍暗；差不多 → 和底色拉开
+    u=ic32(S=>eiPaint(S,b,rim,E=>{if(P)P(E,f,dk,lt)},null,In,ol)).toDataURL()}catch(e){u=''}
+  return EI_CC_URL[key]=u}
 
 // ---------- v0.5.5 高清重绘引擎（用户：宽高各 ×2 重绘，像素总数 ×4；16×16 的单位画成 32×32）----------
 // 用法：hdFig(宽, 高, S=>{ ... }, {ol:外轮廓粗细}) → canvas（宽高是 ×2 后的像素；登记时 reg(canvas, 2)，逻辑尺寸 = 宽 / 2）
@@ -60421,13 +60586,16 @@ function localDayIdx(){const h=new Date(metaNow()).getHours(),H=SB.dayHours;let 
 //        dep 上阵, cmd 局内指令（'sortie' / 'guard'）, log {n 场, k 杀, d 输出, t 承伤, h 治疗, c 控制, L 最近的战报}, par 父母编号, kids 孩子编号, gen 第几代, learn {k, lv, end}, ly 上次学特性的年龄}
 const EL=()=>CFG.elite;
 const elRi=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),elPick=a=>a[Math.floor(Math.random()*a.length)];
-function elSt(){const m=META.el||(META.el={});if(!(m.t>0))m.t=metaNow();if(!(m.n>0))m.n=1;for(const k of['list','kids','roll','ins','staff','ev','fam','follow'])if(!Array.isArray(m[k]))m[k]=[];if(!(m.del>=0))m.del=0;for(const k of['rec','tch','irec','irq','rep'])if(!m[k]||typeof m[k]!=='object')m[k]={};if(!m.opt||typeof m.opt!=='object')m.opt={injOff:true};if(!m.v6&&typeof elBlMig==='function'){m.v6=1;for(const L of[m.list,m.kids,m.roll,m.staff])L.forEach(elBlMig);for(const r in m.rec)(m.rec[r].offers||[]).forEach(elBlMig);for(const r in m.irec)(m.irec[r].offers||[]).forEach(elBlMig);for(const c of m.kids)if(c.enr==null)c.enr=1}   // v6：0.12.0 血脉（老存档按籍贯算平民血脉）、训练所里原有的孩子都算已入学
+function elSt(){const m=META.el||(META.el={});if(!(m.t>0))m.t=metaNow();if(!(m.n>0))m.n=1;for(const k of['list','kids','roll','ins','staff','ev','fam','follow','cf'])if(!Array.isArray(m[k]))m[k]=[];if(!(m.del>=0))m.del=0;for(const k of['rec','tch','irec','irq','rep'])if(!m[k]||typeof m[k]!=='object')m[k]={};if(!m.opt||typeof m.opt!=='object')m.opt={injOff:true};if(!m.v6&&typeof elBlMig==='function'){m.v6=1;for(const L of[m.list,m.kids,m.roll,m.staff])L.forEach(elBlMig);for(const r in m.rec)(m.rec[r].offers||[]).forEach(elBlMig);for(const r in m.irec)(m.irec[r].offers||[]).forEach(elBlMig);for(const c of m.kids)if(c.enr==null)c.enr=1}   // v6：0.12.0 血脉（老存档按籍贯算平民血脉）、训练所里原有的孩子都算已入学
   if(!m.v7&&m.v6){m.v7=1;const N=EL().bloodN,sc=x=>{if(!x||!x.bl)return;let t=0,big=null;for(const id in x.bl)t+=x.bl[id];if(t===N)return;for(const id in x.bl){x.bl[id]=Math.round(x.bl[id]*N/t);if(!big||x.bl[id]>x.bl[big])big=id}let u=0;for(const id in x.bl)u+=x.bl[id];if(big)x.bl[big]+=N-u};
     for(const L of[m.list,m.kids,m.roll,m.staff,m.fam])L.forEach(sc);for(const r in m.rec)(m.rec[r].offers||[]).forEach(sc);for(const r in m.irec)(m.irec[r].offers||[]).forEach(sc)}else if(!m.v7)m.v7=1;   // v7：0.12.0 血脉 16 份 → 20 份（精度 5%）
+  if(!m.v8){m.v8=1;const MP={};for(const r in EL().bloodFamKey)MP['f_'+r]='f_'+EL().bloodFamKey[r];const fx=id=>{if(MP[id])return MP[id];const a=String(id).match(/^(f_[A-Za-z]+)_(\d+)$/);return a&&MP[a[1]]?MP[a[1]]+'_'+a[2]:id};   // v8：0.12.0 家族编号从按地区（f_wild）改成按家族（f_lawrence）
+    const fix=x=>{if(!x)return;if(x.bl){const o={};for(const id in x.bl)o[fx(id)]=(o[fx(id)]||0)+x.bl[id];x.bl=o}if(x.bt)x.bt=x.bt.map(fx);if(x.sp)fix(x.sp);(x.mc||[]).forEach(c=>{fix(c);if(c.src&&c.src.fid)c.src.fid=fx(c.src.fid)})};
+    for(const L of[m.list,m.kids,m.roll,m.staff,m.fam])L.forEach(fix);for(const r in m.rec)(m.rec[r].offers||[]).forEach(fix);for(const r in m.irec)(m.irec[r].offers||[]).forEach(fix);const R={};for(const id in m.rep)R[fx(id)]=(R[fx(id)]||0)+m.rep[id];m.rep=R}
   if(!m.v5){m.v5=1;const S=x=>{if(x&&!x.sex)x.sex=elSexOf(x.given)};for(const L of[m.list,m.kids,m.roll])L.forEach(S);for(const r in m.rec)(m.rec[r].offers||[]).forEach(S)}   // v5：0.11.4 加性别，老存档按名字认
   if(!m.v4){m.v4=1;for(const L of[m.list,m.kids,m.roll])for(const e of L)if(e&&e.sk)for(const k in e.sk)if(e.sk[k]>EL().skMax)e.sk[k]=EL().skMax}return m}   // v4：0.11.4 技能等级改成最高 4 级，老存档的 5 级压到 4 级
 const elById=id=>{const m=elSt();return m.list.find(e=>e.id===id)||m.kids.find(e=>e.id===id)||m.roll.find(e=>e.id===id)||m.staff.find(e=>e.id===id)||m.fam.find(e=>e.id===id)||null};
-const elName=e=>e?`${e.given}·${e.fam}`:'';
+const elName=e=>e?(e.gone?'(已故)':`${e.given}·${e.fam}`):'';   // gone：记录已清掉的队内配偶
 // 性别（0.11.4 用户定）：e.sex 'm' / 'f'；老存档按名字在哪个名字池里认（女名池里有就是女，否则男）
 const elSexOf=given=>{for(const c in EL().names){const N=EL().names[c];if(N.f&&N.f.includes(given))return'f'}return'm'};
 const elTa=e=>e&&e.sex==='f'?'她':'他',elSexTxt=e=>e&&e.sex==='f'?'女':'男';
@@ -60439,12 +60607,15 @@ const elCap=()=>EL().cap0+EL().capPer*elOpenRegs().length;
 const elTM=()=>(typeof running!=='undefined'&&running&&typeof TM!=='undefined'&&TM)?TM:techMods();
 const elDeployMax=()=>EL().deploy+(elTM().elDeploy||0);
 // —— 生成一名（招募、孩子、接替）——
+// 加一条普通特性：互斥、普通特性至多 traitMax 条（遗传缺陷不算）、负面至多 negMax 条（0.12.0）
+function elTrAdd(e,k){const T=EL().traits[k];if(!T||!elTraitsOk(e.tr,k))return false;const tr=EL().traits;if(!T.gen&&e.tr.filter(x=>!(tr[x]||{}).gen).length>=EL().traitMax)return false;if(T.q<0&&e.tr.filter(x=>(tr[x]||{}).q<0).length>=EL().negMax)return false;e.tr.push(k);return true}
 function elTraitsOk(L,k){const T=EL().traits[k];if(!T||L.includes(k))return false;return!(T.x||[]).some(x=>L.includes(x))&&!L.some(x=>(EL().traits[x].x||[]).includes(k))}
-function elRollTraits(n){const K=Object.keys(EL().traits),L=[];let t=0;while(L.length<n&&t++<60){const k=elPick(K);if(elTraitsOk(L,k))L.push(k)}return L}
+function elRollTraits(n){const K=Object.keys(EL().traits).filter(k=>!EL().traits[k].gen),L=[];let t=0;while(L.length<n&&t++<60){const k=elPick(K);if(elTraitsOk(L,k))L.push(k)}return L}
 function elGen(reg,o){o=o||{};const R=EL().regions[reg]||EL().regions.wild,P=EL().names[R.culture]||EL().names.west,F=EL().family;
   const sex=o.sex||(Math.random()<0.5?'f':'m'),e={id:0,sex,given:elPick(P[sex]||P.m),fam:o.fam||elPick(R.fam),reg,job:'recruit',age:o.age!=null?o.age:elRi(EL().recruit.age[0],EL().recruit.age[1])+Math.random(),life:elRi(EL().life[0],EL().life[1]),
     merit:0,rank:1,pers:elPick(Object.keys(EL().personality)),tr:[],tt:[],sk:{},ea:[],ep:[],lock:false,gear:{},inj:{},dep:false,cmd:'sortie',log:{n:0,k:0,d:0,t:0,h:0,c:0,L:[]},par:o.par||0,kids:[],gen:o.gen||1,learn:null,ly:-1};
-  if(o.inherit){for(const k of o.inherit)if(Math.random()<F.inherit&&elTraitsOk(e.tr,k))e.tr.push(k)}
+  if(o.inherit){const n={};for(const k of o.inherit)n[k]=(n[k]||0)+1;   // 0.12.0（用户定）特性按 p 遗传：父母一方有 1 − (1 − p)，两方有 1 − (1 − p)²（p 默认 family.inherit）
+    for(const k in n){const T=EL().traits[k];if(!T)continue;const p=T.p!=null?T.p:F.inherit;if(Math.random()<1-Math.pow(1-p,n[k]))elTrAdd(e,k)}}
   else{const n=elRi(EL().normalN[0],EL().normalN[1]);e.tr=elRollTraits(n)}
   // 血脉（0.12.0）：孩子 = 精英父 / 母 + 开拓地的平民配偶（这个地区的平民血脉）；其余按招募（bloodFamP 概率是这个地区的家族成员）
   if(o.kidOf){const P=o.kidOf,S=elSpouse(P)||{bl:{[elBlC(P.reg)]:EL().bloodN},fam:elPick(R.fam),sex:P.sex==='f'?'m':'f'};elBlChild(e,P,S.bl,S);e.fam=elKidFam(P,S)}
@@ -60466,13 +60637,13 @@ function elHire(reg,i){const m=elSt(),R=elRecOf(reg),e=R.offers[i];if(!e)return'
 // —— 年龄、家族、学习：现实 24 小时 = 1 岁，一次最多算 24 小时（用户定）——
 function elTick(){if(!META)return;const m=elSt(),now=metaNow();let dt=now-m.t;if(!(dt>0))return;const t0=m.t;m.t=now;dt=Math.min(dt,EL().offlineCapMs);const yr=dt/EL().yearMs,F=EL().family;let ch=false;
   EL_FOLLOW_SET=elFamReach(m.follow);
-  const life=x=>{const a0=x.age;x.age+=yr;if(!elSpouse(x)&&x.age>=EM().age&&!x.dead&&elAutoSpouse(x)){if(m.list.includes(x))elEv('mar',{id:x.id,auto:1});ch=true}if(x.sp)x.sp.age+=yr;   // 0.12.0（用户定）25 岁还没成家的自己相亲
+  const life=x=>{const a0=x.age;x.age+=yr;if(!elSpouse(x)&&x.age>=EM().age&&!x.dead&&elAutoSpouse(x)){if(m.list.includes(x))elEv('mar',{id:x.id,auto:1});ch=true}if(x.sp&&!x.sp.dead){x.sp.age+=yr;if(x.sp.age>=(x.sp.life||75))x.sp.dead=1}   // 队外配偶到寿命去世 → 丧偶   // 0.12.0（用户定）25 岁还没成家的自己相亲
     const pa=x.spId&&elById(x.spId);if(pa&&m.list.includes(pa)&&pa.id<x.id)return;   // 队内夫妻：编号小的那位判生育
     for(let y=Math.floor(a0)+1;y<=Math.floor(x.age);y++){if(x.kids.length<F.max&&elCanBirth(x)&&Math.random()<elFertP(x)){elBirth(x);ch=true}}};   // 0.12.0（用户定）生育概率 elFertP
   for(const e of m.list.slice()){life(e);
     if(e.age>=e.life-EL().retireBefore){const h=elRetire(e,true);elEv('ret',{id:e.id,heir:h?h.id:0});ch=true}}
   for(const c of m.kids)c.age+=yr;
-  for(const x of m.fam){if(x.dead)continue;life(x);if(x.age>=x.life){x.dead=1;x.st='dead'}}   // 族人（0.12.0）：不在队里的成年家族成员
+  for(const x of m.fam){if(x.dead)continue;life(x);if(x.age>=x.life)elFamDie(x)}   // 族人（0.12.0）：不在队里的成年家族成员
   for(const c of m.kids.slice())if(!c.enr&&c.age>=EL().famKeep.adult){elToFam(c);ch=true}   // 没入学的孩子长大了 → 族人
   // 训练所（0.12.0 用户定）：满 5 岁自动入学（有空位时，年纪大的先）；提前入学的占着位子
   {const cap=elKidCap();let n=m.kids.filter(c=>c.enr).length;for(const c of m.kids.slice().sort((a,b)=>b.age-a.age))if(!c.enr&&c.age>=F.school[0]&&n<cap){c.enr=1;n++;ch=true}}
@@ -60483,8 +60654,11 @@ function elTick(){if(!META)return;const m=elSt(),now=metaNow();let dt=now-m.t;if
   for(const e of m.list){for(const k in e.inj){const J=e.inj[k];if(J.lv===1&&now-J.t>=EL().injury.healH*3600000){delete e.inj[k];elEv('heal',{id:e.id,part:k});ch=true}}if(e.learn&&e.learn.end<=now){elLearnDone(e);ch=true}}
   if(elFamGc())ch=true;saveMeta();return ch}
 // 生孩子：同姓、同地区；30% 遗传父母的每条普通特性
-function elBirth(e){const m=elSt(),S=elSpouse(e),c=elGen(e.reg,{age:0,par:e.id,gen:(e.gen||1)+1,inherit:e.tr.concat(S&&S.tr||[]),kidOf:e});c.id=m.n++;c.kid=1;c.enr=0;m.kids.push(c);e.kids.push(c.id);if(e.spId&&S&&S.kids&&!S.kids.includes(c.id))S.kids.push(c.id);   // 队内夫妻：孩子两边都记
+function elBirth(e){const m=elSt(),S=elSpouse(e),c=elGen(e.reg,{age:0,par:e.id,gen:(e.gen||1)+1,inherit:e.tr.concat(S&&S.tr||[]),kidOf:e});c.id=m.n++;c.kid=1;c.enr=0;m.kids.push(c);e.kids.push(c.id);if(e.spId&&S&&S.kids&&!S.kids.includes(c.id)){S.kids.push(c.id);c.par2=S.id}   // 队内夫妻：孩子两边都记（par2 = 另一位）
+  {const g=e.spKin||0,K=EL();if(g>0&&Math.random()<(K.kinP[g-1]||0)){const pair=elPick(K.kinGen);elTrAdd(c,Math.random()<K.kinSevere?pair[1]:pair[0])}}   // 0.12.0（用户定）近亲成家：一代 20% / 二代 10% / 三代 5% 得遗传缺陷，25% 是严重的
   if(e.log){e.log.L.unshift({at:metaNow(),birth:c.id,bn:elName(c)});if(e.log.L.length>30)e.log.L.length=30}if(m.list.includes(e)||m.list.some(x=>x.id===e.par))elEv('birth',{id:c.id,par:e.id});return c}   // 0.12.0（用户定）出生记进父 / 母的日志，进营地时弹窗
+// 族人去世（0.12.0）：只留名字、性别、父母、子女几项，族谱照样连得上，存档小一点
+function elFamDie(x){const keep={id:1,given:1,fam:1,sex:1,par:1,par2:1,kids:1,gen:1,reg:1,age:1,job:1};for(const k in x)if(!keep[k])delete x[k];x.dead=1;x.st='dead'}
 // 弹窗用的事件（0.12.0 用户定：进营地时整理成弹窗——训练所、子嗣出生、伤病；看过就清掉）
 function elEv(k,o){const m=elSt();m.ev.push(Object.assign({t:metaNow(),k},o||{}));if(m.ev.length>200)m.ev.splice(0,m.ev.length-200)}
 // 提前加入预备队（0.12.0 用户定：占一个位子，满 5 岁才开始学）
@@ -60635,34 +60809,44 @@ setInterval(()=>{try{if(META&&!(typeof running!=='undefined'&&running))elTick()}
 // 一个人：e.bl {血脉: 份数（合计 bloodN = 20）}、e.bm {属性: 倍率}（出生 / 招募时在上下限之间随机定下）、e.bt [家族特性键]
 // 属性倍率在 game/el_battle.elDef（生命、物攻、法攻、物防、法防、移速、视野、攻速）和 elRecalc（射程、装填速度）里乘上；家族特性的属性在 elStatSum 里加
 // 展开数据（要用地区的阶，等 game/meta 的 mapTierOf 能用了再算，所以第一次用时才展开）
-function elBloodBuild(){const E=CFG.elite;if(E.blood)return;const B=E.blood={},T=E.bloodTr={},r2=v=>Math.round(v*100)/100;
-  for(const reg in E.bloodSrc){const S=E.bloodSrc[reg],t=Math.max(0,Math.min(8,CFG.maps[reg]?mapTierOf(reg):0)),cf=E.bloodCap.f[t],cc=E.bloodCap.c[t];
-    {const[name,L,v]=S.c,st={};for(const[k]of E.bloodStats){const lv=L[k]||0,hi=r2(Math.min(cc,cc-0.05*(1-lv)));st[k]=[r2(hi-v),hi]}B['c_'+reg]={name,reg,kind:'c',st,tr:[]}}
-    {const F=S.f,id='f_'+reg,st={};for(const[k]of E.bloodStats){if(F.raw){st[k]=F.raw[k]||[1,1];continue}const hi=r2(Math.min(cf,1+(cf-1)*E.bloodLV[String(F.L[k]||0)]));st[k]=[r2(hi-F.v),hi]}
-      B[id]={name:F.fam+'家族',fam:F.fam,reg,kind:'f',st,tr:F.tr.map((x,i)=>{const k=id+'_'+i,[p,xx]=E.bloodTrPX[x[1]];T[k]={name:x[0],blood:id,min:x[1],p,x:xx,st:x[2],desc:x[3]};return k})}}}}
+let EL_CFV=-1;   // 自建家族改过（META.el.cfv 变了）就重新展开
+function elBloodBuild(){const E=CFG.elite,v=(META&&META.el&&META.el.cfv)||0;if(E.blood&&EL_CFV===v)return;EL_CFV=v;const B=E.blood={},T=E.bloodTr={},r2=x=>Math.round(x*100)/100;
+  const minor=k=>E.bloodMinor.includes(k),noT=k=>E.bloodNoTier.includes(k),comp=(k,x)=>minor(k)?1+(x-1)*E.bloodMinorK:x,spr=(k,x)=>minor(k)?x*E.bloodMinorK:x;   // 0.12.0 移速等四项按一阶、五项振幅压到三成
+  for(const reg in E.bloodSrc){const S=E.bloodSrc[reg],t=Math.max(0,Math.min(8,CFG.maps[reg]?mapTierOf(reg):0)),tt=k=>noT(k)?0:t,cHi=(k,L)=>{const cc=E.bloodCap.c[tt(k)],lv=L[k]||0;return Math.min(cc,cc-0.05*(1-lv))};
+    {const[name,L,vv]=S.c,st={};for(const[k]of E.bloodStats){const hi=r2(comp(k,cHi(k,L)));st[k]=[r2(hi-spr(k,vv)),hi]}B['c_'+reg]={name,reg,kind:'c',st,sp:{},tr:[]}}
+    for(const F of(Array.isArray(S.f)?S.f:S.f?[S.f]:[])){const key=F.key||E.bloodFamKey[reg],id='f_'+key,st={};
+      for(const[k]of E.bloodStats){if(F.raw){st[k]=F.raw[k]||[1,1];continue}const base=cHi(k,S.c[1]),cf=E.bloodCap.f[tt(k)],lv=F.L[k]||0;   // 0.12.0 家族以同地区平民为底：正档往家族封顶靠，负档在平民上减
+        const hi=r2(comp(k,lv>0?base+(cf-base)*E.bloodLV[String(lv)]:base-E.bloodNeg*(-lv)));st[k]=[r2(hi-spr(k,F.v)),hi]}
+      B[id]={name:F.fam+'家族',fam:F.fam,reg,key,kind:'f',crest:F.key?'f_'+F.key:'f_'+reg,st,sp:F.sp||E.bloodSpSrc[key]||{},tr:F.tr.map((x,i)=>{const k=id+'_'+i,[p,xx]=E.bloodTrPX[x[1]];T[k]={name:x[0],blood:id,min:x[1],p,x:xx,st:x[2],desc:x[3]};return k})}}}
+  if(typeof elCfBuild==='function')elCfBuild(B,T)}
 const elBlood=()=>{elBloodBuild();return CFG.elite.blood};
 const elBloodTr=()=>{elBloodBuild();return CFG.elite.bloodTr};
 const elBlC=reg=>'c_'+(EL().bloodSrc[reg]?reg:'wild');
 const elBlFrac=(e,id)=>((e.bl||{})[id]||0)/EL().bloodN;
 // 这个人是哪个家族的（姓 = 某个家族的姓）
 const elFamOf=e=>{const B=elBlood();for(const id in B)if(B[id].kind==='f'&&B[id].fam===e.fam)return id;return null};
+// 家徽图标：自建家族按玩家选的形状 / 颜色 / 图案画（art/ei_icons 的 eiCrest），其余用家族的徽记
+const elCrestURL=id=>{const B=elBlood()[id];if(!B||typeof eiIcon!=='function')return'';if(B.custom){const c=B.crestCfg||CFG.elite.cfam.crestDef;return typeof eiCrest==='function'?eiCrest(c.shape,c.bg,c.pat,c.fg):''}return eiIcon('cr:'+B.crest)};
+const elBlCol=id=>{const B=elBlood()[id];if(!B||B.kind!=='f')return EL().bloodComCol;if(B.custom){const c=B.crestCfg||CFG.elite.cfam.crestDef,C=(typeof EI_CREST_COLS!=='undefined'?EI_CREST_COLS:[]).find(x=>x[0]===c.bg);return C?C[2]:'#c99a3a'}return(typeof EI_CREST_COL!=='undefined'&&EI_CREST_COL[B.crest])||'#c99a3a'};
 // 上下限：各血脉按份数加权
+// 特别属性（0.12.0）：按占比加权的 [下限, 上限]
+function elBlSpRange(bl){const B=elBlood(),N=EL().bloodN,o={};for(const id in bl){const S=B[id];if(!S||!S.sp)continue;const f=bl[id]/N;for(const k in S.sp){const r=o[k]||(o[k]=[0,0]);r[0]+=S.sp[k][0]*f;r[1]+=S.sp[k][1]*f}}return o}
 function elBlRange(bl){const B=elBlood(),N=EL().bloodN,o={};for(const[k]of EL().bloodStats){let lo=0,hi=0,n=0;for(const id in bl){const S=B[id];if(!S)continue;const f=bl[id]/N;n+=f;lo+=S.st[k][0]*f;hi+=S.st[k][1]*f}if(n<1){lo+=1-n;hi+=1-n}o[k]=[lo,hi]}return o}
-function elBlRoll(e){const R=elBlRange(e.bl);e.bm={};for(const k in R){const[lo,hi]=R[k];e.bm[k]=Math.round((lo+Math.random()*(hi-lo))*1000)/1000}}
+function elBlRoll(e){const R=elBlRange(e.bl);e.bm={};for(const k in R){const[lo,hi]=R[k];e.bm[k]=Math.round((lo+Math.random()*(hi-lo))*1000)/1000}const P=elBlSpRange(e.bl);e.bsp={};for(const k in P){const[lo,hi]=P[k];const v=Math.round((lo+Math.random()*(hi-lo))*1000)/1000;if(v>0)e.bsp[k]=v}}
 // 家族特性：血脉占比到门槛才可能有；n = 父母里有这条的人数（招募来的家族成员按 1 算）
 function elBlTraits(e,par){const B=elBlood(),T=elBloodTr();e.bt=[];
   for(const id in e.bl){const S=B[id];if(!S||S.kind!=='f')continue;const f=elBlFrac(e,id);
     for(const k of S.tr){const t=T[k];if(f+1e-9<t.min)continue;const n=par==='hire'?1:(par||[]).filter(p=>p&&(p.bt||[]).includes(k)).length;
       if((n>0&&Math.random()<1-Math.pow(1-t.p,n))||Math.random()<t.x)e.bt.push(k)}}}
 // 招募 / 新生成的人：famMember = 家族成员（家族血脉 8～16 份，其余这个地区的平民；姓改成家族的姓）
-function elBlNew(e,reg,famMember){const N=EL().bloodN,fid='f_'+reg,B=elBlood();
-  if(famMember&&B[fid]){const n=N/2+Math.floor(Math.random()*(N/2+1));e.bl={[fid]:n};if(n<N)e.bl[elBlC(reg)]=N-n;e.fam=B[fid].fam;elBlRoll(e);elBlTraits(e,'hire')}
+function elBlNew(e,reg,famMember){const N=EL().bloodN,F=elRegFams(reg),fid=F.length?elPick(F):null,B=elBlood();
+  if(famMember&&fid&&B[fid]){const n=N/2+Math.floor(Math.random()*(N/2+1));e.bl={[fid]:n};if(n<N)e.bl[elBlC(reg)]=N-n;e.fam=B[fid].fam;elBlRoll(e);elBlTraits(e,'hire')}
   else{e.bl={[elBlC(reg)]:N};elBlRoll(e);e.bt=[]}}
 // 孩子（用户定：像孟德尔遗传）：从父母各随机抽一半份数（不放回）
 function elBlHalf(bl){const L=[];for(const id in bl)for(let i=0;i<bl[id];i++)L.push(id);const o={},h=EL().bloodN/2;for(let i=0;i<h&&L.length;i++){const j=Math.floor(Math.random()*L.length);o[L[j]]=(o[L[j]]||0)+1;L.splice(j,1)}return o}
 function elBlChild(c,par,spouseBl,sp){const a=elBlHalf(par.bl||{[elBlC(par.reg)]:EL().bloodN}),b=elBlHalf(spouseBl);c.bl={};for(const o of[a,b])for(const id in o)c.bl[id]=(c.bl[id]||0)+o[id];elBlRoll(c);elBlTraits(c,[par,sp])}   // sp：0.12.0 配偶（家族特性两边都算）
 // 老存档：按籍贯算成那个地区的平民血脉
-function elBlMig(e){if(!e||e.bl)return;e.bl={[elBlC(e.reg)]:EL().bloodN};elBlRoll(e);e.bt=[]}
+function elBlMig(e){if(!e||e.bl)return;e.bl={[elBlC(e.reg)]:EL().bloodN};e.bm={};for(const[k]of EL().bloodStats)e.bm[k]=1;e.bsp={};e.bt=[]}   // 0.12.0 老存档的精英倍率定成 1（不削弱）
 // 显示用：血脉构成「劳伦斯家族 75% · 荒野平民 25%」
 const elBlTxt=e=>Object.keys(e.bl||{}).sort((a,b)=>e.bl[b]-e.bl[a]).map(id=>`${(elBlood()[id]||{name:id}).name} ${Math.round(elBlFrac(e,id)*100)}%`).join(' · ');
 
@@ -60671,11 +60855,13 @@ const elBlTxt=e=>Object.keys(e.bl||{}).sort((a,b)=>e.bl[b]-e.bl[a]).map(id=>`${(
 // 声望：META.el.rep[家族血脉] = 点数；族人：META.el.fam = 不在队里的成年家族成员（没入队的孩子长大了、族人的孩子）；关注：META.el.follow = [人的编号]（这个人所在的族谱不删、多生一代）
 const EM=()=>CFG.elite.mar;
 // 配偶：队外的是记录 x.sp；队内婚配（0.12.0）两人互相记 spId
-const elSpouse=x=>x?(x.sp||(x.spId?elById(x.spId):null)):null;
+const elSpouse=x=>x?(x.sp||(x.spId?(elById(x.spId)||{id:x.spId,dead:1,gone:1}):null)):null;   // 队内配偶的记录被清掉了也算丧偶（不能再婚）
+// 丧偶（0.12.0 用户定：只有一个配偶，丧偶后不再婚配）
+const elWidow=x=>{const S=elSpouse(x);return!!(S&&(S.dead||S.st==='dead'))};
 // 特性里某个属性的合计（普通、训练、家族特性）
 function elStT(x,k){let v=0;const add=st=>{if(st&&typeof st[k]==='number')v+=st[k]};for(const t of x.tr||[])add((EL().traits[t]||{}).st);for(const t of x.tt||[])add((EL().train[t]||{}).st);for(const t of x.bt||[])add((elBloodTr()[t]||{}).st);return v}
 // 生育概率（0.12.0 用户定）：15～25 岁 50%，之后每岁 −2%，双方相乘，每有一个孩子 −5%；纵欲、强欲、风流乘上去
-function elFertP(x){const S=elSpouse(x),F=EL().family;if(!S)return 0;const fa=a=>a<15?0:a<=F.fertAge?F.fertP:Math.max(0,F.fertP-F.fertDrop*(a-F.fertAge));
+function elFertP(x){const S=elSpouse(x),F=EL().family;if(!S||S.dead||S.st==='dead'||x.dead)return 0;const fa=a=>a<15?0:a<=F.fertAge?F.fertP:Math.max(0,F.fertP-F.fertDrop*(a-F.fertAge));   // 丧偶不生
   return clamp((fa(x.age)*fa(S.age)-F.fertKid*(x.kids||[]).length)*(1+elStT(x,'fert'))*(1+elStT(S,'fert')),0,1)}
 // 拒绝参与（苦修、风流）：每次相亲 / 宴会先判，拒绝了 1 年内不再参与；锁定单身的不参与
 function elRefuse(x){const now=metaNow();if(x.single)return`${elName(x)}锁定了单身`;if(x.refT>now)return`${elName(x)}现在不想成家(还要 ${Math.ceil((x.refT-now)/3.6e6)} 小时)`;
@@ -60688,7 +60874,7 @@ const elRepName=pts=>EL().rep.lv[elRepLv(pts)][0];
 const elRepOf=fid=>((elSt().rep||{})[fid])||0;
 function elRepAdd(fid,n){const m=elSt();if(!m.rep)m.rep={};if(fid&&n)m.rep[fid]=Math.round((m.rep[fid]||0)+n)}
 const elRepOk=(fid,need)=>elRepLv(elRepOf(fid))>=EL().rep.lv.findIndex(x=>x[0]===need);
-const elRegFams=reg=>{const B=elBlood();return Object.keys(B).filter(id=>B[id].kind==='f'&&B[id].reg===reg)};
+const elRegFams=reg=>{const B=elBlood();return Object.keys(B).filter(id=>B[id].kind==='f'&&B[id].reg===reg&&!B[id].custom)};
 // 打这个地区的地图：每过一波给随机一个本地家族声望（× 难度的结算倍率、这一波的银币倍率）
 function elRepBattle(map,cleared,dk){const F=elRegFams(map);if(!F.length||!(cleared>0))return 0;let s=0;
   for(let w=1;w<=cleared;w++){const n=Math.round(EL().rep.wave*(dk||1)*waveRewK(w));elRepAdd(elPick(F),n);s+=n}return s}
@@ -60699,13 +60885,13 @@ function elBlOf(reg,fr){const N=EL().bloodN,bl={};let u=0;for(const id in fr){co
 function elMainFam(x){let best=null,f=0;for(const id in x.bl||{}){const B=elBlood()[id];if(B&&B.kind==='f'&&x.bl[id]>f){f=x.bl[id];best=id}}return best}
 // —— 配偶 ——
 function elSpGen(reg,sex,age,fr){const R=EL().regions[reg]||EL().regions.wild,P=EL().names[R.culture]||EL().names.west,B=elBlood();
-  const sp={given:elPick(P[sex]||P.m),fam:elPick(R.fam),sex,age:Math.max(18,age),reg,bl:elBlOf(reg,fr||{}),pers:elPick(Object.keys(EL().personality)),job:'recruit'};
+  const sp={given:elPick(P[sex]||P.m),fam:elPick(R.fam),sex,age:Math.max(18,age),life:elRi(EL().life[0],EL().life[1]),reg,bl:elBlOf(reg,fr||{}),pers:elPick(Object.keys(EL().personality)),job:'recruit'};
   const mf=elMainFam(sp);if(mf&&elBlFrac(sp,mf)>=0.5)sp.fam=B[mf].fam;if(mf){const J=EL().bloodJobs[B[mf].reg];if(J&&J.length)sp.job=elPick(J)}elBlRoll(sp);elBlTraits(sp,'hire');return sp}   // job：0.12.0 人选的样子（家族擅长的职业；平民 = 新兵）
 const elOpp=x=>x.sex==='f'?'m':'f';
 const elSpAge=x=>x.age+elRi(EM().ageGap[0],EM().ageGap[1]);
 // 25 岁还没成家：自己相亲（配偶的家族血脉 = 自己的 − 0～25%）
 function elAutoSpouse(x){if(x.single||elStT(x,'noAuto'))return null;   // 0.12.0 锁定单身、苦修、风流不会自己成家
-  const mf=elMainFam(x),fr={};if(mf)fr[mf]=Math.max(0,elBlFrac(x,mf)-Math.floor(Math.random()*(EM().autoDrop*20+1))/20);x.sp=elSpGen(x.reg,elOpp(x),elSpAge(x),fr);delete x.mc;return x.sp}
+  const mf=elMainFam(x),fr={};if(mf&&!(elBlood()[mf]||{}).custom)fr[mf]=Math.max(0,elBlFrac(x,mf)-Math.floor(Math.random()*(EM().autoDrop*20+1))/20);x.sp=elSpGen(x.reg,elOpp(x),elSpAge(x),fr);delete x.mc;return x.sp}   // 自建家族的血外人没有：配偶按普通平民
 const elRegTier=reg=>CFG.maps[reg]?mapTierOf(reg):0;
 const elMarK=reg=>EM().tierMul[Math.min(EM().tierMul.length-1,elRegTier(reg))];
 // 相亲：花银币，出 3～5 名平民血脉的人选（这个人自己的地区）
@@ -60715,7 +60901,7 @@ function elBlind(x){if(elSpouse(x))return'已经成家了';const c=elBlindCost(x
 // 宴会：请一个家族（要声望），花银币、那个地区开拓地的谷物和肉、这个家族要的加工品
 function elFeastCost(fid,b){const B=elBlood()[fid],C=EM().feast[b],k=elMarK(B.reg),W=CFG.wares.tiers[Math.min(CFG.wares.tiers.length-1,elRegTier(B.reg))],g=W.goods&&W.goods[EL().bloodGoods[B.reg]];
   return{silver:Math.round(C.silver*k),grain:Math.round(C.grain*k),meat:Math.round(C.meat*k),goods:g,gn:Math.round(C.goods*k)}}
-function elFeastCheck(x,fid,b){const B=elBlood()[fid],C=EM().feast[b];if(!B||!C)return'没有这个家族';if(elSpouse(x))return'已经成家了';if(x.single)return`${elName(x)}锁定了单身`;if(!elRepOk(fid,C.need))return`要${B.name}的声望到「${C.need}」(现在「${elRepName(elRepOf(fid))}」)`;
+function elFeastCheck(x,fid,b){const B=elBlood()[fid],C=EM().feast[b];if(!B||!C)return'没有这个家族';if(elSpouse(x))return'已经成家了';if(x.single)return`${elName(x)}锁定了单身`;if(!B.custom&&!elRepOk(fid,C.need))return`要${B.name}的声望到「${C.need}」(现在「${elRepName(elRepOf(fid))}」)`;
   const K=elFeastCost(fid,b),fd=elFood();if((META.wallet.银币||0)<K.silver)return`银币不够(需要 ${K.silver})`;if(fd.gs<K.grain)return`各开拓地粮仓里的谷物不够(需要 ${K.grain}，有 ${Math.floor(fd.gs)})`;
   if(fd.ms<K.meat)return`各开拓地粮仓里的肉不够(需要 ${K.meat}，有 ${Math.floor(fd.ms)})`;if(K.goods&&((META.wares||{})[K.goods]||0)<K.gn)return`${CFG.wares.items[K.goods].name}不够(需要 ${K.gn})`;return null}
 // 宴会的谷物、肉（0.12.0 用户定）：所有开拓地粮仓的储量加起来，按地区依次扣
@@ -60724,22 +60910,25 @@ function elFoodTake(k,n){for(const id in META.settle.R){if(n<=0)break;if(!stRegi
 function elFeast(x,fid,b){const err=elFeastCheck(x,fid,b);if(err)return err;{const r=elRefuse(x);if(r)return r}const B=elBlood()[fid],C=EM().feast[b],K=elFeastCost(fid,b);
   META.wallet.银币-=K.silver;elFoodTake('gs',K.grain);elFoodTake('ms',K.meat);if(K.goods)(META.wares||(META.wares={}))[K.goods]-=K.gn;stPoolDirty();elRepAdd(fid,EL().rep.feast[b]);
   const others=Object.keys(elBlood()).filter(id=>id!==fid&&elBlood()[id].kind==='f'),n=elRi(C.n[0],C.n[1]),base=elBlFrac(x,fid);x.mc=[];
-  for(let i=0;i<n;i++){const main=Math.round(clamp(base+(Math.random()*2-1)*EM().spread+C.bonus,0,1)*20)/20,fr={[fid]:main};
+  for(let i=0;i<n;i++){const main=Math.round(clamp(Math.max(EM().feastMin+C.bonus,base+(Math.random()*2-1)*EM().spread+C.bonus),0,1)*20)/20,fr={[fid]:main};   // feastMin：0.12.0 请了这个家族，至少 5% + 这一档的加成
     if(others.length&&Math.random()<EM().mix&&main>0){const o=elPick(others),mx=Math.min(main*EM().mixMax,1-main);const v=Math.floor(Math.random()*(mx*20+1))/20;if(v>0)fr[o]=v}
     const c=elSpGen(B.reg,elOpp(x),elSpAge(x),fr);c.src={fid,b};x.mc.push(c)}
   saveMeta();return null}
 // 成功率（用户定）；家族血脉合计 = 所有家族血脉的占比之和
 const elFamTot=x=>{let f=0;for(const id in x.bl||{})if((elBlood()[id]||{}).kind==='f')f+=elBlFrac(x,id);return f};
 function elMarP(x,c,dw){const E=EM(),nb=elStT(x,'noble')>0,neg=v=>nb?Math.max(0,v):v;let p;   // noble：高贵气质，家族血脉差的负面不算
-  if(c.src&&c.src.fid){const lv=Math.max(0,elRepLv(elRepOf(c.src.fid))-EL().rep.lv.findIndex(q=>q[0]==='冷淡'));
+  if(c.src&&c.src.fid){const cz=elRepLv(0),lv=(elBlood()[c.src.fid]||{}).custom?EL().rep.lv.length-1-cz:Math.max(0,elRepLv(elRepOf(c.src.fid))-cz);   // 自建家族按「狂热」算
     p=E.okFeast+E.okRep*lv+neg(E.okBl*Math.round((elFamTot(x)-elFamTot(c))*100))+E.okTr*((x.bt||[]).length-(c.bt||[]).length)}
   else{const d=Math.round(c.age-x.age);p=E.okBlind+E.okBl*Math.round(elFamTot(x)*100)+(Math.abs(d)>E.okAgeGap?E.okAge*d:0)}   // 相亲：对方大 / 小超过 5 岁，每岁 ±0.5%
   return clamp(p+(dw?E.dowry:0)+elStT(x,'marry'),E.okMin,E.okMax)}
+// 血亲（0.12.0 用户定）：三代以内有共同祖先 → 隔几代（父母子女、兄弟姐妹 = 1，祖孙、堂表亲 = 2，再远一层 = 3）；成家时算一次存下来
+function elKin(a,b){const anc=x=>{const o=new Map([[x.id,0]]),q=[[x,0]];while(q.length){const[c,d]=q.shift();if(d>=3)continue;for(const pid of[c.par,c.par2]){if(!pid||o.has(pid))continue;const p=elById(pid);o.set(pid,d+1);if(p)q.push([p,d+1])}}return o};
+  const A=anc(a),Bm=anc(b);let g=0;for(const[id,da]of A)if(Bm.has(id)){const v=Math.max(da,Bm.get(id));if(v>0&&(!g||v<g))g=v}return g}
 // 队内婚配（0.12.0 用户定）：50% − 年龄每差 1 岁 0.5% − 血脉纯度每差 1% 0.5%（+ 双方的提亲加成）
 function elTeamP(a,b){const E=EM();return clamp(E.okTeam-E.okTeamAge*Math.abs(Math.round(a.age-b.age))-E.okTeamPure*Math.abs(Math.round((elPure(a)-elPure(b))*100))+elStT(a,'marry')+elStT(b,'marry'),E.okMin,E.okMax)}
 function elTeamMarry(a,b){const m=elSt();if(!a||!b||a===b||!m.list.includes(a)||!m.list.includes(b))return'只能在两名在役精英之间';if(a.sex===b.sex)return'要一男一女';if(elSpouse(a)||elSpouse(b))return'有人已经成家了';
   const now=metaNow();if((a.tmT||{})[b.id]>now)return`${elName(b)}不久前拒绝过，一年内别再提了`;for(const x of[a,b]){const r=elRefuse(x);if(r)return r}
-  if(Math.random()<elTeamP(a,b)){a.spId=b.id;b.spId=a.id;delete a.mc;delete b.mc;elEv('mar',{id:a.id});saveMeta();return'ok'}
+  if(Math.random()<elTeamP(a,b)){a.spId=b.id;b.spId=a.id;a.spKin=b.spKin=elKin(a,b);delete a.mc;delete b.mc;elEv('mar',{id:a.id});saveMeta();return'ok'}   // spKin：0.12.0 近亲（共同祖先隔几代，0 = 不是）
   if(!a.tmT)a.tmT={};a.tmT[b.id]=now+EM().refuseMs;saveMeta();return'fail'}
 // 彩礼 / 嫁妆：宴会人选 = 那一档宴会花费 × dowryK（银币、谷物、肉、加工品）；相亲人选 = 相亲银币 × dowryBlind
 function elDowryCost(x,c){if(c.src&&c.src.fid){const K=elFeastCost(c.src.fid,c.src.b),k=EM().dowryK;return{silver:Math.round(K.silver*k),grain:Math.round(K.grain*k),meat:Math.round(K.meat*k),goods:K.goods,gn:Math.round(K.gn*k),food:1}}return{silver:Math.round(elBlindCost(x)*EM().dowryBlind)}}
@@ -60756,12 +60945,13 @@ function elFollow(id,on){const m=elSt();if(!on){m.follow=m.follow.filter(x=>x!==
 // 族谱连通：par / kids 双向；种子 = 在役精英、训练所里的孩子（+ 关注的人）
 function elFamReach(seeds){const m=elSt(),idx=new Map();for(const L of[m.list,m.kids,m.fam,m.roll,m.staff])for(const x of L)idx.set(x.id,x);
   const seen=new Set(),q=[];for(const id of seeds)if(idx.has(id)&&!seen.has(id)){seen.add(id);q.push(id)}
-  while(q.length){const x=idx.get(q.pop());const nb=(x.kids||[]).concat(x.par?[x.par]:[]);for(const id of nb)if(idx.has(id)&&!seen.has(id)){seen.add(id);q.push(id)}}return seen}
+  while(q.length){const x=idx.get(q.pop());const nb=(x.kids||[]).concat(x.par?[x.par]:[],x.par2?[x.par2]:[]);for(const id of nb)if(idx.has(id)&&!seen.has(id)){seen.add(id);q.push(id)}}return seen}
 let EL_FOLLOW_SET=null;
 // 不在队里的人能不能生（用户定）：没关注 = 在役精英的子辈能生（到孙辈）；关注的主脉（每代都是长子 / 长女）到曾孙、支脉到孙辈
-function elCanBirth(x){const m=elSt();if(m.list.includes(x))return true;let cur=x,g=0,main=true;
-  while(cur.par&&g<4){const p=elById(cur.par);if(!p)return false;g++;if((p.kids||[])[0]!==cur.id)main=false;if(m.list.includes(p))break;cur=p}
-  if(!(g>=1&&m.list.includes(elById(cur.par))))return false;const fol=EL_FOLLOW_SET&&EL_FOLLOW_SET.has(x.id);return g<=1||(fol&&main&&g<=2)}
+function elCanBirth(x){const m=elSt();if(m.list.includes(x))return true;const fol=EL_FOLLOW_SET&&EL_FOLLOW_SET.has(x.id);
+  // 往上找最近的在役精英（父母两边都找，0.12.0 队内夫妻的孩子有 par2）：g = 隔几代，main = 一路都是长子 / 长女
+  const up=(c,g,main)=>{if(g>3)return false;for(const pid of[c.par,c.par2]){if(!pid)continue;const p=elById(pid);if(!p)continue;const mn=main&&(p.kids||[])[0]===c.id;
+    if(m.list.includes(p)){if(g<=1||(fol&&mn&&g<=2))return true;continue}if(up(p,g+1,mn))return true}return false};return up(x,1,true)}
 // 每次结算年龄后清理：整支族谱都离队、没关注的，gcHours 小时后删掉退学的孩子和族人（名册、在役、教官永远不删）
 function elFamGc(){const m=elSt(),now=metaNow(),act=elFamReach(m.list.map(e=>e.id).concat(m.kids.filter(c=>c.enr).map(c=>c.id),m.follow));EL_FOLLOW_SET=elFamReach(m.follow);
   m.follow=m.follow.filter(id=>!!elById(id));let del=0;const ms=EL().famKeep.gcHours*3.6e6;
@@ -60769,6 +60959,48 @@ function elFamGc(){const m=elSt(),now=metaNow(),act=elFamReach(m.list.map(e=>e.i
 // 退学（用户定）：让出训练所的位子；15 岁以上的变成族人
 function elKidDrop(id){const m=elSt(),c=m.kids.find(x=>x.id===id);if(!c)return'没有这个孩子';c.enr=0;if(c.age>=EL().famKeep.adult)elToFam(c);saveMeta();return null}
 function elToFam(c){const m=elSt();m.kids=m.kids.filter(x=>x!==c);delete c.kid;c.st='fam';m.fam.push(c)}
+
+// ---------- 0.12.0 自建家族（用户定；数据 data/el_blood.js 末尾 CFG.elite.cfam）----------
+// META.el.cf = [{id, name 姓, tier 阶（1 起）, alloc {属性: 上限}, sp [特别属性键（每个 spStep）], tr {门槛: 特性选项}, trH [用过的特性键], crest {shape, bg, pat, fg}, at 建立时间}]
+// 血脉编号 'f_u' + id；展开在 game/el_blood.elBloodBuild 里调 elCfBuild；改了以后 META.el.cfv++（重新展开）
+// 家族升阶以后只影响新出生的人（属性倍率出生时就定下了）；特性键带上选项名，换了选项老成员身上的照旧
+const CFM=()=>CFG.elite.cfam;
+const elCfMinor=k=>EL().bloodMinor.includes(k);
+// 这一项的上限封顶：家族封顶（移速、攻速、装填、射程按一阶），这五项再压到三成
+function elCfCap(cf,k){const E=EL(),t=E.bloodNoTier.includes(k)?0:Math.min(8,cf.tier-1),c=E.bloodCap.f[t];return elCfMinor(k)?1+(c-1)*E.bloodMinorK:c}
+// 已用的分配量：每项 (上限 − 1) / (封顶 − 1)，合计不超过 allocK（一项堆满、另一项 50%）
+function elCfUsed(cf,skip){let u=0;for(const k in cf.alloc||{}){if(k===skip)continue;const c=elCfCap(cf,k);if(c>1)u+=Math.max(0,cf.alloc[k]-1)/(c-1)}return u}
+function elCfBuild(B,T){const m=META&&META.el;if(!m||!Array.isArray(m.cf))return;const E=EL(),C=CFM(),r2=x=>Math.round(x*100)/100;
+  for(const cf of m.cf){const id='f_u'+cf.id,st={},sp={};for(const[k]of E.bloodStats){const hi=r2(Math.min(elCfCap(cf,k),Math.max(1,(cf.alloc||{})[k]||1)));st[k]=[r2(hi-(elCfMinor(k)?C.lo*E.bloodMinorK:C.lo)),hi]}
+    for(const k of cf.sp||[])sp[k]=[r2((sp[k]?sp[k][0]:0)+C.spStep),r2((sp[k]?sp[k][1]:0)+C.spStep)];
+    const tkey=(thr,o)=>id+'_'+Math.round(thr*100)+'_'+o,mk=(thr,o)=>{const O=C.trOpts[o];if(!O)return null;const k=tkey(thr,o),[p,x]=E.bloodTrPX[thr];T[k]={name:O.name,blood:id,min:thr,p,x,st:O.st,desc:O.desc};return k};
+    for(const k of cf.trH||[]){const a=k.slice(id.length+1).split('_');mk(+a[0]/100,a.slice(1).join('_'))}   // 换掉的选项也留着（老成员身上还有）
+    B[id]={name:cf.name+'家族',fam:cf.name,reg:'royal',key:'u'+cf.id,kind:'f',custom:1,cf:cf.id,crestCfg:cf.crest,st,sp,tr:C.thr.map(thr=>cf.tr&&cf.tr[thr]?mk(thr,cf.tr[thr]):null).filter(Boolean)}}}
+const elCfs=()=>elSt().cf;
+const elCfOf=id=>elCfs().find(c=>c.id===id);
+const elCfDirty=()=>{const m=elSt();m.cfv=(m.cfv||0)+1;saveMeta()};
+// 建立（用户定：至多 3 个、在王都、得一名 50% 自家 + 50% 王都平民的精英、默认关注）
+function elCfCreate(name,crest){const m=elSt(),C=CFM();name=String(name||'').trim().slice(0,6);if(!name)return'请输入家族的姓';if(m.cf.length>=C.max)return`至多建立 ${C.max} 个家族`;
+  const B=elBlood();for(const id in B)if(B[id].fam===name)return'这个姓已经有家族了';if(m.list.length>=elCap())return`精英已满(${elCap()} 名)`;if((META.wallet.银币||0)<C.silver)return`银币不够(需要 ${C.silver})`;
+  META.wallet.银币-=C.silver;const cf={id:(m.cfn=(m.cfn||0)+1),name,tier:1,alloc:{},sp:[],tr:{},trH:[],crest:elCfCrestFix(crest),at:metaNow()};m.cf.push(cf);elCfDirty();
+  const e=elGen('royal',{noBl:true,age:elRi(18,22)});e.fam=name;e.bl={['f_u'+cf.id]:EL().bloodN/2,c_royal:EL().bloodN/2};elBlRoll(e);elBlTraits(e,'hire');e.id=m.n++;e.ja=e.age;m.list.push(e);elAutoSk(e);if(!m.follow.includes(e.id))m.follow.push(e.id);saveMeta();return null}   // 族长 18～22 岁，留几年给玩家自己挑配偶
+// 分配属性上限：一次 ±step；不超过这一项的封顶和总量
+function elCfAlloc(cf,k,d){const cap=elCfCap(cf,k),cur=(cf.alloc||{})[k]||1,nv=Math.round(clamp(cur+d*CFM().step,1,cap)*100)/100;if(nv===cur)return d>0?'已经到这一项的上限':null;
+  if(d>0&&elCfUsed(cf,k)+(cap>1?(nv-1)/(cap-1):0)>CFM().allocK+1e-6)return'可分配的量用完了(一项堆满、另一项一半)';(cf.alloc||(cf.alloc={}))[k]=nv;elCfDirty();return null}
+// 特别属性：每阶一个
+function elCfSp(cf,k,on){if(on){if(cf.sp.length>=cf.tier)return`现在只能配 ${cf.tier} 个(每阶一个)`;cf.sp.push(k)}else{const i=cf.sp.lastIndexOf(k);if(i>=0)cf.sp.splice(i,1)}elCfDirty();return null}
+// 家族特性：门槛一个一个选，可选的随阶数变多
+function elCfTr(cf,thr,o){const O=CFM().trOpts[o];if(!O)return'没有这个特性';if(O.t>cf.tier)return`要家族 ${O.t} 阶`;for(const t in cf.tr)if(+t!==thr&&cf.tr[t]===o)return'别的门槛已经选了这个';
+  cf.tr[thr]=o;const k='f_u'+cf.id+'_'+Math.round(thr*100)+'_'+o;if(!cf.trH.includes(k))cf.trH.push(k);elCfDirty();return null}
+// 徽记参数只认列表里有的（形状 / 图案 / 颜色），不认的退回默认
+const elCfCrestOk=(k,v)=>!!(k==='shape'?EI_CREST_SHAPES:k==='pat'?EI_CREST_PATS:k==='bg'||k==='fg'?EI_CREST_COLS:[]).find(x=>x[0]===v);
+function elCfCrestFix(c){const D=CFM().crestDef,o={};for(const k in D)o[k]=c&&elCfCrestOk(k,c[k])?c[k]:D[k];return o}
+function elCfCrest(cf,k,v){if(!elCfCrestOk(k,v))return'没有这个选项';cf.crest[k]=v;elCfDirty();return null}
+// 升阶（用户定）：消耗当前阶所有地区的特产，要当前阶地图都拿到深渊徽章
+function elCfUpNeed(cf){const t=cf.tier-1,P=CFG.mapPages[t];if(!P||cf.tier>=9)return null;const T=CFG.wares.tiers[Math.min(CFG.wares.tiers.length-1,t)],A=(META.ach&&META.ach.b)||{},n=CFM().upCore[t]||100;
+  const maps=P.maps.filter(k=>CFG.maps[k]);return{maps,badge:maps.filter(k=>!A[k]),core:maps.map(k=>T.maps&&T.maps[k]&&T.maps[k].core).filter(Boolean).map(w=>[w,n])}}
+function elCfUp(cf){const N=elCfUpNeed(cf);if(!N)return'已经是最高阶';if(N.badge.length)return`还差深渊徽章：${N.badge.map(k=>CFG.maps[k].name).join('、')}`;const W=META.wares||{};
+  for(const[w,n]of N.core)if((W[w]||0)<n)return`${CFG.wares.items[w].name}不够(需要 ${n}，有 ${Math.floor(W[w]||0)})`;for(const[w,n]of N.core)W[w]-=n;cf.tier++;elCfDirty();return null}
 
 // ---------- 0.11.4 精英士兵：局内（数据 data/el_elite.js；局外 game/el_core.js）----------
 // 精英在局内是 AI 操控的「英雄对象」：G.heroes 里，h.elite = 精英编号，h.id = 'el' + 编号（每名一个，指挥面板、战报按它分），h.slot = 10 起；
@@ -60782,13 +61014,15 @@ CFG.skills.elNone={name:'空', cd:999, aim:'self', desc:()=>'没有装配技能'
 function elSkP(k,lv){const S=EL().skills[k],B=CFG.skills[S.sk]||CFG.skills.elNone,p=Object.assign({},B);if(B.byStar)for(const x in B.byStar)p[x]=B.byStar[x][clamp(lv,1,B.byStar[x].length)-1];if(S.o)Object.assign(p,S.o);p.name=S.name;p.elK=k;p.lv=lv;return p}
 // 属性合计：地区、普通特性、训练特性、伤病、装配的被动（数组型的特殊效果取较强的）
 function elStatSum(e){const S={},add=st=>{if(!st)return;for(const k in st){const v=st[k];if(typeof v==='number')S[k]=(S[k]||0)+v;else if(Array.isArray(v)){const o=S[k];S[k]=!o||v[0]>o[0]?v:o}else S[k]=v}};
-  const R=EL().regions[e.reg];if(R)add(R.st);for(const k of e.tr)add(EL().traits[k].st);for(const k of e.tt)add(EL().train[k].st);if(e.bt)for(const k of e.bt){const T=elBloodTr()[k];if(T)add(T.st)}   // bt：0.12.0 家族特性
+  const R=EL().regions[e.reg];if(R)add(R.st);for(const k of e.tr)add(EL().traits[k].st);for(const k of e.tt)add(EL().train[k].st);if(e.bt)for(const k of e.bt){const T=elBloodTr()[k];if(T)add(T.st)}if(e.bsp)add(e.bsp);   // bt：0.12.0 家族特性；bsp：家族的特别属性
   for(const k in e.inj){const I=EL().injuries[k];if(I)add(I.st[(e.inj[k].lv||1)-1])}for(const k of e.ep)if(elSkOk(e,k)){const P=EL().skills[k];add(P.stL?P.stL[clamp(e.sk[k]||1,1,P.stL.length)-1]:P.st)}return S}   // stL：0.11.4 被动按 1～4 级
 function elDef(e){const J=elJobD(e),S=elStatSum(e),R=EL().regions[e.reg]||{},M=e.bm||{},p=k=>Math.max(0.1,1+(S[k]||0))*(M[k]||1);   // M：0.12.0 血脉的属性倍率（game/el_blood）
   return{name:elName(e),title:J.name,quality:'white',look:elSpr(e.job,e.sex),elite:true,allSkills:true,stars:[null,{},{},{},{}],skills:[EL_NONE,EL_NONE,EL_NONE],lore:'',
     hp:J.hp*p('hp'),atk:J.atk*p('atk'),ap:J.ap*p('ap'),def:J.def*p('def'),mdef:J.mdef*p('mdef'),speed:J.speed*p('speed'),vision:J.vision*p('vision'),prec:J.prec*p('prec'),aspd:J.aspd+(S.aspd||0)+((M.aspd||1)-1),
     dodge:Math.max(0,(1+J.dodge+(S.dodge||0)/100)*(1+(S.dodgeK||0))-1+(S.dodgeR||0)+(S.eva||0)),crit:Math.max(0,(1+J.crit+(S.crit||0)/100)*(1+(S.critK||0))-1+(S.critR||0)),
-    tough:Math.max(1,(100+(S.tough||0))*(1+(S.toughK||0))+100*(S.toughR||0)),prof:{weapon:J.weapon.slice(),armor:J.armor.slice()},backstab:!!S.backstab,elS:S,elRes:R.res||null}}
+    tough:Math.max(1,(100+(S.tough||0))*(1+(S.toughK||0))+100*(S.toughR||0)),prof:{weapon:J.weapon.slice(),armor:J.armor.slice()},backstab:!!S.backstab,elS:S,elRes:elResOf(R.res,S)}}
+// 抗性：地区的 + 血脉特别属性的毒抗、冰抗、火抗（0.12.0）
+function elResOf(r,S){const o=Object.assign({},r||{});let any=!!r;for(const[a,b]of[['resPoison','poison'],['resFrost','frost'],['resFire','fire']])if(S[a]){o[b]=(o[b]||0)+S[a];any=true}return any?o:null}
 // 小人：职业的图（art 里 el_<职业>）；还没画的先借一位英雄的
 const EL_SPR_FB={recruit:'arthur',assassin:'assassin',berserker:'arthur',spearman:'arthur',shieldGuard:'paladin',marksman:'robin',cannoneer:'gunslinger',musketeer:'gunslinger',lightCav:'camelKnight',heavyCav:'camelKnight',horseArcher:'robin',gunCav:'gunslinger',mage:'merlin',priest:'priest',engineer:'engineer'};
 const elSpr=(job,sex)=>sex==='f'&&SPR.heroes['elf_'+job]?'elf_'+job:SPR.heroes['el_'+job]?'el_'+job:EL_SPR_FB[job]||'arthur';   // sex：0.11.4 女性小人 elf_<职业>（art/ef_elite）
@@ -60801,7 +61035,7 @@ function elRecalc(h){const e=elById(h.elite);if(!e)return;const S=h.d.elS||{},w=
   h.skills=[0,1,2].map(i=>A[i]?EL().skills[A[i]].sk:EL_NONE);h.sp=[0,1,2].map(i=>A[i]?elSkP(A[i],e.sk[A[i]]):Object.assign({},CFG.skills.elNone));h.unl=[0,1,2].map(i=>!!A[i]);
   const mag=w.cls==='magic'||!!w.magic,rg=w.cls==='ranged'&&!mag;
   h.gDmg+=(S.dmg||0)+(mag?S.dmgS||0:rg?S.dmgR||0:S.dmgM||0)+elMemK();h.gCritDmg+=S.critDmg||0;h.gCdr+=S.cd||0;
-  h.elRng=(S.rng||0)+(rg?S.rngP||0:0)+(((e.bm||{}).rng||1)-1);if(w.reload>0&&e.bm&&e.bm.reload>0)w.reload/=e.bm.reload;h.elHit=S.hit||0;h.elHitK=(S.hitK||0)+(S.hitR||0);h.kbA=Math.min(1,S.kbA||0);if(h.d.elRes)h.resist=h.d.elRes;   // 0.12.0 血脉的射程、装填速度（e.bm）
+  h.elRng=(S.rng||0)+(rg?S.rngP||0:0)+(((e.bm||{}).rng||1)-1);if(w.reload>0&&e.bm&&e.bm.reload>0)w.reload/=e.bm.reload;if(w.reload>0&&S.reloadK)w.reload/=Math.max(0.1,1+S.reloadK);h.elHit=S.hit||0;h.elHitK=(S.hitK||0)+(S.hitR||0);h.kbA=Math.min(1,S.kbA||0);if(h.d.elRes)h.resist=h.d.elRes;   // 0.12.0 血脉的射程、装填速度（e.bm）
   if(S.critTaken>0){h.ax=Object.assign({},h.ax||{});h.ax.critDmgRes=(h.ax.critDmgRes||0)+S.critTaken/(1-S.critTaken)}
   if(S.regen)h.regen=Math.max(0,(h.regen||0)*(1+S.regen));h.unlE=1;
   {const t=(typeof TM!=='undefined'&&TM)||{};   // v0.11.4（用户定）精英吃士兵的卡牌和科技：生命、伤害、攻速、冷却的池子在 heroes/hero（heroHpPool、heroDmgM、heroAtkInt）；这里补移速、近战 / 远程伤害、攻速、防御、法防、偏斜
@@ -60865,7 +61099,7 @@ function elHealSeek(h){if(G.phase!=='wave'||h.hp>=h.maxHp*0.75){h.elHPon=false;r
 const EL_WEAK=new Map();const elWeakEff=v=>{let e=EL_WEAK.get(v);if(!e){e={weak:v};EL_WEAK.set(v,e)}return e};
 // 减伤（陷阵、先登、我都记得）、先登免控
 feat('elite',{on:()=>!!(G&&((G.elites&&G.elites.length)||elMemOn())),hooks:{
-  dmgInF:(u,dmg)=>{if(u.isHero&&(u.elite||u.id==='scribe')){UF_DR+=elMemK();if(u.elite){const S=u.d.elS||{};if(S.ss&&u.elSs>0)UF_DR+=u.elSs*S.ss[1];
+  dmgInF:(u,dmg,o)=>{if(u.isHero&&(u.elite||u.id==='scribe')){UF_DR+=elMemK();if(u.elite){const S=u.d.elS||{};if(o&&(S.drP||S.drM))UF_DR+=ufMg(o)?(S.drM||0):(S.drP||0);if(S.ss&&u.elSs>0)UF_DR+=u.elSs*S.ss[1];   // drP / drM：0.12.0 血脉的物理 / 法术减伤
       if(S.xd){if(!(u.elXdU>G.time))u.elXdN=0;u.elXdN=Math.min(S.xd[2]/S.xd[0],(u.elXdN||0)+1);u.elXdU=G.time+S.xd[1];UF_DR+=u.elXdN*S.xd[0]}}}return dmg},
   ccInF:(u,t)=>u&&u.elite&&u.d.elS&&u.d.elS.xd?0:t}});
 // 克劳德自己的增伤（heroRecalc 末尾，和精英一起）
@@ -62942,7 +63176,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=155,GAME_BUILD="c798771+",GAME_BUILT=1792901717878,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=155,GAME_BUILD="dd8a30b",GAME_BUILT=1792904579690,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -66762,16 +66996,17 @@ const elIcon=e=>heroIcon(elSpr(e.job,e.sex),2);
 const elSexI=e=>e&&e.sex==='f'?'<span class="elsx f" title="女">♀</span>':'<span class="elsx" title="男">♂</span>';
 const elChip=(t,c,ti)=>`<span class="elchip${c?' '+c:''}"${ti?` title="${ti}"`:''}>${t}</span>`;
 // 0.12.0（用户定）特性带图标：普通正面 / 负面、训练、家族（家徽）
+const elCrI=id=>{const u=elCrestURL(id);return u?`<img class="eli" alt="" src="${u}">`:''};   // 家徽（自建家族用玩家选的）
 const elIc=k=>{const u=typeof eiIcon==='function'?eiIcon(k):'';return u?`<img class="eli" alt="" src="${u}">`:''};
 const elTraitChips=e=>e.tr.map(k=>{const T=EL().traits[k];return elChip(elIc(T.q<0?'tr:neg':'tr:pos')+T.name,T.q<0?'bad':'',T.desc)}).join('')+e.tt.map(k=>{const T=EL().train[k];return elChip(elIc('tr:train')+T.name,'tt',T.desc)}).join('')
-  +(e.bt||[]).map(k=>{const T=elBloodTr()[k];return T?elChip(elIc('cr:'+T.blood)+T.name,'fam',`${elBlood()[T.blood].name}：${T.desc}`):''}).join('');
+  +(e.bt||[]).map(k=>{const T=elBloodTr()[k];return T?elChip(elCrI(T.blood)+T.name,'fam',`${elBlood()[T.blood].name}：${T.desc}`):''}).join('');
 const elInjChips=e=>Object.keys(e.inj).map(k=>{const J=e.inj[k],I=EL().injuries[k];return elChip(I.name[J.lv-1],'inj',J.lv===1?`${Math.max(0,Math.ceil((J.t+EL().injury.healH*3600000-metaNow())/3600000))} 小时后恢复`:'残疾，不会自己恢复')}).join('');
 const elAgeTxt=e=>`${Math.floor(e.age)} 岁`;
 const elBtn=(a,v,t,o)=>{o=o||{};return`<button class="px${o.on?' on':''}" type="button" data-act="${a}" data-v="${v}"${o.dis?' disabled':''}${o.ti?` title="${o.ti}"`:''}>${t}</button>`};
 // —— 开拓地页顶部 ——
 function elTopTabs(){return`<div class="eltop">${[['settle','开拓地'],['elite','精英']].map(([k,n])=>elBtn('elxtop',k,n,{on:EL_TOP===k})).join('')}</div>`}
-function elHub(){elTick();const m=elSt();const tabs=`<div class="tabs sub">${[['list','精英'],['rec','招募'],['mar','婚配'],['roll','名册'],['kids','训练所']].map(([k,n])=>elBtn('elxsub',k,n,{on:EL_SUB===k})).join('')}</div>`;
-  return`<div class="kt2">${tabs}${EL_SUB==='rec'?elRecAllHTML():EL_SUB==='mar'?elMarHTML():EL_SUB==='roll'?elRollHTML():EL_SUB==='ins'||EL_SUB==='kids'?elKidsHTML():elListHTML()}</div>`}
+function elHub(){elTick();const m=elSt();const tabs=`<div class="tabs sub">${[['list','精英'],['rec','招募'],['mar','婚配'],['cf','家族'],['roll','名册'],['kids','训练所']].map(([k,n])=>elBtn('elxsub',k,n,{on:EL_SUB===k})).join('')}</div>`;
+  return`<div class="kt2">${tabs}${EL_SUB==='rec'?elRecAllHTML():EL_SUB==='mar'?elMarHTML():EL_SUB==='cf'?elCfHTML():EL_SUB==='roll'?elRollHTML():EL_SUB==='ins'||EL_SUB==='kids'?elKidsHTML():elListHTML()}</div>`}
 // —— 精英列表 ——
 function elListHTML(){const m=elSt(),dep=m.list.filter(e=>e.dep).length;
   const head=`<div class="elhead"><span class="meta">在役 <b>${m.list.length}</b> / ${elCap()} 名(每个开拓地 +${EL().capPer}) · 上阵 <b>${dep}</b> / ${elDeployMax()} · 在「招募」页签招人</span>
@@ -66817,11 +67052,11 @@ function elStatGrid(e){const h=elPreview(e),d=elDef(e),lv=e.kid?1:elLv(e),c=(l,v
 // 血脉（0.12.0）：构成、各项倍率（孩子出生时定下的）、家族特性
 function elBloodHTML(e,est){const M=e.bm||{},r=v=>est?(Math.round(v*20)/20).toFixed(2):(Math.round(v*100)/100).toFixed(2);
   return`${elBlBar(e)}<div class="statg">${EL().bloodStats.map(([k,n])=>`<div><span>${statIco(n)}${n}</span><b style="color:${(M[k]||1)>1.001?'#9fe08a':(M[k]||1)<0.999?'#e08a7a':'inherit'}">×${r(M[k]||1)}</b></div>`).join('')}</div>
-    ${(e.bt||[]).length?`<div class="elchips">${(e.bt||[]).map(k=>{const T=elBloodTr()[k];return T?elChip(elIc('cr:'+T.blood)+T.name+'：'+T.desc,'fam'):''}).join('')}</div>`:'<p class="meta">没有家族特性</p>'}`}
+    ${Object.keys(e.bsp||{}).length?`<p class="meta">特别属性：${Object.keys(e.bsp).map(k=>`${EL().bloodSpName[k]||k} +${pc1(e.bsp[k])}`).join('、')}</p>`:''}${(e.bt||[]).length?`<div class="elchips">${(e.bt||[]).map(k=>{const T=elBloodTr()[k];return T?elChip(elCrI(T.blood)+T.name+'：'+T.desc,'fam'):''}).join('')}</div>`:'<p class="meta">没有家族特性</p>'}`}
 // 血脉条（0.12.0 用户定）：一条色带，家族用自己的颜色、平民灰；下面是家徽 + 名称 + 比例（平民没有家徽）
-function elBlBar(e){const B=elBlood(),ids=Object.keys(e.bl||{}).sort((a,b)=>(B[a]&&B[a].kind==='f'?0:1)-(B[b]&&B[b].kind==='f'?0:1)||e.bl[b]-e.bl[a]),col=id=>B[id]&&B[id].kind==='f'?((typeof EI_CREST_COL!=='undefined'&&EI_CREST_COL[id])||'#c99a3a'):EL().bloodComCol;
+function elBlBar(e){const B=elBlood(),ids=Object.keys(e.bl||{}).sort((a,b)=>(B[a]&&B[a].kind==='f'?0:1)-(B[b]&&B[b].kind==='f'?0:1)||e.bl[b]-e.bl[a]),col=elBlCol;
   return`<div class="elbl">${ids.map(id=>`<i style="width:${elBlFrac(e,id)*100}%;background:${col(id)}" title="${(B[id]||{name:id}).name} ${Math.round(elBlFrac(e,id)*100)}%"></i>`).join('')}</div>
-    <div class="elbll">${ids.map(id=>`<span>${B[id]&&B[id].kind==='f'?elIc('cr:'+id):`<b style="background:${col(id)}"></b>`}${(B[id]||{name:id}).name} ${Math.round(elBlFrac(e,id)*100)}%</span>`).join('')}</div>`}
+    <div class="elbll">${ids.map(id=>`<span>${B[id]&&B[id].kind==='f'?elCrI(id):`<b style="background:${col(id)}"></b>`}${(B[id]||{name:id}).name} ${Math.round(elBlFrac(e,id)*100)}%</span>`).join('')}</div>`}
 // 属性 / 装备（0.12.0 用户定：照英雄装备界面——左边小人 + 五个装备格，右边「属性 / 装备背包」两个页签；别的精英、英雄在用的标「用」）
 function elEqHTML(e){const J=elJobD(e);
   const cell=([s,n],i)=>{const it=itemByUid(e.gear[s]),Q=it?CFG.itemQ[baseQ(it.base)]:null;
@@ -66942,7 +67177,7 @@ function elMarHTML(){const m=elSt(),B=elBlood(),regs=elOpenRegs();
   const repRow=regs.map(r=>elRegFams(r).map(fid=>`<span class="elchip" title="${B[fid].name}的声望">${B[fid].name} · ${elRepTxt(fid)}</span>`).join('')).join('');
   return`<p class="meta">打开拓地所在地区的地图，每过一波给那里随机一个家族声望(难度越高、波数越后越多)；相亲、宴会也加声望。声望到「接纳」以上，那里的招募会多出这个家族的人；宴会要「接纳 / 信任 / 尊敬」。精英 ${EM().age} 岁还没成家会自己相亲。</p>
     <div class="elchips">${repRow||'<span class="meta">还没有开放的开拓地</span>'}</div>
-    <div class="elroll">${m.list.map(e=>`<div><img class="elpor2" alt="" src="${elIcon(e)}">${elSpouse(e)?`<img class="elpor2" alt="" src="${elSpouse(e).job?heroIcon(elSpr(elSpouse(e).job,elSpouse(e).sex),2):elIcon(elSpouse(e))}">`:''}<b>${elName(e)}</b>${elSexI(e)}<span class="meta">${elAgeTxt(e)} · ${elBlTxt(e)} · ${elSpouse(e)?`配偶 <b>${elName(elSpouse(e))}</b>${elSexI(elSpouse(e))}(${elBlTxt(elSpouse(e))})${e.spId?'(队内)':''}`:e.mc&&e.mc.length?`<span class="warn">有 ${e.mc.length} 位人选等你挑</span>`:'未婚'} · 子女 ${e.kids.length}</span>
+    <div class="elroll">${m.list.map(e=>`<div><img class="elpor2" alt="" src="${elIcon(e)}">${elSpouse(e)?`<img class="elpor2" alt="" src="${elSpouse(e).job?heroIcon(elSpr(elSpouse(e).job,elSpouse(e).sex),2):elIcon(elSpouse(e))}">`:''}<b>${elName(e)}</b>${elSexI(e)}<span class="meta">${elAgeTxt(e)} · ${elBlTxt(e)} · ${elSpouse(e)?`配偶 <b>${elName(elSpouse(e))}</b>${elSexI(elSpouse(e))}(${elBlTxt(elSpouse(e))})${e.spId?'(队内)':''}${elWidow(e)?' <span class="warn">丧偶</span>':''}`:e.mc&&e.mc.length?`<span class="warn">有 ${e.mc.length} 位人选等你挑</span>`:'未婚'} · 子女 ${e.kids.length}</span>
       ${elBtn('elxpop','mar:'+e.id,'详情')}${!elSpouse(e)?(e.single?'':(e.mc&&e.mc.length?elBtn('elxpop','mc:'+e.id,'挑人选',{on:true}):'')+elBtn('elxblind',e.id,`相亲(${elBlindCost(e)} 银)`)+elBtn('elxpop','bq:'+e.id,'宴会'))+elBtn('elxsingle',e.id,e.single?'已锁定单身':'锁定单身',{on:e.single,ti:'锁定后不会自己成家，也不能相亲、办宴会'}):''}</div>`).join('')||'<p class="meta">还没有精英。</p>'}</div>`}
 function elSpCard(x,extra){return`<div class="elinfo"><div class="elspc"><img class="elpor2" alt="" src="${heroIcon(elSpr(x.job||'recruit',x.sex),2)}"><div><p><b>${elName(x)}</b>${elSexI(x)} · ${elAgeTxt(x)} · ${CFG.maps[x.reg]?CFG.maps[x.reg].name:''}${x.pers?` · 性格「${EL().personality[x.pers].name}」`:''}${x.job&&x.job!=='recruit'?` · 穿${EL().jobs[x.job].name}的衣服`:''}</p>${extra||''}</div></div>${elBloodHTML(x,true)}</div>`}
 function elMarDetHTML(e){const kids=(e.kids||[]).map(id=>elById(id)).filter(Boolean),gk=[];for(const c of kids)for(const id of c.kids||[]){const g=elById(id);if(g)gk.push(g)}
@@ -66955,10 +67190,27 @@ function elMarDetHTML(e){const kids=(e.kids||[]).map(id=>elById(id)).filter(Bool
 function elMcHTML(e){const dn=e.sex==='f'?'嫁妆':'彩礼',dct=K=>`${K.silver} 银币${K.grain?` · 谷物 ${K.grain} · 肉 ${K.meat}${K.goods?` · ${CFG.wares.items[K.goods].name} ${K.gn}`:''}`:''}`;
   return`<p class="meta">提亲不一定成：宴会的人选看声望、双方的家族血脉和家族特性，相亲的人选看自己的家族血脉。被拒绝一次后可以补一份${dn}再提一次(成功率 +${Math.round(EM().dowry*100)}%)，再被拒绝这位就走了。属性倍率是估算(精确到 0.05)；不挑的话人选一直留着，再相亲 / 办宴会会换一批。</p>
     ${(e.mc||[]).map((x,i)=>elSpCard(x,`<p class="meta">成功率 <b>${pc_(elMarP(e,x,!!x.fail))}</b>${x.fail?` · <span class="warn">拒绝过一次</span>`:''}</p><div class="elrow">${x.fail?elBtn('elxmarry',e.id+':'+i+':1',`补${dn}再提(${dct(elDowryCost(e,x))})`,{on:true}):elBtn('elxmarry',e.id+':'+i,`向${elName(x)}提亲`,{on:true})}</div>`)).join('')||'<p class="meta">没有人选。</p>'}`}
-function elBqHTML(e){const B=elBlood(),fids=elOpenRegs().flatMap(elRegFams),C=EM().feast;
+function elBqHTML(e){const B=elBlood(),fids=elCfs().map(c=>'f_u'+c.id).concat(elOpenRegs().flatMap(elRegFams)),C=EM().feast;
   return`<p class="meta">请一个家族办宴会：人选是那个家族的血脉(在 ${elName(e)}自己的这个家族血脉 ±${Math.round(EM().spread*100)}% 上下，档位越高越多)，${Math.round(EM().mix*100)}% 混一点别的家族；谷物、肉从那个地区的开拓地出。</p>
-    ${fids.map(fid=>`<h5>${B[fid].name} <span class="meta">${CFG.maps[B[fid].reg]?CFG.maps[B[fid].reg].name:''} · 声望 ${elRepTxt(fid)} · ${elName(e)}有 ${Math.round(elBlFrac(e,fid)*100)}% 这个血脉</span></h5><div class="elroll">${C.map((c,b)=>{const K=elFeastCost(fid,b),err=elFeastCheck(e,fid,b);
+    ${fids.map(fid=>`<h5>${elCrI(fid)}${B[fid].name} <span class="meta">${B[fid].custom?'自建家族 · 王都':(CFG.maps[B[fid].reg]?CFG.maps[B[fid].reg].name:'')+' · 声望 '+elRepTxt(fid)} · ${elName(e)}有 ${Math.round(elBlFrac(e,fid)*100)}% 这个血脉</span></h5><div class="elroll">${C.map((c,b)=>{const K=elFeastCost(fid,b),err=elFeastCheck(e,fid,b);
       return`<div><b>${['一','二','三'][b]}档</b><span class="meta">要声望「${c.need}」 · 人选 ${c.n[0]}～${c.n[1]} 名${c.bonus?` · 血脉 +${Math.round(c.bonus*100)}%`:''} · 银币 ${K.silver} · 谷物 ${K.grain} · 肉 ${K.meat}${K.goods?` · ${CFG.wares.items[K.goods].name} ${K.gn}`:''}${err?`<br><span class="warn">${err}</span>`:''}</span>${elBtn('elxfeast',e.id+'|'+fid+'|'+b,'办宴会',{dis:!!err})}</div>`}).join('')}</div>`).join('')||'<p class="meta">还没有开放的开拓地。</p>'}`}
+// —— 自建家族（0.12.0 用户定）——
+let EL_CFC=Object.assign({},CFG.elite.cfam.crestDef);   // 建立时选的徽记
+function elCrestPick(cur,act,v0){const S=typeof EI_CREST_SHAPES!=='undefined'?EI_CREST_SHAPES:[],P=typeof EI_CREST_PATS!=='undefined'?EI_CREST_PATS:[],C=typeof EI_CREST_COLS!=='undefined'?EI_CREST_COLS:[];
+  const row=(t,k,L,f)=>`<div class="elrow"><span class="meta" style="width:4.5em">${t}</span>${L.map(x=>`<button class="px sm${cur[k]===x[0]?' on':''}" type="button" data-act="${act}" data-v="${v0}${k}|${x[0]}" title="${x[1]}">${f(x)}</button>`).join('')}</div>`;
+  const ic=o=>typeof eiCrest==='function'?`<img class="eli" style="width:22px;height:22px" alt="" src="${eiCrest(o.shape,o.bg,o.pat,o.fg)}">`:'';
+  return row('形状','shape',S,x=>ic(Object.assign({},cur,{shape:x[0]})))+row('底色','bg',C,x=>`<i style="display:inline-block;width:14px;height:14px;background:${x[2]}"></i>`)+row('图案','pat',P,x=>ic(Object.assign({},cur,{pat:x[0]})))+row('图案色','fg',C,x=>`<i style="display:inline-block;width:14px;height:14px;background:${x[2]}"></i>`)}
+function elCfHTML(){const m=elSt(),C=CFG.elite.cfam,E=EL(),SP=E.bloodSpName;
+  const make=m.cf.length<C.max?`<div class="kt2sec"><h5>建立家族 <span class="meta">${m.cf.length}/${C.max} · 花 ${C.silver} 银币，在王都；得一名 50% 自家血脉 + 50% 王都平民的精英(默认关注)</span></h5>
+    <div class="elrow"><img alt="" style="width:40px;height:40px;image-rendering:pixelated" src="${typeof eiCrest==='function'?eiCrest(EL_CFC.shape,EL_CFC.bg,EL_CFC.pat,EL_CFC.fg):''}"><input type="text" id="elCfName" maxlength="6" placeholder="家族的姓" style="width:8em">${elBtn('elxcfnew','','建立',{on:true})}</div>${elCrestPick(EL_CFC,'elxcfc0','')}</div>`:'';
+  return make+m.cf.map(cf=>{const id='f_u'+cf.id,B=elBlood()[id],N=elCfUpNeed(cf),used=elCfUsed(cf);
+    const stats=E.bloodStats.map(([k,n])=>{const cap=elCfCap(cf,k),hi=(cf.alloc||{})[k]||1;return`<div><span>${statIco(n)}${n}</span><b>×${hi.toFixed(2)}<i class="gw">/ ${cap.toFixed(2)}</i></b><span>${elBtn('elxcfa',cf.id+'|'+k+'|-1','−')}${elBtn('elxcfa',cf.id+'|'+k+'|1','+')}</span></div>`}).join('');
+    const sp=`<div class="elrow">${Object.keys(SP).map(k=>elBtn('elxcfs',cf.id+'|'+k+'|1',`${SP[k]} +${Math.round(C.spStep*100)}%`)).join('')}</div><p class="meta">已配(${cf.sp.length}/${cf.tier})：${cf.sp.map((k,i)=>`${SP[k]}${elBtn('elxcfs',cf.id+'|'+k+'|0','×')}`).join(' ')||'无'}</p>`;
+    const tr=C.thr.map(thr=>`<div class="elrow"><b style="width:3.5em">${Math.round(thr*100)}%</b><span class="meta">p ${pc_(E.bloodTrPX[thr][0])} · x ${pc_(E.bloodTrPX[thr][1])}</span>${Object.keys(C.trOpts).filter(o=>C.trOpts[o].t<=cf.tier).map(o=>elBtn('elxcft',cf.id+'|'+thr+'|'+o,C.trOpts[o].name,{on:cf.tr[thr]===o,ti:C.trOpts[o].desc})).join('')}</div>`).join('');
+    const up=N?`<p class="meta">升到 ${cf.tier+1} 阶：要 ${CFG.mapPages[cf.tier-1].name} 的地图都拿到深渊徽章${N.badge.length?`(还差 ${N.badge.map(k=>CFG.maps[k].name).join('、')})`:'(已齐)'}；消耗 ${N.core.map(([w,n])=>`${CFG.wares.items[w].name} ${n}(有 ${Math.floor((META.wares||{})[w]||0)})`).join('、')}</p>${elBtn('elxcfup',cf.id,'升阶',{on:true})}`:'<p class="meta">已经是最高阶</p>';
+    return`<div class="kt2sec"><h5>${elCrI(id)} ${B?B.name:cf.name} <span class="meta">${cf.tier} 阶 · 属性上限分配 ${Math.round(used*100)}% / ${Math.round(C.allocK*100)}%(一项堆满、另一项一半) · 下限 = 上限 − ${C.lo}；升阶后只影响新出生的人</span></h5>
+      <h5>属性上限</h5><div class="statg">${stats}</div><h5>特别属性(每阶一个，可叠加)</h5>${sp}<h5>家族特性(血脉到这个占比后，按固定的 p、x 出现；阶数越高可选的越多)</h5>${tr}
+      <h5>徽记</h5>${elCrestPick(cf.crest,'elxcfc',cf.id+'|')}${up}</div>`}).join('')}
 // —— 进营地时的弹窗（0.12.0 用户定）：这段时间发生的事，分「训练所」「子嗣出生」「伤病」，没有的页签不显示；关掉就清掉 ——
 const elEvPending=()=>!!(META&&META.el&&META.el.ev&&META.el.ev.length);
 function elEvPopHTML(){const m=elSt(),E=m.ev,nm=id=>{const x=elById(id);return x?elName(x):'(已离开)'},F=EL().family;
@@ -67013,6 +67265,13 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
   else if(a==='elxmarry'&&e){const r=elMarry(e,+y,String(v).split(':')[2]==='1');if(r==='ok'){EL_POP='mar:'+e.id;toast(`${elName(e)}成家了`)}else if(r==='fail')toast('对方拒绝了：可以补一份彩礼 / 嫁妆再提一次');else if(r==='gone'){toast('对方还是拒绝了，这位人选走了');if(!e.mc)EL_POP='mar:'+e.id}else err=r}
   else if(a==='elxsingle'&&e){e.single=!e.single;saveMeta()}
   else if(a==='elxteam'&&e){const r=elTeamMarry(e,elById(+y));if(r==='ok')toast(`${elName(e)}和${elName(elById(+y))}成家了`);else if(r==='fail')toast('对方拒绝了(一年内别再提)');else err=r}
+  else if(a==='elxcfnew'){const el=document.getElementById('elCfName');err=elCfCreate(el?el.value:'',EL_CFC);if(!err)toast('家族建立了，家族的第一位精英在「精英」页')}
+  else if(a==='elxcfc0'){const[k,x2]=v.split('|');EL_CFC[k]=x2}
+  else if(a==='elxcfc'){const[id,k,x2]=v.split('|');const cf=elCfOf(+id);if(cf)err=elCfCrest(cf,k,x2)}
+  else if(a==='elxcfa'){const[id,k,d]=v.split('|');const cf=elCfOf(+id);if(cf)err=elCfAlloc(cf,k,+d)}
+  else if(a==='elxcfs'){const[id,k,on]=v.split('|');const cf=elCfOf(+id);if(cf)err=elCfSp(cf,k,on==='1')}
+  else if(a==='elxcft'){const[id,thr,o]=v.split('|');const cf=elCfOf(+id);if(cf)err=elCfTr(cf,+thr,o)}
+  else if(a==='elxcfup'){const cf=elCfOf(+v);if(cf){err=elCfUp(cf);if(!err)toast(`${cf.name}家族升到 ${cf.tier} 阶`)}}
   else if(a==='elxevd'){const i=+v;if(EL_EVX.has(i))EL_EVX.delete(i);else EL_EVX.add(i)}
   else if(a==='elxkenr'){err=elKidEnroll(+v);if(!err)toast('已加入预备队')}
   else if(a==='elxkname'){const el=document.getElementById('elKN'+v);err=elKidName(+v,el?el.value:'');if(!err)toast('改好了')}
