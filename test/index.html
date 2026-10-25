@@ -60740,7 +60740,7 @@ const elTa=e=>e&&e.sex==='f'?'她':'他',elSexTxt=e=>e&&e.sex==='f'?'女':'男';
 const elJobD=e=>EL().jobs[e.job]||EL().jobs.recruit;
 const elTier=reg=>CFG.maps[reg]?mapTierOf(reg):0;
 // 上限（用户定）：6 + 6 × 已开放的开拓地
-const elOpenRegs=()=>stRegions().filter(r=>EL().regions[r.id]&&stRegionOpen(r.id)).map(r=>r.id);
+const elOpenRegs=()=>{const A=elSt().ally||{},o=stRegions().filter(r=>EL().regions[r.id]&&stRegionOpen(r.id)).map(r=>r.id);for(const k in EL().regions)if(A[k]&&!o.includes(k))o.push(k);return o};   // 0.12.0（剧情设定：五阶以后不建开拓地）结盟了的地区也能招募、办宴会
 const elCap=()=>EL().cap0+EL().capPer*elOpenRegs().length;
 const elTM=()=>(typeof running!=='undefined'&&running&&typeof TM!=='undefined'&&TM)?TM:techMods();
 const elDeployMax=()=>EL().deploy+(elTM().elDeploy||0);
@@ -63380,7 +63380,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=156,GAME_BUILD="9527c4e+",GAME_BUILT=1792910172128,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=156,GAME_BUILD="397eeb4+",GAME_BUILT=1792910870071,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
