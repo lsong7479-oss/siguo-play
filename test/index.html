@@ -59977,7 +59977,7 @@ function awardMeta(win,settle){   // settle：无尽「直接结算」（准备�
   got.exp=ex;if(ex>0)olvPend(ex,Object.keys(G.usedB||{}),got.heroes,G.map||'wild',elOlvKeys())}   // v0.8.18（用户定）经验 = 波数 × 结算倍率 × 地图基础经验，只能升到这张地图那一阶的上限   // v0.8.14 局外经验：结算时玩家自己分（game/olv、ui/menus.showResult）
   if(!META.heroUse)META.heroUse={};for(const id of got.heroes)META.heroUse[advBase(id)]=(META.heroUse[advBase(id)]||0)+1;   // v0.7.3 进阶形态出战算原版的次数   // v0.3.3 英雄使用次数（英雄列表按它排序）
   for(const k in got)if(k in META.wallet)META.wallet[k]+=got[k]||0;for(const id in got.soulMap)META.souls[id]=(META.souls[id]||0)+got.soulMap[id];{const SK=skinState();got.skinFrag={};for(const k in G.skinFrag||{})if(G.skinFrag[k]>0&&CFG.skins[k]){SK.frag[k]=(SK.frag[k]||0)+G.skinFrag[k];got.skinFrag[k]=G.skinFrag[k]}}for(const k in got.mats)META.mats[k]=(META.mats[k]||0)+got.mats[k];if(!META.wares)META.wares={};for(const k in got.wares)META.wares[k]=(META.wares[k]||0)+got.wares[k];META.runs=(META.runs||0)+1;   // wares：v0.9.4 商人那里买的地区物资
-  elAward(got);   // v0.11.4 精英：战报、功勋（game/el_battle）
+  try{elAward(got)}catch(e){console.error('elAward',e);dbgErr('elAward: '+((e&&e.message)||e),'awardMeta',e&&e.stack);got.elErr=String((e&&e.message)||e)}   // v0.11.4 精英：战报、功勋（game/el_battle）；0.12.0 出错也不挡结算（用户报：最后一波打完不结算）
   blWaterAward(got);   // 0.11.4 代理BL 加：不老泉水入库（game/bl_water）
   if(ban){}
   else if(win&&G.expand!==null&&G.expand!==undefined)got.expanded=completeExpansion(G.expandR||'wild',G.expand);
@@ -61369,12 +61369,13 @@ function elMemRecalc(h){if(h.id==='scribe')h.gDmg+=elMemK()}
 // —— 结算：战报、功勋、经验 ——
 function elAward(got){elAllySync();if(G&&!G.invade&&!G.story)got.rep=elRepBattle(G.map,got.cleared||0,(typeof DIFF!=='undefined'&&DIFF.reward)||1);   // 0.12.0 打地区地图给本地家族声望（game/el_mar）
   if(!G||!G.elites||!G.elites.length)return;const M=EL().merit,now=metaNow(),out=[];
-  for(const x of G.elites){const e=elById(x.id);if(!e)continue;const r=DSK['h:el'+x.id]||{dmg:0,tak:0,heal:0,cc:0,kill:0},h=G.heroes.find(q=>q.elite===x.id);
+  for(const x of G.elites){const e=elById(x.id);if(!e)continue;if(!e.log||!Array.isArray(e.log.L))e.log={n:0,k:0,d:0,t:0,h:0,c:0,L:[]};   // 0.12.0 防御：记录不全的也能结算
+ const r=DSK['h:el'+x.id]||{dmg:0,tak:0,heal:0,cc:0,kill:0},h=G.heroes.find(q=>q.elite===x.id);
     const L={at:now,map:G.map,w:got.cleared||0,k:r.kill|0,d:Math.round(r.dmg),t:Math.round(r.tak),h:Math.round(r.heal),c:Math.round(r.cc*10)/10,dead:h&&h.dead?1:0};
     const mg=Math.round(M.battle+L.k*M.kill+L.d/M.dmg+L.h/M.heal+L.t/M.taken);e.merit+=mg;L.m=mg;
     const lg=e.log;lg.n++;lg.k+=L.k;lg.d+=L.d;lg.t+=L.t;lg.h+=L.h;lg.c+=L.c;lg.L.unshift(L);if(lg.L.length>30)lg.L.length=30;out.push({id:e.id,name:elName(e),m:mg,dead:L.dead,inj:L.dead&&e.lastInj?e.lastInj:null});delete e.lastInj}
   got.elites=out;return out}
-const elOlvKeys=()=>G&&G.elites?G.elites.map(x=>'e'+x.id).filter(k=>elById(+k.slice(1))):[];
+const elOlvKeys=()=>{try{return G&&G.elites?G.elites.map(x=>'e'+x.id).filter(k=>elById(+k.slice(1))):[]}catch(e){console.error('elOlvKeys',e);dbgErr('elOlvKeys: '+((e&&e.message)||e),'elOlvKeys',e&&e.stack);return[]}};
 // 经验的加成（奋进、训练）：分到的经验 × (1 + 合计)
 function elExpMul(k){const e=elById(+String(k).slice(1));return e?1+elExpK(e):1}
 // —— 精英专用技能（SK）——
@@ -63438,7 +63439,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=159,GAME_BUILD="85d0b34",GAME_BUILT=1792939291153,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=159,GAME_BUILD="60b4a60",GAME_BUILT=1792939927207,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -64896,7 +64897,8 @@ function olvRowHTML(kind,k){const P=META.olv.pend,a=OLV_PLAN[kind][k]||0,r=olvRe
     <input type="range" min="0" max="100" step="1" value="${pc}" data-ek="${kind}:${k}:p" ${room<=0?'disabled':''} aria-label="${olvName(kind,k)} 百分比">
     <input type="number" min="0" max="100" step="1" value="${pc}" data-ek="${kind}:${k}:q" class="olvn" ${room<=0?'disabled':''} aria-label="百分比"><span class="meta">%</span>
     <input type="number" min="0" max="${Math.floor(Math.min(room,P.exp))}" step="1" value="${a}" data-ek="${kind}:${k}:a" class="olvn" ${room<=0?'disabled':''} aria-label="经验"></div>`}
-function olvAllocHTML(){const P=META.olv&&META.olv.pend,L=k=>(P&&P[k])||[];if(!P||!(P.exp>0)||(!L('b').length&&!L('h').length&&!L('e').length))return'';if(!OLV_PLAN||OLV_PLAN.P!==P)olvPlanInit();
+function olvAllocHTML(){try{return olvAllocHTML0()}catch(e){console.error('olvAllocHTML',e);dbgErr('olvAllocHTML: '+((e&&e.message)||e),'olvAllocHTML',e&&e.stack);return`<p class="warn">分经验界面出错了(${String((e&&e.message)||e)})，离开结算时经验会自动平均分。</p>`}}   // 0.12.0 出错也不挡结算界面
+function olvAllocHTML0(){const P=META.olv&&META.olv.pend,L=k=>(P&&P[k])||[];if(!P||!(P.exp>0)||(!L('b').length&&!L('h').length&&!L('e').length))return'';if(!OLV_PLAN||OLV_PLAN.P!==P)olvPlanInit();
   const ks=OLV_KINDS.filter(([k])=>L(k).length);if(!ks.some(([k])=>k===OLV_TAB))OLV_TAB=ks[0][0];
   const tabs=`<div class="tabs sub">${ks.map(([k,n])=>`<button class="px sm${OLV_TAB===k?' on':''}" type="button" data-act="olvtab" data-v="${k}">${n} ${L(k).length}</button>`).join('')}</div>`;
   const k=OLV_TAB;
