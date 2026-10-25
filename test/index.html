@@ -19560,6 +19560,13 @@ CFG.skills.elElemRain=Object.assign({},CFG.skills.elemRain,{name:'元素箭雨',
   el_elemrain:['bow','crossbow'], el_artillery:['gun'], el_scatter:['bow','crossbow'], el_burst:['gun'], el_lethal:['gun','crossbow'], el_elemarrow:['bow','crossbow'],
   el_whirl:M, el_cleave:M, el_pierce:M, el_pounce:M, el_gale:M, el_holyjud:M, el_hammer:['hammer','club','axe'], el_backstab:['dagger','sword'], el_sever:M};
   for(const k in W)if(S[k])S[k].wreq=W[k]})();
+// 图标（0.12.1 用户报：驼铃悠悠等没有图标）：精英版技能借原英雄技能的图标
+(function(){const S=CFG.elite.skills,I={el_caravan:'alCaravan',el_stomp:'camelStomp',el_rush:'camelRush',el_burrow:'tunnelDig',el_bulwark:'warBulwark',el_elemrain:'elemRain',
+  el_fieldfix:'repair',el_burst:'gsBurst',el_ward:'wordShield',el_lethal:'deadShot',el_javelin:'jav',el_hshield:'holyShield',el_trick:'hiddenThrow',el_command:'command',el_elemarrow:'elemSwitch',
+  el_decoy:'decoyBomb',el_ironwall:'ironWall',el_mbarrier:'magicBarrier',el_night:'nightWalk',el_temper:'haTemper',el_sever:'severance'};for(const k in I)if(S[k])S[k].ico=I[k]})();
+// 技能等级系数延到 10 级（0.12.1 用户定：升级时有概率升技能，至多 等级 / 10 级）
+CFG.elite.skLvK=[1,1.1,1.25,1.45,1.7,2,2.35,2.75,3.2,3.7];
+CFG.elite.lvSkP=[0.1,0.1];   // 0.12.1（用户定）每过 5 级：学会本职业基础技能的概率、升级已有技能的概率
 
 // ---------- 0.12.0 精英特性补充（用户定方向「补充大量普通特性和训练特性」；名字、数 Claude 定；逻辑 game/el_sk2.js、game/el_battle.js）----------
 // 新的属性键：nightEye 夜里视野不缩小；nightBlind 夜里视野 −；injK 倒下后落下伤病的概率 ×(1 + 值)；lowDmg / lowDr [生命比例, 值] 残血时增伤 / 减伤；killHeal 击杀回复生命上限的比例
@@ -19635,6 +19642,31 @@ CFG.elite.look={
   fam:{dracula:{sk:[5], ey:[5], hr:[0,6]}, bathory:{sk:[0,5], ey:[5,2], hr:[0,5]}, starspeak:{ear:1, hr:[6,7,4], ey:[3,6]}, moonleaf:{ear:1, hr:[7,4,6], ey:[3,2]},
     jaguar:{ear:2, hr:[0,3]}, ymir:{hr:[7,6], ey:[2,4], sk:[0]}, akagi:{hr:[5,0], ey:[0,6]}, kazami:{hr:[6,0], ey:[2,4]}, noel:{hr:[7,4]}, winters:{hr:[6,7], ey:[2]},
     usher:{sk:[5,0], hr:[0], ey:[4]}, ragnarsson:{hr:[4,5,7]}, decken:{sk:[5], ey:[4,2]}}};
+// 名字库扩充（0.12.1 用户定：同名太多）；兄弟姐妹、父母之间优先不同名（game/el_core.elGen）
+(function(){const N=CFG.elite.names,A={
+  west:  {m:['亚当','巴特','柯林','达伦','埃利奥特','费格斯','加文','亨利','艾萨克','约书亚','肯尼斯','卢克','迈尔斯','奈杰尔','欧文','帕特里克','昆汀','雷蒙德','西蒙','西奥','维克多','华莱士','阿奇','本杰明','卡梅伦','德克斯特','埃文','弗雷迪','格兰特','雨果'],
+          f:['艾比','贝拉','克拉拉','黛西','艾玛','菲奥娜','格蕾丝','汉娜','艾薇','朱莉娅','凯蒂','莉莉','梅根','娜奥米','奥莉薇','佩妮','罗茜','索菲','泰莎','薇薇安','温蒂','艾达','布伦达','卡洛琳','多萝西','伊芙','弗洛拉','海伦','艾琳','琼']},
+  north: {m:['阿恩','布兰','达格','埃纳尔','芬恩','戈姆','哈康','英格','约尔','卡雷','洛基','米卡','奥丁','罗尔夫','斯泰因','托尔金','瓦利','耶尔','阿斯穆','比亚尔基'],
+          f:['阿斯拉','布伦希','达格妮','埃尔娃','芙蕾雅','古德伦','赫尔加','英格丽','约伦','卡雅','丽芙','玛蕾','诺拉','鲁娜','西格丽','索尔薇','托拉','瓦尔娃','伊尔莎','斯卡蒂']},
+  jungle:{m:['阿瓦','比洛','奇科','达瓦','埃科','伊图','卡伊','卢阿','马图','尼科','奥塔','帕科','塔诺','瓦卡','雅库','佐科'],
+          f:['阿伊','比亚','奇拉','达娜','伊玛','卡娅','卢娜','玛拉','妮娅','欧拉','帕娅','塔伊','瓦娅','雅娜','佐伊','伊娃']},
+  desert:{m:['阿迪勒','巴德尔','法赫德','加齐','哈立德','易卜拉','贾法尔','卡迈勒','鲁克曼','曼苏尔','纳比勒','卡西姆','萨米尔','塔希尔','瓦利德','雅辛','齐亚德','阿米尔'],
+          f:['阿伊莎','巴丝玛','达莉亚','法蒂玛','哈娜','贾米拉','卡丽玛','露娜','玛丽亚姆','努尔','拉尼亚','萨尔玛','塔拉','瓦尔达','雅斯敏','扎赫拉','阿米拉','哈雅']},
+  latin: {m:['阿德里安','贝内迪克','卡西安','达米安','埃米利奥','法比安','加布里埃','霍拉斯','朱利安','莱安德','马塞尔','尼科洛','奥克塔维','帕斯卡','昆图斯','罗曼','塞维林','提图斯','乌尔班','维克托'],
+          f:['阿德里娜','比阿特丽','卡米拉','黛安娜','埃莱娜','法比娅','吉娜','伊莎贝拉','茱莉亚','劳拉','玛蒂娜','诺维娅','奥塔维娅','保拉','罗莎','塞雷娜','蒂齐亚','乌尔苏拉','瓦莱丽','维多利亚']},
+  german:{m:['阿尔布雷希','巴尔德','康拉德','埃克哈特','费迪南德','格哈德','哈特穆特','约阿希姆','克劳斯','洛塔尔','曼弗雷德','诺伯特','鲁普雷希','西格弗里德','乌尔里希','维尔纳','赫尔曼','卡斯帕'],
+          f:['阿德尔海德','贝尔塔','多萝特娅','埃尔克','弗丽达','格特鲁德','海德薇','伊尔姆加德','卡特琳','莉泽洛特','玛格丽特','奥蒂莉','罗斯维塔','西格丽德','乌特','瓦尔特劳德','埃尔泽','汉娜洛蕾']},
+  elf:   {m:['阿兰迪尔','贝勒冈','凯勒布','埃兰','费诺','加拉丹','伊兰','莱戈','米斯兰','尼莫','奥罗芬','佩伦','瑟兰','塔兰','乌林','维兰'],
+          f:['阿尔温','贝伦妮','凯莉安','埃尔温','菲妮','加拉德','伊德瑞','露希恩','米瑞尔','妮梦','奥瑞','佩兰','瑟琳','塔瑞','乌娜','维林']},
+  east:  {m:['伯言','长风','德昭','鸿飞','怀瑾','嘉树','景明','君浩','明远','慕白','清和','若虚','思远','天佑','文渊','修远','彦博','子墨','子期','宗岳'],
+          f:['碧云','楚楚','丹青','芳华','惠兰','锦瑟','静姝','兰心','玲珑','梦瑶','若曦','诗韵','书瑶','婉儿','惜文','晓月','雅琴','语嫣','芷若','紫萱']},
+  japan: {m:['晴人','光','健一','浩二','真司','大辅','达也','直树','亮','涼介','慎吾','武','拓也','勇气','雄大','航','俊','圭','修','蓮司'],
+          f:['明日香','彩花','千寻','绘里','枫','花子','光','香织','加奈','美咲','奈奈','优花','理沙','咲','爽','智子','友美','由衣','由纪','早苗']},
+  sogd:  {m:['阿夫申','巴赫拉姆','达德','埃尔达','法尔恩','古什塔','胡尚','卡维','马赫达','纳尔斯','帕尔维兹','沙普尔','塔赫马','瓦赫','亚兹丹','扎尔'],
+          f:['阿娜希','巴努','达丽','法琳','古尔纳','胡玛','卡米娜','玛赫','纳希德','帕丽莎','沙琳','塔明','瓦尔娜','亚斯曼','扎丽','希琳']},
+  slav:  {m:['阿列克谢','鲍里斯','德米特里','叶甫根','费奥多尔','格列布','伊戈尔','雅罗斯','列夫','尼古拉','奥列格','帕维尔','罗曼','谢尔盖','季莫费','瓦季姆','亚历山大','尤里'],
+          f:['阿琳娜','达丽娅','叶莲娜','加琳娜','伊琳娜','卡琳娜','柳博芙','玛丽娜','娜杰日达','奥尔加','波琳娜','拉丽莎','塔季扬娜','乌里扬娜','瓦尔瓦拉','雅娜','佐娅','薇拉']}};
+  for(const c in A){const T=N[c]||(N[c]={m:[],f:[]});for(const s of['m','f'])T[s]=[...new Set((T[s]||[]).concat(A[c][s]))]}})();
 
 // ---------- 0.11.5 官方渠道（用户定：防止别人改了游戏重新发；有新版本提示去官网或 QQ 群）；逻辑 ui/official.js，安卓签名自检 app/android/…/SiguoGuard.java ----------
 // site 官网；ver 官网上的版本清单（tools/site_ver.py 写）；qq 游戏交流群（官网打不开的玩家从群里拿安装包）；hosts 网页版只认这些域名（空串 = 本地文件 / 电脑版）
@@ -61037,8 +61069,10 @@ function elTrAdd(e,k){const T=EL().traits[k];if(!T||!elTraitsOk(e.tr,k))return f
 function elTraitsOk(L,k){const T=EL().traits[k];if(!T||L.includes(k))return false;return!(T.x||[]).some(x=>L.includes(x))&&!L.some(x=>(EL().traits[x].x||[]).includes(k))}
 function elRollTraits(n){const T=EL().traits,K=Object.keys(T).filter(k=>!T[k].gen),W=K.reduce((a,k)=>a+(T[k].w!=null?T[k].w:1),0),L=[];let t=0;   // w：0.12.0 出现权重（天才稀有）
   const pick=()=>{let r=Math.random()*W;for(const k of K){r-=T[k].w!=null?T[k].w:1;if(r<0)return k}return K[K.length-1]};while(L.length<n&&t++<60){const k=pick();if(elTraitsOk(L,k))L.push(k)}return L}
+// 起名（0.12.1 用户定）：孩子优先不和父母、兄弟姐妹同名
+function elGivenPick(pool,par){if(!par)return elPick(pool);const u=new Set([par.given]),S=elSpouse(par);if(S)u.add(S.given);for(const id of par.kids||[]){const k=elById(id);if(k)u.add(k.given)}const L=pool.filter(n=>!u.has(n));return elPick(L.length?L:pool)}
 function elGen(reg,o){o=o||{};const R=EL().regions[reg]||EL().regions.wild,P=EL().names[R.culture]||EL().names.west,F=EL().family;
-  const sex=o.sex||(Math.random()<0.5?'f':'m'),e={id:0,sex,given:elPick(P[sex]||P.m),fam:o.fam||elPick(R.fam),reg,job:'recruit',age:o.age!=null?o.age:elRi(EL().recruit.age[0],EL().recruit.age[1])+Math.random(),life:elRi(EL().life[0],EL().life[1]),
+  const sex=o.sex||(Math.random()<0.5?'f':'m'),e={id:0,sex,given:elGivenPick(P[sex]||P.m,o.kidOf),fam:o.fam||elPick(R.fam),reg,job:'recruit',age:o.age!=null?o.age:elRi(EL().recruit.age[0],EL().recruit.age[1])+Math.random(),life:elRi(EL().life[0],EL().life[1]),
     merit:0,rank:1,pers:elPick(Object.keys(EL().personality)),tr:[],tt:[],sk:{},ea:[],ep:[],lock:false,gear:{},inj:{},dep:false,cmd:'sortie',log:{n:0,k:0,d:0,t:0,h:0,c:0,L:[]},par:o.par||0,kids:[],gen:o.gen||1,learn:null,ly:-1};
   if(o.inherit){const n={};for(const k of o.inherit)n[k]=(n[k]||0)+1;   // 0.12.0（用户定）特性按 p 遗传：父母一方有 1 − (1 − p)，两方有 1 − (1 − p)²（p 默认 family.inherit）
     for(const k in n){const T=EL().traits[k];if(!T)continue;const p=T.p!=null?T.p:F.inherit;if(Math.random()<1-Math.pow(1-p,n[k]))elTrAdd(e,k)}}
@@ -61071,19 +61105,25 @@ function elTick(){if(!META)return;const m=elSt(),now=metaNow();let dt=now-m.t;if
     if(e.age>=e.life-EL().retireBefore){const h=elRetire(e,true);elEv('ret',{id:e.id,heir:h?h.id:0});ch=true}}
   for(const c of m.kids)c.age+=yr;
   for(const x of m.fam){if(x.dead)continue;life(x);if(x.age>=x.life)elFamDie(x)}   // 族人（0.12.0）：不在队里的成年家族成员
-  for(const c of m.kids.slice())if(!c.enr&&c.age>=EL().famKeep.adult){elToFam(c);ch=true}   // 没入学的孩子长大了 → 族人
-  // 训练所（0.12.0 用户定）：满 5 岁自动入学（有空位时，年纪大的先）；提前入学的占着位子
-  {const cap=elKidCap();let n=m.kids.filter(c=>c.enr).length;for(const c of m.kids.slice().sort((a,b)=>b.age-a.age))if(!c.enr&&c.age>=F.school[0]&&n<cap){c.enr=1;n++;ch=true}}
+  for(const c of m.kids.slice())if(c.age>=EL().famKeep.adult){if(c.enr)elEv('grown',{id:c.id});elToFam(c);ch=true}   // 孩子长大了 → 族人；0.12.1（用户定）训练所的孩子 15 岁离开训练所，记进精英日志，可以招进队
+  // 训练所：0.12.1（用户定）不再自动入学，只有加入预备队的孩子进训练所
   for(const r of m.roll){if(r.st!=='retired')continue;r.age+=yr;if(r.age>=r.life){r.st='dead';r.dAt=now;elInsOff(r.id);ch=true}}
   for(const r of m.staff.slice()){r.age+=yr;if(r.age>=r.life&&!m.irq[String(r.id)]){elInsRetire(r.id);ch=true}}   // 0.12.0 招募来的教官到寿命就离开（有学员时教完再走）
   // 训练所「过年」（0.12.0）：按全局的年数，过一年判一次孩子跟教官学特性（一次判完，不逐个孩子逐年遍历）
   {const Y=Math.floor(now/EL().yearMs);if(!(m.sy>=0))m.sy=Y;else{const n=Math.min(2,Y-m.sy);for(let i=0;i<n;i++){elSchoolYear();ch=true}m.sy=Y}}
   for(const e of m.list){for(const k in e.inj){const J=e.inj[k];if(J.lv===1&&now-J.t>=EL().injury.healH*3600000){delete e.inj[k];elEv('heal',{id:e.id,part:k});ch=true}}if(e.learn&&e.learn.end<=now){elLearnDone(e);ch=true}}
+  for(const e of m.list)if(elLvSk(e))ch=true;   // 0.12.1 升级时有概率学会 / 升级技能
   if(elFamGc())ch=true;saveMeta();return ch}
+// 升级学技能（0.12.1 用户定）：每过 5 级，lvSk 概率学会一个本职业的基础技能（不要英雄教的），lvUp 概率把一个会的技能升一级（不超过 这时的等级 / 10）
+function elLvSk(e){const lv=elLv(e);if(e.lvS==null){e.lvS=lv;return false}if(lv<=e.lvS)return false;const a=Math.floor(e.lvS/5),b=Math.floor(lv/5),P=EL().lvSkP;let ch=false;e.lvS=lv;
+  for(let i=a+1;i<=b;i++){const at=i*5;
+    if(Math.random()<P[0]){const L=Object.keys(EL().skills).filter(k=>{const S=EL().skills[k];return!S.need&&elFamOk(e,S)&&!(e.sk[k]>0)});if(L.length){const k=elPick(L);e.sk[k]=1;elEv('lvsk',{id:e.id,lv:at,sk:k,slv:1});ch=true}}
+    if(Math.random()<P[1]){const cap=Math.min(Math.floor(at/10),EL().skLvK.length),L=Object.keys(e.sk).filter(k=>EL().skills[k]&&e.sk[k]>0&&e.sk[k]<cap&&elSkOk(e,k));if(L.length){const k=elPick(L);e.sk[k]++;elEv('lvsk',{id:e.id,lv:at,sk:k,slv:e.sk[k],up:1});ch=true}}}
+  if(ch)elAutoSk(e,true);return ch}
 // 生孩子：同姓、同地区；30% 遗传父母的每条普通特性
 function elBirth(e){const m=elSt(),S=elSpouse(e),c=elGen(e.reg,{age:0,par:e.id,gen:(e.gen||1)+1,inherit:e.tr.concat(S&&S.tr||[]),kidOf:e});c.id=m.n++;c.kid=1;c.enr=0;m.kids.push(c);e.kids.push(c.id);if(e.spId&&S&&S.kids&&!S.kids.includes(c.id)){S.kids.push(c.id);c.par2=S.id}   // 队内夫妻：孩子两边都记（par2 = 另一位）
   {const g=e.spKin||0,K=EL();if(g>0&&Math.random()<(K.kinP[g-1]||0)){const pair=elPick(K.kinGen);elTrAdd(c,Math.random()<K.kinSevere?pair[1]:pair[0])}}   // 0.12.0（用户定）近亲成家：一代 20% / 二代 10% / 三代 5% 得遗传缺陷，25% 是严重的
-  if(e.log){e.log.L.unshift({at:metaNow(),birth:c.id,bn:elName(c)});if(e.log.L.length>30)e.log.L.length=30}if(m.list.includes(e)||m.list.some(x=>x.id===e.par))elEv('birth',{id:c.id,par:e.id});return c}   // 0.12.0（用户定）出生记进父 / 母的日志，进营地时弹窗
+  if(e.log){e.log.L.unshift({at:metaNow(),birth:c.id,bn:elName(c)});if(e.log.L.length>30)e.log.L.length=30}if(EL_FOLLOW_SET&&EL_FOLLOW_SET.has(e.id))elEv('birth',{id:c.id,par:e.id});return c}   // 0.12.1（用户定）只有关注的家族生孩子才记进精英日志   // 0.12.0（用户定）出生记进父 / 母的日志，进营地时弹窗
 // 族人去世（0.12.0）：只留名字、性别、父母、子女几项，族谱照样连得上，存档小一点
 function elFamDie(x){const keep={id:1,given:1,fam:1,sex:1,par:1,par2:1,kids:1,gen:1,reg:1,age:1,job:1};for(const k in x)if(!keep[k])delete x[k];x.dead=1;x.st='dead'}
 // 弹窗用的事件（0.12.0 用户定：进营地时整理成弹窗——训练所、子嗣出生、伤病；看过就清掉）
@@ -61183,7 +61223,7 @@ const elSkOk=(e,k)=>{const S=EL().skills[k];return!!S&&elFamOk(e,S)&&elNeedOk(S)
 const elSkAvail=e=>Object.keys(EL().skills).filter(k=>elSkOk(e,k));
 const elLearnHours=(e,lv,key)=>{const base=EL().learnH[lv-1]||24,W=key!=null?elInsWho(key):null,tc=W&&W.e?elStT(W.e,'teach'):0;return base/(1+(elTM().elTeach||0)+tc)*Math.max(0.3,1-elStT(e,'learnK'))};   // 0.12.0 好学 / 天才（learnK）、教官的教学法（teach）
 // 0.11.4（用户定）技能最高等级跟着科技「精英训练」的等级（至少 Ⅰ 级，最高 skMax）
-const EL_RN=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ'],elRoman=n=>EL_RN[n-1]||String(n),elSkMax=()=>clamp(elTM().elTrain||0,1,EL().skMax);
+const EL_RN=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ'],elRoman=n=>EL_RN[n-1]||String(n),elSkMax=()=>clamp(elTM().elTrain||0,1,EL().skMax);
 // 学技能（0.12.0 用户定：要在教官那里学）：找正在教这个技能、有空位、等级够的教官；没有就找一位闲着（没学员）、会这个技能且等级够的，让他改教这个
 function elLearnIns(e,k,lv){const m=elSt(),ok=key=>!m.irq[String(key)]&&(elInsSkills(key)[k]||0)>=lv&&elStudents(key).length<elSeats();
   return m.ins.find(key=>m.tch[String(key)]===k&&ok(key))||m.ins.find(key=>!elStudents(key).length&&ok(key))}
@@ -61344,10 +61384,10 @@ function elBlRange(bl){const B=elBlood(),N=EL().bloodN,o={};for(const[k]of EL().
 function elBlRoll(e){const R=elBlRange(e.bl);e.bm={};for(const k in R){const[lo,hi]=R[k];e.bm[k]=Math.round((lo+Math.random()*(hi-lo))*1000)/1000}const P=elBlSpRange(e.bl);e.bsp={};for(const k in P){const[lo,hi]=P[k];const v=Math.round((lo+Math.random()*(hi-lo))*1000)/1000;if(v>0)e.bsp[k]=v}elBlLifeAdd(e)}
 // 家族寿命（0.12.0 用户定）：按血脉占比加的年数，出生 / 招募时加一次（e.lifeB 记着加了多少）
 function elBlLifeAdd(e){if(e.lifeB!=null||!(e.life>0))return;const B=elBlood(),N=EL().bloodN,L=EL().bloodLife||{};let a=0;for(const id in e.bl||{}){const F=B[id];if(F&&F.key&&L[F.key])a+=L[F.key]*e.bl[id]/N}a=Math.round(a);e.lifeB=a;e.life+=a}
-// 家族特性：血脉占比到门槛才可能有；n = 父母里有这条的人数（招募来的家族成员按 1 算）
+// 家族特性（0.12.1：同一条、同名的不重复）：血脉占比到门槛才可能有；n = 父母里有这条的人数（招募来的家族成员按 1 算）
 function elBlTraits(e,par){const B=elBlood(),T=elBloodTr();e.bt=[];
   for(const id in e.bl){const S=B[id];if(!S||S.kind!=='f')continue;const f=elBlFrac(e,id);
-    for(const k of S.tr){const t=T[k];if(f+1e-9<t.min)continue;const n=par==='hire'?1:(par||[]).filter(p=>p&&(p.bt||[]).includes(k)).length;
+    for(const k of S.tr){const t=T[k];if(f+1e-9<t.min||e.bt.includes(k)||e.bt.some(q=>T[q]&&T[q].name===t.name))continue;const n=par==='hire'?1:(par||[]).filter(p=>p&&(p.bt||[]).includes(k)).length;
       if((n>0&&Math.random()<1-Math.pow(1-t.p,n))||Math.random()<t.x)e.bt.push(k)}}}
 // 招募 / 新生成的人：famMember = 家族成员（家族血脉 8～16 份，其余这个地区的平民；姓改成家族的姓）
 function elBlNew(e,reg,famMember){const N=EL().bloodN,F=elRegFams(reg),fid=F.length?elPick(F):null,B=elBlood();
@@ -61512,7 +61552,9 @@ function elWed(x,b){const err=elWedCheck(x,b);if(err)return err;const K=elWedCos
   const S=elSpouse(x);delete x.wedP;if(x.spId&&S)delete S.wedP;saveMeta();return null}
 // —— 族人、关注、存档清理 ——
 const elFollowMax=()=>EL().famKeep.followMax;
-function elFollow(id,on){const m=elSt();if(!on){m.follow=m.follow.filter(x=>x!==id);saveMeta();return null}if(m.follow.includes(id))return null;if(m.follow.length>=elFollowMax())return`至多关注 ${elFollowMax()} 个家族`;m.follow.push(id);saveMeta();return null}
+// 关注按整支族谱算（0.12.1 用户报：族里每个人都能各关注一次同一个家族）：这支族谱里有人被关注 = 已关注
+const elFollowOn=x=>{const m=elSt();if(!m.follow.length)return false;const R=elFamReach([x.id]);return m.follow.some(id=>R.has(id))};
+function elFollow(id,on){const m=elSt(),R=elFamReach([id]);m.follow=m.follow.filter(x=>!R.has(x));if(!on){saveMeta();return null}if(m.follow.length>=elFollowMax())return`至多关注 ${elFollowMax()} 个家族`;m.follow.push(id);saveMeta();return null}
 // 族谱连通：par / kids 双向；种子 = 在役精英、训练所里的孩子（+ 关注的人）
 function elFamReach(seeds){const m=elSt(),idx=new Map();for(const L of[m.list,m.kids,m.fam,m.roll,m.staff])for(const x of L)idx.set(x.id,x);
   const seen=new Set(),q=[];for(const id of seeds)if(idx.has(id)&&!seen.has(id)){seen.add(id);q.push(id)}
@@ -63923,7 +63965,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.1',GAME_TAG='测试版',GAME_CODE=162,GAME_BUILD="7c1bfbf",GAME_BUILT=1792957660655,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.1',GAME_TAG='测试版',GAME_CODE=162,GAME_BUILD="e6709fe",GAME_BUILT=1792960594684,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -64625,7 +64667,7 @@ function showHub(tab){
   else if(hubTab==='design'){body=hubDesign();over=btOpen?btDrawer(btOpen):(btShown=null,'')}else body=hubStore();
   if(hubTab!=='go')contPop=false;else if(contPop&&allSaves().length)over=contPopHTML();
   if(hubTab==='settle')over=EL_TOP==='elite'?elPopHTML():wmPopHTML('settle');else if(hubTab!=='settle'&&sheet.dataset.view==='hub:settle')WM_POP=null;   // EL_TOP：v0.11.4 开拓地页顶部「开拓地 / 精英」
-  if(!over&&!running){try{elTick()}catch(e){}if(EL_EVON&&elEvPending())over=elEvPopHTML()}   // 0.12.0 精英日志：不自动弹，玩家点「日志」(有红点)才弹（ui/el_ui）
+  if(!running&&(!over||(hubTab==='settle'&&EL_TOP==='elite'))){try{elTick()}catch(e){}if(EL_EVON&&elEvPending())over=elEvPopHTML()+(over||'')}   // 0.12.1 日志里点「详情」等：精英弹窗叠在日志上面   // 0.12.0 精英日志：不自动弹，玩家点「日志」(有红点)才弹（ui/el_ui）
   if(hubTab!=='settle')ST_GAR=ST_AL=ST_DET=ST_NOGAR=ZL_ED=KT2_GOD=null;else if(ZL_ED)over=zlEdPopHTML()||over;else if(ST_NOGAR)over=stNoGarPopHTML()||over;else if(ST_GAR)over=stGarPopHTML()||over;else if(ST_AL)over=stAlPopHTML()||over;else if(ST_DET&&!stMapView())over=stDetPopHTML()||over;   // ST_GAR：第三步驻扎英雄的弹窗   // v0.10.0 开拓地调配的弹窗（盖在大地图的地区面板上，关掉回到那里）   // v0.9.51 开拓地页默认大地图：点地区弹面板   // 代理 KT：列表模式也用大地图的地区面板（用户定：两边共用一套）   // ZL_ED：代理 ZL 加，开拓地政令的弹窗（ui/zl_settle）
   openModal('start',scrHTML({title:'营地',back:['menu','','主界面'],rail:hubRail(hubTab),sk:'hub-'+hubTab,body:hubIntro(hubTab)+body,over}),null,true,'hub:'+hubTab);
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(railMoreSync);
@@ -67785,8 +67827,8 @@ const elIc=k=>{const u=typeof eiIcon==='function'?eiIcon(k):'';return u?`<img cl
 let EL_TIP=null;
 function elTrInfo(kind,key){if(kind==='tr'){const T=EL().traits[key];return T&&{ico:elIc(T.q<0?'tr:neg':'tr:pos'),name:T.name,cls:T.q<0?'bad':'',desc:T.desc,sub:T.q<0?'负面特性':'特性'}}
   if(kind==='tt'){const T=EL().train[key];return T&&{ico:elIc('tr:train'),name:T.name,cls:'tt',desc:T.desc,sub:`训练特性 · ${T.lv} 阶`}}
-  if(kind==='bt'){const T=elBloodTr()[key];if(!T)return null;const B=elBlood()[T.blood];return{ico:elCrI(T.blood),name:T.name,cls:'fam',desc:T.desc,sub:`${B?B.name:''}家族特性 · 血脉到 ${Math.round(T.min*100)}% · 遗传 p ${pc_(T.p)} · 自己出现 x ${pc_(T.x)}`}}
-  if(kind==='co'){const[thr,k]=String(key).split('|'),O=CFG.elite.cfam.trAll[k];if(!O)return null;const px=EL().bloodTrPX[+thr]||[0,0];return{ico:elIc('tr:pos'),name:O.name,cls:'fam',desc:O.desc,sub:`自建家族特性 · ${Math.round(+thr*100)}% 那一格 · 要家族 ${O.t} 阶 · p ${pc_(px[0])} · x ${pc_(px[1])}`}}return null}
+  if(kind==='bt'){const T=elBloodTr()[key];if(!T)return null;const B=elBlood()[T.blood];return{ico:elCrI(T.blood),name:T.name,cls:'fam',desc:T.desc,sub:`${B?B.name:''}家族特性 · 血脉到 ${Math.round(T.min*100)}% 才可能有`}}
+  if(kind==='co'){const[thr,k]=String(key).split('|'),O=CFG.elite.cfam.trAll[k];if(!O)return null;const px=EL().bloodTrPX[+thr]||[0,0];return{ico:elIc('tr:pos'),name:O.name,cls:'fam',desc:O.desc,sub:`自建家族特性 · ${Math.round(+thr*100)}% 那一格 · 要家族 ${O.t} 阶`}}return null}
 const elTrChip=(kind,key)=>{const I=elTrInfo(kind,key);return I?`<span class="elchip${I.cls?' '+I.cls:''}" role="button" data-act="elxtip" data-v="${kind}|${key}">${I.ico}${I.name}</span>`:''};
 function elTipHTML(){const i=EL_TIP.indexOf('|'),I=elTrInfo(EL_TIP.slice(0,i),EL_TIP.slice(i+1));if(!I){EL_TIP=null;return''}
   return`<div class="mpopbg eltipbg" data-act="elxtipx" role="button" aria-label="关闭"></div><div class="mpop oppop elpop eltip" role="dialog"><div class="oph"><b>${I.ico}${I.name}</b><button class="px sq" type="button" data-act="elxtipx" aria-label="关闭">×</button></div><div class="opb"><p>${I.desc}</p><p class="meta">${I.sub}</p></div></div>`}
@@ -67800,11 +67842,13 @@ function elTopTabs(){const ev=elEvPending();return`<div class="eltop">${[['settl
 function elHub(){elTick();elAllySync();const m=elSt();const tabs=`<div class="tabs sub">${[['list','精英'],['rec','招募'],['mar','婚配'],['rep','声望'],['cf','家族'],['roll','名册'],['kids','训练所']].map(([k,n])=>elBtn('elxsub',k,n,{on:EL_SUB===k})).join('')}</div>`;
   return`<div class="kt2 elui">${tabs}${EL_SUB==='rec'?elRecAllHTML():EL_SUB==='mar'?elMarHTML():EL_SUB==='rep'?elRepHTML():EL_SUB==='cf'?elCfHTML():EL_SUB==='roll'?elRollHTML():EL_SUB==='ins'||EL_SUB==='kids'?elKidsHTML():elListHTML()}</div>`}
 // —— 精英列表 ——
+let EL_LSORT=null,EL_MARF='';   // 0.12.1 精英列表排序 [键, 倒序]；婚配页筛选（'' 全部 / 'y' 已婚 / 'n' 未婚）
 function elListHTML(){const m=elSt(),dep=m.list.filter(e=>e.dep).length;
   const head=`<div class="elhead"><span class="meta">在役 <b>${m.list.length}</b> / ${elCap()} 名(每个开拓地 +${EL().capPer}) · 上阵 <b>${dep}</b> / ${elDeployMax()} · 在「招募」页签招人</span>
     ${elBtn('elxautog','','一键装备',{ti:'没锁定配置的精英，从仓库里挑能穿的最好的商店普通装备'})}${elBtn('elxautos','','一键搭配技能',{ti:'没锁定配置的精英按技能等级自动装配'})}${elBtn('elxinj','',`伤病自动不上阵：${m.opt.injOff?'开':'关'}`,{on:m.opt.injOff})}${elBtn('elxcv','',`切换显示：${EL_CARDV==='eq'?'装备':'技能'}`,{ti:'卡片右侧显示装配的技能还是穿着的装备'})}</div>`;
   if(!m.list.length)return head+'<p class="meta">还没有精英。在上面的「招募」页签(或大地图上开拓地的「招募」页签)用银币招募有名字的精英士兵。</p>';
-  return head+`<div class="elcards">${m.list.map(elCardHTML).join('')}</div>`}
+  const sk=EL_LSORT,L=sk?m.list.slice().sort((a,b)=>(sk[0]==='lv'?elLv(a)-elLv(b):a.age-b.age)*(sk[1]?-1:1)):m.list,sb=(k,n)=>elBtn('elxlsort',k,`${n}${sk&&sk[0]===k?(sk[1]?' ↓':' ↑'):''}`,{on:!!(sk&&sk[0]===k)});   // 0.12.1（用户定）排序：再点一次倒序
+  return head+`<div class="elrow"><span class="meta">排序：</span>${elBtn('elxlsort','','默认',{on:!sk})}${sb('lv','按等级')}${sb('age','按年龄')}</div><div class="elcards">${L.map(elCardHTML).join('')}</div>`}
 function elCardHTML(e){const J=elJobD(e),hurt=elHurt(e);
   const L=e.learn?` · 正在学${EL().skills[e.learn.k].name} ${elRoman(e.learn.lv)} 级`:'';
   return`<div class="elcard${e.dep?' dep':''}${hurt?' hurt':''}"><div class="elpic"><img alt="" src="${elIcon(e)}">${elBtn('elxdep',e.id,e.dep?'上阵中':'待命',{on:e.dep})}</div><div class="elmain">
@@ -67849,7 +67893,7 @@ function elStatGrid(e){const h=elPreview(e),d=elDef(e),lv=e.kid?1:elLv(e),c=(l,v
 // 血脉来自几阶（0.12.0 望楼建议、用户同意）：占比最高的那支血脉所在地区的阶（自建家族按家族阶）
 const EL_TN=['一','二','三','四','五','六','七','八','九'];
 function elBlTier(e){const B=elBlood();let best=null,n=-1;for(const id in e.bl||{})if(e.bl[id]>n){n=e.bl[id];best=id}const F=best&&B[best];if(!F)return 0;if(F.custom){const cf=elCfOf(F.cf);return cf?cf.tier-1:0}return CFG.maps[F.reg]?Math.min(8,mapTierOf(F.reg)):0}
-function elBloodHTML(e,est){const M=e.bm||{},r=v=>est?(Math.round(v*20)/20).toFixed(2):(Math.round(v*100)/100).toFixed(2);
+function elBloodHTML(e,est){const M=e.bm||{},r=v=>(Math.round(v*20)/20).toFixed(2);   // 0.12.1（用户定）任何人的属性倍率都只显示到 0.05
   return`<p class="meta">血脉：<b>${EL_TN[elBlTier(e)]}阶</b>(属性倍率的上限看血脉来自几阶；精英的等级成长比英雄慢，后期要靠下一代换更高阶的血脉)</p>${elBlBar(e)}<div class="statg">${EL().bloodStats.map(([k,n])=>`<div><span>${statIco(n)}${n}</span><b style="color:${(M[k]||1)>1.001?'#9fe08a':(M[k]||1)<0.999?'#e08a7a':'inherit'}">×${r(M[k]||1)}</b></div>`).join('')}</div>
     ${Object.keys(e.bsp||{}).length?`<p class="meta">特别属性：${Object.keys(e.bsp).map(k=>`${EL().bloodSpName[k]||k} +${pc1(e.bsp[k])}`).join('、')}</p>`:''}${(e.bt||[]).length?`<div class="elchips">${(e.bt||[]).map(k=>elTrChip('bt',k)).join('')}</div>`:'<p class="meta">没有家族特性</p>'}`}
 // 血脉条（0.12.0 用户定）：一条色带，家族用自己的颜色、平民灰；下面是家徽 + 名称 + 比例（平民没有家徽）
@@ -67876,7 +67920,7 @@ function elItemCell(it,e){const Q=CFG.itemQ[baseQ(it.base)],ho=itemOwner(it.uid)
   return`<button class="it${mine?' worn mine':who?' worn':''}" type="button" data-act="elxeq" data-v="${e.id}:${it.uid}" style="--qc:${Q.color}" title="${itemName(it)}${it.enh?' +'+it.enh:''}${mine?'(穿着)':who?`(${who}在用)`:''}"><img alt="" src="${itemIcon(it)}">${it.enh?`<i class="en">+${it.enh}</i>`:''}${BOOK_N.get(it.uid)>1?`<i class="en">×${BOOK_N.get(it.uid)}</i>`:''}${mine?'<i class="ow">穿</i>':who?'<i class="ow">用</i>':''}${gearTier(it.base)>1?`<i class="tr">${TIER_RN[gearTier(it.base)]||gearTier(it.base)}</i>`:''}</button>`}
 // 技能位（0.11.4 用户定：显示装配了什么技能，图标 + 右上角等级；主动在前、被动(金底)在后、空位暗色）
 function elSlotsHTML(e,big){const sl=elSlots(e);
-  const t=(k,pas)=>{if(!k)return`<span class="elss emp${pas?' pas':''}" title="空的${pas?'被动':'主动'}技能位"></span>`;const S=EL().skills[k],u=skIcon(k)||skIcon(S.sk)||'';
+  const t=(k,pas)=>{if(!k)return`<span class="elss emp${pas?' pas':''}" title="空的${pas?'被动':'主动'}技能位"></span>`;const S=EL().skills[k],u=elSkIco(k);
     return`<span class="elss${pas?' pas':''}" title="${S.name} ${elRoman(e.sk[k]||1)} 级">${u?`<img alt="" src="${u}">`:`<b>${S.name.slice(0,1)}</b>`}<i>${elRoman(e.sk[k]||1)}</i></span>`};
   const A=[],P=[];for(let i=0;i<sl[0];i++)A.push(t(e.ea[i],false));for(let i=0;i<sl[1];i++)P.push(t(e.ep[i],true));
   return`<div class="elssr${big?' big':''}">${A.join('')}${P.length?'<b class="elsep"></b>':''}${P.join('')}</div>`}
@@ -67885,7 +67929,7 @@ function elSlotsHTML(e,big){const sl=elSlots(e);
 function elSkHTML(e){const sl=elSlots(e),N=elRankNeed(e),av=elSkAvail(e);
   const card=k=>{const S=EL().skills[k],lv=e.sk[k]||0,on=(S.pas?e.ep:e.ea).includes(k),nx=lv+1;let learn='';
     if(!e.learn&&nx<=EL().skMax)learn=nx>elSkMax()?`<span class="meta">${elRoman(nx)} 级要科技「精英训练」${elRoman(nx)} 级</span>`:'';   // 0.12.0（用户定）技能只在训练所学
-    return`<div class="${on?'on':''}${lv?'':' dim'}"><img alt="" src="${skIcon(k)||skIcon(S.sk)||''}"><div><b>${S.name}</b> <span class="meta">${S.pas?'被动':'主动'}${lv?` · ${elRoman(lv)} 级`:' · 未学'}</span><br><span class="meta">${elSkDesc(k,lv||1)}</span>
+    return`<div class="${on?'on':''}${lv?'':' dim'}"><img alt="" src="${elSkIco(k)}"><div><b>${S.name}</b> <span class="meta">${S.pas?'被动':'主动'}${lv?` · ${elRoman(lv)} 级`:' · 未学'}</span><br><span class="meta">${elSkDesc(k,lv||1)}</span>
       <div class="elrow">${lv?elBtn('elxske',e.id+':'+k,on?'卸下':'装配',{on}):''}${learn}</div></div></div>`};
   const L=e.learn?`<p>正在${e.learn.ins!=null&&elInsWho(e.learn.ins)?`跟${elInsWho(e.learn.ins).name}`:''}学：<b>${EL().skills[e.learn.k].name} ${elRoman(e.learn.lv)} 级</b>，还要 ${Math.max(0,Math.ceil((e.learn.end-metaNow())/60000))} 分钟(在「训练所」可以加速)</p>`:'';
   const got=av.filter(k=>e.sk[k]>0),no=av.filter(k=>!(e.sk[k]>0)),grp=(L2,pas)=>L2.filter(k=>!!EL().skills[k].pas===pas).map(card).join('');
@@ -67909,7 +67953,7 @@ function elRetHTML(e){return`<p>${elName(e)}，${elAgeTxt(e)}，出战 ${e.log.n
     <p class="meta">确认退休请在下面输入 <b>ok</b>：</p><div class="elrow"><input type="text" id="elRetOk" maxlength="4" style="width:6em" autocomplete="off">${elBtn('elxret',e.id,'退休')}</div>`}
 // 族谱（用户定：可以索引到另一名谱内精英；0.11.4 改成家族分支树：从最早能找到的祖先往下画，点人看那个人的族谱）
 function elTreeHTML(e){let root=e;const up=new Set([e.id]);while(root.par){const p=elById(root.par);if(!p||up.has(p.id))break;up.add(p.id);root=p}
-  const st=x=>x.kid?`${Math.floor(x.age)} 岁`:x.st==='retired'?'退休':x.st==='dead'||x.dead?'已故':x.st==='fam'?`族人 ${Math.floor(x.age)} 岁`:'在役',seen=new Set();
+  const st=x=>x.kid?`${Math.floor(x.age)} 岁`:x.st==='dead'||x.dead?`已故 · 享年 ${Math.floor(x.age)}`:x.st==='retired'?`退休 · ${Math.floor(x.age)} 岁`:x.st==='fam'?`族人 · ${Math.floor(x.age)} 岁`:`在役 · ${Math.floor(x.age)} 岁`,seen=new Set();
   const card=(x,sp)=>{const dd=x.st==='dead'||x.dead,id=x.id!=null&&elById(x.id)?x.id:null;
     return`<div class="eltn${x.id===e.id?' me':''}${dd?' dead':''}"${id!=null?` role="button" data-act="elxjump" data-v="${id}"`:''}><img alt="" src="${elIcon(x)}"><b>${elName(x)}${elSexI(x)}</b><i>${id!=null||!sp?st(x):x.dead?'已故':'队外配偶'}${sp||!x.gen?'':` · 第 ${x.gen} 代`}</i></div>`};
   const mem=new Set();{const q=[root];while(q.length){const x=q.shift();if(!x||mem.has(x.id))continue;mem.add(x.id);for(const c of x.kids||[])q.push(elById(c))}}   // 这棵树里的人
@@ -67921,7 +67965,7 @@ function elTreeHTML(e){let root=e;const up=new Set([e.id]);while(root.par){const
     return`<li><div class="elcp">${card(x)}${Sok?`<span class="elcpx">═</span>${card(S,true)}`:''}</div>${K?`<ul>${K}</ul>`:''}</li>`};
   return`<p class="meta">${root.par?'更早的祖先已从名册清除。':'最上面是招募来的第一代。'}点人打开这个人的面板(在役的看属性 / 装备，训练所的孩子看属性，退休、去世的看日志)。${e.grandOf?`${elName(e)}接替自祖辈${(elById(e.grandOf)&&elName(elById(e.grandOf)))||''}。`:''}</p><div class="elrow">${elFollowBtn(root)}</div><div class="eltree"><ul>${node(root,0)}</ul></div>`}
 // 关注家族（0.12.0 用户定）：族谱不删；主脉多生一代；至多 6 个
-const elFollowBtn=x=>{const m=elSt(),on=m.follow.includes(x.id);return elBtn('elxfol',x.id+':'+(on?0:1),on?`已关注这个家族(${m.follow.length}/${elFollowMax()})`:`关注这个家族(${m.follow.length}/${elFollowMax()})`,{on,ti:'关注后整支族谱不会因为没人在队里而删掉，长子 / 长女一脉多生一代'})};
+const elFollowBtn=x=>{const m=elSt(),on=elFollowOn(x);return elBtn('elxfol',x.id+':'+(on?0:1),on?`已关注这个家族(${m.follow.length}/${elFollowMax()})`:`关注这个家族(${m.follow.length}/${elFollowMax()})`,{on,ti:'关注后整支族谱不会因为没人在队里而删掉，长子 / 长女一脉多生一代'})};
 // —— 名册（用户定：所有过往士兵，可清除 / 压缩、排序、搜索、看族谱）——
 function elRollHTML(){const m=elSt(),q=EL_Q.trim();let L=m.roll.slice();if(q)L=L.filter(r=>elName(r).includes(q));
   const S={id:(a,b)=>a.id-b.id,n:(a,b)=>b.log.n-a.log.n,lv:(a,b)=>elLv(b)-elLv(a),k:(a,b)=>b.log.k-a.log.k};L.sort(S[EL_SORT]||S.id);
@@ -67934,7 +67978,8 @@ const elInsKind=key=>String(key).startsWith('h:')?'英雄':elSt().staff.some(x=>
 const elSkTxt=o=>Object.keys(o).map(k=>`${EL().skills[k].name} ${elRoman(o[k])}`).join('、')||'无';
 // 教官卡（0.12.0 用户定）：左边教官和能教的技能(点图标换教的技能)，右边学生框(在教的技能图标、学生头像和名字)
 let EL_PK={};   // 教官 → 这一批挑好的学生
-const elSkI=(k,cls)=>{const S=EL().skills[k];return S?`<img class="${cls||'eli'}" alt="" src="${skIcon(k)||skIcon(S.sk)||''}">`:''};
+const elSkIco=k=>{const S=EL().skills[k];return S?skIcon(k)||(S.ico?skIcon(S.ico):'')||skIcon(S.sk)||'':''};   // 0.12.1 ico：借原英雄技能的图标
+const elSkI=(k,cls)=>{const S=EL().skills[k];return S?`<img class="${cls||'eli'}" alt="" src="${elSkIco(k)}">`:''};
 function elInsCard(key){const W=elInsWho(key),m=elSt(),cur=m.tch[String(key)],stu=elStudents(key),S=elInsSkills(key),K=String(key);if(!W)return'';
   const img=W.hero?heroIcon(W.hero,1):elIcon(W.e),sub=W.hero?`${CFG.heroes[W.hero].title||''} · ${Math.max(1,META.heroes[W.hero].star||1)} 星`:`${Math.floor(W.e.age)} 岁 · ${elJobD(W.e).name}`;
   const run=stu.length>0,C=run?[]:elClassCands(key),pk=(EL_PK[K]||[]).filter(id=>C.some(e=>e.id===id));EL_PK[K]=pk;
@@ -67944,7 +67989,7 @@ function elInsCard(key){const W=elInsWho(key),m=elSt(),cur=m.tch[String(key)],st
   return`<div class="elinsc"><div class="elinsl"><div class="eltop2"><img alt="" src="${img}"><div><b>${W.name}</b>${W.e?elSexI(W.e):''}<br><span class="meta">${elInsKind(key)} · ${sub}</span></div></div>
       ${m.irq[K]?'<span class="warn">教完这一批就退休</span>':''}<span class="meta">能教(点了换教的技能${run?'；上课时不能换':''})：</span>
       <div class="elrow">${Object.keys(S).map(k=>`<button class="px sm elski${cur===k?' on':''}" type="button" data-act="elxitch" data-v="${key}|${k}" title="${EL().skills[k].name} ${elRoman(S[k])} 级：${elSkDesc(k,S[k])}"${run&&cur!==k?' disabled':''}>${elSkI(k)}<i>${elRoman(S[k])}</i></button>`).join('')||'<span class="meta">没有能教的技能</span>'}</div>
-      <div class="elrow">${elBtn('elxpop','ins:'+key,'详情')}</div></div>
+      <div class="elrow">${elBtn('elxpop','ins:'+key,'详情')}<span class="elbr">${elBtn('elxioff',key,'撤换',{dis:run,ti:run?'正在上课，下课后才能撤换':'撤下这位教官(不退休)，空出位子'})}</span></div></div>
     <div class="elinsr"><div class="elrow">${cur?`${elSkI(cur,'elski2')}<b>${EL().skills[cur].name}</b>`:'<span class="meta">还没选要教的技能</span>'}<span class="meta">${run?`上课中，还要 ${left} 分钟`:`学生 ${pk.length}/${elSeats()}`}</span></div>
       <div class="elseats">${seats.join('')}</div>
       <div class="elrow">${run?elBtn('elxcrush',key,`银币加速(${elClassRushCost(key)})`):cur?elBtn('elxpop','ipick:'+key,`挑学生(能来 ${C.length} 人)`)+elBtn('elxcls',key,`开课(${pk.length?f1g(elLearnHours(elById(pk[0]),Math.max(...pk.map(id=>{const x=elById(id);return(x.sk[cur]||0)+1})))):'—'} 小时)`,{on:pk.length>0,dis:!pk.length}):''}</div></div></div>`}
@@ -67954,13 +67999,13 @@ function elPickHTML(key){const m=elSt(),K=String(key),cur=m.tch[K],C=elClassCand
     <div class="elroll">${C.map(e=>{const on=pk.includes(e.id);return`<div><img class="elpor2" alt="" src="${elIcon(e)}"><b>${elName(e)}</b>${elSexI(e)}<span class="meta">${elJobD(e).name} · ${(e.sk[cur]||0)?`${elRoman(e.sk[cur])} → ${elRoman(e.sk[cur]+1)} 级`:'学 Ⅰ 级'}</span><span class="elbr">${elBtn('elxpk',key+'|'+e.id,on?'已选':'选',{on,dis:!on&&pk.length>=elSeats()})}</span></div>`}).join('')||'<p class="meta">现在没有能来上这门课的精英(都学满了、在学别的，或者职业学不了)。</p>'}</div>
     <div class="elrow"><span class="elbr">${elBtn('elxpx','','好了',{on:true})}</span></div>`}
 function elKidsHTML(){const m=elSt(),F=EL().family,n=m.ins.length,mx=elInsMax(),kidT=m.ins.some(key=>!String(key).startsWith('h:'));
-  const free=mx-n,empt=free>0?`<div class="emp"><span>空位 ×${free}</span><div class="elrow">${elBtn('elxsub','roll','从名册任命')}${elBtn('elxpop','hpick:0','任命英雄')}${elBtn('elxsub','rec','招募教官')}</div></div>`:'';
+  const free=mx-n,bench=m.staff.filter(x=>!elInsHas(x.id)),empt=free>0?`<div class="emp"><span>空位 ×${free}</span><div class="elrow">${elBtn('elxsub','roll','从名册任命')}${elBtn('elxpop','hpick:0','任命英雄')}${elBtn('elxsub','rec','招募教官')}</div>${bench.length?`<div class="elrow"><span class="meta">撤下的教官：</span>${bench.map(x=>elBtn('elxion',String(x.id),'任命 '+elName(x))).join('')}</div>`:''}</div>`:'';
   return`<h5>教官 ${n} / ${mx} <span class="meta">(科技「扩张军校」增加)</span></h5>
     <p class="meta">精英的技能只在这里学：每位教官选一种技能，挑一批学生(至多 ${elSeats()} 名，科技「阶梯教室」增加)开课，学完每人学会或升一级，不超过教官的等级。英雄当教官只教自己的特殊技能，不教特性。
       训练所的孩子每年对每位教官有 ${pc_(EL().kidP*(1+(elTM().elDilig||0)))} 概率学会这位教官的一条特性(科技「刻苦训练」提高)，每个孩子至多跟教官学 ${EL().kidTr} 条普通特性、${EL().kidTt} 条训练特性；${kidT?'':`现在没有能教特性的教官：孩子每年只有 ${pc_(EL().noInsP)} 概率自己学会一条训练特性。`}</p>
     <div class="elins">${m.ins.map(elInsCard).join('')}${empt}</div>
     <h5>预备队 ${m.kids.filter(c=>c.enr).length} / ${elKidCap()} <span class="meta">(6 + 每个开拓地 3) · 孩子共 ${m.kids.length} 名</span></h5>
-    <p class="meta">精英 ${F.age[0]}～${F.age[1]} 岁每年有概率生孩子(至多 ${F.max} 个)。孩子满 ${F.school[0]} 岁、预备队有空位时自动入学(也可以提前加入、占一个位子)，入学的 ${F.school[0]}～${F.school[1]} 岁跟教官学特性；${F.adult} 岁起可以招进精英(价格减半)，或者等父母退休时接替。</p>
+    <p class="meta">精英 ${F.age[0]}～${F.age[1]} 岁每年有概率生孩子(至多 ${F.max} 个)。加入预备队的孩子才进训练所(占一个位子，不会自动入学)，${F.school[0]}～${F.school[1]} 岁跟教官学特性；${F.adult} 岁离开训练所(记进精英日志)，可以招进精英(价格减半)，或者等父母退休时接替。</p>
     <div class="elroll">${m.kids.slice().sort((a,b)=>(b.enr?1:0)-(a.enr?1:0)||b.age-a.age).map(c=>{const p=elById(c.par);return`<div><b>${elName(c)}</b>${elSexI(c)}<span class="meta">${Math.floor(c.age)} 岁 · ${c.enr?(c.age>=F.school[0]?'在训练所':'预备队(占位)'):'在家'} · 父母 ${p?elName(p):'—'} · ${elBlTxt(c)} · ${elTraitChips(c)||'还没有特性'}</span>${!c.enr?elBtn('elxkenr',c.id,'提前加入预备队'):elBtn('elxkdrop',c.id,'退学',{ti:'让出训练所的位子；族谱里还能找到'})}${c.age>=F.adult?elBtn('elxkid',c.id,'招入精英'):''}${elBtn('elxpop','info:'+c.id,'属性')}${elBtn('elxpop','tree:'+c.id,'族谱')}</div>`}).join('')||'<p class="meta">还没有孩子。</p>'}</div>`}
 // 教官详情：会的技能（点了换教这个）、特性、学员、退休（要输入 ok）
 function elInsPopHTML(key){const W=elInsWho(key),m=elSt(),cur=m.tch[String(key)],S=elInsSkills(key),stu=elStudents(key),T=W.hero?[]:W.e.tr.map(k=>EL().traits[k]).concat(W.e.tt.map(k=>EL().train[k]));
@@ -67999,7 +68044,8 @@ function elRepHTML(){const B=elBlood(),L=EL().rep.lv,lo=L[0][1];
 const elRepTxt=fid=>{const p=elRepOf(fid),L=EL().rep.lv,i=elRepLv(p),nx=L[i+1];return`${L[i][0]}${nx?`(${p}/${nx[1]})`:`(${p})`}`};
 function elMarHTML(){const m=elSt(),B=elBlood(),regs=elOpenRegs();
   return`<p class="meta">精英 ${EM().age} 岁还没成家会自己相亲；各家族的声望在「声望」页签。</p>
-    <div class="elroll">${m.list.map(e=>`<div><img class="elpor2" alt="" src="${elIcon(e)}">${elSpouse(e)?`<img class="elpor2" alt="" src="${elSpouse(e).job?heroIcon(elSprLk(elSpouse(e)),2):elIcon(elSpouse(e))}">`:''}<b>${elName(e)}</b>${elSexI(e)}<span class="meta">${elAgeTxt(e)} · ${elBlTxt(e)} · ${elSpouse(e)?`配偶 <b>${elName(elSpouse(e))}</b>${elSexI(elSpouse(e))}(${elBlTxt(elSpouse(e))})${e.spId?'(队内)':''}${elWidow(e)?' <span class="warn">丧偶</span>':''}`:e.mc&&e.mc.length?`<span class="warn">有 ${e.mc.length} 位人选等你挑</span>`:'未婚'} · 子女 ${e.kids.length}</span>
+    <div class="elrow"><span class="meta">筛选：</span>${elBtn('elxmarf','','全部',{on:!EL_MARF})}${elBtn('elxmarf','y','已婚',{on:EL_MARF==='y'})}${elBtn('elxmarf','n','未婚',{on:EL_MARF==='n'})}</div>
+    <div class="elroll">${m.list.filter(e=>!EL_MARF||(EL_MARF==='y')===!!elSpouse(e)).map(e=>`<div><img class="elpor2" alt="" src="${elIcon(e)}">${elSpouse(e)?`<img class="elpor2" alt="" src="${elSpouse(e).job?heroIcon(elSprLk(elSpouse(e)),2):elIcon(elSpouse(e))}">`:''}<b>${elName(e)}</b>${elSexI(e)}<span class="meta">${elAgeTxt(e)} · ${elBlTxt(e)} · ${elSpouse(e)?`配偶 <b>${elName(elSpouse(e))}</b>${elSexI(elSpouse(e))}(${elBlTxt(elSpouse(e))})${e.spId?'(队内)':''}${elWidow(e)?' <span class="warn">丧偶</span>':''}`:e.mc&&e.mc.length?`<span class="warn">有 ${e.mc.length} 位人选等你挑</span>`:'未婚'} · 子女 ${e.kids.length}</span>
       ${elBtn('elxpop','mar:'+e.id,'详情')}${!elSpouse(e)?(e.single?'':(e.mc&&e.mc.length?elBtn('elxpop','mc:'+e.id,'挑人选',{on:true}):'')+elBtn('elxblind',e.id,`相亲(${elBlindCost(e)} 银)`)+elBtn('elxpop','bq:'+e.id,'宴会'))+elBtn('elxsingle',e.id,e.single?'已锁定单身':'锁定单身',{on:e.single,ti:'锁定后不会自己成家，也不能相亲、办宴会'}):e.wedP?elBtn('elxpop','wed:'+e.id,'办婚宴',{on:true}):''}</div>`).join('')||'<p class="meta">还没有精英。</p>'}</div>`}
 function elSpCard(x,extra){return`<div class="elinfo"><div class="elspc"><img class="elpor2" alt="" src="${heroIcon(elSprLk(x),2)}"><div><p><b>${elName(x)}</b>${elSexI(x)} · ${elAgeTxt(x)} · ${CFG.maps[x.reg]?CFG.maps[x.reg].name:''}${x.pers?` · 性格「${EL().personality[x.pers].name}」`:''}${x.job&&x.job!=='recruit'?` · 穿${EL().jobs[x.job].name}的衣服`:''}</p>${extra||''}</div></div>${elBloodHTML(x,true)}</div>`}
 // 怀孕（0.12.0）：女方怀孕，一年后生
@@ -68074,7 +68120,7 @@ function elCfTabHTML(cf,t){const C=CFG.elite.cfam,E=EL(),SP=E.bloodSpName,id='f_
   if(t==='tr'){const P=EL_CFP&&EL_CFP.id===cf.id?EL_CFP:null;
     return`<p class="meta">五格各自一组特性；血脉占比到这一格后，按固定的 p(父母有就遗传)、x(自己出现)出现。点一下先看效果，确认后锁定；升阶后可以免费改一次(现在${cf.fc>0?'<b>有</b>':'没有'})，其它时候改一条 ${C.trGold} 金币。</p>
     ${C.thr.map(thr=>{const O=elCfTrOpts(thr),cur=cf.tr[thr],pk=P&&+P.thr===thr?O.find(o=>o.key===P.key):null,cost=elCfTrCost(cf,thr);
-      return`<div class="elcftr"><div class="elrow"><b style="width:3em">${Math.round(thr*100)}%</b><span class="meta">p ${pc_(E.bloodTrPX[thr][0])} · x ${pc_(E.bloodTrPX[thr][1])}</span>${cur?`<span class="meta">已定：</span>${elTrChip('co',thr+'|'+cur)}`:'<span class="warn">还没选</span>'}</div>
+      return`<div class="elcftr"><div class="elrow"><b style="width:3em">${Math.round(thr*100)}%</b>${cur?`<span class="meta">已定：</span>${elTrChip('co',thr+'|'+cur)}`:'<span class="warn">还没选</span>'}</div>
         <div class="elhs">${O.map(o=>{const lk=o.t>cf.tier;return`<button class="elto${cur===o.key?' on':''}${pk&&pk.key===o.key?' pk':''}" type="button" data-act="elxcfp" data-v="${cf.id}|${thr}|${o.key}"${lk?` disabled title="要家族 ${o.t} 阶"`:''}>${elCrI(id)}<b>${o.name}</b><span>${o.desc}</span>${lk?`<i class="gw">要 ${o.t} 阶</i>`:''}</button>`}).join('')}</div>
         ${pk?`<div class="elpk"><b>${pk.name}</b>：${pk.desc}<span class="meta"> · 要家族 ${pk.t} 阶</span><span class="elbr">${cur===pk.key?'<span class="meta">已是这一条</span>':elBtn('elxcft',cf.id+'|'+thr+'|'+pk.key,cur?(cost?`确认更改(${cost} 金币)`:'确认更改(免费)'):'确认',{on:true})}</span></div>`:''}</div>`}).join('')}`}
   if(t==='cr'){const P=EL_CRE[cf.id]||cf.crest,ch=['shape','bg','pat','fg'].some(k=>P[k]!==cf.crest[k]);return`<div class="elrow">${elCrestImg(cf.crest,48)}${ch?`<span class="meta">→</span>${elCrestImg(P,48)}`:''}<span class="meta">建立后改徽记要 ${C.crestGold} 金币：先在下面挑好，再点确认。</span>${ch?elBtn('elxcfcok',cf.id,`确认修改(${C.crestGold} 金币)`,{on:true})+elBtn('elxcfcno',cf.id,'还原'):''}</div>${elCrestPick(P,'elxcfc',cf.id+'|')}`}
@@ -68089,14 +68135,19 @@ function elFamAllHTML(){const B=elBlood(),E=EL(),SP=E.bloodSpName,T=elBloodTr();
     return rows?`<h5>${P.name}</h5>${rows}`:''}).join('')}
 // —— 进营地时的弹窗（0.12.0 用户定）：这段时间发生的事，分「训练所」「子嗣出生」「伤病」，没有的页签不显示；关掉就清掉 ——
 const elEvPending=()=>!!(META&&META.el&&META.el.ev&&META.el.ev.length);
+// 长大离开训练所（0.12.1）：可以直接招进队
+const elKidPrice=c=>{c.kidBuy=1;const p=elPrice(c);delete c.kidBuy;return p};
+function elGrownRow(x,tm){const c=elById(x.id);if(!c||c.dead)return`<div><span class="meta">(已经不在了)</span>${tm(x)}</div>`;const inL=elSt().list.includes(c);
+  return`<div><img class="elpor2" alt="" src="${elIcon(c)}"><b>${elName(c)}</b>${elSexI(c)}<span>${EL().family.adult} 岁，离开训练所</span><span class="meta">${elBlTxt(c)}</span>${elTraitChips(c)}${inL?'<span class="meta">已入队</span>':elBtn('elxkid',c.id,`招入精英(${elKidPrice(c)} 银)`)}${elBtn('elxpop','info:'+c.id,'详情')}${tm(x)}</div>`}
 function elEvPopHTML(){const m=elSt(),E=m.ev,nm=id=>{const x=elById(id);return x?elName(x):'(已离开)'},F=EL().family;
-  const T={school:E.filter(x=>x.k==='learn'||x.k==='insret'||x.k==='ret'),birth:E.filter(x=>x.k==='birth'),mar:E.filter(x=>x.k==='mar'),inj:E.filter(x=>x.k==='heal')},tabs=[['school','训练所'],['birth','子嗣出生'],['mar','婚配'],['inj','伤病']].filter(([k])=>T[k].length);
+  const T={school:E.filter(x=>x.k==='learn'||x.k==='insret'||x.k==='ret'||x.k==='grown'||x.k==='lvsk'),birth:E.filter(x=>x.k==='birth'),mar:E.filter(x=>x.k==='mar'),inj:E.filter(x=>x.k==='heal')},tabs=[['school','训练所'],['birth','子嗣出生'],['mar','婚配'],['inj','伤病']].filter(([k])=>T[k].length);
   if(!tabs.length){m.ev=[];return''}if(!tabs.some(([k])=>k===EL_EVT))EL_EVT=tabs[0][0];
   const tm=x=>`<span class="meta">${new Date(x.t).toLocaleString()}</span>`;let body='';
-  if(EL_EVT==='school')body=`<div class="elroll elevl">${T.school.map(x=>x.k==='learn'?`<div><b>${nm(x.id)}</b><span>${x.ins?`跟${x.ins}`:''}学会了 ${EL().skills[x.sk]?EL().skills[x.sk].name:''} ${elRoman(x.lv)} 级</span>${tm(x)}</div>`:x.k==='insret'?`<div><b>${x.name}</b><span>教官退休了</span>${tm(x)}</div>`:`<div><b>${nm(x.id)}</b><span>到年纪退休了${x.heir?`，推荐 ${nm(x.heir)} 接替`:''}</span>${tm(x)}</div>`).join('')}</div>`;
-  else if(EL_EVT==='birth')body=`<div class="elroll elevl">${T.birth.map(x=>{const c=m.kids.find(k=>k.id===x.id);if(!c)return`<div><span class="meta">(这个孩子已经不在训练所)</span></div>`;const p=elById(x.par);
-    const op=EL_EVX.has(c.id);return`<div style="display:block"><b>${elName(c)}</b>${elSexI(c)} <span class="meta">${p?`${elName(p)}的孩子`:''} ${tm(x)}</span> ${elBtn('elxevd',c.id,op?'收起':'详情')}${op?`${elBloodHTML(c,true)}<div class="elchips">${elTraitChips(c)||'<span class="meta">还没有普通特性</span>'}</div>`:''}
-      <div class="elrow"><input type="text" id="elKN${c.id}" maxlength="8" value="${c.given}" style="width:7em" aria-label="名字">${elBtn('elxkname',c.id,'改名')}<span class="meta">姓 ${c.fam}</span>${c.enr?'<span class="meta">已在预备队</span>':elBtn('elxkenr',c.id,`提前加入预备队(${m.kids.filter(k=>k.enr).length}/${elKidCap()})`)}</div><p class="meta">属性倍率是估算(精确到 0.05)；满 ${F.school[0]} 岁、有空位时自动入学。</p></div>`}).join('')}</div>`;
+  if(EL_EVT==='school')body=`<div class="elroll elevl">${T.school.map(x=>x.k==='learn'?`<div><b>${nm(x.id)}</b><span>${x.ins?`跟${x.ins}`:''}学会了 ${EL().skills[x.sk]?EL().skills[x.sk].name:''} ${elRoman(x.lv)} 级</span>${tm(x)}</div>`:x.k==='insret'?`<div><b>${x.name}</b><span>教官退休了</span>${tm(x)}</div>`:x.k==='grown'?elGrownRow(x,tm):x.k==='lvsk'?`<div><b>${nm(x.id)}</b><span>升到 ${x.lv} 级，${x.up?'技能升级':'自己学会'}：${EL().skills[x.sk]?EL().skills[x.sk].name:''} ${elRoman(x.slv)} 级</span>${tm(x)}</div>`:`<div><b>${nm(x.id)}</b><span>到年纪退休了${x.heir?`，推荐 ${nm(x.heir)} 接替`:''}</span>${tm(x)}</div>`).join('')}</div>`;
+  else if(EL_EVT==='birth')body=`<div class="elroll elevl">${T.birth.map(x=>{const c=m.kids.find(k=>k.id===x.id);if(!c)return`<div><span class="meta">(这个孩子已经不在训练所)</span></div>`;const p=elById(x.par);   // 0.12.1（用户定）直接列出血脉和特性，详情另开弹窗
+    return`<div style="display:block"><div class="elrow"><img class="elpor2" alt="" src="${elIcon(c)}"><b>${elName(c)}</b>${elSexI(c)}<span class="meta">${p?`${elName(p)}的孩子`:''} ${tm(x)}</span></div>
+      <div class="elrow"><span class="meta">${elBlTxt(c)}</span>${elTraitChips(c)||'<span class="meta">没有特性</span>'}</div>
+      <div class="elrow"><input type="text" id="elKN${c.id}" maxlength="8" value="${c.given}" style="width:7em" aria-label="名字">${elBtn('elxkname',c.id,'改名')}<span class="meta">姓 ${c.fam}</span>${c.enr?'<span class="meta">已在预备队</span>':elBtn('elxkenr',c.id,`加入预备队(${m.kids.filter(k=>k.enr).length}/${elKidCap()})`)}${elBtn('elxpop','info:'+c.id,'详情')}</div></div>`}).join('')}</div>`;
   else if(EL_EVT==='mar')body=`<div class="elroll elevl">${T.mar.map(x=>{const e=elById(x.id);return`<div><b>${nm(x.id)}</b><span>${e&&elSpouse(e)?`和 ${elName(elSpouse(e))}(${elBlTxt(elSpouse(e))})成家了${x.auto?'(自己相亲)':''}`:'成家了'}</span>${tm(x)}</div>`}).join('')}</div>`;
   else body=`<div class="elroll elevl">${T.inj.map(x=>`<div><b>${nm(x.id)}</b><span>${(EL().injuries[x.part]||{name:['伤']}).name[0]}好了</span>${tm(x)}</div>`).join('')}</div>`;
   return`<div class="mpopbg" data-act="elxevx" role="button" aria-label="关闭"></div><div class="mpop oppop elpop kt2" role="dialog"><div class="oph"><b>精英日志</b><button class="px sq" type="button" data-act="elxevx" aria-label="关闭">×</button></div>
@@ -68117,6 +68168,9 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
   else if(a==='elxcls'){err=elClassStart(v,EL_PK[String(v)]||[]);if(!err){EL_PK[String(v)]=[];toast('开课了')}}else if(a==='elxcrush'){err=elClassRush(v);if(!err)toast('这一批学完了')}
   else if(a==='elxihero')err=elInsHero(v,true);
   else if(a==='elxihire'){const[r,n]=v.split('|');err=elInsHire(r,+n);if(!err){toast('招募成功：在「训练所」');if(EL_POP&&EL_POP.startsWith('iof:'))EL_POP=null}}
+  else if(a==='elxlsort'){EL_LSORT=!v?null:EL_LSORT&&EL_LSORT[0]===v?[v,!EL_LSORT[1]]:[v,true]}else if(a==='elxmarf')EL_MARF=v||'';
+  else if(a==='elxioff'){if(elStudents(v).length)err='正在上课，下课后再撤换';else{elInsOff(v);saveMeta();toast('撤下了这位教官')}}   // 0.12.1（用户定）撤换：不退休、不用输入 ok
+  else if(a==='elxion'){const m=elSt();if(m.ins.length>=elInsMax())err='训练所的教官已满';else if(!elInsHas(v)){m.ins.push(m.staff.find(x=>String(x.id)===String(v))?m.staff.find(x=>String(x.id)===String(v)).id:v);saveMeta()}}
   else if(a==='elxiret'){const el=document.getElementById('elInsOk');if(!el||el.value.trim().toLowerCase()!=='ok')err='请输入 ok 确认退休';else{const r=elInsRetire(v);EL_POP=null;toast(r==='wait'?'教完现在的学员就退休(不再收新学员)':'教官退休了')}}
   else if(a==='elxhire'){err=elHire(x,+y);if(!err)toast('招募成功：在开拓地页「精英」里')}
   else if(a==='elxdep'&&e)err=elDepToggle(e);
