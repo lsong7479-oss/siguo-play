@@ -19268,10 +19268,11 @@ CFG.elite.cfam.trAll=Object.assign({},CFG.elite.cfam.trOpts);for(const t in CFG.
 // 结盟（用户定）：五阶及以上地区的家族要先结盟才开放招募、声望、婚配——通关这张地图的噩梦或以上难度，或者完成这张地图的传记剧情（elAllyStory(地图) 接口，game/el_mar）
 // 家族字段同 data/el_blood 的 bloodMore；另加 name（显示名，东方家族写「张氏」）、cul（名字风格和地区不同时用，比如佛窟的厄舍家族）、crest（徽记用 eiCrest 的参数画：形状、底色、图案、图案颜色）
 CFG.elite.allyTier=4;   // 地区阶（0 起）≥ 这个数的家族要结盟（4 = 五阶）
-// 新的名字风格：east 中文、japan 日文、slav 东欧；ord:'fam' = 姓在前（张承志），其余「名·姓」
+// 新的名字风格（0.12.0 用户定：只有道观废墟是东方，佛窟是中亚—西域，风见、赤木是日文，其余西方）：east 中文、japan 日文（风见、赤木两家）、sogd 中亚、slav 东欧；ord:'fam' = 姓在前（张承志），其余「名·姓」
 Object.assign(CFG.elite.names,{
   east: {ord:'fam', m:['承志','德明','光远','怀仁','景行','鸿渐','清风','守一','玄成','云起','长庚','子敬','伯安','仲达','子昂','少卿'], f:['婉清','素心','若兰','采薇','明月','青鸾','雪芝','含烟','如意','秋水','灵芸','晚晴']},
   japan:{ord:'fam', m:['隼人','健太','翔','苍真','和也','诚','悠斗','莲','大和','拓海','龙之介','新之助'], f:['遥','雪乃','樱','千夏','凛','葵','美月','纱织','琴音','雫']},
+  sogd: {m:['巴哈尔','帖木儿','阿尔斯兰','苏赫拉布','鲁斯塔姆','法尔哈德','贾姆希德','达里乌斯','伊斯坎德尔','纳林'], f:['古丽','阿依莎','帕丽','米赫丽','罗克珊娜','莎琳','娜迪拉','扎丽娜']},
   slav: {m:['弗拉德','米尔恰','拉杜','博格丹','斯特凡','伊万','德拉戈米尔','康斯坦丁','瓦西里','米哈伊'], f:['伊丽莎白','安娜','玛丽卡','伊莲娜','索菲娅','斯维特拉娜','柳德米拉','卡特琳娜']}});
 // 地区：culture、姓氏（不要和本地区家族的姓重名，不然平民会被当成家族的人）、属性、抗性
 Object.assign(CFG.elite.regions,{
@@ -19281,7 +19282,7 @@ Object.assign(CFG.elite.regions,{
   taoRuins:     {culture:'east',  fam:['李','王','陈','赵','刘'], st:{mdef:0.05, ap:0.03}, desc:'法防 +5%、法攻 +3%'},
   sandCoast:    {culture:'west',  fam:['摩根','基德','蒂奇','弗林特','霍金斯'], st:{speed:0.05}, desc:'移速 +5%'},
   steamWorks:   {culture:'german',fam:['布伦纳','科赫','福格特','劳','耶格尔'], st:{def:0.08}, desc:'物防 +8%'},
-  bloodPass:    {culture:'east',  fam:['孙','周','吴','郑','冯'], st:{atk:0.05, hp:0.03}, desc:'物攻 +5%、生命 +3%'},
+  bloodPass:    {culture:'west',  fam:['布莱克伍德','雷文','福克斯','索恩','格兰特'], st:{atk:0.05, hp:0.03}, desc:'物攻 +5%、生命 +3%'},
   fallenSanctum:{culture:'latin', fam:['德·蒙','罗什','瓦莱','杜布瓦','马雷'], st:{ap:0.05}, res:{poison:0.1}, desc:'法攻 +5%、毒抗 +10%'},
   endlessDesert:{culture:'desert',fam:['哈希姆','苏莱曼','易卜拉欣','穆斯塔法','阿卜杜勒'], st:{aspd:0.03}, res:{fire:0.2}, desc:'攻速 +3%、火抗 +20%'},
   arcticTundra: {culture:'north', fam:['南森','约尔根','斯韦德','哈康森','索尔伯格'], st:{hp:0.05}, res:{frost:0.25}, desc:'生命 +5%、冰抗 +25%'},
@@ -19290,17 +19291,17 @@ Object.assign(CFG.elite.regions,{
   cliffEdge:    {culture:'west',  fam:['克莱夫','罗克','斯蒂普','海德','皮克'], st:{def:0.05}, desc:'物防 +5%'},
   echoCrypt:    {culture:'latin', fam:['罗西','费拉里','孔蒂','加洛','马里尼'], st:{mdef:0.08}, desc:'法防 +8%'},
   mistSea:      {culture:'west',  fam:['奈特','莫里','斯派克','维恩','哈珀'], st:{ap:0.05}, desc:'法攻 +5%'},
-  wuHall:       {culture:'east',  fam:['马','梁','何','罗','韩'], st:{atk:0.05, aspd:0.02}, desc:'物攻 +5%、攻速 +2%'},
+  wuHall:       {culture:'latin', fam:['卢修斯','克拉苏','瓦罗','加图','布鲁图'], st:{atk:0.05, aspd:0.02}, desc:'物攻 +5%、攻速 +2%'},
   skyCity:      {culture:'west',  fam:['埃尔伍德','斯凯勒','温德尔','莱特','费瑟斯'], st:{speed:0.05}, desc:'移速 +5%'},
-  steelCity:    {culture:'east',  fam:['钟','邓','钱','傅','董'], st:{atk:0.05, def:0.05}, desc:'物攻 +5%、物防 +5%'},
+  steelCity:    {culture:'german',fam:['贝格曼','霍赫','席尔','克鲁格','施坦纳'], st:{atk:0.05, def:0.05}, desc:'物攻 +5%、物防 +5%'},
   ghostShip:    {culture:'west',  fam:['布莱','洛克','斯莱特','沃恩','科布'], st:{mdef:0.05}, desc:'法防 +5%'},
   lavaAbyss:    {culture:'north', fam:['苏尔森','布兰森','卡尔达','埃尔德','洛克森'], st:{hp:0.05}, res:{fire:0.25}, desc:'生命 +5%、火抗 +25%'},
   iceSpike:     {culture:'north', fam:['斯卡尔','弗罗斯特','约库尔','赫林','耶斯伯森'], st:{def:0.05}, res:{frost:0.25}, desc:'物防 +5%、冰抗 +25%'},
   vampCastle:   {culture:'slav',  fam:['波波维奇','伊万诺夫','彼得罗夫','斯坦科','诺瓦克'], st:{ap:0.05}, desc:'法攻 +5%'},
-  buddhaCave:   {culture:'east',  fam:['蒋','沈','韩','朱','许'], st:{mdef:0.08}, desc:'法防 +8%'},
+  buddhaCave:   {culture:'sogd',  fam:['卡拉汗','巴尔赫','苏格德','阿夫拉','塔什'], st:{mdef:0.08}, desc:'法防 +8%'},
   papalPalace:  {culture:'latin', fam:['奥尔西尼','科隆纳','法尔内塞','斯福尔扎','德拉·罗韦雷'], st:{mdef:0.05, ap:0.05}, desc:'法防 +5%、法攻 +5%'},
-  snowShrine:   {culture:'japan', fam:['佐藤','铃木','高桥','田中','渡边'], st:{speed:0.05}, res:{frost:0.15}, desc:'移速 +5%、冰抗 +15%'},
-  blSpring:     {culture:'east',  fam:['林','苏','顾','白','温'], st:{hp:0.08}, desc:'生命 +8%'}});
+  snowShrine:   {culture:'west',  fam:['斯诺','布兰卡','霍尔姆','韦斯特','克罗斯'], st:{speed:0.05}, res:{frost:0.15}, desc:'移速 +5%、冰抗 +15%'},
+  blSpring:     {culture:'latin', fam:['德·索托','科尔特斯','门多萨','奥乔亚','巴尔沃亚'], st:{hp:0.08}, desc:'生命 +8%'}});
 // 加工品（婚宴、宴会用）
 Object.assign(CFG.elite.bloodGoods,{shadowHigh:'pgHide', arcaneFactory:'pgOre', lavaLand:'pgOre', taoRuins:'pgWood', sandCoast:'pgCloth', steamWorks:'pgOre', bloodPass:'pgHide', fallenSanctum:'pgCloth', endlessDesert:'pgCloth',
   arcticTundra:'pgHide', greyMarsh:'pgWood', despairIsle:'pgWood', cliffEdge:'pgOre', echoCrypt:'pgCloth', mistSea:'pgCloth', wuHall:'pgWood', skyCity:'pgCloth', steelCity:'pgOre', ghostShip:'pgWood', lavaAbyss:'pgOre',
@@ -19328,10 +19329,10 @@ const EL_LATE={
     {key:'watt',fam:'瓦特',L:{reload:3,def:2,speed:-1},v:0.1,sp:{drP:[0.04,0.07]},crest:{shape:'rect',bg:'brown',pat:'wave',fg:'silver'},
       tr:[['蒸汽之力',0.4,{def:0.06},'物理防御 +6%'],['飞轮',0.6,{aspd:0.08},'攻击速度 +8%'],['工业之心',1,{toughK:0.2},'坚韧值 +20%']]}]},
   bloodPass:{c:['关隘平民',{atk:1,hp:1,ap:-1},0.2],f:[
-    {key:'yue',fam:'岳',name:'岳氏',L:{atk:2,def:2,speed:-1},v:0.1,sp:{dmgM:[0.04,0.08]},crest:{shape:'rect',bg:'red',pat:'swords',fg:'gold'},
-      tr:[['精忠',0.4,{def:0.06},'物理防御 +6%'],['背嵬',0.6,{dmgM:0.12},'近战伤害 +12%'],['还我河山',0.8,{dmg:0.1},'造成伤害 +10%'],['武穆遗风',1,{atk:0.15},'物理攻击 +15%']]},
-    {key:'yang',fam:'杨',name:'杨氏',L:{hp:2,atk:1,aspd:1,mdef:-1},v:0.2,sp:{drP:[0.03,0.06]},crest:{shape:'rectTri',bg:'black',pat:'horse',fg:'red'},
-      tr:[['杨家枪',0.4,{atk:0.06},'物理攻击 +6%'],['满门忠烈',0.6,{hp:0.1},'生命上限 +10%'],['穆桂英挂帅',1,{critDmg:0.25},'暴击伤害 +25%']]}]},
+    {key:'yue',fam:'哈德良',L:{atk:2,def:2,speed:-1},v:0.1,sp:{dmgM:[0.04,0.08]},crest:{shape:'rect',bg:'red',pat:'swords',fg:'gold'},
+      tr:[['关墙守望',0.4,{def:0.06},'物理防御 +6%'],['重步方阵',0.6,{dmgM:0.12},'近战伤害 +12%'],['寸土不让',0.8,{dmg:0.1},'造成伤害 +10%'],['守关之誓',1,{atk:0.15},'物理攻击 +15%']]},
+    {key:'yang',fam:'莱昂哈特',L:{hp:2,atk:1,aspd:1,mdef:-1},v:0.2,sp:{drP:[0.03,0.06]},crest:{shape:'rectTri',bg:'black',pat:'horse',fg:'red'},
+      tr:[['长枪传承',0.4,{atk:0.06},'物理攻击 +6%'],['满门骑士',0.6,{hp:0.1},'生命上限 +10%'],['狮心',1,{critDmg:0.25},'暴击伤害 +25%']]}]},
   fallenSanctum:{c:['堕圣平民',{ap:1,def:-1},0.3],f:[
     {key:'derais',fam:'德·莱斯',L:{ap:2,atk:2,mdef:-1},v:0.3,sp:{dmgS:[0.04,0.08]},crest:{shape:'shield',bg:'purple',pat:'sword',fg:'black'},
       tr:[['堕落圣骑',0.4,{atk:0.06},'物理攻击 +6%'],['血祭坛',0.6,{ap:0.1},'法术攻击 +10%'],['蓝胡子',1,{critDmg:0.3},'暴击伤害 +30%']]}]},
@@ -19351,23 +19352,27 @@ const EL_LATE={
     {key:'nemo',fam:'尼莫',L:{ap:2,vision:2,hp:-1},v:0.2,sp:{drM:[0.04,0.07]},crest:{shape:'rectArc',bg:'blue',pat:'wave',fg:'silver'},
       tr:[['鹦鹉螺',0.4,{mdef:0.06},'法术防御 +6%'],['深海之眼',0.6,{vision:0.12},'视野 +12%'],['海底两万里',1,{dmgS:0.15},'法术伤害 +15%']]}]},
   wuHall:{c:['武馆平民',{atk:1,aspd:1,mdef:-1},0.2],f:[
-    {key:'huo',fam:'霍',name:'霍氏',L:{atk:2,aspd:2,mdef:-1},v:0.2,sp:{dmgM:[0.05,0.1]},crest:{shape:'rect',bg:'yellow',pat:'swordShield',fg:'black'},
-      tr:[['迷踪拳',0.4,{aspd:0.06},'攻击速度 +6%'],['精武',0.6,{dmgM:0.12},'近战伤害 +12%'],['大侠',1,{critR:0.08},'暴击率 +8%']]},
-    {key:'ye',fam:'叶',name:'叶氏',L:{def:2,aspd:1,atk:1,speed:-1},v:0.1,sp:{drP:[0.04,0.07]},crest:{shape:'shield',bg:'black',pat:'shield',fg:'white'},
-      tr:[['木人桩',0.4,{def:0.06},'物理防御 +6%'],['寸劲',0.6,{critDmg:0.2},'暴击伤害 +20%'],['一代宗师',1,{dmg:0.12},'造成伤害 +12%']]}]},
+    {key:'huo',fam:'马克西姆斯',L:{atk:2,aspd:2,mdef:-1},v:0.2,sp:{dmgM:[0.05,0.1]},crest:{shape:'rect',bg:'yellow',pat:'swordShield',fg:'black'},
+      tr:[['角斗步法',0.4,{aspd:0.06},'攻击速度 +6%'],['竞技场之王',0.6,{dmgM:0.12},'近战伤害 +12%'],['血与沙',1,{critR:0.08},'暴击率 +8%']]},
+    {key:'ye',fam:'斯巴达克',L:{def:2,aspd:1,atk:1,speed:-1},v:0.1,sp:{drP:[0.04,0.07]},crest:{shape:'shield',bg:'black',pat:'shield',fg:'white'},
+      tr:[['盾墙训练',0.4,{def:0.06},'物理防御 +6%'],['破甲一击',0.6,{critDmg:0.2},'暴击伤害 +20%'],['起义领袖',1,{dmg:0.12},'造成伤害 +12%']]}]},
   skyCity:{c:['浮城平民',{vision:1,rng:1,hp:-1},0.2],f:[
     {key:'montgolfier',fam:'蒙哥菲尔',L:{rng:2,vision:2,hp:-1},v:0.2,sp:{dmgR:[0.04,0.08]},crest:{shape:'rectArc',bg:'cyan',pat:'eagle',fg:'white'},
       tr:[['高空视野',0.4,{vision:0.1},'视野 +10%'],['俯射',0.6,{dmgR:0.12},'远程伤害 +12%'],['乘风',1,{speed:0.12},'移动速度 +12%']]}]},
   steelCity:{c:['山城平民',{atk:1,def:1,speed:-1},0.1],f:[
-    {key:'ouye',fam:'欧冶',name:'欧冶氏',L:{atk:3,def:1,speed:-1},v:0.1,sp:{dmgM:[0.05,0.1]},crest:{shape:'rect',bg:'black',pat:'sword',fg:'silver'},
-      tr:[['淬火',0.4,{atk:0.06},'物理攻击 +6%'],['湛卢',0.6,{critR:0.05},'暴击率 +5%'],['铸剑师',0.8,{dmgM:0.12},'近战伤害 +12%'],['五剑之祖',1,{atk:0.18},'物理攻击 +18%']]}]},
+    {key:'ouye',fam:'韦兰',L:{atk:3,def:1,speed:-1},v:0.1,sp:{dmgM:[0.05,0.1]},crest:{shape:'rect',bg:'black',pat:'sword',fg:'silver'},
+      tr:[['淬火',0.4,{atk:0.06},'物理攻击 +6%'],['山城玄钢',0.6,{critR:0.05},'暴击率 +5%'],['铸剑师',0.8,{dmgM:0.12},'近战伤害 +12%'],['神匠',1,{atk:0.18},'物理攻击 +18%']]}]},
   ghostShip:{c:['船上平民',{mdef:1,speed:1,hp:-1},0.3],f:[
     {key:'decken',fam:'范·德·戴肯',L:{hp:1,mdef:2,ap:1,def:-1},v:0.3,sp:{drM:[0.05,0.08]},crest:{shape:'shield',bg:'black',pat:'ship',fg:'cyan'},
       tr:[['幽灵船员',0.4,{dodgeK:0.1},'偏斜值 +10%'],['永世漂泊',0.6,{regen:0.25},'生命恢复 +25%'],['飞翔的荷兰人',1,{drM:0.08},'法术减伤 +8%']]}]},
-  lavaAbyss:{c:['深渊平民',{hp:1,atk:1,mdef:-1},0.2]},
+  lavaAbyss:{c:['深渊平民',{hp:1,atk:1,mdef:-1},0.2],f:[
+    {key:'akagi',fam:'赤木',cul:'japan',L:{atk:3,hp:1,mdef:-1},v:0.2,sp:{dmgM:[0.05,0.1]},crest:{shape:'rect',bg:'red',pat:'sword',fg:'white'},
+      tr:[['赤心',0.4,{atk:0.06},'物理攻击 +6%'],['居合',0.6,{critR:0.06},'暴击率 +6%'],['一刀流',0.8,{critDmg:0.3},'暴击伤害 +30%'],['剑豪',1,{dmgM:0.18},'近战伤害 +18%']]}]},
   iceSpike:{c:['冰刺平民',{def:1,hp:1,speed:-1},0.1],f:[
     {key:'ymir',fam:'伊米尔',L:{hp:3,def:2,speed:-2,aspd:-1},v:0.2,sp:{resFrost:[0.3,0.4]},crest:{shape:'shield',bg:'white',pat:'mountain',fg:'cyan'},
-      tr:[['霜巨人之血',0.4,{hp:0.08},'生命上限 +8%'],['冰川之躯',0.6,{def:0.12},'物理防御 +12%'],['始祖巨人',1,{hp:0.2},'生命上限 +20%']]}]},
+      tr:[['霜巨人之血',0.4,{hp:0.08},'生命上限 +8%'],['冰川之躯',0.6,{def:0.12},'物理防御 +12%'],['始祖巨人',1,{hp:0.2},'生命上限 +20%']]},
+    {key:'kazami',fam:'风见',cul:'japan',L:{speed:2,aspd:2,rng:1,def:-1},v:0.2,sp:{dmgR:[0.05,0.1]},crest:{shape:'rectArc',bg:'white',pat:'tornado',fg:'green'},
+      tr:[['风读',0.4,{speed:0.06},'移动速度 +6%'],['疾风',0.6,{aspd:0.1},'攻击速度 +10%'],['风之神子',1,{dodgeR:0.1},'偏斜率 +10%']]}]},
   vampCastle:{c:['城下平民',{ap:1,mdef:1,hp:-1},0.2],f:[
     {key:'dracula',fam:'德古拉',L:{atk:2,ap:2,hp:1,def:-1},v:0.3,sp:{drM:[0.05,0.1]},crest:{shape:'rectNotch',bg:'black',pat:'dragon',fg:'red'},
       tr:[['夜之贵族',0.4,{regen:0.3},'生命恢复 +30%'],['穿刺公',0.6,{critDmg:0.25},'暴击伤害 +25%'],['血之渴望',0.8,{dmg:0.1},'造成伤害 +10%'],['不死伯爵',1,{hp:0.2},'生命上限 +20%']]},
@@ -19380,13 +19385,13 @@ const EL_LATE={
     {key:'medici',fam:'美第奇',L:{ap:2,mdef:2,atk:-1},v:0.1,sp:{drM:[0.05,0.08]},crest:{shape:'shield',bg:'gold',pat:'sun',fg:'red'},
       tr:[['银行世家',0.4,{mdef:0.06},'法术防御 +6%'],['文艺复兴',0.6,{cd:0.12},'冷却速度 +12%'],['教皇之家',1,{ap:0.18},'法术攻击 +18%']]}]},
   snowShrine:{c:['神社平民',{speed:1,aspd:1,hp:-1},0.2],f:[
-    {key:'kazami',fam:'风见',L:{speed:2,aspd:2,rng:1,def:-1},v:0.2,sp:{dmgR:[0.05,0.1]},crest:{shape:'rectArc',bg:'white',pat:'tornado',fg:'green'},
-      tr:[['风读',0.4,{speed:0.06},'移动速度 +6%'],['疾风',0.6,{aspd:0.1},'攻击速度 +10%'],['风之神子',1,{dodgeR:0.1},'偏斜率 +10%']]},
-    {key:'akagi',fam:'赤木',L:{atk:3,hp:1,mdef:-1},v:0.2,sp:{dmgM:[0.05,0.1]},crest:{shape:'rect',bg:'red',pat:'sword',fg:'white'},
-      tr:[['赤心',0.4,{atk:0.06},'物理攻击 +6%'],['居合',0.6,{critR:0.06},'暴击率 +6%'],['一刀流',0.8,{critDmg:0.3},'暴击伤害 +30%'],['剑豪',1,{dmgM:0.18},'近战伤害 +18%']]}]},
+    {key:'winters',fam:'温特斯',L:{speed:2,aspd:2,rng:1,def:-1},v:0.2,sp:{dmgR:[0.05,0.1]},crest:{shape:'rectArc',bg:'white',pat:'moon',fg:'blue'},
+      tr:[['雪夜行者',0.4,{speed:0.06},'移动速度 +6%'],['寒风',0.6,{aspd:0.1},'攻击速度 +10%'],['长冬之子',1,{dodgeR:0.1},'偏斜率 +10%']]},
+    {key:'noel',fam:'诺埃尔',L:{ap:2,mdef:2,hp:-1},v:0.2,sp:{drM:[0.05,0.08]},crest:{shape:'shield',bg:'blue',pat:'sun',fg:'white'},
+      tr:[['祈火',0.4,{ap:0.06},'法术攻击 +6%'],['守夜人',0.6,{mdef:0.1},'法术防御 +10%'],['圣夜',1,{dmgS:0.15},'法术伤害 +15%']]}]},
   blSpring:{c:['泉边平民',{hp:1,mdef:1,atk:-1},0.1],f:[
-    {key:'peng',fam:'彭',name:'彭氏',L:{hp:3,mdef:1,atk:-1},v:0.1,sp:{drP:[0.04,0.08]},crest:{shape:'rect',bg:'white',pat:'tree',fg:'red'},
-      tr:[['导引',0.4,{regen:0.3},'生命恢复 +30%'],['长生诀',0.6,{hp:0.12},'生命上限 +12%'],['八百寿',1,{drP:0.08,drM:0.08},'物理、法术减伤 +8%']]}]}};
+    {key:'peng',fam:'德莱昂',L:{hp:3,mdef:1,atk:-1},v:0.1,sp:{drP:[0.04,0.08]},crest:{shape:'rect',bg:'white',pat:'tree',fg:'red'},
+      tr:[['泉水祝福',0.4,{regen:0.3},'生命恢复 +30%'],['青春之泉',0.6,{hp:0.12},'生命上限 +12%'],['永生者',1,{drP:0.08,drM:0.08},'物理、法术减伤 +8%']]}]}};
 Object.assign(CFG.elite.bloodSrc,EL_LATE);
 
 // ---------- 0.11.5 官方渠道（用户定：防止别人改了游戏重新发；有新版本提示去官网或 QQ 群）；逻辑 ui/official.js，安卓签名自检 app/android/…/SiguoGuard.java ----------
@@ -63423,7 +63428,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=158,GAME_BUILD="07bf0f7",GAME_BUILT=1792912746907,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=159,GAME_BUILD="f985cf5",GAME_BUILT=1792913801775,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
