@@ -62026,9 +62026,13 @@ function pgStack(S){BOOK_N.clear();const first=new Map(),out=[];for(const it of 
 // —— 一键升级 ——（adj：只升和选中这座相连的同类建筑，挨着边或角都算）
 function pgSameOf(s,adj){const L=G.structs.filter(x=>!x.dead&&x.type===s.type&&x.cfg&&x.cfg.cat==='settle');if(!adj)return L;
   const n=bSize(s.type),near=(a,b)=>a.tx<=b.tx+n&&b.tx<=a.tx+n&&a.ty<=b.ty+n&&b.ty<=a.ty+n,seen=new Set([s]),q=[s];while(q.length){const a=q.pop();for(const b of L)if(!seen.has(b)&&near(a,b)){seen.add(b);q.push(b)}}return[...seen]}
-function pgUpMany(s,adj){const L=pgSameOf(s,adj).sort((a,b)=>a.level-b.level);let n=0,err=null;for(const x of L){const e=settleUpgrade(x);if(e){if(!/满级|还在/.test(e)){err=e;break}}else n++}
+function pgUpMany(s,adj){const L=pgSameOf(s,adj).sort((a,b)=>a.level-b.level);let n=0,err=null;for(const x of L){const e=settleUpgrade(x);if(e){if(!/满级|还在|正在/.test(e)){err=e;break}}else n++}
   toast(n?`升级了 ${n} 座${s.cfg.name}${err?`；${err}`:''}`:err||`没有能升级的${s.cfg.name}`);if(n)sfx('build')}
-const pgUpBtns=s=>`<button class="px" type="button" data-sa="pgall">一键升级同类建筑</button><button class="px" type="button" data-sa="pgadj">一键升级相邻同类建筑</button>`;
+// 0.12.0（用户定）一键升级：开拓地里所有没满级、没在造的建筑各升一级；材料不够时从左上开始（先上后下、同一行先左后右）
+function pgUpAll(){const L=G.structs.filter(x=>!x.dead&&x.cfg&&x.cfg.cat==='settle').sort((a,b)=>a.ty-b.ty||a.tx-b.tx);let n=0,lack=0,err=null;
+  for(const x of L){const e=settleUpgrade(x);if(!e)n++;else if(!/满级|还在|正在/.test(e)){lack++;if(!err)err=e}}
+  toast(n?`升级了 ${n} 座建筑${lack?`；材料不够，还有 ${lack} 座没升`:''}`:err||'没有能升级的建筑');if(n)sfx('build')}
+const pgUpBtns=s=>`<button class="px" type="button" data-sa="pgevery">一键升级</button><button class="px" type="button" data-sa="pgall">一键升级同类建筑</button><button class="px" type="button" data-sa="pgadj">一键升级相邻同类建筑</button>`;
 
 // ---------- 开拓地商队（数据 data/caravan.js 的 CFG.caravan；界面 ui/caravan.js；每小时出发在 game/settle_0100.stAccrue 的整点里调 caraHour）----------
 // 存在地区上：R.cv = [{id, lv, sol:[{k 兵营类型, x, y, n 配了几名}], plan:{wood, ore, clothW, hide, core}（null = 自动装满）, to:'auto' 或地区 id, ts 死潮来袭时不出动,
@@ -63567,7 +63571,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=160,GAME_BUILD="b153d78",GAME_BUILT=1792943905834,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=160,GAME_BUILD="2fed3f8",GAME_BUILT=1792944392423,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -66174,7 +66178,7 @@ function settleSelEl(){if(selSettle)return selSettle;selSettle=document.createEl
   selSettle.addEventListener('click',e=>{const b=e.target.closest('[data-sa]');if(!b||!selected||!settleOn())return;const s=selected,id=G.settleId,a=b.dataset.sa;
     if(a==='w-'||a==='w+'){const e2=stEntryOf(s);if(e2){const P=stPerOf(s);stSetWorkers(id,e2,(P?P.want:0)+(a==='w+'?1:-1));s.st=e2.st;stKeepSync()}sfx('click')}
     else if(a==='wmax'){settleAllMax()}
-    else if(a==='pgall'||a==='pgadj'){pgUpMany(s,a==='pgadj')}   // v0.11.4 一键升级同类 / 相邻同类建筑
+    else if(a==='pgall'||a==='pgadj'){pgUpMany(s,a==='pgadj')}else if(a==='pgevery')pgUpAll();   // v0.11.4 一键升级同类 / 相邻同类建筑
     else if(a==='rep'||a==='repall'){settleSave(true);const R=stRegion(id),L=a==='rep'?[stEntryOf(s)].filter(Boolean):R.b,r=stRepair(id,L);if(r.err)toast(r.err);else{toast(`修好了 ${r.c} 座建筑，花了 ${r.n} 建材`);sfx('pick')}}   // v0.10.1 修理（花建材）
     else if(a==='col'){settleSave(true);const got=stCollectR(id),t=Object.entries(got).map(([k,n])=>`${k} ${n}`).join('、');saveMeta();toast(t?'领取：'+t:'暂时没有可领取的产出');if(t)sfx('pick')}
     else if(a.startsWith('zl'))zlSelAct(s,a,b);   // 代理 ZL 加：神像选神、政令（ui/zl_settle）
@@ -66794,7 +66798,7 @@ function kt2Act(a,v){if(!/^kt2/.test(a))return false;
 function kt2KeepHTML(id,E,gl,rc){const tab=(k,n)=>`<button class="px${KT2_KP===k?' on':''}" type="button" data-sa="kt2kp" data-v="${k}">${n}</button>`;
   const body=KT2_KP==='pop'?`<p class="meta">${stPopLine(id,E)}</p>${stTaxHTML(id,E)}`:KT2_KP==='zl'?zlKeepHTML(id):stNeedsHTML(E);
   return`<div class="kt2mini">${tab('need','需求')}${tab('pop','人口税收')}${tab('zl','神像政令')}</div>${body}<p class="meta" style="width:100%">${gl?'可以领取：'+gl:'暂时没有可领取的产出'}</p>
-    <div class="kt2acts"><button class="px${gl?' on':''}" type="button" data-sa="col" ${gl?'':'disabled'}>领取产出</button>${rc?`<button class="px" type="button" data-sa="repall">全部修理<em>${rc} 建材</em></button>`:''}<button class="px" type="button" data-sa="kt2god">供奉</button><button class="px" type="button" data-sa="zled">政令</button></div>`}
+    <div class="kt2acts"><button class="px${gl?' on':''}" type="button" data-sa="col" ${gl?'':'disabled'}>领取产出</button>${rc?`<button class="px" type="button" data-sa="repall">全部修理<em>${rc} 建材</em></button>`:''}<button class="px" type="button" data-sa="pgevery">一键升级</button><button class="px" type="button" data-sa="kt2god">供奉</button><button class="px" type="button" data-sa="zled">政令</button></div>`}
 function kt2StatRow(s,el,rb){const g=s.st&&s.st.god,k=`kt2s|${g||''}|${s.level}|${rb}`;el.hidden=false;if(cache.ssv===k)return;cache.ssv=k;
   el.innerHTML=`<div class="kt2acts"><button class="px on" type="button" data-sa="kt2god">${g?`供奉：${CFG.zl.gods[g].name}`:'供奉(选一位神)'}</button>${rb}</div>`}
 // 选中面板的按钮（ui/settle.settleSelEl 的点击转过来）
