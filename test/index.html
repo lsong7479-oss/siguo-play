@@ -958,6 +958,7 @@ h4.sh .meta{font-family:var(--f-body);letter-spacing:0;margin-left:6px}
 .statg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .statg div{display:grid;gap:1px;padding:6px 8px;background:var(--rivet);box-shadow:inset 0 0 0 1px var(--iron)}
 .statg span{font-size:.7rem;color:var(--ash)}.statg b{font-family:var(--f-num);font-weight:400;font-size:.95rem;color:var(--bone)}
+.statg div{min-width:0;overflow:hidden}.statg b,.statg span{min-width:0;overflow:hidden}.statg b{white-space:nowrap}.statg span{display:flex;align-items:center;gap:3px;white-space:nowrap}.sti{width:16px;height:16px;image-rendering:pixelated;flex:none}   /* 0.12.0（用户定）属性图标；数值不换行，放不下由 statFit 缩字 */
 .statg b .gw{font-style:normal;font-size:.62rem;color:var(--ash);margin-left:4px;white-space:nowrap}
 html.fkUp .statg{grid-template-columns:repeat(auto-fill,minmax(6.4em,1fr))}   /* v0.10.5 字体放大：属性格子按宽度自动排几列（标准字号照旧 4 列） */
 html.fkUp #stats{grid-template-columns:minmax(0,max-content)}html.fkUp #stats .wave{white-space:normal}   /* v0.10.5 字体放大：左上面板按内容变宽（英文更长）；竖屏定宽放不下时「第 N 波 准备中 详情」换行 */
@@ -19138,12 +19139,19 @@ CFG.elite.repRec={接纳:[0.2,0,0.2], 信任:[0.4,0,0.3], 尊敬:[0.6,0.2,0.5], 
 //   相亲：花银币，出 3～5 名平民血脉的人选；宴会三档（要这个家族的声望 接纳 / 信任 / 尊敬）：人选 1～3 / 2～4 / 3～5 名，
 //   这个家族的血脉 = 自己的 ± 20%，再 +0 / 5% / 10%；25% 混一点别的家族（不超过主家族的一半），至多两种家族血脉，其余平民
 //   花费 × (1 + tierK × 地区阶)：银币、谷物（那个地区开拓地的粮仓）、肉类（那个地区开拓地的肉库）、这个家族要的加工品（goods，那个地区阶的）
-CFG.elite.mar={age:25, autoDrop:0.25, ageGap:[-5,5], tierK:0.5,
+// 成家的成功率（0.12.0 用户定）：宴会 = 40% + 声望每级 5%（接纳 5% … 狂热 25%）+ (我方家族血脉 − 对方)% × 1% + 2% × (我方家族特性数 − 对方)；相亲 = 80% + 我方家族血脉 % × 1%
+//   失败后可以补一份彩礼 / 嫁妆再试一次（+20%，宴会花费的 dowryK 倍、相亲花费的 dowryBlind 倍；再失败对方就走了）；花费 × 地区阶的倍率 tierMul（用户定：按地区等阶 × 倍率；Claude 定）
+CFG.elite.mar={age:25, autoDrop:0.25, ageGap:[-5,5], tierMul:[1,1.6,2.4,3.5,5,7,9.5,12.5,16],
+  okFeast:0.4, okRep:0.05, okBl:0.01, okTr:0.02, okBlind:0.8, dowry:0.2, dowryK:0.5, dowryBlind:2, okMin:0.05, okMax:0.98,
   blind:{n:[3,5], silver:500},
   feast:[{need:'接纳', n:[1,3], bonus:0,    silver:3000, grain:60,  meat:40,  goods:3},
          {need:'信任', n:[2,4], bonus:0.05, silver:8000, grain:150, meat:100, goods:8},
          {need:'尊敬', n:[3,5], bonus:0.1,  silver:20000, grain:300, meat:200, goods:15}],
   mix:0.25, mixMax:0.5, spread:0.2};
+// 各家族擅长的职业（0.12.0 用户定：宴会人选穿其中一个职业的衣服；Claude 定）
+CFG.elite.bloodJobs={wild:['berserker','spearman','shieldGuard'], corrupt:['mage','priest','assassin'], tundra:['berserker','heavyCav','spearman'], jungle:['marksman','horseArcher','assassin'], desert:['lightCav','assassin','berserker'], sanctum:['priest','mage','shieldGuard'],
+  polar:['shieldGuard','heavyCav','spearman'], temple:['mage','priest'], factory:['engineer','cannoneer','musketeer'], cathedral:['mage','assassin','berserker'], shadowDesert:['assassin','lightCav','marksman'], elemForest:['mage','marksman','priest'], ironFort:['heavyCav','shieldGuard','cannoneer','musketeer']};
+CFG.elite.bloodComCol='#8a8070';   // 平民血脉在血脉条上的颜色（家族的颜色 = art/ei_icons 的 EI_CREST_COL）
 CFG.elite.bloodGoods={wild:'pgWood', corrupt:'pgCloth', tundra:'pgHide', jungle:'pgHide', desert:'pgCloth', sanctum:'pgCloth', polar:'pgHide', temple:'pgOre', factory:'pgOre', cathedral:'pgOre', shadowDesert:'pgHide', elemForest:'pgWood', ironFort:'pgWood'};   // 各家族宴会要的加工品
 // 族谱存档（用户定）：在役精英、训练所里的孩子、关注的家族所在的族谱才保留；整支族谱都离队（且没关注）gcHours 小时后删掉不在名册里的人（退学的孩子、族人）
 //   生孩子：在役精英照常；不在队里的族人——没关注的只到在役精英的孙辈（子辈能生），关注的主脉（每代的长子 / 长女）到曾孙、支脉到孙辈；至多关注 followMax 个家族
@@ -21162,6 +21170,134 @@ Object.assign(SKI,{
     S.r(22,20,1,9,'#f3d47c');S.r(18,24,9,1,'#f3d47c');S.r(21,23,3,3,'#f3d47c');S.glow(22,24,'#fffbe0');spark(S,26,20,'#f3d47c');   // 晕眩的星（料势）
     hhSkiPas(S)},
 });
+
+// ---------- 0.12.0 小图标（代理 EI，用户 2026-10-25 定）：属性面板（英雄 / 精英）、精英特性、家族徽记 ----------
+// eiIcon(键) → 图片地址（第一次调用才画，之后走缓存；没有这个键返回 ''）。画法同 art/icons 的 ic32（32×32，画完自动打光、描边）
+// 界面上缩到 16～20 像素显示，所以造型都画得粗、轮廓清楚。键：'st:<属性>'、'tr:pos' / 'tr:neg' / 'tr:train'、'cr:<家族 id>'
+// EI_CREST_COL：家族主色（徽记盾面用，主会话的血脉条也用这个）
+const EI_CREST_COL={f_wild:'#c0392b',f_corrupt:'#6c7a3a',f_tundra:'#5d8fb8',f_jungle:'#d4a017',f_desert:'#c96f2d',f_sanctum:'#e8e0c8',f_polar:'#9ad0e8',
+  f_temple:'#7a4fb0',f_factory:'#8a8f98',f_cathedral:'#5a1f3a',f_shadowDesert:'#2f2a3a',f_elemForest:'#3fae8a',f_ironFort:'#4a4a52'};
+const EI_URL={};
+const EI_D=Math.PI/180;
+function eiAlong(S,x0,y0,x1,y1,f,flat){const dx=x1-x0,dy=y1-y0,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L;   // 沿 (x0,y0)→(x1,y1) 的局部坐标：u 沿线、v 横向
+  for(let y=0;y<32;y++)for(let x=0;x<32;x++){const qx=x+0.5-x0,qy=y+0.5-y0,c=f(qx*ux+qy*uy,-qx*uy+qy*ux,L);if(c)S.p(x,y,c,flat)}}
+function eiSeg(S,x0,y0,x1,y1,w,c,flat){eiAlong(S,x0,y0,x1,y1,(u,v,L)=>{const t=u<0?Math.hypot(u,v):u>L?Math.hypot(u-L,v):Math.abs(v);return t<=w?c:null},flat)}   // 粗线段（w = 半宽，两头圆）
+function eiArc(S,cx,cy,r0,r1,a0,a1,c,flat){const T=Math.PI*2,sp=a1-a0>=360?T:(((a1-a0)%360+360)%360)*EI_D,b0=a0*EI_D;   // 圆环的一段（角度按屏幕：0 = 右，往下为正，单位度）
+  for(let y=0;y<32;y++)for(let x=0;x<32;x++){const dx=x+0.5-cx,dy=y+0.5-cy,d=Math.hypot(dx,dy);if(d<r0||d>r1)continue;
+    const s=((Math.atan2(dy,dx)-b0)%T+T)%T;if(sp>=T||s<=sp)S.p(x,y,typeof c==='function'?c(s/(sp||1),d):c,flat)}}
+function eiStar(S,cx,cy,n,r0,r1,c,rot,flat){const P=[];for(let i=0;i<n*2;i++){const a=(rot||0)+i*Math.PI/n,r=i%2?r0:r1;P.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r])}S.poly(P,c,flat)}   // 尖角星
+function eiDrop(S,cx,cy,r,c,flat){S.disc(cx,cy,r,c,flat);S.poly([[cx-r*0.85,cy-0.2],[cx+r*0.85,cy-0.2],[cx,cy-r*2.3]],c,flat)}   // 水滴（尖朝上）
+function eiSword(S,x0,y0,x1,y1,o){o=o||{};const bc=o.c||MAT.steel,gc=o.gc||MAT.gold,bw=o.w||1.8,gw=o.gw||4.5,hc=o.hc||MAT.leather;   // 剑：柄尾 (x0,y0) → 剑尖 (x1,y1)
+  eiAlong(S,x0,y0,x1,y1,(u,v,L)=>{const a=Math.abs(v);
+    if(u<-1.6||u>L+0.3)return null;
+    if(u<1.2)return Math.hypot(u,v)<=1.6?gc:null;   // 柄头
+    if(u<5)return a<=0.95?hc:null;   // 握把
+    if(u<6.6)return a<=gw?gc:null;   // 护手
+    const tip=Math.min(1,(L-u)/4.5);if(a>bw*tip+0.15)return null;return a<0.5&&u<L-2?shd(bc,0.35):bc})}
+function eiAlm(dx,dy,rx,ry){const t=dx/rx;return t>-1&&t<1&&Math.abs(dy)<=ry*(1-t*t)}   // 杏仁形（眼睛）
+// 鸢形盾（上平、下尖）：cx 中线、y0 上沿、y1 下尖、hw 半宽
+function eiHeat(x,y,cx,y0,y1,hw){const yc=y+0.5;if(yc<y0||yc>y1)return false;const ym=y0+(y1-y0)*0.45;
+  const w=yc<=ym?hw:hw*Math.pow(Math.max(0,Math.cos((yc-ym)/(y1-ym)*Math.PI/2)),0.8);return Math.abs(x+0.5-cx)<=w}
+// 带图案的盾：盾面 col（左半略亮、右半略暗）、盾边 rim；emb(E) 画图案，E 和 S 用法一样，但画出盾边的像素会被裁掉；图案外面自动描一圈暗边
+function eiCrest(S,col,rim,emb,g){g=g||[16,3,29,12];const[cx,y0,y1,hw]=g,In=(x,y)=>eiHeat(x,y,cx,y0,y1,hw),
+  Inner=(x,y)=>In(x,y)&&In(x-2,y)&&In(x+2,y)&&In(x,y-2)&&In(x,y+2),M=new Uint8Array(1024);
+  for(let y=0;y<32;y++)for(let x=0;x<32;x++)if(In(x,y))S.p(x,y,Inner(x,y)?shd(col,x<cx?0.07:-0.07):rim);
+  const E=icPrim({W:32,H:32,p(x,y,c,flat){x=Math.floor(x);y=Math.floor(y);if(!c||!Inner(x,y))return;M[y*32+x]=1;S.p(x,y,c,flat)},clr(){},get:S.get,glow:S.glow});
+  emb(E);
+  const ol=shd(col,-0.55);
+  for(let y=0;y<32;y++)for(let x=0;x<32;x++){const i=y*32+x;if(M[i]||!Inner(x,y))continue;
+    if((x>0&&M[i-1])||(x<31&&M[i+1])||(y>0&&M[i-32])||(y<31&&M[i+32]))S.p(x,y,ol)}
+  for(let y=1;y<32;y++)for(let x=1;x<32;x++){const i=y*32+x;if(M[i]&&!M[i-32]&&!M[i-1]){const c=S.get(x,y);if(c&&c[0]==='#'&&c.length===7)S.p(x,y,shd(c,0.25))}}}   // 图案左上沿提亮一点
+// 一个人的剪影（偏斜用）：ox 往右平移
+function eiMan(S,ox,c,flat){S.disc(20.5+ox,7,2.8,c,flat);S.poly([[17.5+ox,10.5],[23.5+ox,10.5],[22.5+ox,18.5],[25.5+ox,27.5],[22+ox,28],[19.5+ox,21],[16.5+ox,28],[13+ox,27.5],[17.5+ox,18.5]],c,flat)}
+const EI_DRAW={
+  'st:hp':S=>{const R='#d8303a';S.disc(10.8,11.8,5.9,R);S.disc(21.2,11.8,5.9,R);S.poly([[5,13.5],[27,13.5],[16,27.8]],R);
+    S.r(8,9,3,2,'#ff8a8a',1);S.glow(8,9,'#ffffff')},
+  'st:atk':S=>eiSword(S,6.5,25.5,26.5,5.5,{w:2.2,gw:5,c:MAT.steel,gc:MAT.dark}),
+  'st:ap':S=>{eiSeg(S,6,27,19,14,1.3,MAT.lwood);eiSeg(S,5.5,27.5,8,25,1.5,MAT.dwood);
+    eiArc(S,21.5,10.5,4.2,6,100,170,MAT.gold);eiArc(S,21.5,10.5,4.2,6,280,350,MAT.gold);   // 两片托爪
+    S.disc(21.5,10.5,4,'#8a6ae8');S.disc(20.5,9.5,1.6,'#c8b0ff',1);S.glow(20,9,'#ffffff');spark(S,27,4,'#b07ad8');spark(S,13,6,'#8a6ae8')},
+  'st:def':S=>{S.disc(16,16,13.2,MAT.dark);S.disc(16,16,10.8,MAT.iron);S.r(15,4,2,24,'#7c8290');S.r(4,15,24,2,'#7c8290');
+    S.disc(16,16,3.6,MAT.steel);S.glow(15,15,'#ffffff');for(const[x,y]of[[16,4],[16,27],[4,16],[27,16],[8,8],[23,8],[8,23],[23,23]])S.p(x,y,MAT.silver,1)},
+  'st:mdef':S=>eiCrest(S,'#3a6ab8','#9fdcf4',E=>{eiArc(E,16,14,5.2,6.6,0,360,'#9fe8ff',1);
+    E.poly([[16,8.5],[18,14],[16,19.5],[14,14]],'#e8f8ff',1);E.r(10,13,12,2,'#9fe8ff',1);E.r(15,21,2,4,'#9fe8ff',1)}),
+  'st:speed':S=>{const L='#7a4a2a';S.poly([[11,5],[19,5],[19,17.5],[25.5,19.5],[28,23],[28,26],[10,26],[10,19]],L);
+    S.r(10,4,10,3,'#b98552');S.r(10,25,19,2,'#3e2818');S.r(12,9,6,1,'#5e3820',1);S.r(12,12,6,1,'#5e3820',1);
+    for(const[x0,y,x1]of[[2,10,7],[1,15,7],[3,20,7]])eiSeg(S,x0,y,x1,y,0.6,'#9fdcf4',1)},
+  'st:aspd':S=>{eiArc(S,19,19,11.5,14,190,265,'#f8d040',1);eiArc(S,19,19,7.5,9.5,205,250,'#f8a030',1);
+    eiSword(S,7,27,27,6,{w:2,gw:4.5,c:MAT.steel,gc:MAT.gold})},
+  'st:vision':S=>{for(let y=0;y<32;y++)for(let x=0;x<32;x++){const dx=x+0.5-16,dy=y+0.5-16;if(eiAlm(dx,dy,14.5,8))S.p(x,y,eiAlm(dx,dy,12.5,6.3)?MAT.white:'#4e3020')}
+    for(let y=0;y<32;y++)for(let x=0;x<32;x++){const dx=x+0.5-16,dy=y+0.5-16;if(!eiAlm(dx,dy,12.5,6.3))continue;const d=Math.hypot(dx,dy);if(d<=5.2)S.p(x,y,d<=2.4?IK:d<=4?'#3a7ad8':'#2a4f98',1)}
+    S.glow(14,13,'#ffffff');S.glow(13,14,'#ffffff');for(const[x0,y0,x1,y1]of[[9,8,8,5],[16,7,16,4],[23,8,24,5]])S.line(x0,y0,x1,y1,'#4e3020')},
+  'st:rng':S=>{eiArc(S,1,16,10.5,12.5,-58,58,MAT.wood);S.line(7,6,7,26,MAT.cream,1);
+    eiSeg(S,5,16,25,16,0.6,MAT.lwood);S.poly([[30,16],[25,12.5],[25,19.5]],MAT.steel);
+    for(const x of[4,5,6]){S.p(x,14,MAT.red);S.p(x,18,MAT.red);S.p(x-1,15,MAT.red);S.p(x-1,17,MAT.red)}
+    for(const x of[13,17,21])S.p(x,22,'#9fdcf4',1)},
+  'st:reload':S=>{const a1=250*EI_D,cx=16,cy=16,px=cx+Math.cos(a1)*11.5,py=cy+Math.sin(a1)*11.5,tx=-Math.sin(a1),ty=Math.cos(a1),nx=Math.cos(a1),ny=Math.sin(a1);
+    eiArc(S,cx,cy,10,13,-30,250,'#e8b84a');S.poly([[px+nx*4.6,py+ny*4.6],[px-nx*4.6,py-ny*4.6],[px+tx*5,py+ty*5]],'#e8b84a');
+    S.poly([[13,13],[19,13],[18.5,21.5],[13.5,21.5]],MAT.leather);S.r(13,15,6,1,MAT.lwood,1);
+    for(const x of[14,16,18]){S.line(x,12,x,10,MAT.lwood);S.p(x,9,MAT.red);S.p(x-0.6,10,MAT.red)}},
+  'st:crit':S=>{eiStar(S,16,16,8,6.2,14,'#c4202a',0.2);eiStar(S,16,16,8,3.6,8.6,'#f86030',0.6,1);S.disc(16,16,3,'#fff0a0',1);S.glow(15,15,'#ffffff')},
+  'st:dodge':S=>{eiMan(S,-11,'#2a3f6e',1);eiMan(S,-5.5,'#3a6ab8',1);
+    eiSeg(S,1,15,10,15,0.6,MAT.lwood,1);S.poly([[14,15.5],[10,12.5],[10,18.5]],MAT.steel);
+    eiMan(S,0,MAT.cream)},
+  'st:prec':S=>{const R='#c43a3a',W=MAT.white;S.disc(15,17,12.2,R);S.disc(15,17,9.6,W,1);S.disc(15,17,7,R,1);S.disc(15,17,4.4,W,1);S.disc(15,17,2,R,1);
+    eiSeg(S,16,16,26,6,0.6,MAT.dwood,1);S.poly([[27,3],[30,3],[29,6],[26,7]],MAT.lgreen);S.poly([[24,6],[27,5],[26,8],[25,9]],MAT.lgreen)},
+  'st:cd':S=>{S.disc(16,16,13,MAT.silver);S.disc(16,16,11,'#22305a',1);eiArc(S,16,16,0,10.5,-90,160,'#6ab0e8',1);
+    for(const[x,y]of[[16,6],[26,16],[16,26],[6,16]])S.r(x-0.5,y-0.5,2,2,MAT.white,1);eiSeg(S,16,16,16,8,0.9,MAT.white,1);eiSeg(S,16,16,22,19,0.9,MAT.white,1);S.disc(16,16,1.4,MAT.gold,1)},
+  'st:dmg':S=>{eiSword(S,6.5,26,26,6.5,{w:1.9,gw:4,gc:MAT.gold});eiSword(S,25.5,26,6,6.5,{w:1.9,gw:4,gc:MAT.gold})},
+  'st:int':S=>{S.r(13,2,6,3,MAT.steel);S.r(15,5,2,3,MAT.iron);S.poly([[23,6],[26,9],[24.5,10.5],[21.5,7.5]],MAT.iron);
+    S.disc(16,18,11.6,MAT.steel);S.disc(16,18,9.4,MAT.white,1);
+    for(let i=0;i<12;i++){const a=i*30*EI_D,r=i%3?8.3:7.8;S.p(16+Math.cos(a)*r,18+Math.sin(a)*r,i%3?'#9aa0ac':IK,1)}
+    eiSeg(S,16,18,21.5,11.5,0.7,'#d8303a',1);eiSeg(S,16,18,16,13,0.8,IK,1);S.disc(16,18,1.3,IK,1)},
+  'st:block':S=>{eiCrest(S,MAT.iron,MAT.dark,E=>{E.r(12,9,3,18,'#7c8290');E.disc(13.5,15,2.4,MAT.steel)},[13,5,30,10.5]);
+    eiStar(S,25,8,8,2.2,6.8,'#f8d040',0.4);S.disc(25,8,2,'#fff8d0',1);S.glow(25,8,'#ffffff');
+    for(const[x,y]of[[29,15],[20,2],[30,4]])spark(S,x,y,'#f8a030')},
+  'st:mag':S=>{const dx=0.5,dy=-0.866,px=0.866,py=0.5,tx=19.5,ty=10;
+    eiAlong(S,9,28,tx,ty,(u,v,L)=>u<0||u>L?null:Math.abs(v)<=3.6?(u>L-2.2||(u>4&&u<5.5)?MAT.lwood:MAT.leather):null);
+    for(const k of[-2.2,0,2.2]){const bx=tx+px*k,by=ty+py*k;eiSeg(S,bx,by,bx+dx*5,by+dy*5,0.5,MAT.cream);
+      eiSeg(S,bx+dx*5.2+px*0.6,by+dy*5.2+py*0.6,bx+dx*8+px*0.6,by+dy*8+py*0.6,0.9,k?MAT.red:MAT.white);eiSeg(S,bx+dx*5.2-px*0.6,by+dy*5.2-py*0.6,bx+dx*8-px*0.6,by+dy*8-py*0.6,0.9,k?MAT.red:MAT.white)}
+    eiSeg(S,8,15,23,23,0.7,MAT.dleather,1)},
+  'st:cp':S=>{S.poly([[5,25],[5,11],[10.5,17.5],[16,7],[21.5,17.5],[27,11],[27,25]],MAT.gold);S.r(5,21,22,4,'#c88a20');
+    S.disc(5.5,10,1.8,MAT.gold);S.disc(16,6,2,MAT.gold);S.disc(26.5,10,1.8,MAT.gold);
+    S.disc(10,23,1.4,GEM.ruby,1);S.disc(16,23,1.6,GEM.sapphire,1);S.disc(22,23,1.4,GEM.ruby,1);S.glow(15,22,'#ffffff')},
+  'tr:pos':S=>{S.poly([[16,2.5],[28.5,15],[21.5,15],[21.5,29],[10.5,29],[10.5,15],[3.5,15]],'#4fc04a');S.r(14,8,2,18,'#8fe07a',1)},
+  'tr:neg':S=>{S.poly([[16,29.5],[28.5,17],[21.5,17],[21.5,3],[10.5,3],[10.5,17],[3.5,17]],'#d8303a');
+    S.line(16,5,14,10,'#6a1018',1);S.line(14,10,17,14,'#6a1018',1);S.line(17,14,15,19,'#6a1018',1)},
+  'tr:train':S=>{const B='#3a7ad8';eiSeg(S,9,23,23,9,1.3,MAT.steel);
+    for(const[x,y]of[[8.5,23.5],[23.5,8.5]]){eiSeg(S,x-4.2,y-4.2,x+4.2,y+4.2,2.6,B);}
+    for(const[x,y]of[[11.5,20.5],[20.5,11.5]])eiSeg(S,x-3,y-3,x+3,y+3,1.6,'#6aa0f0');
+    spark(S,27,25,'#9fdcf4')}};
+// 家族徽记：[盾边颜色, 画图案]（盾面颜色用 EI_CREST_COL）
+const EI_CREST={
+  f_wild:[MAT.gold,E=>{eiSword(E,16,22,16,4.5,{w:1.9,gw:4.5,gc:MAT.gold});eiSeg(E,15,22,9,29,2.6,MAT.iron);E.r(10,24,3,2,MAT.steel,1);E.ell(15.5,20.5,3.4,2.8,MAT.steel);E.r(13,19,5,1,MAT.iron,1);E.r(13,21,5,1,MAT.iron,1)}],   // 举剑的手臂
+  f_corrupt:[MAT.bone,E=>{E.r(13,13,6,9,MAT.bone);for(let y=7;y<=14;y++)for(let x=6;x<=26;x++){const a=(x+0.5-16)/9.5,b=(y+0.5-14.5)/7;if(a*a+b*b<=1)E.p(x,y,'#9a5ac8')}
+    for(const[x,y]of[[12,9],[18,8],[21,11],[15,12],[10,12]])E.r(x,y,2,1,'#e8d0f8',1);
+    E.r(7,14,19,1,'#5a2a78',1);eiDrop(E,9,19.5,1.5,GEM.venom,1);eiDrop(E,23,20.5,1.5,GEM.venom,1);eiDrop(E,16,25.2,1.6,GEM.venom,1)}],   // 毒蘑菇 + 毒滴
+  f_tundra:[MAT.silver,E=>{E.poly([[8.5,5.5],[13,11],[19,11],[23.5,5.5],[24.5,14],[21,19.5],[18,24.5],[16,26],[14,24.5],[11,19.5],[7.5,14]],MAT.silver);
+    E.poly([[10,8.5],[12.5,11.5],[10.5,12.5]],'#6a7a90',1);E.poly([[22,8.5],[19.5,11.5],[21.5,12.5]],'#6a7a90',1);
+    E.poly([[13.5,18],[18.5,18],[17.5,24],[14.5,24]],MAT.white,1);E.r(15,23,2,2,IK,1);
+    E.r(11,15,3,1,'#f0c040',1);E.r(18,15,3,1,'#f0c040',1);E.p(13,16,'#f0c040',1);E.p(18,16,'#f0c040',1)}],   // 狼头
+  f_jungle:[MAT.bronze,E=>{eiAlong(E,9,27,22,5,(u,v,L)=>{const t=u/L;if(t<0||t>1)return null;const a=Math.abs(v);if(a<0.55)return MAT.white;
+    if(t<0.18)return null;const w=4.6*Math.sin(Math.PI*Math.pow((t-0.18)/0.82,0.75));if(a>w)return null;return (u+a*0.9)%3.3<0.8?'#1f6a4a':'#2f9a6a'})}],   // 羽毛
+  f_desert:[MAT.gold,E=>{eiStar(E,16,9,8,3,5.8,'#f8d040',0.2,1);E.disc(16,9,3,'#fff0a0',1);
+    eiArc(E,15,1,15.5,20,40,106,(s,d)=>d<=15.5+4.5*Math.min(1,s*2.2)?MAT.steel:null);eiSeg(E,10.5,14.8,8.6,21,1.1,MAT.gold);eiSeg(E,9.2,18,6.5,16.6,1.1,MAT.leather)}],   // 太阳 + 弯刀
+  f_sanctum:[MAT.gold,E=>{for(const[x,y]of[[10,6],[22,6],[10,17],[22,17]])E.line(16,11.5,x,y,'#f0d890',1);E.r(14.5,5,3,21,'#c8962a');E.r(9,9.5,14,3,'#c8962a');E.glow(16,11,'#ffffff')}],   // 十字 + 圣光
+  f_polar:['#3a6a90',E=>{const N='#24385e';E.ell(16,20,5.6,4.4,N);E.disc(9.5,13.5,2.3,N);E.disc(13.6,10,2.4,N);E.disc(18.4,10,2.4,N);E.disc(22.5,13.5,2.3,N);E.glow(14,19,'#9fdcf4')}],   // 熊掌
+  f_temple:[MAT.gold,E=>{const G='#f0c040';for(let y=0;y<32;y++)for(let x=0;x<32;x++){const dx=x+0.5-16,dy=y+0.5-13;if(eiAlm(dx,dy,9.5,4.6))E.p(x,y,eiAlm(dx,dy,7.8,3.2)?MAT.cream:G)}
+    E.disc(16,13,2.6,'#1c2450',1);E.glow(15,12,'#ffffff');eiSeg(E,7.5,8,24,7.5,0.8,G);eiSeg(E,13,17,12,24,0.8,G);eiSeg(E,18,17,21.5,21,0.8,G);eiArc(E,20,23,1.6,2.8,-60,200,G)}],   // 荷鲁斯之眼
+  f_factory:[MAT.dark,E=>{for(let y=0;y<32;y++)for(let x=0;x<32;x++){const dx=x+0.5-16,dy=y+0.5-15,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx);
+    if(d<=2.6)E.p(x,y,'#3e3a48',1);else if(d<=6.8||(d<=9.4&&Math.cos(8*a)>0.25))E.p(x,y,MAT.brass)}}],   // 齿轮
+  f_cathedral:['#2a0f1c',E=>{const B=MAT.bone,R='#ff3a4a';E.r(14.5,5,3,19,B);E.r(10,16.5,12,3,B);eiDrop(E,11,23,1.4,R,1);eiDrop(E,21,23,1.4,R,1);eiDrop(E,16,27,1.3,R,1)}],   // 倒十字 + 血滴
+  f_shadowDesert:[MAT.purple,E=>{for(let y=0;y<32;y++)for(let x=0;x<32;x++){const a=Math.hypot(x+0.5-16,y+0.5-13),b=Math.hypot(x+0.5-16,y+0.5-9.5);if(a<=8&&b>7)E.p(x,y,MAT.violet)}
+    E.r(15,5,2,4,MAT.dleather);E.r(11,9,10,2,MAT.violet);E.poly([[14.2,11],[17.8,11],[17.2,22],[16,26.5],[14.8,22]],MAT.steel);E.r(15.5,12,1,9,MAT.white,1)}],   // 新月 + 匕首
+  f_elemForest:[MAT.gold,E=>{eiAlong(E,8,26,19,12,(u,v,L)=>{const t=u/L;if(t<0||t>1)return null;const a=Math.abs(v),w=5.2*Math.sin(Math.PI*t);return a<0.55&&t<0.95?'#6a9a30':a<=w?'#d8f0a0':null});
+    eiStar(E,21.5,10.5,5,2.1,5.4,'#f8e070',-Math.PI/2,1);E.glow(21,10,'#ffffff')}],   // 叶子 + 星星
+  f_ironFort:['#b8343a',E=>{const I='#b8bec8';E.r(10.5,11,11,14,I);E.r(10,9,12,2,I);E.r(10,6,3,3,I);E.r(14.5,6,3,3,I);E.r(19,6,3,3,I);
+    E.r(14,19,4,6,'#2a2733',1);E.r(14.5,18,3,1,'#2a2733',1);E.r(15,13,2,3,'#e0443a',1);E.r(10.5,15.5,11,1,'#8a909c',1)}]};   // 城塔
+function eiIcon(k){if(EI_URL[k]!==undefined)return EI_URL[k];let f=EI_DRAW[k];
+  if(!f&&typeof k==='string'&&k.slice(0,3)==='cr:'){const id=k.slice(3),c=EI_CREST[id];if(c&&EI_CREST_COL[id])f=S=>eiCrest(S,EI_CREST_COL[id],c[0],c[1])}
+  let u='';if(f)try{u=ic32(f).toDataURL()}catch(e){u=''}return EI_URL[k]=u}
 
 // ---------- v0.5.5 高清重绘引擎（用户：宽高各 ×2 重绘，像素总数 ×4；16×16 的单位画成 32×32）----------
 // 用法：hdFig(宽, 高, S=>{ ... }, {ol:外轮廓粗细}) → canvas（宽高是 ×2 后的像素；登记时 reg(canvas, 2)，逻辑尺寸 = 宽 / 2）
@@ -60523,18 +60659,18 @@ function elBlOf(reg,fr){const N=EL().bloodN,bl={};let u=0;for(const id in fr){co
 function elMainFam(x){let best=null,f=0;for(const id in x.bl||{}){const B=elBlood()[id];if(B&&B.kind==='f'&&x.bl[id]>f){f=x.bl[id];best=id}}return best}
 // —— 配偶 ——
 function elSpGen(reg,sex,age,fr){const R=EL().regions[reg]||EL().regions.wild,P=EL().names[R.culture]||EL().names.west,B=elBlood();
-  const sp={given:elPick(P[sex]||P.m),fam:elPick(R.fam),sex,age:Math.max(18,age),reg,bl:elBlOf(reg,fr||{}),pers:elPick(Object.keys(EL().personality))};
-  const mf=elMainFam(sp);if(mf&&elBlFrac(sp,mf)>=0.5)sp.fam=B[mf].fam;elBlRoll(sp);elBlTraits(sp,'hire');return sp}
+  const sp={given:elPick(P[sex]||P.m),fam:elPick(R.fam),sex,age:Math.max(18,age),reg,bl:elBlOf(reg,fr||{}),pers:elPick(Object.keys(EL().personality)),job:'recruit'};
+  const mf=elMainFam(sp);if(mf&&elBlFrac(sp,mf)>=0.5)sp.fam=B[mf].fam;if(mf){const J=EL().bloodJobs[B[mf].reg];if(J&&J.length)sp.job=elPick(J)}elBlRoll(sp);elBlTraits(sp,'hire');return sp}   // job：0.12.0 人选的样子（家族擅长的职业；平民 = 新兵）
 const elOpp=x=>x.sex==='f'?'m':'f';
 const elSpAge=x=>x.age+elRi(EM().ageGap[0],EM().ageGap[1]);
 // 25 岁还没成家：自己相亲（配偶的家族血脉 = 自己的 − 0～25%）
 function elAutoSpouse(x){const mf=elMainFam(x),fr={};if(mf)fr[mf]=Math.max(0,elBlFrac(x,mf)-Math.floor(Math.random()*(EM().autoDrop*20+1))/20);x.sp=elSpGen(x.reg,elOpp(x),elSpAge(x),fr);delete x.mc;return x.sp}
 const elRegTier=reg=>CFG.maps[reg]?mapTierOf(reg):0;
-const elMarK=reg=>1+EM().tierK*elRegTier(reg);
+const elMarK=reg=>EM().tierMul[Math.min(EM().tierMul.length-1,elRegTier(reg))];
 // 相亲：花银币，出 3～5 名平民血脉的人选（这个人自己的地区）
 const elBlindCost=x=>Math.round(EM().blind.silver*elMarK(x.reg));
 function elBlind(x){if(x.sp)return'已经成家了';const c=elBlindCost(x);if((META.wallet.银币||0)<c)return`银币不够(需要 ${c})`;META.wallet.银币-=c;
-  const n=elRi(EM().blind.n[0],EM().blind.n[1]);x.mc=[];for(let i=0;i<n;i++)x.mc.push(elSpGen(x.reg,elOpp(x),elSpAge(x),{}));const F=elRegFams(x.reg);if(F.length)elRepAdd(elPick(F),EL().rep.blind);saveMeta();return null}
+  const n=elRi(EM().blind.n[0],EM().blind.n[1]);x.mc=[];for(let i=0;i<n;i++){const c=elSpGen(x.reg,elOpp(x),elSpAge(x),{});c.src={blind:1};x.mc.push(c)}const F=elRegFams(x.reg);if(F.length)elRepAdd(elPick(F),EL().rep.blind);saveMeta();return null}
 // 宴会：请一个家族（要声望），花银币、那个地区开拓地的谷物和肉、这个家族要的加工品
 function elFeastCost(fid,b){const B=elBlood()[fid],C=EM().feast[b],k=elMarK(B.reg),W=CFG.wares.tiers[Math.min(CFG.wares.tiers.length-1,elRegTier(B.reg))],g=W.goods&&W.goods[EL().bloodGoods[B.reg]];
   return{silver:Math.round(C.silver*k),grain:Math.round(C.grain*k),meat:Math.round(C.meat*k),goods:g,gn:Math.round(C.goods*k)}}
@@ -60547,9 +60683,22 @@ function elFeast(x,fid,b){const err=elFeastCheck(x,fid,b);if(err)return err;cons
   const others=Object.keys(elBlood()).filter(id=>id!==fid&&elBlood()[id].kind==='f'),n=elRi(C.n[0],C.n[1]),base=elBlFrac(x,fid);x.mc=[];
   for(let i=0;i<n;i++){const main=Math.round(clamp(base+(Math.random()*2-1)*EM().spread+C.bonus,0,1)*20)/20,fr={[fid]:main};
     if(others.length&&Math.random()<EM().mix&&main>0){const o=elPick(others),mx=Math.min(main*EM().mixMax,1-main);const v=Math.floor(Math.random()*(mx*20+1))/20;if(v>0)fr[o]=v}
-    x.mc.push(elSpGen(B.reg,elOpp(x),elSpAge(x),fr))}
+    const c=elSpGen(B.reg,elOpp(x),elSpAge(x),fr);c.src={fid,b};x.mc.push(c)}
   saveMeta();return null}
-function elMarry(x,i){const c=(x.mc||[])[i];if(!c)return'没有这个人选';if(x.sp)return'已经成家了';x.sp=c;delete x.mc;elEv('mar',{id:x.id});saveMeta();return null}
+// 成功率（用户定）；家族血脉合计 = 所有家族血脉的占比之和
+const elFamTot=x=>{let f=0;for(const id in x.bl||{})if((elBlood()[id]||{}).kind==='f')f+=elBlFrac(x,id);return f};
+function elMarP(x,c,dw){const E=EM();let p;if(c.src&&c.src.fid){const lv=Math.max(0,elRepLv(elRepOf(c.src.fid))-EL().rep.lv.findIndex(q=>q[0]==='冷淡'));
+    p=E.okFeast+E.okRep*lv+E.okBl*Math.round((elFamTot(x)-elFamTot(c))*100)+E.okTr*((x.bt||[]).length-(c.bt||[]).length)}
+  else p=E.okBlind+E.okBl*Math.round(elFamTot(x)*100);return clamp(p+(dw?E.dowry:0),E.okMin,E.okMax)}
+// 彩礼 / 嫁妆：宴会人选 = 那一档宴会花费 × dowryK（银币、谷物、肉、加工品）；相亲人选 = 相亲银币 × dowryBlind
+function elDowryCost(x,c){if(c.src&&c.src.fid){const K=elFeastCost(c.src.fid,c.src.b),k=EM().dowryK;return{silver:Math.round(K.silver*k),grain:Math.round(K.grain*k),meat:Math.round(K.meat*k),goods:K.goods,gn:Math.round(K.gn*k),reg:elBlood()[c.src.fid].reg}}return{silver:Math.round(elBlindCost(x)*EM().dowryBlind)}}
+function elDowryPay(x,c){const K=elDowryCost(x,c),R=K.reg&&stRegion(K.reg);if((META.wallet.银币||0)<K.silver)return`银币不够(需要 ${K.silver})`;
+  if(K.reg){stAccrue(K.reg);if(!R||(R.gs||0)<K.grain)return`粮仓里谷物不够(需要 ${K.grain})`;if((R.ms||0)<K.meat)return`肉库里肉不够(需要 ${K.meat})`;if(K.goods&&((META.wares||{})[K.goods]||0)<K.gn)return`${CFG.wares.items[K.goods].name}不够(需要 ${K.gn})`;R.gs-=K.grain;R.ms-=K.meat;if(K.goods)META.wares[K.goods]-=K.gn;stPoolDirty()}
+  META.wallet.银币-=K.silver;return null}
+// 提亲：不一定成（用户定）；失败了可以补彩礼 / 嫁妆再试一次（dw），再失败这位人选就走了；返回 'ok' / 'fail' / 'gone' 或错误文字
+function elMarry(x,i,dw){const c=(x.mc||[])[i];if(!c)return'没有这个人选';if(x.sp)return'已经成家了';if(dw){if(!c.fail)return'先提亲一次';if(c.dw)return'已经补过了';const err=elDowryPay(x,c);if(err)return err;c.dw=1}else if(c.fail)return'这位已经拒绝过一次，要补彩礼 / 嫁妆才能再提';
+  if(Math.random()<elMarP(x,c,dw)){x.sp=c;delete c.fail;delete c.dw;delete c.src;delete x.mc;elEv('mar',{id:x.id});saveMeta();return'ok'}
+  if(dw){x.mc.splice(i,1);if(!x.mc.length)delete x.mc;saveMeta();return'gone'}c.fail=1;saveMeta();return'fail'}
 // —— 族人、关注、存档清理 ——
 const elFollowMax=()=>EL().famKeep.followMax;
 function elFollow(id,on){const m=elSt();if(!on){m.follow=m.follow.filter(x=>x!==id);saveMeta();return null}if(m.follow.includes(id))return null;if(m.follow.length>=elFollowMax())return`至多关注 ${elFollowMax()} 个家族`;m.follow.push(id);saveMeta();return null}
@@ -62742,7 +62891,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=155,GAME_BUILD="e667e81+",GAME_BUILT=1792900127087,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=155,GAME_BUILD="3835674+",GAME_BUILT=1792901203396,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -63040,6 +63189,10 @@ function banner(t,sub){bannerEl.innerHTML=`${t}${sub?`<small>${sub}</small>`:''}
 // 0.11.4（用户定）弹窗等没写 data-sk 的滚动区也记住位置：同一个界面（view）里按「data-hs 或第一个类名 + 第几个」认；每次重画先清掉这个界面的旧记录（关掉的弹窗不留位置）
 //   记 [左, 上, 内容宽, 内容高]，恢复时内容高宽变了就按比例换算（英文排版、字号缩放下内容长短不同）；图片晚到会撑高，下一帧再恢复一次
 let KEEP_TAB='h';   // 0.11.4 主堡指令：'h' 英雄 / 'e' 精英
+// 0.12.0（用户定）属性格子：标签前加属性图标（art/ei_icons 的 eiIcon('st:…')）；数值放不下时先缩字体，不撑大格子
+const STAT_IK={'生命':'hp','物攻':'atk','法攻':'ap','物防':'def','法防':'mdef','攻速':'aspd','精准':'prec','偏斜':'dodge','暴击':'crit','移速':'speed','视野':'vision','普攻 AD':'dmg','普攻 AP':'dmg','攻击间隔':'int','格挡':'block','箭袋':'mag','弹匣':'mag','技能冷却':'cd','战斗力':'cp','射程':'rng','攻击距离':'rng','装填':'reload','装填速度':'reload'};
+const statIco=l=>{const k=STAT_IK[l],u=k&&typeof eiIcon==='function'?eiIcon('st:'+k):'';return u?`<img class="sti" alt="" src="${u}">`:''};
+function statFit(root){if(!root)return;const run=()=>{for(const b of root.querySelectorAll('.statg b,.statg span')){b.style.fontSize='';let f=1,i=0;while(b.scrollWidth>b.clientWidth+1&&i++<6){f-=0.08;b.style.fontSize=f+'em'}}};run();if(typeof requestAnimationFrame==='function')requestAnimationFrame(run)}
 const SKM={},SKA={};let SK_GEN=0;
 const skAuto=()=>{const L=[],n={};for(const e of sheet.querySelectorAll('*')){if(e.dataset.sk)continue;const c=e.dataset.hs||e.classList[0]||e.tagName,i=n[c]=(n[c]||0)+1;L.push([e,c+'#'+i])}return L};
 const skGet=e=>[e.scrollLeft,e.scrollTop,e.scrollWidth,e.scrollHeight];
@@ -63049,7 +63202,7 @@ function openModal(state,html,focusSel,wide,view){const keep=view&&!modal.hidden
   if(!modal.hidden){sheet.querySelectorAll('[data-sk]').forEach(e=>{SKM[e.dataset.sk]=skGet(e)});const ov=sheet.dataset.view||'',A=SKA[ov]={};for(const[e,k]of skAuto())if(e.scrollTop||e.scrollLeft)A[k]=skGet(e)}
   modalState=state;paused=true;keys.clear();atkKey=false;aimUI.active=false;input.jx=input.jy=0;sheet.innerHTML=html;i18nNow(sheet);sheet.dataset.view=view||'';sheet.classList.toggle('sheet-wide',!!wide);sheet.classList.remove('cardsheet');const scr=/^hub:/.test(view||'')||view==='diff'||view==='settings';sheet.classList.toggle('sheet-screen',scr);modal.classList.toggle('m-screen',scr);   // v0.3.3 整屏界面
   modal.hidden=false;modal.classList.toggle('m-menu',view==='menu');sheet.scrollTop=keep?st:0;sheet.scrollLeft=keep?sl:0;
-  skRestore(view||'');const g=++SK_GEN;if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>{if(g===SK_GEN&&!modal.hidden)skRestore(view||'')})
+  skRestore(view||'');statFit(sheet);const g=++SK_GEN;if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>{if(g===SK_GEN&&!modal.hidden)skRestore(view||'')})
   const f=focusSel&&sheet.querySelector(focusSel);if(f)setTimeout(()=>f.focus({preventScroll:true}),30)}
 function hideModal(){modal.hidden=true;modalState=null;if(running)paused=false}
 
@@ -64790,13 +64943,13 @@ function advLine(id){const a=ADV_ID[id];if(!a)return'';const A=CFG.heroes[a],B=C
   return`<p class="meta advl">进阶为<b>${A.name}</b>：${ok(t)} 通关「${R?R.name:'试炼'}」剧情${R&&!stRegionOpenS(R.id)?`(通关${stR(R.req).name}剧情后开放)`:''} · ${ok(st)} ${B.name} ${MX} 星。进阶版从 1 星开始，用${A.name}的英雄之魄升星；进阶以后还能切回原版。</p>`}
 // —— 英雄属性子页（右边）——
 function heroInfoHTML(id){const f=heroForm(id),H=CFG.heroes[f],MH=META.heroes[id],star=Math.max(1,META.heroes[f].star||1),cost=MH.owned?starCost(f):null,souls=META.souls[f]||0,h=heroPreview(id),prof=H.prof;   // f：v0.7.3 进阶形态（技能、星级、英雄之魄按形态；出战、招募按原版）
-  const cell=(l,v)=>`<div><span>${l}</span><b>${v}</b></div>`,hs={d:H,star,id:f},gw=k=>heroStat(hs,k,1)-heroStat(hs,k,0),gt=(v,k)=>gw(k)>1e-6?`${v}<i class="gw">+${f2_(gw(k))}/波</i>`:`${v}`;   // id：v0.8.18 修——没有 id 时取不到英雄等级，物攻、法攻不显示等级加成
+  const cell=(l,v)=>`<div><span>${statIco(l)}${l}</span><b>${v}</b></div>`,hs={d:H,star,id:f},gw=k=>heroStat(hs,k,1)-heroStat(hs,k,0),gt=(v,k)=>gw(k)>1e-6?`${v}<i class="gw">+${f2_(gw(k))}/波</i>`:`${v}`;   // id：v0.8.18 修——没有 id 时取不到英雄等级，物攻、法攻不显示等级加成
   // v0.5.7：生命、物攻、法攻、物防、法防带每波成长；普攻 = 一次普攻的伤害（AD；法杖 / 书为 AP）
   // v0.8.24（用户定）物攻、法攻、物防、法防显示「合计(+装备)」：物攻 = 英雄物攻 + 武器伤害 + 武器攻击词条（法器算在法攻上）+ 饰品基础属性；防御的装备部分 = 护甲、盾牌、词条、饰品
   const gq=(v,g)=>g>0.05?`${f1g(v+g)}(+${f1g(g)})`:f1g(v),mgW=!!(h&&h.ws.magic),wg=h?(h.ws.wdB||0)+(h.ws.xaB||0):0,tk=1+(TM.hDef||0);
   const base=gt(h?Math.round(h.maxHp):Math.round(heroStat(hs,'hp',0)),'hp')+'|'+gt(gq(heroStat(hs,'atk',0),(mgW?0:wg)+((h&&h.gAcc&&h.gAcc.atk)||0)),'atk')+'|'+gt(gq(heroStat(hs,'ap',0),(mgW?wg:0)+((h&&h.gAcc&&h.gAcc.ap)||0)),'ap')+'|'+gt(h?gq(heroStat(h,'def')*tk,h.def-heroStat(h,'def')*tk):f1g(heroStat(hs,'def',0)),'def')+'|'+gt(h?gq(heroStat(h,'mdef')*tk,h.mdef-heroStat(h,'mdef')*tk):f1g(heroStat(hs,'mdef',0)),'mdef'),B=base.split('|');
   const stats=(h?cell('战斗力',`<span class="cpv">${heroCPOf(h)}</span>`):'')+cell('生命',B[0])+cell('物攻',B[1])+cell('法攻',B[2])+cell('物防',B[3])+cell('法防',B[4])+cell('攻速',H.aspd?'+'+pc1(H.aspd):'—')+cell('精准',pc1(H.prec||1))+(h?cell('偏斜',pc1(h.dodge))+cell('暴击',pc1(h.crit)+(heroCritMul(h)?` · ×${f2_(heroCritMul(h))}`:''))+cell('移速',f2_(h.speed))+cell('视野',h.vision)+
-      cell(h.ws.cls==='magic'?'普攻 AP':'普攻 AD',Math.round(h.ws.dmg))+cell('攻击间隔',f2_(h.ws.int/(1+(h.gAtk||0)+(h.aspd||0)))+' 秒')+(h.block?cell('格挡',`${pc1(h.block)} 减 ${f1g(h.shield)}`):'')+(h.ws.mag?cell(h.ws.type==='bow'?'箭袋':'弹匣',h.ws.mag):'')+cell('技能冷却',`×${f2_(h.cdMul/(1+(h.gCdr||0)))}`)+cell('出战',`${(META.heroUse&&META.heroUse[id])||0} 次`)
+      cell(h.ws.cls==='magic'?'普攻 AP':'普攻 AD',Math.round(h.ws.dmg))+cell('攻击间隔',f2_(h.ws.int/(1+(h.gAtk||0)+(h.aspd||0)))+'s')+(h.block?cell('格挡',`${pc1(h.block)} 减 ${f1g(h.shield)}`):'')+(h.ws.mag?cell(h.ws.type==='bow'?'箭袋':'弹匣',h.ws.mag):'')+cell('技能冷却',`×${f2_(h.cdMul/(1+(h.gCdr||0)))}`)+cell('出战',`${(META.heroUse&&META.heroUse[id])||0} 次`)
     :cell('偏斜',pc1(H.dodge))+cell('暴击',pc1(H.crit))+cell('移速',H.speed)+cell('视野',H.vision));
   const fx=[];if(h){for(const k in h.gSet)fx.push(CFG.setFxText({[k]:h.gSet[k]}));const af=Object.entries(h.gA||{}).map(([k,v])=>afText({k,v}));if(af.length)fx.push('饰品：'+af.join(' · '));
     for(const k in h.gfx||{})fx.push(`「${CFG.trinketFx[k].name}」${CFG.trinketFx[k].desc(h.gfx[k])}`);if(h.spcD)fx.push(`特殊「${h.spcD.name}」：${spcText(h.spcD,h.spcPow)}`)}
@@ -66501,7 +66654,7 @@ META_LATE.push(['hhOlvMax',m=>{if(!m)return;const O=m.olv||(m.olv={b:{},h:{}}),H
 // 开拓地页顶部「开拓地 / 精英」（EL_TOP）；精英页分「精英 · 名册 · 教官 · 训练所」（EL_SUB）；地区面板多一个「招募」页签（elRecHTML）
 // 弹窗（EL_POP）：属性详情、装备、技能、转职、日志、伤病、退休（要输入 ok）、族谱；局内指挥面板的「精英」页（elCmdBody）
 // 0.11.4 界面调整（用户 2026-10-24）：卡片按钮横排在右侧、信息进「属性详情」；装备栏 / 仓库、转职平铺；技能只列能学的；族谱是分支树；精英页多「招募」页签（各地区竖排，人横排）
-let EL_EVT='',EL_TOP='settle',EL_SUB='list',EL_POP=null,EL_SORT='id',EL_Q='',EL_CARDV='sk',EL_EQT='st',EL_EQS='',EL_JOBASK='';   // 0.12.0：EL_CARDV 卡片右侧显示技能 / 装备；EL_EQT 装备弹窗的页签（属性 / 装备背包）；EL_EQS 背包只看哪个部位；EL_JOBASK 等确认的转职
+let EL_EVX=new Set(),EL_EVT='',EL_TOP='settle',EL_SUB='list',EL_POP=null,EL_SORT='id',EL_Q='',EL_CARDV='sk',EL_EQT='st',EL_EQS='',EL_JOBASK='';   // 0.12.0：EL_CARDV 卡片右侧显示技能 / 装备；EL_EQT 装备弹窗的页签（属性 / 装备背包）；EL_EQS 背包只看哪个部位；EL_JOBASK 等确认的转职
 {const css=`
 .eltop{display:flex;gap:8px;margin:0 0 10px}.eltop .px{min-height:40px;font-size:1.05rem;padding:6px 18px}
 .elhead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}.elhead .meta{margin-right:auto}
@@ -66512,7 +66665,9 @@ let EL_EVT='',EL_TOP='settle',EL_SUB='list',EL_POP=null,EL_SORT='id',EL_Q='',EL_
 .elcard .elmain{display:flex;flex-direction:column;gap:4px;min-width:0}.elcard .elbtns{display:flex;flex-wrap:wrap;gap:4px}.elcard .elbtns .px{min-height:30px;font-size:.82rem;padding:3px 10px}
 .elcard b.nm{font-family:var(--f-display);font-weight:400;font-size:1.1rem;color:var(--brass-hi)}.elcard .meta{line-height:1.55}
 .elchips{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.elchip{font-size:.74rem;padding:1px 6px;background:#120f17;box-shadow:inset 0 0 0 1px var(--iron);color:var(--bone)}
-.elchip.bad{color:#e08a7a}.elchip.tt{color:#9fd0ff}.elchip.inj{color:#ff8a7a;box-shadow:inset 0 0 0 1px #6a2a2a}
+.elchip.bad{color:#e08a7a}.elchip.fam{color:#f0c878}.elchip{display:inline-flex;align-items:center;gap:3px}.eli{width:14px;height:14px;image-rendering:pixelated}
+.elbl{display:flex;height:12px;margin:4px 0 2px;box-shadow:0 0 0 1px var(--iron);background:#120f17}.elbl i{display:block;height:100%}.elbll{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.78rem;margin:2px 0 6px}.elbll span{display:inline-flex;align-items:center;gap:3px}.elbll b{width:10px;height:10px;display:inline-block}
+.elpor2{width:48px;height:48px;image-rendering:pixelated;object-fit:contain;background:#120f17;box-shadow:inset 0 0 0 1px var(--iron);flex:none}.elspc{display:flex;gap:10px;align-items:flex-start}.elchip.tt{color:#9fd0ff}.elchip.inj{color:#ff8a7a;box-shadow:inset 0 0 0 1px #6a2a2a}
 .elpop{width:min(calc(620px * var(--fk,1)),calc(100% - 20px));max-height:calc(100% - 30px);overflow:auto}
 .elsk{display:grid;grid-template-columns:repeat(auto-fill,minmax(14em,1fr));gap:6px}.elsk>div{display:grid;grid-template-columns:32px 1fr;gap:6px;align-items:start;background:#120f17;padding:6px;box-shadow:inset 0 0 0 1px var(--iron)}
 .elsk>div.on{box-shadow:inset 0 0 0 2px var(--brass)}.elsk img{width:32px;height:32px;image-rendering:pixelated}.elsk .px{min-height:28px;font-size:.8rem;padding:2px 8px}
@@ -66533,7 +66688,7 @@ let EL_EVT='',EL_TOP='settle',EL_SUB='list',EL_POP=null,EL_SORT='id',EL_Q='',EL_
 .eleq{display:grid;grid-template-columns:minmax(150px,190px) 1fr;gap:10px;align-items:start}@media (max-width:620px){.eleq{grid-template-columns:1fr}}
 .eldoll{display:grid;grid-template-columns:1fr 1fr;gap:6px;justify-items:stretch}.eldoll .elpor{grid-column:1/-1;display:flex;justify-content:center;background:#120f17;box-shadow:inset 0 0 0 1px var(--iron);padding:4px}
 .eldoll .elpor img{width:72px;height:72px;image-rendering:pixelated;object-fit:contain}.eldoll .slot{padding:5px 3px;gap:2px}.eldoll .slot .sic{width:36px;height:36px}.eldoll .slot .sic img{width:28px;height:28px}.eldoll .slot b{font-size:.7rem;line-height:1.15}.eldoll .slot .sn{font-size:.64rem}.eldoll .slot.on{box-shadow:0 0 0 2px var(--brass)}
-.eldoll .elsl1{grid-column:1/-1}.elqr .bag{max-height:none;min-height:150px;background:#120f16;box-shadow:inset 0 0 0 1px var(--iron-hi)}.elqr .bag .it.mine{background:#3a3016}
+.eldoll .elsl1{grid-column:1/-1}.elqr .statg{grid-template-columns:repeat(3,minmax(0,1fr))}.elqr .bag{max-height:none;min-height:150px;background:#120f16;box-shadow:inset 0 0 0 1px var(--iron-hi)}.elqr .bag .it.mine{background:#3a3016}
 .elsk>div.dim{filter:grayscale(.6) brightness(.6)}.elsk>div.dim:hover{filter:grayscale(.3) brightness(.85)}
 .elins{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(17em,100%),1fr));gap:8px}.elins>div{background:#1a1622;padding:8px;box-shadow:inset 0 0 0 1px var(--iron);display:flex;flex-direction:column;gap:4px}
 .elins>div.emp{align-items:center;justify-content:center;color:var(--ash);min-height:6em}.elins .eltop2{display:flex;gap:8px;align-items:center}.elins .eltop2 img{width:40px;height:40px;image-rendering:pixelated;object-fit:contain}
@@ -66549,7 +66704,10 @@ let EL_EVT='',EL_TOP='settle',EL_SUB='list',EL_POP=null,EL_SORT='id',EL_Q='',EL_
 const elIcon=e=>heroIcon(elSpr(e.job,e.sex),2);
 const elSexI=e=>e&&e.sex==='f'?'<span class="elsx f" title="女">♀</span>':'<span class="elsx" title="男">♂</span>';
 const elChip=(t,c,ti)=>`<span class="elchip${c?' '+c:''}"${ti?` title="${ti}"`:''}>${t}</span>`;
-const elTraitChips=e=>e.tr.map(k=>{const T=EL().traits[k];return elChip(T.name,T.q<0?'bad':'',T.desc)}).join('')+e.tt.map(k=>{const T=EL().train[k];return elChip(T.name,'tt',T.desc)}).join('');
+// 0.12.0（用户定）特性带图标：普通正面 / 负面、训练、家族（家徽）
+const elIc=k=>{const u=typeof eiIcon==='function'?eiIcon(k):'';return u?`<img class="eli" alt="" src="${u}">`:''};
+const elTraitChips=e=>e.tr.map(k=>{const T=EL().traits[k];return elChip(elIc(T.q<0?'tr:neg':'tr:pos')+T.name,T.q<0?'bad':'',T.desc)}).join('')+e.tt.map(k=>{const T=EL().train[k];return elChip(elIc('tr:train')+T.name,'tt',T.desc)}).join('')
+  +(e.bt||[]).map(k=>{const T=elBloodTr()[k];return T?elChip(elIc('cr:'+T.blood)+T.name,'fam',`${elBlood()[T.blood].name}：${T.desc}`):''}).join('');
 const elInjChips=e=>Object.keys(e.inj).map(k=>{const J=e.inj[k],I=EL().injuries[k];return elChip(I.name[J.lv-1],'inj',J.lv===1?`${Math.max(0,Math.ceil((J.t+EL().injury.healH*3600000-metaNow())/3600000))} 小时后恢复`:'残疾，不会自己恢复')}).join('');
 const elAgeTxt=e=>`${Math.floor(e.age)} 岁`;
 const elBtn=(a,v,t,o)=>{o=o||{};return`<button class="px${o.on?' on':''}" type="button" data-act="${a}" data-v="${v}"${o.dis?' disabled':''}${o.ti?` title="${o.ti}"`:''}>${t}</button>`};
@@ -66590,19 +66748,23 @@ function elInfoHTML(e){const J=elJobD(e),P=EL().personality[e.pers],R=EL().regio
     <div class="elchips">${elTraitChips(e)||'<span class="meta">没有特性</span>'}${elInjChips(e)}</div>
     <p class="meta">${e.tr.map(k=>EL().traits[k]).concat(e.tt.map(k=>EL().train[k])).map(T=>`${T.name}：${T.desc}`).join('<br>')}</p>
     <h4 class="sh">属性</h4>${elStatGrid(e)}
-    <h4 class="sh">血脉 <span class="meta">${elBlTxt(e)}</span></h4>${elBloodHTML(e)}
+    <h4 class="sh">血脉</h4>${elBloodHTML(e)}
     ${e.kid||e.st?`<div class="elrow">${elBtn('elxpop','tree:'+e.id,'族谱')}</div>`:''}<h5>技能</h5>${elSlotsHTML(e,true)}<p class="meta">主动：${e.ea.map(k=>EL().skills[k].name+' '+elRoman(e.sk[k])+' 级').join('、')||'无'}<br>被动：${e.ep.map(k=>EL().skills[k].name+' '+elRoman(e.sk[k])+' 级').join('、')||'无'}</p></div>`}
 // 属性格子（0.12.0 用户定：照英雄的属性面板给具体数值）：按这名精英现在的配置做一个预览（同英雄页的 heroPreview）；局内再加士兵的卡牌、科技
 function elPreview(e){if(e.kid)return null;try{return makeHero(elSpec(e),0)}catch(err){console.warn('elPreview',err);return null}}
-function elStatGrid(e){const h=elPreview(e),d=elDef(e),lv=e.kid?1:elLv(e),c=(l,v)=>`<div><span>${l}</span><b>${v}</b></div>`;
+function elStatGrid(e){const h=elPreview(e),d=elDef(e),lv=e.kid?1:elLv(e),c=(l,v)=>`<div><span>${statIco(l)}${l}</span><b>${v}</b></div>`;
   if(!h)return`<div class="statg">${c('生命',Math.round(d.hp*olvHp(lv)))+c('物攻',f1g(d.atk*olvAtk(lv)))+c('法攻',f1g(d.ap*olvAtk(lv)))+c('物防',f1g(d.def))+c('法防',f1g(d.mdef))+c('移速',f2_(d.speed))+c('偏斜',pc1(d.dodge))+c('暴击',pc1(d.crit))}</div>`;
   const w=h.ws;return`<div class="statg">${c('生命',Math.round(h.maxHp))+c('物攻',f1g(d.atk*olvAtk(lv)))+c('法攻',f1g(d.ap*olvAtk(lv)))+c('物防',f1g(h.def))+c('法防',f1g(h.mdef))+c('攻速',(h.aspd>=0?'+':'')+pc1(h.aspd||0))
-    +c('偏斜',pc1(h.dodge))+c('暴击',pc1(h.crit))+c('移速',f2_(h.speed))+c('视野',f1g(h.vision))+c(w.cls==='magic'?'普攻 AP':'普攻 AD',Math.round(w.dmg))+c('攻击间隔',f2_(heroAtkInt(h))+' 秒')
-    +c(w.cls==='melee'?'攻击距离':'射程',f1g(heroRange(h)/16)+' 格')+(w.mag?c(w.type==='bow'?'箭袋':'弹匣',w.mag)+c('装填',f2_(w.reload)+' 秒'):'')+(h.block?c('格挡',`${pc1(h.block)} 减 ${f1g(h.shield)}`):'')+c('技能冷却',`×${f2_(h.cdMul/(1+(h.gCdr||0)))}`)}</div>`}
+    +c('偏斜',pc1(h.dodge))+c('暴击',pc1(h.crit))+c('移速',f2_(h.speed))+c('视野',f1g(h.vision))+c(w.cls==='magic'?'普攻 AP':'普攻 AD',Math.round(w.dmg))+c('攻击间隔',f2_(heroAtkInt(h))+'s')
+    +c(w.cls==='melee'?'攻击距离':'射程',f1g(heroRange(h)/16)+' 格')+(w.mag?c(w.type==='bow'?'箭袋':'弹匣',w.mag)+c('装填',f2_(w.reload)+'s'):'')+(h.block?c('格挡',`${pc1(h.block)} 减 ${f1g(h.shield)}`):'')+c('技能冷却',`×${f2_(h.cdMul/(1+(h.gCdr||0)))}`)}</div>`}
 // 血脉（0.12.0）：构成、各项倍率（孩子出生时定下的）、家族特性
-function elBloodHTML(e,est){const M=e.bm||{},T=elBloodTr(),r=v=>est?(Math.round(v*20)/20).toFixed(2):(Math.round(v*100)/100).toFixed(2);
-  return`<div class="statg">${EL().bloodStats.map(([k,n])=>`<div><span>${n}</span><b style="color:${(M[k]||1)>1.001?'#9fe08a':(M[k]||1)<0.999?'#e08a7a':'inherit'}">×${r(M[k]||1)}</b></div>`).join('')}</div>
-    <p class="meta">${(e.bt||[]).length?'家族特性：'+e.bt.map(k=>T[k]?`<b>${T[k].name}</b>(${T[k].desc})`:'').join('、'):'没有家族特性'}</p>`}
+function elBloodHTML(e,est){const M=e.bm||{},r=v=>est?(Math.round(v*20)/20).toFixed(2):(Math.round(v*100)/100).toFixed(2);
+  return`${elBlBar(e)}<div class="statg">${EL().bloodStats.map(([k,n])=>`<div><span>${statIco(n)}${n}</span><b style="color:${(M[k]||1)>1.001?'#9fe08a':(M[k]||1)<0.999?'#e08a7a':'inherit'}">×${r(M[k]||1)}</b></div>`).join('')}</div>
+    ${(e.bt||[]).length?`<div class="elchips">${(e.bt||[]).map(k=>{const T=elBloodTr()[k];return T?elChip(elIc('cr:'+T.blood)+T.name+'：'+T.desc,'fam'):''}).join('')}</div>`:'<p class="meta">没有家族特性</p>'}`}
+// 血脉条（0.12.0 用户定）：一条色带，家族用自己的颜色、平民灰；下面是家徽 + 名称 + 比例（平民没有家徽）
+function elBlBar(e){const B=elBlood(),ids=Object.keys(e.bl||{}).sort((a,b)=>(B[a]&&B[a].kind==='f'?0:1)-(B[b]&&B[b].kind==='f'?0:1)||e.bl[b]-e.bl[a]),col=id=>B[id]&&B[id].kind==='f'?((typeof EI_CREST_COL!=='undefined'&&EI_CREST_COL[id])||'#c99a3a'):EL().bloodComCol;
+  return`<div class="elbl">${ids.map(id=>`<i style="width:${elBlFrac(e,id)*100}%;background:${col(id)}" title="${(B[id]||{name:id}).name} ${Math.round(elBlFrac(e,id)*100)}%"></i>`).join('')}</div>
+    <div class="elbll">${ids.map(id=>`<span>${B[id]&&B[id].kind==='f'?elIc('cr:'+id):`<b style="background:${col(id)}"></b>`}${(B[id]||{name:id}).name} ${Math.round(elBlFrac(e,id)*100)}%</span>`).join('')}</div>`}
 // 属性 / 装备（0.12.0 用户定：照英雄装备界面——左边小人 + 五个装备格，右边「属性 / 装备背包」两个页签；别的精英、英雄在用的标「用」）
 function elEqHTML(e){const J=elJobD(e);
   const cell=([s,n],i)=>{const it=itemByUid(e.gear[s]),Q=it?CFG.itemQ[baseQ(it.base)]:null;
@@ -66723,15 +66885,17 @@ function elMarHTML(){const m=elSt(),B=elBlood(),regs=elOpenRegs();
   const repRow=regs.map(r=>elRegFams(r).map(fid=>`<span class="elchip" title="${B[fid].name}的声望">${B[fid].name} · ${elRepTxt(fid)}</span>`).join('')).join('');
   return`<p class="meta">打开拓地所在地区的地图，每过一波给那里随机一个家族声望(难度越高、波数越后越多)；相亲、宴会也加声望。声望到「接纳」以上，那里的招募会多出这个家族的人；宴会要「接纳 / 信任 / 尊敬」。精英 ${EM().age} 岁还没成家会自己相亲。</p>
     <div class="elchips">${repRow||'<span class="meta">还没有开放的开拓地</span>'}</div>
-    <div class="elroll">${m.list.map(e=>`<div><b>${elName(e)}</b>${elSexI(e)}<span class="meta">${elAgeTxt(e)} · ${elBlTxt(e)} · ${e.sp?`配偶 <b>${elName(e.sp)}</b>${elSexI(e.sp)}(${elBlTxt(e.sp)})`:e.mc&&e.mc.length?`<span class="warn">有 ${e.mc.length} 位人选等你挑</span>`:'未婚'} · 子女 ${e.kids.length}</span>
+    <div class="elroll">${m.list.map(e=>`<div><img class="elpor2" alt="" src="${elIcon(e)}">${e.sp?`<img class="elpor2" alt="" src="${heroIcon(elSpr(e.sp.job||'recruit',e.sp.sex),2)}">`:''}<b>${elName(e)}</b>${elSexI(e)}<span class="meta">${elAgeTxt(e)} · ${elBlTxt(e)} · ${e.sp?`配偶 <b>${elName(e.sp)}</b>${elSexI(e.sp)}(${elBlTxt(e.sp)})`:e.mc&&e.mc.length?`<span class="warn">有 ${e.mc.length} 位人选等你挑</span>`:'未婚'} · 子女 ${e.kids.length}</span>
       ${elBtn('elxpop','mar:'+e.id,'详情')}${!e.sp?(e.mc&&e.mc.length?elBtn('elxpop','mc:'+e.id,'挑人选',{on:true}):'')+elBtn('elxblind',e.id,`相亲(${elBlindCost(e)} 银)`)+elBtn('elxpop','bq:'+e.id,'宴会'):''}</div>`).join('')||'<p class="meta">还没有精英。</p>'}</div>`}
-function elSpCard(x){return`<div class="elinfo"><p><b>${elName(x)}</b>${elSexI(x)} · ${elAgeTxt(x)} · ${CFG.maps[x.reg]?CFG.maps[x.reg].name:''}${x.pers?` · 性格「${EL().personality[x.pers].name}」`:''}</p><p class="meta">${elBlTxt(x)}</p>${elBloodHTML(x,true)}</div>`}
+function elSpCard(x,extra){return`<div class="elinfo"><div class="elspc"><img class="elpor2" alt="" src="${heroIcon(elSpr(x.job||'recruit',x.sex),2)}"><div><p><b>${elName(x)}</b>${elSexI(x)} · ${elAgeTxt(x)} · ${CFG.maps[x.reg]?CFG.maps[x.reg].name:''}${x.pers?` · 性格「${EL().personality[x.pers].name}」`:''}${x.job&&x.job!=='recruit'?` · 穿${EL().jobs[x.job].name}的衣服`:''}</p>${extra||''}</div></div>${elBloodHTML(x,true)}</div>`}
 function elMarDetHTML(e){const kids=(e.kids||[]).map(id=>elById(id)).filter(Boolean),gk=[];for(const c of kids)for(const id of c.kids||[]){const g=elById(id);if(g)gk.push(g)}
   const row=x=>`<div><b>${elName(x)}</b>${elSexI(x)}<span class="meta">${Math.floor(x.age)} 岁 · ${x.dead||x.st==='dead'?'已故':elSt().list.includes(x)?'在役':x.kid?(x.enr?'训练所':'在家'):x.st==='fam'?'族人':x.st==='retired'?'退休':''} · ${elBlTxt(x)}${x.sp?` · 配偶 ${elName(x.sp)}`:''}</span>${(x.st==='fam'&&!x.dead||x.kid)&&x.age>=EL().family.adult?elBtn('elxkid',x.id,'招入精英'):''}${elBtn('elxjump',String(x.id),'面板')}</div>`;
   return`${e.sp?`<h5>配偶</h5>${elSpCard(e.sp)}`:'<p class="meta">还没成家。</p>'}<div class="elrow">${elFollowBtn(e)}${elBtn('elxpop','tree:'+e.id,'族谱')}</div>
     <h5>子辈 ${kids.length}</h5><div class="elroll">${kids.map(row).join('')||'<p class="meta">还没有孩子。</p>'}</div>
     <h5>孙辈 ${gk.length}</h5><div class="elroll">${gk.map(row).join('')||'<p class="meta">还没有孙辈。</p>'}</div>`}
-function elMcHTML(e){return`<p class="meta">挑一位成家(属性倍率是估算，精确到 0.05)。不挑的话这些人选一直留着，再相亲 / 办宴会会换一批。</p>${(e.mc||[]).map((x,i)=>`${elSpCard(x)}<div class="elrow">${elBtn('elxmarry',e.id+':'+i,`和${elName(x)}成家`,{on:true})}</div>`).join('')||'<p class="meta">没有人选。</p>'}`}
+function elMcHTML(e){const dn=e.sex==='f'?'嫁妆':'彩礼',dct=K=>`${K.silver} 银币${K.grain?` · 谷物 ${K.grain} · 肉 ${K.meat}${K.goods?` · ${CFG.wares.items[K.goods].name} ${K.gn}`:''}`:''}`;
+  return`<p class="meta">提亲不一定成：宴会的人选看声望、双方的家族血脉和家族特性，相亲的人选看自己的家族血脉。被拒绝一次后可以补一份${dn}再提一次(成功率 +${Math.round(EM().dowry*100)}%)，再被拒绝这位就走了。属性倍率是估算(精确到 0.05)；不挑的话人选一直留着，再相亲 / 办宴会会换一批。</p>
+    ${(e.mc||[]).map((x,i)=>elSpCard(x,`<p class="meta">成功率 <b>${pc_(elMarP(e,x,!!x.fail))}</b>${x.fail?` · <span class="warn">拒绝过一次</span>`:''}</p><div class="elrow">${x.fail?elBtn('elxmarry',e.id+':'+i+':1',`补${dn}再提(${dct(elDowryCost(e,x))})`,{on:true}):elBtn('elxmarry',e.id+':'+i,`向${elName(x)}提亲`,{on:true})}</div>`)).join('')||'<p class="meta">没有人选。</p>'}`}
 function elBqHTML(e){const B=elBlood(),fids=elOpenRegs().flatMap(elRegFams),C=EM().feast;
   return`<p class="meta">请一个家族办宴会：人选是那个家族的血脉(在 ${elName(e)}自己的这个家族血脉 ±${Math.round(EM().spread*100)}% 上下，档位越高越多)，${Math.round(EM().mix*100)}% 混一点别的家族；谷物、肉从那个地区的开拓地出。</p>
     ${fids.map(fid=>`<h5>${B[fid].name} <span class="meta">${CFG.maps[B[fid].reg]?CFG.maps[B[fid].reg].name:''} · 声望 ${elRepTxt(fid)} · ${elName(e)}有 ${Math.round(elBlFrac(e,fid)*100)}% 这个血脉</span></h5><div class="elroll">${C.map((c,b)=>{const K=elFeastCost(fid,b),err=elFeastCheck(e,fid,b);
@@ -66744,7 +66908,7 @@ function elEvPopHTML(){const m=elSt(),E=m.ev,nm=id=>{const x=elById(id);return x
   const tm=x=>`<span class="meta">${new Date(x.t).toLocaleString()}</span>`;let body='';
   if(EL_EVT==='school')body=`<div class="elroll">${T.school.map(x=>x.k==='learn'?`<div><b>${nm(x.id)}</b><span>${x.ins?`跟${x.ins}`:''}学会了 ${EL().skills[x.sk]?EL().skills[x.sk].name:''} ${elRoman(x.lv)} 级</span>${tm(x)}</div>`:x.k==='insret'?`<div><b>${x.name}</b><span>教官退休了</span>${tm(x)}</div>`:`<div><b>${nm(x.id)}</b><span>到年纪退休了${x.heir?`，推荐 ${nm(x.heir)} 接替`:''}</span>${tm(x)}</div>`).join('')}</div>`;
   else if(EL_EVT==='birth')body=`<div class="elroll">${T.birth.map(x=>{const c=m.kids.find(k=>k.id===x.id);if(!c)return`<div><span class="meta">(这个孩子已经不在训练所)</span></div>`;const p=elById(x.par);
-    return`<div style="display:block"><b>${elName(c)}</b>${elSexI(c)} <span class="meta">${p?`${elName(p)}的孩子`:''} · ${elBlTxt(c)} ${tm(x)}</span>${elBloodHTML(c,true)}<div class="elchips">${elTraitChips(c)||'<span class="meta">还没有普通特性</span>'}</div>
+    const op=EL_EVX.has(c.id);return`<div style="display:block"><b>${elName(c)}</b>${elSexI(c)} <span class="meta">${p?`${elName(p)}的孩子`:''} ${tm(x)}</span> ${elBtn('elxevd',c.id,op?'收起':'详情')}${op?`${elBloodHTML(c,true)}<div class="elchips">${elTraitChips(c)||'<span class="meta">还没有普通特性</span>'}</div>`:''}
       <div class="elrow"><input type="text" id="elKN${c.id}" maxlength="8" value="${c.given}" style="width:7em" aria-label="名字">${elBtn('elxkname',c.id,'改名')}<span class="meta">姓 ${c.fam}</span>${c.enr?'<span class="meta">已在预备队</span>':elBtn('elxkenr',c.id,`提前加入预备队(${m.kids.filter(k=>k.enr).length}/${elKidCap()})`)}</div><p class="meta">属性倍率是估算(精确到 0.05)；满 ${F.school[0]} 岁、有空位时自动入学。</p></div>`}).join('')}</div>`;
   else if(EL_EVT==='mar')body=`<div class="elroll">${T.mar.map(x=>{const e=elById(x.id);return`<div><b>${nm(x.id)}</b><span>${e&&e.sp?`和 ${elName(e.sp)}(${elBlTxt(e.sp)})成家了${x.auto?'(自己相亲)':''}`:'成家了'}</span>${tm(x)}</div>`}).join('')}</div>`;
   else body=`<div class="elroll">${T.inj.map(x=>`<div><b>${nm(x.id)}</b><span>${(EL().injuries[x.part]||{name:['伤']}).name[0]}好了</span>${tm(x)}</div>`).join('')}</div>`;
@@ -66787,7 +66951,8 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
   else if(a==='elxfol'){err=elFollow(+x,y==='1')}
   else if(a==='elxblind'&&e){err=elBlind(e);if(!err){EL_POP='mc:'+e.id;toast('相亲人选来了')}}
   else if(a==='elxfeast'){const[id,fid,b]=v.split('|'),q=elById(+id);err=q?elFeast(q,fid,+b):'没有这个人';if(!err){EL_POP='mc:'+id;toast('宴会办完了，挑一位吧')}}
-  else if(a==='elxmarry'&&e){err=elMarry(e,+y);if(!err){EL_POP='mar:'+e.id;toast(`${elName(e)}成家了`)}}
+  else if(a==='elxmarry'&&e){const r=elMarry(e,+y,String(v).split(':')[2]==='1');if(r==='ok'){EL_POP='mar:'+e.id;toast(`${elName(e)}成家了`)}else if(r==='fail')toast('对方拒绝了：可以补一份彩礼 / 嫁妆再提一次');else if(r==='gone'){toast('对方还是拒绝了，这位人选走了');if(!e.mc)EL_POP='mar:'+e.id}else err=r}
+  else if(a==='elxevd'){const i=+v;if(EL_EVX.has(i))EL_EVX.delete(i);else EL_EVX.add(i)}
   else if(a==='elxkenr'){err=elKidEnroll(+v);if(!err)toast('已加入预备队')}
   else if(a==='elxkname'){const el=document.getElementById('elKN'+v);err=elKidName(+v,el?el.value:'');if(!err)toast('改好了')}
   else if(a==='elxevt')EL_EVT=v;else if(a==='elxevx'){elSt().ev=[];saveMeta();EL_EVT=''}
