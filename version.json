@@ -1,0 +1,16 @@
+{
+ "stable": {
+  "ver": "0.11.2",
+  "tag": "稳定版",
+  "code": 148,
+  "note": ""
+ },
+ "test": {
+  "ver": "0.11.5",
+  "tag": "测试版",
+  "code": 155,
+  "note": "精英性别、官方渠道检查"
+ },
+ "site": "https://lsong7479-oss.github.io/siguo-play/",
+ "qq": "1126694396"
+}

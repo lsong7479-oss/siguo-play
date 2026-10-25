@@ -19071,6 +19071,11 @@ CFG.skills.scrMemory={name:'我都记得', passive:true, cd:0, aim:'self',
   desc:()=>`被动：精英名册里每有一定数量的士兵(含清除过的；第 n 层要 1 + n(n−1)÷2 名)，克劳德自己和所有精英士兵增伤、减伤 +1%，至多 +1000%`};
 CFG.heroes.scribe.passiveSk3='scrMemory';
 
+// ---------- 0.11.5 官方渠道（用户定：防止别人改了游戏重新发；有新版本提示去官网或 QQ 群）；逻辑 ui/official.js，安卓签名自检 app/android/…/SiguoGuard.java ----------
+// site 官网；ver 官网上的版本清单（tools/site_ver.py 写）；qq 游戏交流群（官网打不开的玩家从群里拿安装包）；hosts 网页版只认这些域名（空串 = 本地文件 / 电脑版）
+CFG.official={site:'https://lsong7479-oss.github.io/siguo-play/', ver:'https://lsong7479-oss.github.io/siguo-play/version.json', qq:'1126694396',
+  hosts:['lsong7479-oss.github.io','localhost','127.0.0.1',''], checkDelay:4, timeout:6};
+
 // ---------- 0.11.4 开拓地加工坊、铁匠铺（用户 2026-10-24：通关三阶地区后解锁；产量、造价 Claude 定）----------
 // 加工坊：把这个开拓地自己产的原料（同一小时的产出）加工成加工品；加工品是这一阶的地区物资，价格 = 原料的 2.5 倍（用户定），能进商队、仓库
 //   proc = {in 原料的产出键, out 加工品的产出键, rate 每个岗位每小时最多加工几个原料, k 一个原料出几个}；原料不够时按比例开工（逻辑 game/pg_work.pgProc）
@@ -62476,7 +62481,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.11.4',GAME_TAG='测试版',GAME_BUILD="47ba018",GAME_BUILT=1792883369001,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填
+const GAME_VER='0.11.5',GAME_TAG='测试版',GAME_CODE=155,GAME_BUILD="8efc363",GAME_BUILT=1792892350593,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -66403,6 +66408,42 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
   if(err)toast(err);else if(a!=='elxtop'&&a!=='elxsub'&&a!=='elxpop'&&a!=='elxpx')sfx('click');
   showHub(hubTab)}
 
+// ---------- 0.11.5 官方渠道（数据 data/official.js）：防二次打包、新版本提示 ----------
+// 1. 安卓：原生插件 SiguoGuard 比对签名证书和包名（app/android/…/SiguoGuard.java；原生那边自己也会弹一次提示），这里再在游戏里提示一次
+// 2. 网页版：不在官网域名下（被人搬到别的网站）就提示
+// 3. 安卓 / 电脑版：联网读官网的 version.json，比本地 versionCode 新就提示「有新版本」（去官网 / 复制 QQ 群号 / 以后再说）；读不到（没网、GitHub 打不开）就算了
+//    测试版看 test 和 stable 两条，稳定版只看 stable；「以后再说」记住这个 versionCode，同一个新版本不再提示
+// 只提示、照样能玩（用户定）
+const offGuard=()=>{try{return window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.SiguoGuard||null}catch(e){return null}};
+const offApp=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const offHostOk=()=>location.protocol==='file:'||CFG.official.hosts.includes(location.hostname);
+function offOpen(u){const P=offGuard();if(P&&P.open){P.open({url:u}).catch(()=>{});return}const a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove()}
+function offCopy(t){const ok=()=>toast(`已复制 QQ 群号 ${t}`);try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,()=>toast(`QQ 群号：${t}`));return}}catch(e){}toast(`QQ 群号：${t}`)}
+let OFF_EL=null;
+function offPop(title,html,btns){if(!OFF_EL){OFF_EL=document.createElement('div');OFF_EL.id='offPop';document.body.appendChild(OFF_EL);
+    const st=document.createElement('style');st.textContent=`#offPop{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:16px}#offPop[hidden]{display:none}
+#offPop .ofb{max-width:28em;width:100%;background:var(--plate-solid,#1c1824);box-shadow:0 0 0 2px var(--rivet,#000),inset 0 0 0 1px var(--iron,#3a3446);padding:14px 16px;color:var(--bone,#e6dccb)}
+#offPop h4{margin:0 0 8px;color:var(--brass-hi,#f0c060)}#offPop p{margin:6px 0;line-height:1.6;font-size:.9rem;word-break:break-all}#offPop .ofa{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}`;document.head.appendChild(st);
+    OFF_EL.addEventListener('click',e=>{const b=e.target.closest('[data-of]');if(!b)return;const f=OFF_BTN[+b.dataset.of];if(f)f();if(!b.dataset.keep)OFF_EL.hidden=true})}
+  OFF_BTN=btns.map(b=>b[1]);OFF_EL.innerHTML=`<div class="ofb" role="dialog"><h4>${title}</h4>${html}<div class="ofa">${btns.map((b,i)=>`<button type="button" class="px${i===0?' on':''}" data-of="${i}"${b[2]?' data-keep="1"':''}>${b[0]}</button>`).join('')}</div></div>`;
+  if(typeof i18nNow==='function')i18nNow(OFF_EL);OFF_EL.hidden=false}
+let OFF_BTN=[];
+const offWhere=()=>`<p>官网：${CFG.official.site}</p><p>官网打不开可以加 QQ 游戏交流群 <b>${CFG.official.qq}</b> 获取安装包。</p>`;
+const offBtns=()=>[['去官网',()=>offOpen(CFG.official.site)],['复制 QQ 群号',()=>offCopy(CFG.official.qq),1]];
+function offWarn(why){offPop('非官方版本',`<p>${why}，可能被别人改过、加了东西。请到官网下载正版。</p>${offWhere()}`,offBtns().concat([['继续游戏',null]]))}
+async function offCheck(){if(DEV)return;
+  if(!offHostOk()){offWarn('这个网页不是《死国开拓者》官网上的');return}
+  const P=offGuard();if(P&&P.check){try{const r=await P.check();if(r&&r.official===false){offWarn('这个安装包不是《死国开拓者》官方发布的');return}}catch(e){}}
+  else if(offApp()){offWarn('这个安装包少了官方的自检');return}   // 安卓包里的自检被删了
+  if(!offApp()&&location.protocol!=='file:')return;   // 网页版总是最新的，不查新版本（安卓包、电脑版 file:// 才查）
+  setTimeout(offVer,CFG.official.checkDelay*1000)}
+async function offVer(){if(!(GAME_CODE>0)||typeof fetch!=='function')return;let V;
+  try{const c=typeof AbortController==='function'?new AbortController():null,t=c?setTimeout(()=>c.abort(),CFG.official.timeout*1000):0;const r=await fetch(CFG.official.ver+'?t='+Date.now(),{cache:'no-store',signal:c?c.signal:undefined});clearTimeout(t);if(!r.ok)return;V=await r.json()}catch(e){return}
+  const L=[V&&V.stable].concat(GAME_TAG==='测试版'?[V&&V.test]:[]).filter(x=>x&&x.code>GAME_CODE).sort((a,b)=>b.code-a.code),N=L[0];if(!N)return;
+  let skip=0;try{skip=+localStorage.getItem('offSkip')||0}catch(e){}if(skip>=N.code)return;
+  offPop('有新版本',`<p>新版本 <b>v${N.ver}${N.tag?' '+N.tag:''}</b> 已经发布(你现在是 v${GAME_VER} ${GAME_TAG})。${N.note?'<br>'+N.note:''}</p>${offWhere()}`,
+    offBtns().concat([['以后再说',()=>{try{localStorage.setItem('offSkip',String(N.code))}catch(e){}}]]))}
+
 // ---------- 主循环与启动 ----------
 let lastT=performance.now(),acc=0,hudT=0,miniT=0,perfT=0,fpsNext=0,stepMs=1,rMs=4,lastR=0,skipR=false;const LOGIC_BUDGET=34;
 // v0.10.10（用户定）卡顿时优先「跳帧」（SET.lag = 'skip'，默认）：逻辑落后时这一帧不画画面，省下的画面时间（rMs，最近画一帧的耗时）给逻辑多补几步，
@@ -66430,7 +66471,7 @@ function frame(now){
   if(G&&running){IN_DRAW=1;try{hudT-=dt;if(hudT<=0){updateHud();coachTick(0.1);hudT=0.1}updateSkillHud();miniT-=dt;if(miniT<=0){drawMini();miniT=0.12}perfT-=dt;if(perfT<=0){updatePerfHud();perfT=0.25}}finally{IN_DRAW=0}}   // IN_DRAW：v0.8.10 界面刷新期间的随机用特效随机数
 }
 addEventListener('resize',resize);
-try{metaLate();hkCheck();eabBuild();buildSprites();setupGore();packAtlas();initRenderer(/[?&#]canvas2d\b/.test(location.href));buildUI();resize();newGame({});showMenu();requestAnimationFrame(frame)}catch(e){bootFail(e)}
+try{metaLate();hkCheck();eabBuild();buildSprites();setupGore();packAtlas();initRenderer(/[?&#]canvas2d\b/.test(location.href));buildUI();resize();newGame({});showMenu();requestAnimationFrame(frame);setTimeout(()=>{offCheck().catch(()=>{})},1500)}catch(e){bootFail(e)}   // offCheck：0.11.5 官方渠道（ui/official）
 window.__wlwc={get G(){return G},E,PERF,CFG,update,startWave,tryBuild,setBuild,stressSpawn,stressClear,newGame,saveRun,readSave,loadRun,pickCard,
   get R(){return R},get PS(){return PS},get pm(){return pm},get em(){return em},legionMembers,setGlobalMode,get DIFF(){return DIFF},__upg:upgradeCost,__up:upgrade,__rep:repair,pickEnemyCard,
   castSkill,swapWeapon,heroRecalc,get META(){return META},get SET(){return SET},saveMeta,saveSettings,upgradeGroup,repairGroup,repairAll,sell,canUndo,sellValue,wallGroup,groupUpgradePlan,
