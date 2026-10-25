@@ -19500,8 +19500,8 @@ CFG.elite.skLvK=[1,1.1,1.25,1.45,1.7,2];
 //   被动技能：st1 = 1 级的属性；数字项都乘系数，数组项按 CFG.elite.skScA 的下标乘（列在 skScD 的是冷却，按系数除）
 CFG.elite.skSc=['b','ad','pb','pad','pct','amount','ap'];
 CFG.elite.skScA={und:[0], scatter:[2], frost:[0], venom:[0], awe:[1], weak:[0], stk:[0], xd:[0], ss:[1],
-  fix:[1], burst:[2], ward:[2], exe:[0], jav:[2], trample:[0], trick:[0], cmdA:[1], elem:[0], wallA:[1], mbar:[0,1], temperA:[1]};
-CFG.elite.skScD={imm:[0], decoy:[0]};
+  sev:[0], fix:[1], burst:[2], ward:[2], exe:[0], jav:[2], trample:[0], trick:[0], cmdA:[1], elem:[0], wallA:[1], mbar:[0,1], temperA:[1]};
+CFG.elite.skScD={imm:[0], decoy:[0], night:[0]};
 // 老技能：1 级的数（原来按 1～4 级写死的，改成 1 级 + 系数；1 级取原来的 2 级附近）
 (function(){const S=CFG.elite.skills,up=(k,o)=>Object.assign(S[k],o);
   up('el_cleave',{o:{b:45}});up('el_pierce',{o:{b:45}});up('el_guard',{o:{dur:5,blk:0.2,bdef:0.35},sc:['blk','bdef']});
@@ -19513,10 +19513,14 @@ CFG.elite.skScD={imm:[0], decoy:[0]};
   for(const k in P1){S[k].st1=P1[k];delete S[k].stL}})();
 // 英雄教的新技能（0.12.0 用户定：白、绿、蓝英雄每位一个主动、一个被动；要这位英雄 5★ 才能教；马可·波罗不教）
 Object.assign(CFG.elite.skills,{
-  el_acid:     {name:'酸液池', fam:['mage','mech'], need:'poisoner', sk:'acidPool', dot:['ad']},
+  el_acid:     {name:'酸液池', fam:['mage'], need:'poisoner', sk:'acidPool', dot:['ad']},
   el_pounce:   {name:'猛进', fam:['warrior','assassin'], need:'jaguar', sk:'pounce', o:{dist:3}},
   el_holyjud:  {name:'圣光裁决', fam:['warrior','shield'], need:'paladin', sk:'holyJudgment'},
   el_stomp:    {name:'泰山压顶', fam:['cav'], need:'camelKnight', sk:'elStomp'},
+  el_rush:     {name:'横冲直撞', fam:['cav'], need:'camelKnight', sk:'elRush'},   // 0.12.0（用户定）法里斯教两个主动
+  el_faith:    {name:'信仰屏障', fam:['warrior','shield'], need:'judgeKnight', sk:'faithBarrier', o:{sh:1}, sc:['sh','rev']},   // 护盾原来是生命上限的 300%～500%，精英改成 100%
+  el_hcharge:  {name:'圣骑冲锋', fam:['cav','warrior'], need:'saintKnight', sk:'holyCharge'},
+  el_order:    {name:'统御号令', fam:null, need:'saintKnight', sk:'commandOrder', o:{r:6, spd:0.25}, sc:['spd']},
   el_chainbomb:{name:'连环爆炸', fam:['mech','archer','assassin'], need:'versatile', sk:'chainBomb'},
   el_artillery:{name:'炮火支援', fam:['archer','mech'], need:'napoleon', sk:'artillery'},
   el_elemrain: {name:'元素箭雨', fam:['archer'], need:'elemArcher', sk:'elElemRain', dot:['ad','ap']},
@@ -19533,22 +19537,29 @@ Object.assign(CFG.elite.skills,{
   el_lethal:   {name:'致命一枪', pas:true, fam:['archer'], need:'sniper', st1:{exe:[0.02]}},
   el_javelin:  {name:'标枪', pas:true, fam:null, need:'jaguar', st1:{jav:[6,6,0.6]}},
   el_hshield:  {name:'圣光护盾', pas:true, fam:['warrior','shield'], need:'paladin', st1:{imm:[15]}},
-  el_trample:  {name:'马力全开', pas:true, fam:['cav'], need:'camelKnight', st1:{trample:[0.5,2]}},
   el_trick:    {name:'器无虚发', pas:true, fam:null, need:'versatile', st1:{trick:[0.15]}},
   el_command:  {name:'统御', pas:true, fam:null, need:'napoleon', st1:{cmdA:[4,0.08]}},
   el_elemarrow:{name:'元素之箭', pas:true, fam:['archer'], need:'elemArcher', st1:{elem:[0.3]}},
   el_decoy:    {name:'金蝉脱壳', pas:true, fam:null, need:'desertHermit', st1:{decoy:[30,0.25]}},
   el_ironwall: {name:'铜墙铁壁', pas:true, fam:['shield'], need:'ironMarshal', st1:{wallA:[3,0.06]}},
   el_mbarrier: {name:'魔法屏障', pas:true, fam:null, need:'fane', st1:{mbar:[0.08,0.03,2,0.15]}},
-  el_night:    {name:'夜行', pas:true, fam:['assassin'], need:'graveRaider', st1:{night:1}},
+  el_night:    {name:'夜行', pas:true, fam:['assassin'], need:'graveRaider', st1:{night:[20,4]}},   // 0.12.0（用户定）精英不一直隐身：每隔一段时间弱隐身
+  el_sever:    {name:'断绝之力', pas:true, fam:['warrior','shield'], need:'judgeKnight', st1:{sev:[0.05]}},
   el_temper:   {name:'兵刃淬炼', pas:true, fam:null, need:'andrew', st1:{temperA:[3,0.05]}}});
 // 精英专用的新主动（参数是 1 级、削弱前的数）
 Object.assign(CFG.skills,{
   elStomp:   {name:'泰山压顶', cd:12, aim:'enemy', range:3, r:1.5, stun:0.8, b:12, ad:1.3, desc:p=>`跃向 ${p.range} 格内的目标落地，${p.r} 格内的亡灵受到 ${p.b}(+${pc_(p.ad)}AD) 伤害、被震开并眩晕 ${p.stun} 秒`},
   elBurrow:  {name:'掘地突袭', cd:14, aim:'enemy', range:6, r:1.5, stun:1, b:15, ad:1.2, desc:p=>`钻进地下冲到 ${p.range} 格内的目标处(途中无敌)，钻出时 ${p.r} 格内 ${p.b}(+${pc_(p.ad)}AD) 伤害并眩晕 ${p.stun} 秒`},
+  elRush:    {name:'横冲直撞', cd:10, aim:'enemy', dist:5, w:1, kb:1, b:10, ad:1.2, desc:p=>`朝目标冲撞 ${p.dist} 格，${p.w} 格宽内的亡灵受到 ${p.b}(+${pc_(p.ad)}AD) 伤害并被推开 ${p.kb} 格`},
   elBulwark: {name:'战争壁垒', cd:25, aim:'self', r:4, dur:6, dr:0.1, kb:0.5, stun:0.5, desc:p=>`自己和 ${p.r} 格内的友军减伤 +${pc_(p.dr)}，持续 ${p.dur} 秒；期间自己近战命中击退亡灵 ${p.kb} 格并眩晕 ${p.stun} 秒(减伤和别的同类效果不叠加)`},
   elCaravan: {name:'驼铃悠悠', cd:60, aim:'self', n:1, k:0.5, dur:30, lancer:'alCamelLancer', archer:'alCamelArcher', desc:p=>`召唤骆驼枪骑兵、骆驼弓骑兵各 ${p.n} 名，属性 ${pc_(p.k)}，跟随作战 ${p.dur} 秒后离开`}});
 CFG.skills.elElemRain=Object.assign({},CFG.skills.elemRain,{name:'元素箭雨', desc:p=>`随机冰、风、火一种元素，向 ${p.range} 格内降下箭雨(同艾琳的元素箭雨)：${p.radius} 格内每 ${p.tick} 秒每只亡灵受到 ${p.b}(+${pc_(p.ad)}AD +${pc_(p.ap)}AP) 伤害，共 ${p.dur} 秒`});   // 参数同艾琳（data/heroes_060）
+// 武器要求（0.12.0 用户定：火枪不能放箭雨这类）：wreq = 能用这个技能的武器类型；被动没拿对武器就不生效
+(function(){const S=CFG.elite.skills,M=['sword','axe','hammer','club','spear','dagger'],W={
+  el_arrowrain:['bow','crossbow'], el_snipe:['bow','crossbow','gun'], el_lob:['bow','crossbow'], el_frenzy:['gun','crossbow'], el_hook:['crossbow','gun'], el_barrage:['gun'],
+  el_elemrain:['bow','crossbow'], el_artillery:['gun'], el_scatter:['bow','crossbow'], el_burst:['gun'], el_lethal:['gun','crossbow'], el_elemarrow:['bow','crossbow'],
+  el_whirl:M, el_cleave:M, el_pierce:M, el_pounce:M, el_gale:M, el_holyjud:M, el_hammer:['hammer','club','axe'], el_backstab:['dagger','sword'], el_sever:M};
+  for(const k in W)if(S[k])S[k].wreq=W[k]})();
 
 // ---------- 0.11.5 官方渠道（用户定：防止别人改了游戏重新发；有新版本提示去官网或 QQ 群）；逻辑 ui/official.js，安卓签名自检 app/android/…/SiguoGuard.java ----------
 // site 官网；ver 官网上的版本清单（tools/site_ver.py 写）；qq 游戏交流群（官网打不开的玩家从群里拿安装包）；hosts 网页版只认这些域名（空串 = 本地文件 / 电脑版）
@@ -61117,7 +61128,7 @@ function elRush(e){if(!e.learn)return'没有在学的技能';const c=elRushCost(
 // 装配：手动 elEquipSk；自动 = 学会的里等级最高的（用户定：可以单个自动、一键自动、锁定）
 function elEquipSk(e,k,on){const S=EL().skills[k];if(!S||!(e.sk[k]>0))return'还没学会';const L=S.pas?e.ep:e.ea,max=elSlots(e)[S.pas?1:0];
   if(!on){const i=L.indexOf(k);if(i>=0)L.splice(i,1);saveMeta();return null}if(L.includes(k))return null;if(!elSkOk(e,k))return'这个职业用不了';if(L.length>=max)return`${S.pas?'被动':'主动'}技能位已满(${max} 个；功勋升阶多给)`;L.push(k);saveMeta();return null}
-function elAutoSk(e,keep){if(e.lock&&keep)return;const sl=elSlots(e),pick=pas=>Object.keys(e.sk).filter(k=>EL().skills[k]&&!!EL().skills[k].pas===pas&&elSkOk(e,k)).sort((a,b)=>e.sk[b]-e.sk[a]);
+function elAutoSk(e,keep){if(e.lock&&keep)return;const sl=elSlots(e),w=elWType(e),pick=pas=>Object.keys(e.sk).filter(k=>EL().skills[k]&&!!EL().skills[k].pas===pas&&elSkOk(e,k)).sort((a,b)=>(elSkWOk(b,w)-elSkWOk(a,w))||(e.sk[b]-e.sk[a]));   // 0.12.0 拿对武器的先装
   e.ea=pick(false).slice(0,sl[0]);e.ep=pick(true).slice(0,sl[1])}
 // —— 装备（用户定：只能穿常规商店卖的普通装备；主武器、副手、头、身、脚）——
 const EL_SLOTS=[['w','主武器'],['o','副手'],['head','头盔'],['body','胸甲'],['feet','靴子']];
@@ -61200,7 +61211,8 @@ function elStDesc(st){const pc=x=>Math.round(Math.abs(x)*1000)/10+'%',sg=x=>x<0?
     else if(k==='decoy')o.push(`生命低于 ${pc(v[1])} 时自动丢烟雾弹和假身后撤(冷却 ${v[0]} 秒)`);
     else if(k==='wallA')o.push(`${v[0]} 格内的友军减伤 +${pc(v[1])}(同类光环只生效一个)`);
     else if(k==='mbar')o.push(`法术减伤 +${pc(v[0])}；普攻命中时获得 ${pc(v[1])} 生命上限的魔法护盾(每 ${v[2]} 秒一次，至多 ${pc(v[3])})`);
-    else if(k==='night')o.push('夜里视野不缩小，并且隐身(亡灵不会把他当成目标)');
+    else if(k==='night')o.push(`每 ${v[0]} 秒获得 ${v[1]} 秒弱隐身(攻击一次就现身)`);
+    else if(k==='sev')o.push(`普攻按造成伤害的 ${pc(v[0])} 削减目标的生命上限`);
     else if(k==='temperA')o.push(`${v[0]} 格内的友军造成伤害、减伤 +${pc(v[1])}(同类光环只生效一个)`);
     else if(k==='noble')o.push('无视家族血脉差带来的负面影响');
     else o.push(k)}
@@ -61508,7 +61520,7 @@ const elLvK=(L,k)=>1+(Math.max(1,L)-1)*EL().lvLinear[k];
 // 属性合计：地区、普通特性、训练特性、伤病、装配的被动（数组型的特殊效果取较强的）
 function elStatSum(e){const S={},add=st=>{if(!st)return;for(const k in st){const v=st[k];if(typeof v==='number')S[k]=(S[k]||0)+v;else if(Array.isArray(v)){const o=S[k];S[k]=!o||v[0]>o[0]?v:o}else S[k]=v}};
   const R=EL().regions[e.reg];if(R)add(R.st);for(const k of e.tr)add(EL().traits[k].st);for(const k of e.tt)add(EL().train[k].st);if(e.bt)for(const k of e.bt){const T=elBloodTr()[k];if(T)add(T.st)}if(e.bsp)add(e.bsp);   // bt：0.12.0 家族特性；bsp：家族的特别属性
-  for(const k in e.inj){const I=EL().injuries[k];if(I)add(I.st[(e.inj[k].lv||1)-1])}for(const k of e.ep)if(elSkOk(e,k))add(elPasSt(k,e.sk[k]||1));return S}   // 被动：0.12.0 1 级的属性 × 等级系数（game/el_sk2.elPasSt）按 1～4 级
+  for(const k in e.inj){const I=EL().injuries[k];if(I)add(I.st[(e.inj[k].lv||1)-1])}{const w=elWType(e);for(const k of e.ep)if(elSkOk(e,k)&&elSkWOk(k,w))add(elPasSt(k,e.sk[k]||1))}return S}   // 被动：0.12.0 1 级的属性 × 等级系数（game/el_sk2.elPasSt）按 1～4 级
 function elDef(e){const J=elJobD(e),S=elStatSum(e),R=EL().regions[e.reg]||{},M=e.bm||{},p=k=>Math.max(0.1,1+(S[k]||0))*(M[k]||1);   // M：0.12.0 血脉的属性倍率（game/el_blood）
   return{name:elName(e),title:J.name,quality:'white',look:elSpr(e.job,e.sex),elite:true,allSkills:true,stars:[null,{},{},{},{}],skills:[EL_NONE,EL_NONE,EL_NONE],lore:'',
     hp:J.hp*p('hp'),atk:J.atk*p('atk'),ap:J.ap*p('ap'),def:J.def*p('def'),mdef:J.mdef*p('mdef'),elF:{hp:S.hpF||0,atk:S.atkF||0,ap:S.apF||0,def:S.defF||0,mdef:S.mdefF||0},speed:J.speed*p('speed'),vision:J.vision*p('vision'),prec:J.prec*p('prec'),aspd:J.aspd+(S.aspd||0)+((M.aspd||1)-1),
@@ -61664,8 +61676,10 @@ function elPasSt(k,lv){const key=k+'|'+lv;let o=EL_PAS.get(key);if(o)return o;co
   for(const x in b){const v=b[x];if(typeof v==='number')o[x]=x==='backstab'||x==='night'||x==='noble'?v:r4(v*c);else if(Array.isArray(v)){const a=v.slice();for(const i of A[x]||[])a[i]=r4(a[i]*c);for(const i of D[x]||[])a[i]=Math.round(a[i]/c*10)/10;o[x]=a}else o[x]=v}
   EL_PAS.set(key,o);return o}
 // 技能说明：按这一级的参数写（主动用那个技能的 desc(p)，被动按属性自动写）
-function elSkDesc(k,lv){const S=EL().skills[k];if(!S)return'';lv=Math.max(1,lv|0);if(S.pas)return elStDesc(elPasSt(k,lv))||S.desc||'';
-  const B=CFG.skills[S.sk];try{if(B&&typeof B.desc==='function')return B.desc(elSkP(k,lv))+(S.note?'；'+S.note:'')}catch(e){console.warn('elSkDesc',k,e)}return S.desc||''}
+function elSkDesc(k,lv){const S=EL().skills[k];if(!S)return'';lv=Math.max(1,lv|0);const wq=S.wreq?`(要拿${S.wreq.map(t=>(CFG.weaponTypes[t]||{name:t}).name).join(' / ')})`:'';if(S.pas)return(elStDesc(elPasSt(k,lv))||S.desc||'')+wq;
+  const B=CFG.skills[S.sk];try{if(B&&typeof B.desc==='function')return B.desc(elSkP(k,lv))+wq}catch(e){console.warn('elSkDesc',k,e)}return(S.desc||'')+wq}
+// 精英拿的武器类型（被动的武器要求用）
+const elWType=e=>{const w=e&&e.gear&&e.gear.w?itemByUid(e.gear.w):null;return w&&CFG.weapons[w.base]?{type:CFG.weapons[w.base].type}:null};
 // —— 每帧（EL_FX.tick 开头）：大地重锤蓄力、驼队到时间、各种被动 ——
 const EL_CMD_E=new Map(),EL_WALL_E=new Map(),EL_TMP_E=new Map();
 const elEffOf=(M,k,f)=>{let e=M.get(k);if(!e){e=f();M.set(k,e)}return e};
@@ -61685,7 +61699,7 @@ function elFx2Tick(h,dt,S){
   if(S.cmdA)bfAuraF(h.x,h.y,S.cmdA[0]*16,'elCmdA',elEffOf(EL_CMD_E,S.cmdA[1],()=>({aspd:S.cmdA[1]})),{heroes:false});   // 统御：同 id 不叠加
   if(S.wallA)bfAuraF(h.x,h.y,S.wallA[0]*16,'elWallA',elEffOf(EL_WALL_E,S.wallA[1],()=>({dr:S.wallA[1]})));
   if(S.temperA)bfAuraF(h.x,h.y,S.temperA[0]*16,'elTempA',elEffOf(EL_TMP_E,S.temperA[1],()=>({atk:S.temperA[1],dr:S.temperA[1]})));
-  if(S.night&&typeof ENV!=='undefined'&&ENV.dayVis<1){h.stealthed=true;if(T>=(h.elNwU||0)){h.elNwU=T+0.5;for(let i=0;i<E.n;i++)if(E.alive[i]&&E.ft[i]===h){E.ft[i]=null;E.th[i]=0}}}}   // 夜行：夜里隐身
+  if(S.night&&T>=(h.elNwU||0)&&!(h.stealthT>0)&&SK.stealth){h.elNwU=T+S.night[0];SK.stealth.cast(h,{dur:S.night[1],breakN:1,speed:0})}}   // 夜行：每隔一段时间弱隐身（0.12.0 用户定：精英不一直隐身）
 // 英雄技能的 1★ 参数（精英被动借用时；削弱同主动）
 function elHeroSkP(k){const B=CFG.skills[k],p=Object.assign({},B);if(B.byStar)for(const x in B.byStar)p[x]=B.byStar[x][0];elSkNerf(p,null);return p}
 // 马力全开：移动得快时撞开身边的亡灵（每只每 gap 秒一次）
@@ -61695,7 +61709,8 @@ function elTrampleTick(h,P){const ox=h.elTpX,oy=h.elTpY;h.elTpX=h.x;h.elTpY=h.y;
   if(M.size>200)M.clear()}
 // —— 普攻命中（EL_FX.atkHitE）——
 function elFx2Hit(h,i,dmg,o,S){
-  elBwHit(h,i);if(S.mbar&&h.fnSh)fnShieldHit(h);   // 战争壁垒的盾击；魔法屏障：打中就加魔法护盾
+  elBwHit(h,i);if(S.mbar&&h.fnSh)fnShieldHit(h);if(S.sev)cutMaxHp(i,dmg*S.sev[0]);   // 断绝之力：按伤害削生命上限
+  if(!E.alive[i])return;   // 战争壁垒的盾击；魔法屏障：打中就加魔法护盾
   if(S.exe&&h.ws.cls!=='melee'&&ETC[E.t[i]].tier<4&&Math.random()<S.exe[0]){dealE(i,(E.hp[i]+(E.shp?E.shp[i]||0:0))*5+100,{hk:h,sure:1,mix:{pierce:1},noFx:1});return}   // 致命一枪
   if(S.burst&&h.ws.cls!=='melee'&&!(o&&o.elBu)){h.elBuN=(h.elBuN||0)+1;if(h.elBuN>=S.burst[0]&&G.time>=(h.elBuU||0)){h.elBuN=0;h.elBuU=G.time+S.burst[3];
     for(let k=0;k<S.burst[1];k++)if(E.alive[i])dealE(i,dmg*S.burst[2],{hk:h,crit:h.crit,mix:h.ws.mix||{pierce:1},elBu:1});sfx('gun',h.x,h.y)}}   // 连发（有冷却）
@@ -61703,14 +61718,20 @@ function elFx2Hit(h,i,dmg,o,S){
   if(S.trick&&Math.random()<S.trick[0]){const r=Math.random()*4|0;if(r===0)poisonE(i,dmg*0.3,3);else if(r===1)burnE(i,dmg*0.3,3);else if(r===2){E.slowF[i]=Math.max(E.slowF[i]||0,0.3);E.slowT[i]=slowMx(i,2)}else eStun(i,0.5)}   // 器无虚发
   if(S.elem){h.elem=ELEMS[((h.elEmN=(h.elEmN||0)+1))%3];elemHit(h,i,dmg,{kb:0.5,slow:S.elem[0],t:2,burn:S.elem[0]*0.5,r:0})}}   // 元素之箭：风、冰、火轮流
 // —— elRecalc 末尾：要按技能设的英雄字段 ——
-function elRecalc2(h,S){h.h60T=h.skills.includes('galeSlash');if(h.h60T&&!h.gsHit)h.gsHit=new Set();
-  h.fnMR=S.mbar?S.mbar[0]:0;h.fnSh=S.mbar?{sh:S.mbar[1],gap:S.mbar[2],cap:S.mbar[3]}:null;h.nEye=!!S.night}
+function elRecalc2(h,S){h.h60T=h.skills.some(k=>k==='galeSlash'||k==='faithBarrier'||k==='holyCharge');   // 这三个技能的计时在 heroes/heroes060.h60Tick
+  if(h.h60T&&!h.gsHit)h.gsHit=new Set();
+  h.fnMR=S.mbar?S.mbar[0]:0;h.fnSh=S.mbar?{sh:S.mbar[1],gap:S.mbar[2],cap:S.mbar[3]}:null;h.nEye=false}
 // —— 精英专用的新主动 ——
 function elStompLand(h,p){const R=p.r*16;disbandNear(h.x,h.y,R);bkCast({k:'c',r:p.r},{who:'E',gnd:1,crit:h.crit,pen:h.ws.pen,mix:{blunt:1},fx:null,st:{stun:p.stun,kb:1}},bkCH(h,skD(h,p),h.x,h.y,0));
   addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-4),r:R,life:0.4,c:'#e6cf98'});G.shake=Math.max(G.shake,1);sfx('boom',h.x,h.y)}
 function elLeap(h,p,a,kind){const j=nearestEnemy(a?a.x:h.x,a?a.y:h.y,p.range*16*1.1,true);const x=j>=0?E.x[j]:a.x,y=j>=0?E.y[j]:a.y,dx=x-h.x,dy=y-h.y,d=Math.min(p.range*16,Math.hypot(dx,dy));
   h.facing=dx>=0?1:-1;if(d>6)startDash(h,kind,Math.atan2(dy,dx),d,0.3,p);else DASH[kind].land(h,p);sfx('dash',h.x,h.y);return true}
 DASH.elStomp={land(h,p){elStompLand(h,p)}};
+// 横冲直撞（0.12.0 精英版：固定距离，不按速度）：沿途 w 格宽内的亡灵受伤并被推开，每只一次
+DASH.elRush={step(h,dt){const p=h.dashP,sp=Math.hypot(h.dvx,h.dvy)||1;disbandNear(h.x,h.y,p.w*8+12);
+  bkCastOnce({k:'c',r:p.w*0.6+0.4},{who:'E',gnd:1,crit:h.crit,pen:h.ws.pen,mix:{blunt:1},fx:null,on:j=>{if(E.alive[j])knockback(j,h.dvx/sp,h.dvy/sp,p.kb*16,0.2)}},bkCH(h,skD(h,p),h.x,h.y,0),h.dashHit)}};
+SK.elRush={cast(h,p,a){if(h.layer===1)return false;const ang=Math.atan2(a.y-h.y,a.x-h.x);startDash(h,'elRush',ang,p.dist*16,0.12+p.dist*0.04,p);h.facing=Math.cos(ang)>=0?1:-1;sfx('dash',h.x,h.y);return true},
+  ai(h,p){if(h.layer===1)return null;const c=densest(h.x,h.y,p.dist*16);return aiN(h,p,c,3)?{x:c.x,y:c.y}:null}};
 DASH.elBurrow={land(h,p){h.inv=0;elStompLand(h,p)}};
 const elLeapAI=(h,p)=>{if(h.layer===1)return null;const c=densest(h.x,h.y,p.range*16);return aiN(h,p,c,3)?{x:c.x,y:c.y}:null};
 SK.elStomp={cast(h,p,a){if(h.layer===1)return false;return elLeap(h,p,a,'elStomp')},ai:elLeapAI};
@@ -63757,7 +63778,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=160,GAME_BUILD="1a73c36",GAME_BUILT=1792947063581,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=160,GAME_BUILD="cf331b1",GAME_BUILT=1792948380104,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
