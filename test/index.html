@@ -2523,7 +2523,7 @@ Object.assign(CFG,{
   zoomSteps:[[1,'100%'],[1.25,'125%'],[1.5,'150%'],[1.75,'175%'],[2,'200%'],[2.5,'250%']],
   zoomMin:[640,300],   // v0.10.10 界面缩放后至少留出 640 × 300 的界面空间（Claude 定：常见手机横屏 125% 左右为止；ui/help.zoomFit）
   // 设置默认值
-  settingsDefault:{spdMax:3, helpQ:true, oathOn:true, prepEvOn:true, music:0.45, sfx:0.8, uiZoom:1, uiFont:1, sfxFlat:false, fx:1, fps:60, popText:true, bossBars:true, shadows:true, unitBars:true, zoomFx:true, autoNext:false, autoAttack:true, unlockAll:false, devOn:false, shake:true, cardConfirm:true, autoECard:false, autoRepair:false, miniScale:1, miniHide:false, twoP:false,
+  settingsDefault:{spdMax:3, kinMar:false, helpQ:true, oathOn:true, prepEvOn:true, music:0.45, sfx:0.8, uiZoom:1, uiFont:1, sfxFlat:false, fx:1, fps:60, popText:true, bossBars:true, shadows:true, unitBars:true, zoomFx:true, autoNext:false, autoAttack:true, unlockAll:false, devOn:false, shake:true, cardConfirm:true, autoECard:false, autoRepair:false, miniScale:1, miniHide:false, twoP:false,
     // v0.3.1 触屏操控：摇杆 跟手（按下位置）/ 固定；摇杆、技能按钮的大小（倍率）和离屏幕边缘的距离（像素）
     joyMode:'follow', joyS:1.15, joyM:16, btnS:1.15, btnM:10, heroBarHide:false,   // v0.4.0 heroBarHide：局内英雄头像栏收起
     keys:{up:'w', down:'s', left:'a', right:'d', attack:'j', skill1:'q', skill2:'e', skill3:'r', swap:'tab',
@@ -19199,6 +19199,7 @@ CFG.elite.repRec={接纳:[0.2,0,0.2], 信任:[0.4,0,0.3], 尊敬:[0.6,0.2,0.5], 
 //   失败后可以补一份彩礼 / 嫁妆再试一次（+20%，宴会花费的 dowryK 倍、相亲花费的 dowryBlind 倍；再失败对方就走了）；花费 × 地区阶的倍率 tierMul（用户定：按地区等阶 × 倍率；Claude 定）
 CFG.elite.mar={age:25, autoDrop:0.25, ageGap:[-10,10], feastMin:0.05, tierMul:[1,1.6,2.4,3.5,5,7,9.5,12.5,16],   // ageGap：0.12.0 相亲人选的年龄放宽到 ±10（年龄差的加减才会出现）
   okFeast:0.4, okRep:0.05, okBl:0.01, okTr:0.02, okBlind:0.8, okAgeGap:5, okAge:0.005,   // okAge：0.12.0（用户定）相亲对方比自己大 / 小超过 5 岁，每岁 +/−0.5%
+  okKin:0.2,   // 0.12.0（用户定）设置「其它」打开「近亲提亲」后，三代以内血亲队内提亲的基础成功率（关闭时必定被拒）
   okTeam:0.4, okTeamAge:0.005, okTeamPure:0.005, refuseMs:86400000,   // 队内婚配（用户定）：40%(0.12.0 由 50% 改) − 年龄每差 1 岁 0.5% − 血脉纯度（占比最高的一支血脉）每差 1% 0.5%；拒绝参与持续 1 年（现实 24 小时）
   teamCdY:3, outCdY:1, whyMin:0.05, tooFamY:5,   // 0.12.0（用户定）队内提亲每人 3 年一次、相亲 / 宴会每人 1 年一次（年 = yearMs）；拒绝台词：扣分最多的一项至少 whyMin 才说这一项，否则说一般的；一起在队 tooFamY 年以上一半概率说「太熟了」
   wed:[{name:'隐秘婚宴', rep:-300},   // 0.12.0 婚宴（用户定档次，Claude 定数）：× 地区阶倍率 tierMul；队外按配偶的地区要材料（当地的基础物资）、加工品，队内不要；rep 给对方家族的声望（隐秘只在对方是别的家族的人时扣）
@@ -60966,14 +60967,15 @@ const elRingN=k=>((elSt().ring||{})[k])||0;
 function elRingBuy(k){const R=EM().ring[k];if(!R)return'没有这个道具';const st=blackState(),bk='r'+k;if((st[bk]||0)>=R.day)return`${R.name}今天已经买过了`;if((META.wallet.金币||0)<R.gold)return`金币不够(需要 ${R.gold})`;
   META.wallet.金币-=R.gold;st[bk]=(st[bk]||0)+1;const m=elSt();(m.ring||(m.ring={}))[k]=elRingN(k)+1;saveMeta();return null}
 // 队内婚配（0.12.0 用户定）：50% − 年龄每差 1 岁 0.5% − 血脉纯度每差 1% 0.5%（+ 双方的提亲加成）
-function elTeamP(a,b){const E=EM();return clamp(E.okTeam-E.okTeamAge*Math.abs(Math.round(a.age-b.age))-E.okTeamPure*Math.abs(Math.round((elPure(a)-elPure(b))*100))+elStT(a,'marry')+elStT(b,'marry'),E.okMin,E.okMax)}
+const elKinOn=()=>typeof SET!=='undefined'&&!!(SET&&SET.kinMar);   // 0.12.0 设置「近亲提亲」
+function elTeamP(a,b){const E=EM(),kin=elKin(a,b)>0;if(kin&&!elKinOn())return 0;return clamp((kin?E.okKin:E.okTeam)-E.okTeamAge*Math.abs(Math.round(a.age-b.age))-E.okTeamPure*Math.abs(Math.round((elPure(a)-elPure(b))*100))+elStT(a,'marry')+elStT(b,'marry'),E.okMin,E.okMax)}
 // rk：'p' 求婚戒指（按成功率，成了才用掉）/ 'e' 永恒戒指（必定成功，无视苦修、风流）；近亲不花东西、不进冷却，直接被拒（返回 'kin'）；提亲的人 3 年一次
 function elTeamMarry(a,b,rk){const m=elSt();elWhyLast=null;if(!a||!b||a===b||!m.list.includes(a)||!m.list.includes(b))return'只能在两名在役精英之间';if(a.sex===b.sex)return'要一男一女';if(elSpouse(a)||elSpouse(b))return'有人已经成家了';
-  if(elKin(a,b)){elWhyLast={who:elName(b),line:elKinLine(b,a),sys:'(三代以内的血亲不能结婚)'};return'kin'}
+  if(elKin(a,b)&&!elKinOn()){elWhyLast={who:elName(b),line:elKinLine(b,a)};return'kin'}   // 关闭「近亲提亲」：不花东西、不进冷却
   const now=metaNow();if(typeof a.tmT==='number'&&a.tmT>now)return`${elName(a)}三年内只能提一次亲(还要 ${elHrs(a.tmT-now)} 小时)`;rk=rk==='e'?'e':'p';if(elRingN(rk)<1)return`没有${EM().ring[rk].name}(神秘黑市有卖)`;if(rk!=='e')for(const x of[a,b]){const r=elRefuse(x);if(r)return r}   // 永恒戒指无视苦修、风流的拒绝
   a.tmT=now+EM().teamCdY*EL().yearMs;
   if(rk==='e'||Math.random()<elTeamP(a,b)){m.ring[rk]--;a.spId=b.id;b.spId=a.id;a.spKin=b.spKin=elKin(a,b);a.wedP=b.wedP=1;delete a.mc;delete b.mc;elEv('mar',{id:a.id});saveMeta();return'ok'}   // 求婚戒指失败不消耗；wedP：待办婚宴   // spKin：近亲（共同祖先隔几代，0 = 不是）
-  elWhyLast={who:elName(b),line:elWhyTeam(a,b)};saveMeta();return'fail'}
+  elWhyLast={who:elName(b),line:elKin(a,b)?elKinLine(b,a):elWhyTeam(a,b)};saveMeta();return'fail'}
 // 彩礼 / 嫁妆：宴会人选 = 那一档宴会花费 × dowryK（银币、谷物、肉、加工品）；相亲人选 = 相亲银币 × dowryBlind
 function elDowryCost(x,c){if(c.src&&c.src.fid){const K=elFeastCost(c.src.fid,c.src.b),k=EM().dowryK;return{silver:Math.round(K.silver*k),grain:Math.round(K.grain*k),meat:Math.round(K.meat*k),goods:K.goods,gn:Math.round(K.gn*k),food:1}}return{silver:Math.round(elBlindCost(x)*EM().dowryBlind)}}
 function elDowryPay(x,c){const K=elDowryCost(x,c);if((META.wallet.银币||0)<K.silver)return`银币不够(需要 ${K.silver})`;
@@ -63243,7 +63245,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=155,GAME_BUILD="0df8ee6",GAME_BUILT=1792907104514,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=156,GAME_BUILD="9527c4e",GAME_BUILT=1792907967115,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -64276,7 +64278,7 @@ const hvMore=(n,what)=>n>0?`<p class="meta hvmore">还有 ${n} ${what}，通关�
 // ---------- 界面（四）：设置、弹窗按钮分发（onSheetClick）、开局、暂停、强化卡选择、结算 ----------
 let setFrom='menu',devAsk=false,setSec='av',resetAsk=false;
 // v0.3.3 设置改成整屏：左边分区（声音画面 / 战斗 / 触屏操控 / 存档 / 按键 / 调试），右边是这一区的选项
-const SET_SECS=[['av','声音画面'],['play','战斗'],['touch','触屏操控'],['save','存档'],['ver','版本更新'],['lang','语言'],['keys','按键'],['rep','问题报告'],['dev','调试']];   // rep：v0.6.8（ui/perfrep）
+const SET_SECS=[['av','声音画面'],['play','战斗'],['touch','触屏操控'],['save','存档'],['misc','其它'],['lang','语言'],['keys','按键'],['rep','问题报告'],['dev','调试']];   // rep：v0.6.8（ui/perfrep）
 function showSettings(from){if(from)setFrom=from;const K=SET.keys;
   const inRun=!!(running&&G&&G.loot),SECS=inRun?[...SET_SECS.slice(0,2),['loot','本局掉落'],...SET_SECS.slice(2)]:SET_SECS;if(setSec==='loot'&&!inRun)setSec='av';   // loot：v0.10.0 对局中才有「本局掉落」
   const tg=(k,label,sub)=>`<div class="sr"><span>${label}${sub?`<br><span class="meta">${sub}</span>`:''}</span><button class="px${SET[k]?' on':''}" type="button" data-act="stog" data-v="${k}">${SET[k]?'开':'关'}</button></div>`;
@@ -64307,9 +64309,6 @@ function showSettings(from){if(from)setFrom=from;const K=SET.keys;
       ${tg('cardConfirm','选卡需要确认','每波结束先点卡片、再点「确认」；关掉后点卡片直接选')}
       ${tg('autoECard','自动确认亡灵选卡','亡灵选卡弹出 1 秒后自动跳过；噩梦难度自动替亡灵选一张最低品质的(同品质随机)')}
       ${tg('autoRepair','每波结束自动全修','铜币够的话自动修满所有建筑，主堡优先')}
-      ${tg('twoP','双人模式(电脑)','玩家 2：方向键移动，小键盘 1 普攻、2/3/4 技能、0 换武器、5 换英雄；主堡 Lv3 第二位英雄上阵后由玩家 2 操控，战斗阶段分屏(新对局生效)')}
-      ${tg('helpQ','显示说明问号','标题、卡片旁边的「?」，点开看详细规则；关掉后界面更干净')}
-      <div class="sr"><span>新手引导<br><span class="meta">${tutOn()?'进行中':'已完成或已跳过'}：重新开始后，营地和下一局里会再提示一遍</span></span><button class="px" type="button" data-act="tutreset">重新开始</button></div>
 </div>`;
   else if(setSec==='touch')body=`<div class="setrows">
       <div class="sr"><span>移动摇杆<br><span class="meta">跟手：屏幕左下任意位置按下就以那里为中心；固定：只认摇杆本身</span></span><button class="px on" type="button" data-act="sjoy">${SET.joyMode==='follow'?'跟手':'固定'}</button></div>
@@ -64330,7 +64329,13 @@ function showSettings(from){if(from)setFrom=from;const K=SET.keys;
   else if(setSec==='keys')body=`<p class="meta">点按钮后按下新按键；Esc 取消。</p>
     <div class="keys setrows">${Object.keys(CFG.keyNames).map(a=>`<div class="sr"><span>${CFG.keyNames[a]}</span><button class="px${keyCapture===a?' on':''}" type="button" data-act="skey" data-v="${a}">${keyCapture===a?'按下新键…':keyName(K[a])}</button></div>`).join('')}</div>
     <div class="actions"><button class="px" type="button" data-act="skeyreset">恢复默认按键</button></div>`;
-  else if(setSec==='ver')body=offSetHTML();   // 0.11.5 版本更新（ui/official）
+  // 0.12.0（用户定）「其它」：近亲提亲，从「战斗」挪来双人模式、说明问号、新手引导，「版本更新」并进来
+  else if(setSec==='misc')body=`<div class="setrows">
+      ${tg('kinMar','近亲提亲','关闭时三代以内的血亲提亲必定被拒(永恒戒指也一样)；打开后基础成功率 '+Math.round(EM().okKin*100)+'%，生下的孩子可能有缺陷')}
+      ${tg('twoP','双人模式(电脑)','玩家 2：方向键移动，小键盘 1 普攻、2/3/4 技能、0 换武器、5 换英雄；主堡 Lv3 第二位英雄上阵后由玩家 2 操控，战斗阶段分屏(新对局生效)')}
+      ${tg('helpQ','显示说明问号','标题、卡片旁边的「?」，点开看详细规则；关掉后界面更干净')}
+      <div class="sr"><span>新手引导<br><span class="meta">${tutOn()?'进行中':'已完成或已跳过'}：重新开始后，营地和下一局里会再提示一遍</span></span><button class="px" type="button" data-act="tutreset">重新开始</button></div>
+</div>`+offSetHTML();
   else if(setSec==='lang')body=langSecHTML();   // v0.10.0 多语言：切换、导入翻译 CSV、导出没翻到的句子
   else if(setSec==='rep')body=repSecHTML();
   else if(setSec==='loot')body=runLootHTML();
@@ -67066,7 +67071,7 @@ let EL_EVX=new Set(),EL_EVT='',EL_TOP='settle',EL_SUB='list',EL_POP=null,EL_SORT
 .eltree li:only-child::before,.eltree li:only-child::after{display:none}.eltree li:only-child{padding-top:0}.eltree li:first-child::before,.eltree li:last-child::after{border:0}
 .eltree li:last-child::before{border-right:2px solid var(--iron-hi,#5a5068)}.eltree ul ul::before{content:'';position:absolute;top:0;left:50%;height:14px;border-left:2px solid var(--iron-hi,#5a5068)}
 .eltree .eltn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;background:#1a1622;box-shadow:inset 0 0 0 1px var(--iron);font-size:.76rem;cursor:pointer;min-width:5.5em}
-.eltree .eltn img{width:32px;height:32px;image-rendering:pixelated;object-fit:contain}.eltree .eltn.me{box-shadow:inset 0 0 0 2px var(--brass)}.eltree .eltn.dead{opacity:.55}.eltree .eltn i{font-style:normal;color:var(--bone-dim,#a89c8a)}
+.eltree .elcp{display:flex;align-items:center;gap:2px}.eltree .elcpx{color:var(--brass);font-size:.72rem;max-width:5em;text-align:center}.eltree .eltn img{width:32px;height:32px;image-rendering:pixelated;object-fit:contain}.eltree .eltn.me{box-shadow:inset 0 0 0 2px var(--brass)}.eltree .eltn.dead{opacity:.55}.eltree .eltn i{font-style:normal;color:var(--bone-dim,#a89c8a)}
 `,st=document.createElement('style');st.textContent=css;document.head.appendChild(st)}
 const elIcon=e=>heroIcon(elSpr(e.job,e.sex),2);
 const elSexI=e=>e&&e.sex==='f'?'<span class="elsx f" title="女">♀</span>':'<span class="elsx" title="男">♂</span>';
@@ -67104,7 +67109,7 @@ function elPopHTML(){if(!EL_POP)return'';const i=EL_POP.indexOf(':'),k=EL_POP.sl
   else if(k==='hpick'){T='任命英雄当教官';body=elHeroPickHTML()}
   else if(k==='mar'||k==='mc'||k==='bq'||k==='wed'){const e=elById(+rest);if(!e){EL_POP=null;return''}T=`${elName(e)} · ${k==='mar'?'婚配':k==='mc'?'选一位':k==='wed'?'婚宴':'宴会'}`;body=k==='mar'?elMarDetHTML(e):k==='mc'?elMcHTML(e):k==='wed'?elWedHTML(e):elBqHTML(e)}
   else{const e=elById(+rest);if(!e){EL_POP=null;return''}
-    T=elName(e)+' · '+({info:'属性',eq:'属性 / 装备',sk:'技能',job:'转职',log:'日志',inj:'伤病',ret:'退休',tree:'族谱'}[k]||'');wide=k==='eq';
+    T=elName(e)+' · '+({info:'属性',eq:'属性 / 装备',sk:'技能',job:'转职',log:'日志',inj:'伤病',ret:'退休',tree:'族谱'}[k]||'');wide=k==='eq'||k==='tree';
     body=k==='info'?elInfoHTML(e):k==='eq'?elEqHTML(e):k==='sk'?elSkHTML(e):k==='job'?elJobHTML(e):k==='log'?elLogHTML(e):k==='inj'?elInjHTML(e):k==='ret'?elRetHTML(e):elTreeHTML(e)}
   return`<div class="mpopbg" data-act="elxpx" role="button" aria-label="关闭"></div><div class="mpop oppop elpop kt2${wide?' wide':''}" role="dialog"><div class="oph"><b>${T}</b><button class="px sq" type="button" data-act="elxpx" aria-label="关闭">×</button></div><div class="opb">${body}</div></div>`}
 // 属性详情（0.11.4 用户定：卡片上的信息、属性都搬到这里）
@@ -67188,9 +67193,15 @@ function elRetHTML(e){return`<p>${elName(e)}，${elAgeTxt(e)}，出战 ${e.log.n
 // 族谱（用户定：可以索引到另一名谱内精英；0.11.4 改成家族分支树：从最早能找到的祖先往下画，点人看那个人的族谱）
 function elTreeHTML(e){let root=e;const up=new Set([e.id]);while(root.par){const p=elById(root.par);if(!p||up.has(p.id))break;up.add(p.id);root=p}
   const st=x=>x.kid?`${Math.floor(x.age)} 岁`:x.st==='retired'?'退休':x.st==='dead'||x.dead?'已故':x.st==='fam'?`族人 ${Math.floor(x.age)} 岁`:'在役',seen=new Set();
+  const card=(x,sp)=>{const dd=x.st==='dead'||x.dead,id=x.id!=null&&elById(x.id)?x.id:null;
+    return`<div class="eltn${x.id===e.id?' me':''}${dd?' dead':''}"${id!=null?` role="button" data-act="elxjump" data-v="${id}"`:''}><img alt="" src="${elIcon(x)}"><b>${elName(x)}${elSexI(x)}</b><i>${id!=null||!sp?st(x):x.dead?'已故':'队外配偶'}${sp||!x.gen?'':` · 第 ${x.gen} 代`}</i></div>`};
+  const mem=new Set();{const q=[root];while(q.length){const x=q.shift();if(!x||mem.has(x.id))continue;mem.add(x.id);for(const c of x.kids||[])q.push(elById(c))}}   // 这棵树里的人
+  // 0.12.0（用户定）夫妻两张卡站在一起，孩子从下面分出去；夫妻都在这棵树里（同家族的亲属）：女方原来那条线只留她的卡，再在男方旁边放一张，孩子接在男方下面
   const node=(id,d)=>{const x=typeof id==='object'?id:elById(id);if(x&&x.dead&&!x.st)x.st='dead';if(!x)return'<li><div class="eltn dead"><i>(名册已清除)</i></div></li>';if(seen.has(x.id)||d>12)return'';seen.add(x.id);
-    const K=(x.kids||[]).map(c=>node(c,d+1)).join('');
-    return`<li><div class="eltn${x.id===e.id?' me':''}${x.st==='dead'?' dead':''}" role="button" data-act="elxjump" data-v="${x.id}"><img alt="" src="${elIcon(x)}"><b>${elName(x)}${elSexI(x)}</b><i>${st(x)} · 第 ${x.gen||1} 代</i>${elSpouse(x)?`<i>配偶 ${elName(elSpouse(x))}</i>`:''}</div>${K?`<ul>${K}</ul>`:''}</li>`};
+    const S=elSpouse(x),Sok=S&&!S.gone,inS=Sok&&x.spId&&mem.has(x.spId);
+    if(x.sex==='f'&&inS)return`<li><div class="elcp">${card(x)}<span class="elcpx">嫁到 ${elName(S)} 那边</span></div></li>`;
+    const ks=[...new Set((x.kids||[]).concat(Sok&&x.spId?(S.kids||[]):[]))],K=ks.map(c=>node(c,d+1)).join('');
+    return`<li><div class="elcp">${card(x)}${Sok?`<span class="elcpx">═</span>${card(S,true)}`:''}</div>${K?`<ul>${K}</ul>`:''}</li>`};
   return`<p class="meta">${root.par?'更早的祖先已从名册清除。':'最上面是招募来的第一代。'}点人打开这个人的面板(在役的看属性 / 装备，训练所的孩子看属性，退休、去世的看日志)。${e.grandOf?`${elName(e)}接替自祖辈${(elById(e.grandOf)&&elName(elById(e.grandOf)))||''}。`:''}</p><div class="elrow">${elFollowBtn(root)}</div><div class="eltree"><ul>${node(root,0)}</ul></div>`}
 // 关注家族（0.12.0 用户定）：族谱不删；主脉多生一代；至多 6 个
 const elFollowBtn=x=>{const m=elSt(),on=m.follow.includes(x.id);return elBtn('elxfol',x.id+':'+(on?0:1),on?`已关注这个家族(${m.follow.length}/${elFollowMax()})`:`关注这个家族(${m.follow.length}/${elFollowMax()})`,{on,ti:'关注后整支族谱不会因为没人在队里而删掉，长子 / 长女一脉多生一代'})};
@@ -67260,9 +67271,9 @@ function elMarDetHTML(e){const kids=(e.kids||[]).map(id=>elById(id)).filter(Bool
   const row=x=>`<div><b>${elName(x)}</b>${elSexI(x)}<span class="meta">${Math.floor(x.age)} 岁 · ${x.dead||x.st==='dead'?'已故':elSt().list.includes(x)?'在役':x.kid?(x.enr?'训练所':'在家'):x.st==='fam'?'族人':x.st==='retired'?'退休':''} · ${elBlTxt(x)}${elSpouse(x)?` · 配偶 ${elName(elSpouse(x))}`:''}</span>${(x.st==='fam'&&!x.dead||x.kid)&&x.age>=EL().family.adult?elBtn('elxkid',x.id,'招入精英'):''}${elBtn('elxjump',String(x.id),'面板')}</div>`;
   const S=elSpouse(e),m=elSt(),cand=!S&&!e.single?m.list.filter(x=>x!==e&&x.sex!==e.sex&&!elSpouse(x)&&!x.single):[];
   const now=metaNow(),cd=typeof e.tmT==='number'&&e.tmT>now,R=EM().ring;   // 0.12.0（用户定）戒指、三年一次、近亲能点但必定被拒（不花东西）
-  const team=cand.length?`<h5>队内婚配 <span class="meta">${Math.round(EM().okTeam*100)}% − 年龄每差 1 岁 0.5% − 血脉纯度每差 1% 0.5%；每次提亲用掉一枚${R.p.name}(${R.e.name}必定成功)；每人 ${EM().teamCdY} 年只能提一次；三代以内的血亲不能结婚</span></h5>
-    <p class="meta">${R.p.name} <b>${elRingN('p')}</b> · ${R.e.name} <b>${elRingN('e')}</b> ${elBtn('elxring','p',`买${R.p.name}(${R.p.gold} 金)`)}${elBtn('elxring','e',`买${R.e.name}(${R.e.gold} 金)`)}${cd?` · <span class="warn">${elName(e)}还要 ${elHrs(e.tmT-now)} 小时才能再提亲</span>`:''}</p>
-    <div class="elroll">${cand.map(x=>{const rl=elRelName(e,x),kin=elKin(e,x)>0,v=e.id+':'+x.id;return`<div><img class="elpor2" alt="" src="${elIcon(x)}"><b>${elName(x)}</b>${elSexI(x)}${rl?`<span class="optag">${rl}</span>`:''}<span class="meta">${elAgeTxt(x)} · ${elBlTxt(x)} · 成功率 ${kin?'0%':pc_(elTeamP(e,x))}</span>${kin?elBtn('elxteam',v+':p','提亲'):elBtn('elxteam',v+':p',`提亲(${R.p.name})`,{dis:cd||elRingN('p')<1})+elBtn('elxteam',v+':e',`提亲(${R.e.name})`,{dis:cd||elRingN('e')<1,on:elRingN('e')>0})}</div>`}).join('')}</div>`:'';
+  const team=cand.length?`<h5>队内婚配 <span class="meta">每次提亲用一枚戒指(${R.p.name}成了才用掉，${R.e.name}必定成功)；每人 ${EM().teamCdY} 年提一次；戒指在商店的神秘黑市买</span></h5>
+    <p class="meta">${R.p.name} <b>${elRingN('p')}</b> · ${R.e.name} <b>${elRingN('e')}</b>${cd?` · <span class="warn">${elName(e)}还要 ${elHrs(e.tmT-now)} 小时才能再提亲</span>`:''}</p>
+    <div class="elroll">${cand.map(x=>{const rl=elRelName(e,x),free=elKin(e,x)>0&&!elKinOn(),v=e.id+':'+x.id;return`<div><img class="elpor2" alt="" src="${elIcon(x)}"><b>${elName(x)}</b>${elSexI(x)}${rl?`<span class="optag">${rl}</span>`:''}<span class="meta">${elAgeTxt(x)} · ${elBlTxt(x)} · 成功率 ${pc_(elTeamP(e,x))}</span>${free?elBtn('elxteam',v+':p','提亲'):elBtn('elxteam',v+':p',`${R.p.name}(${elRingN('p')})`,{dis:cd||elRingN('p')<1})+elBtn('elxteam',v+':e',`${R.e.name}(${elRingN('e')})`,{dis:cd||elRingN('e')<1,on:elRingN('e')>0})}</div>`}).join('')}</div>`:'';
   return`${elSayHTML()}${e.wedP?`<p class="warn">婚宴还没办，办完才会生孩子。${elBtn('elxpop','wed:'+e.id,'办婚宴',{on:true})}</p>`:''}${S?`<h5>配偶${e.spId?'(队内)':''}</h5>${e.spId?`<p>${elName(S)}${elSexI(S)} · ${elAgeTxt(S)}</p>${elBloodHTML(S,true)}`:elSpCard(S)}`:`<p class="meta">还没成家。${e.single?'(锁定单身)':''}${e.refT>metaNow()?` 现在不想成家(还要 ${Math.ceil((e.refT-metaNow())/3.6e6)} 小时)`:''}</p>`}${team}<div class="elrow">${elFollowBtn(e)}${elBtn('elxpop','tree:'+e.id,'族谱')}</div>
     <h5>子辈 ${kids.length}</h5><div class="elroll">${kids.map(row).join('')||'<p class="meta">还没有孩子。</p>'}</div>
     <h5>孙辈 ${gk.length}</h5><div class="elroll">${gk.map(row).join('')||'<p class="meta">还没有孙辈。</p>'}</div>`}
@@ -67275,7 +67286,7 @@ function elMcHTML(e){const dn=e.sex==='f'?'嫁妆':'彩礼',dct=K=>`${K.silver} 
 function elWedHTML(e){const S=elSpouse(e),F=elWedFams(e),nm=k=>(CFG.wares.items[k]||{}).name||k;if(!e.wedP)return`<p class="meta">${elName(e)}的婚宴已经办过了。</p>`;
   return`<p class="meta">${elName(e)}和 ${elName(S)} 成亲了，办完婚宴才会生孩子。${e.spId?'队内婚配只要粮食(和银币)。':`材料、加工品按${elName(S)}的地区。`}${F.length?` 声望算在：${F.map(f=>elBlood()[f].name).join('、')}。`:''}</p>
     <div class="elroll">${EM().wed.map((c,b)=>{const K=elWedCost(e,b),err=elWedCheck(e,b),r=!F.length||(b===0&&e.spId)?0:K.rep;
-      return`<div><b>${c.name}</b><span class="meta">${[K.silver?`银币 ${K.silver}`:'',K.grain?`谷物 ${K.grain}`:'',K.meat?`肉 ${K.meat}`:'',K.mat?`${nm(K.mat)} ${K.mn}`:'',K.goods?`${nm(K.goods)} ${K.gn}`:''].filter(Boolean).join(' · ')||'不花东西'}${r?` · 声望 ${r>0?'+':''}${r}`:''}${err?`<br><span class="warn">${err}</span>`:''}</span>${elBtn('elxwed',e.id+':'+b,'办',{dis:!!err})}</div>`}).join('')}</div>`}
+      return`<div><b>${c.name}</b><span class="meta">${[K.silver?`银币 ${K.silver}`:'',K.grain?`谷物 ${K.grain}`:'',K.meat?`肉 ${K.meat}`:'',K.mat?`${nm(K.mat)} ${K.mn}`:'',K.goods?`${nm(K.goods)} ${K.gn}`:''].filter(Boolean).join(' · ')||'不花东西'}${r?` · 声望 ${r>0?'+':''}${r}`:''}${err?`<br><span class="warn">${err}</span>`:''}</span>${elBtn('elxwed',e.id+':'+b,'确认',{dis:!!err})}</div>`}).join('')}</div>`}
 function elBqHTML(e){const B=elBlood(),fids=elCfs().map(c=>'f_u'+c.id).concat(elOpenRegs().flatMap(elRegFams)),C=EM().feast;
   return`<p class="meta">请一个家族办宴会：人选是那个家族的血脉(在 ${elName(e)}自己的这个家族血脉 ±${Math.round(EM().spread*100)}% 上下，档位越高越多)，${Math.round(EM().mix*100)}% 混一点别的家族；谷物、肉从那个地区的开拓地出。</p>
     ${fids.map(fid=>`<h5>${elCrI(fid)}${B[fid].name} <span class="meta">${B[fid].custom?'自建家族 · 王都':(CFG.maps[B[fid].reg]?CFG.maps[B[fid].reg].name:'')+' · 声望 '+elRepTxt(fid)} · ${elName(e)}有 ${Math.round(elBlFrac(e,fid)*100)}% 这个血脉</span></h5><div class="elroll">${C.map((c,b)=>{const K=elFeastCost(fid,b),err=elFeastCheck(e,fid,b);
@@ -67352,7 +67363,6 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
   else if(a==='elxsingle'&&e){e.single=!e.single;saveMeta()}
   else if(a==='elxteam'&&e){const r=elTeamMarry(e,elById(+y),String(v).split(':')[2]);if(r==='ok'){EL_POP='wed:'+e.id;toast(`${elName(e)}和${elName(elById(+y))}成家了，办个婚宴吧`)}else if(r==='fail'||r==='kin'){EL_SAY=elWhyMsg();toast(EL_SAY)}else err=r}
   else if(a==='elxwed'&&e){err=elWed(e,+y);if(!err){toast(`${EM().wed[+y].name}办完了`);EL_POP='mar:'+e.id}}
-  else if(a==='elxring'){err=elRingBuy(v);if(!err)toast(`买到了${EM().ring[v].name}`)}
   else if(a==='elxcfnew'){const el=document.getElementById('elCfName');err=elCfCreate(el?el.value:'',EL_CFC);if(!err)toast('家族建立了，家族的第一位精英在「精英」页')}
   else if(a==='elxcfc0'){const[k,x2]=v.split('|');EL_CFC[k]=x2}
   else if(a==='elxcfc'){const[id,k,x2]=v.split('|');const cf=elCfOf(+id);if(cf)err=elCfCrest(cf,k,x2)}
