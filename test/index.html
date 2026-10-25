@@ -19074,7 +19074,8 @@ CFG.heroes.scribe.passiveSk3='scrMemory';
 // ---------- 0.11.5 官方渠道（用户定：防止别人改了游戏重新发；有新版本提示去官网或 QQ 群）；逻辑 ui/official.js，安卓签名自检 app/android/…/SiguoGuard.java ----------
 // site 官网；ver 官网上的版本清单（tools/site_ver.py 写）；qq 游戏交流群（官网打不开的玩家从群里拿安装包）；hosts 网页版只认这些域名（空串 = 本地文件 / 电脑版）
 CFG.official={site:'https://lsong7479-oss.github.io/siguo-play/', ver:'https://lsong7479-oss.github.io/siguo-play/version.json', qq:'1126694396',
-  hosts:['lsong7479-oss.github.io','localhost','127.0.0.1',''], checkDelay:4, timeout:6};
+  hosts:['lsong7479-oss.github.io','localhost','127.0.0.1',''], checkDelay:4, timeout:10, guard:0.5};   // checkDelay 进游戏几秒后才在后台查（不挡进游戏）；guard 弹窗出来后几秒内点击无效（防误触，用户定 0.5 秒）
+Object.assign(CFG.settingsDefault,{offAuto:true});   // 设置「自动检查更新」
 
 // ---------- 0.11.4 开拓地加工坊、铁匠铺（用户 2026-10-24：通关三阶地区后解锁；产量、造价 Claude 定）----------
 // 加工坊：把这个开拓地自己产的原料（同一小时的产出）加工成加工品；加工品是这一阶的地区物资，价格 = 原料的 2.5 倍（用户定），能进商队、仓库
@@ -62481,7 +62482,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.11.5',GAME_TAG='测试版',GAME_CODE=155,GAME_BUILD="8efc363",GAME_BUILT=1792892350593,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.11.5',GAME_TAG='测试版',GAME_CODE=155,GAME_BUILD="2284a44+",GAME_BUILT=1792892888013,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -63509,7 +63510,7 @@ const hvMore=(n,what)=>n>0?`<p class="meta hvmore">还有 ${n} ${what}，通关�
 // ---------- 界面（四）：设置、弹窗按钮分发（onSheetClick）、开局、暂停、强化卡选择、结算 ----------
 let setFrom='menu',devAsk=false,setSec='av',resetAsk=false;
 // v0.3.3 设置改成整屏：左边分区（声音画面 / 战斗 / 触屏操控 / 存档 / 按键 / 调试），右边是这一区的选项
-const SET_SECS=[['av','声音画面'],['play','战斗'],['touch','触屏操控'],['save','存档'],['lang','语言'],['keys','按键'],['rep','问题报告'],['dev','调试']];   // rep：v0.6.8（ui/perfrep）
+const SET_SECS=[['av','声音画面'],['play','战斗'],['touch','触屏操控'],['save','存档'],['ver','版本更新'],['lang','语言'],['keys','按键'],['rep','问题报告'],['dev','调试']];   // rep：v0.6.8（ui/perfrep）
 function showSettings(from){if(from)setFrom=from;const K=SET.keys;
   const inRun=!!(running&&G&&G.loot),SECS=inRun?[...SET_SECS.slice(0,2),['loot','本局掉落'],...SET_SECS.slice(2)]:SET_SECS;if(setSec==='loot'&&!inRun)setSec='av';   // loot：v0.10.0 对局中才有「本局掉落」
   const tg=(k,label,sub)=>`<div class="sr"><span>${label}${sub?`<br><span class="meta">${sub}</span>`:''}</span><button class="px${SET[k]?' on':''}" type="button" data-act="stog" data-v="${k}">${SET[k]?'开':'关'}</button></div>`;
@@ -63563,6 +63564,7 @@ function showSettings(from){if(from)setFrom=from;const K=SET.keys;
   else if(setSec==='keys')body=`<p class="meta">点按钮后按下新按键；Esc 取消。</p>
     <div class="keys setrows">${Object.keys(CFG.keyNames).map(a=>`<div class="sr"><span>${CFG.keyNames[a]}</span><button class="px${keyCapture===a?' on':''}" type="button" data-act="skey" data-v="${a}">${keyCapture===a?'按下新键…':keyName(K[a])}</button></div>`).join('')}</div>
     <div class="actions"><button class="px" type="button" data-act="skeyreset">恢复默认按键</button></div>`;
+  else if(setSec==='ver')body=offSetHTML();   // 0.11.5 版本更新（ui/official）
   else if(setSec==='lang')body=langSecHTML();   // v0.10.0 多语言：切换、导入翻译 CSV、导出没翻到的句子
   else if(setSec==='rep')body=repSecHTML();
   else if(setSec==='loot')body=runLootHTML();
@@ -63754,6 +63756,7 @@ function onSheetClick(e){
   else if(a==='psave'){presetSave(META.presetCur);toast('已覆盖');showHub('design')}
   else if(a==='pname'){const el=$('#psName');toast(presetRename(META.presetCur,el?el.value:'')?'已改名':'名字不能为空');showHub('design')}
   else if(a==='pdel'){presetDel(META.presetCur);showHub('design')}
+  else if(a==='offchk')offVer(true);else if(a==='offsite')offOpen(CFG.official.site);else if(a==='offqq')offCopy(CFG.official.qq);   // 0.11.5 版本更新
   else if(a==='stog'){SET[v]=!SET[v];saveSettings();if(v==='mute'){soundOn=!SET.mute;if(soundOn)audioInit();musicApply()}if(v==='zoomBtn')applyZoomUI();if(v==='helpQ')helpApply();showSettings()}
   else if(a==='sjoy'){SET.joyMode=SET.joyMode==='follow'?'fixed':'follow';saveSettings();applyCtlLayout();joyZone.hidden=joy.hidden||SET.joyMode!=='follow';showSettings()}
   else if(a==='skey'){keyCapture=v;showSettings()}
@@ -66413,20 +66416,24 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
 // 2. 网页版：不在官网域名下（被人搬到别的网站）就提示
 // 3. 安卓 / 电脑版：联网读官网的 version.json，比本地 versionCode 新就提示「有新版本」（去官网 / 复制 QQ 群号 / 以后再说）；读不到（没网、GitHub 打不开）就算了
 //    测试版看 test 和 stable 两条，稳定版只看 stable；「以后再说」记住这个 versionCode，同一个新版本不再提示
-// 只提示、照样能玩（用户定）
+// 只提示、照样能玩（用户定）。查版本在后台，进游戏几秒后才查、查不到就算了，不会卡（中国地区 GitHub 慢也不影响）
+// 0.11.5（用户定）：弹窗出来 0.5 秒内点击无效、对局中自动暂停（关掉恢复）；新版本弹窗可勾「不再自动提醒」，设置 →「版本更新」里手动检查
 const offGuard=()=>{try{return window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.SiguoGuard||null}catch(e){return null}};
 const offApp=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
 const offHostOk=()=>location.protocol==='file:'||CFG.official.hosts.includes(location.hostname);
 function offOpen(u){const P=offGuard();if(P&&P.open){P.open({url:u}).catch(()=>{});return}const a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove()}
 function offCopy(t){const ok=()=>toast(`已复制 QQ 群号 ${t}`);try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,()=>toast(`QQ 群号：${t}`));return}}catch(e){}toast(`QQ 群号：${t}`)}
-let OFF_EL=null;
+let OFF_EL=null,OFF_T=0,OFF_PZ=null;
 function offPop(title,html,btns){if(!OFF_EL){OFF_EL=document.createElement('div');OFF_EL.id='offPop';document.body.appendChild(OFF_EL);
     const st=document.createElement('style');st.textContent=`#offPop{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:16px}#offPop[hidden]{display:none}
 #offPop .ofb{max-width:28em;width:100%;background:var(--plate-solid,#1c1824);box-shadow:0 0 0 2px var(--rivet,#000),inset 0 0 0 1px var(--iron,#3a3446);padding:14px 16px;color:var(--bone,#e6dccb)}
-#offPop h4{margin:0 0 8px;color:var(--brass-hi,#f0c060)}#offPop p{margin:6px 0;line-height:1.6;font-size:.9rem;word-break:break-all}#offPop .ofa{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}`;document.head.appendChild(st);
-    OFF_EL.addEventListener('click',e=>{const b=e.target.closest('[data-of]');if(!b)return;const f=OFF_BTN[+b.dataset.of];if(f)f();if(!b.dataset.keep)OFF_EL.hidden=true})}
+#offPop h4{margin:0 0 8px;color:var(--brass-hi,#f0c060)}#offPop p{margin:6px 0;line-height:1.6;font-size:.9rem;word-break:break-all}#offPop .ofa{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+#offPop label{display:flex;gap:6px;align-items:center;margin-top:10px;font-size:.85rem}#offPop.guard .px{opacity:.5}`;document.head.appendChild(st);
+    OFF_EL.addEventListener('click',e=>{e.stopPropagation();if(performance.now()-OFF_T<CFG.official.guard*1000)return;const b=e.target.closest('[data-of]');if(!b)return;const f=OFF_BTN[+b.dataset.of];if(f)f();if(!b.dataset.keep)offClose()},true)}
   OFF_BTN=btns.map(b=>b[1]);OFF_EL.innerHTML=`<div class="ofb" role="dialog"><h4>${title}</h4>${html}<div class="ofa">${btns.map((b,i)=>`<button type="button" class="px${i===0?' on':''}" data-of="${i}"${b[2]?' data-keep="1"':''}>${b[0]}</button>`).join('')}</div></div>`;
-  if(typeof i18nNow==='function')i18nNow(OFF_EL);OFF_EL.hidden=false}
+  if(typeof i18nNow==='function')i18nNow(OFF_EL);OFF_EL.hidden=false;OFF_T=performance.now();OFF_EL.classList.add('guard');setTimeout(()=>{if(OFF_EL)OFF_EL.classList.remove('guard')},CFG.official.guard*1000);
+  if(OFF_PZ===null&&typeof running!=='undefined'&&running){OFF_PZ=paused;paused=true}}   // 对局中弹出：先暂停
+function offClose(){if(!OFF_EL)return;OFF_EL.hidden=true;if(OFF_PZ!==null){if(typeof running!=='undefined'&&running&&modal.hidden)paused=OFF_PZ;OFF_PZ=null}}
 let OFF_BTN=[];
 const offWhere=()=>`<p>官网：${CFG.official.site}</p><p>官网打不开可以加 QQ 游戏交流群 <b>${CFG.official.qq}</b> 获取安装包。</p>`;
 const offBtns=()=>[['去官网',()=>offOpen(CFG.official.site)],['复制 QQ 群号',()=>offCopy(CFG.official.qq),1]];
@@ -66437,12 +66444,21 @@ async function offCheck(){if(DEV)return;
   else if(offApp()){offWarn('这个安装包少了官方的自检');return}   // 安卓包里的自检被删了
   if(!offApp()&&location.protocol!=='file:')return;   // 网页版总是最新的，不查新版本（安卓包、电脑版 file:// 才查）
   setTimeout(offVer,CFG.official.checkDelay*1000)}
-async function offVer(){if(!(GAME_CODE>0)||typeof fetch!=='function')return;let V;
-  try{const c=typeof AbortController==='function'?new AbortController():null,t=c?setTimeout(()=>c.abort(),CFG.official.timeout*1000):0;const r=await fetch(CFG.official.ver+'?t='+Date.now(),{cache:'no-store',signal:c?c.signal:undefined});clearTimeout(t);if(!r.ok)return;V=await r.json()}catch(e){return}
-  const L=[V&&V.stable].concat(GAME_TAG==='测试版'?[V&&V.test]:[]).filter(x=>x&&x.code>GAME_CODE).sort((a,b)=>b.code-a.code),N=L[0];if(!N)return;
-  let skip=0;try{skip=+localStorage.getItem('offSkip')||0}catch(e){}if(skip>=N.code)return;
-  offPop('有新版本',`<p>新版本 <b>v${N.ver}${N.tag?' '+N.tag:''}</b> 已经发布(你现在是 v${GAME_VER} ${GAME_TAG})。${N.note?'<br>'+N.note:''}</p>${offWhere()}`,
-    offBtns().concat([['以后再说',()=>{try{localStorage.setItem('offSkip',String(N.code))}catch(e){}}]]))}
+// manual：设置里点「检查更新」（不看自动开关、不看「以后再说」，查不到也告诉玩家）
+async function offVer(manual){if(!manual&&!SET.offAuto)return;if(!(GAME_CODE>0)||typeof fetch!=='function'){if(manual)toast('这个版本不能检查更新');return}let V;if(manual)toast('正在检查更新…');
+  try{const c=typeof AbortController==='function'?new AbortController():null,t=c?setTimeout(()=>c.abort(),CFG.official.timeout*1000):0;const r=await fetch(CFG.official.ver+'?t='+Date.now(),{cache:'no-store',signal:c?c.signal:undefined});clearTimeout(t);if(!r.ok)throw 0;V=await r.json()}
+  catch(e){if(manual)offPop('检查更新',`<p>读不到官网(可能是网络问题，或者 GitHub 在你那里打不开)。</p>${offWhere()}`,offBtns().concat([['关闭',null]]));return}
+  const L=[V&&V.stable].concat(GAME_TAG==='测试版'?[V&&V.test]:[]).filter(x=>x&&x.code>GAME_CODE).sort((a,b)=>b.code-a.code),N=L[0];if(!N){if(manual)toast(`已经是最新版本(v${GAME_VER} ${GAME_TAG})`);return}
+  let skip=0;try{skip=+localStorage.getItem('offSkip')||0}catch(e){}if(!manual&&skip>=N.code)return;
+  const no=()=>{const el=document.getElementById('offNo');if(el&&el.checked){SET.offAuto=false;saveSettings()}};
+  offPop('有新版本',`<p>新版本 <b>v${N.ver}${N.tag?' '+N.tag:''}</b> 已经发布(你现在是 v${GAME_VER} ${GAME_TAG})。${N.note?'<br>'+N.note:''}</p>${offWhere()}${manual?'':'<label><input type="checkbox" id="offNo">不再自动提醒(可以在 设置 → 版本更新 里手动检查)</label>'}`,
+    [['去官网',()=>{no();offOpen(CFG.official.site)}],['复制 QQ 群号',()=>offCopy(CFG.official.qq),1],['以后再说',()=>{no();try{localStorage.setItem('offSkip',String(N.code))}catch(e){}}]])}
+// 设置 →「版本更新」
+function offSetHTML(){const web=!offApp()&&location.protocol!=='file:';
+  return`<div class="setrows"><div class="sr"><span>当前版本<br><span class="meta">v${GAME_VER} ${GAME_TAG} · 构建 ${GAME_BUILD}${GAME_CODE?` · ${GAME_CODE}`:''}</span></span>${web?'<span class="meta">网页版总是最新的</span>':'<button class="px on" type="button" data-act="offchk">检查更新</button>'}</div>
+    ${web?'':`<div class="sr"><span>自动检查更新<br><span class="meta">进游戏几秒后在后台读官网，有新版本才提示；读不到就算了，不影响游戏</span></span><button class="px${SET.offAuto?' on':''}" type="button" data-act="stog" data-v="offAuto">${SET.offAuto?'开':'关'}</button></div>`}
+    <div class="sr"><span>官网<br><span class="meta">${CFG.official.site}</span></span><button class="px" type="button" data-act="offsite">去官网</button></div>
+    <div class="sr"><span>QQ 游戏交流群<br><span class="meta">${CFG.official.qq}(官网打不开可以在群里拿安装包)</span></span><button class="px" type="button" data-act="offqq">复制群号</button></div></div>`}
 
 // ---------- 主循环与启动 ----------
 let lastT=performance.now(),acc=0,hudT=0,miniT=0,perfT=0,fpsNext=0,stepMs=1,rMs=4,lastR=0,skipR=false;const LOGIC_BUDGET=34;
