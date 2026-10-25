@@ -59966,7 +59966,8 @@ const goldDiffMax=()=>Object.keys(CFG.goldDay.diffK||{}).reduce((a,k)=>CFG.goldD
 // 合计（营地、商店显示用）：已开放的地图
 function goldDaySum(){const ms=Object.keys(CFG.maps).filter(m=>mapOpen(m)),dm=goldDiffMax();return{got:ms.reduce((a,m)=>a+goldGotOf(m),0),cap:ms.reduce((a,m)=>a+goldCapOf(m,dm),0)}}   // dm：v0.9.55 合计的上限按最高难度（深渊）算，原来按噩梦 ×1 算，深渊拿的比「上限」还多
 // —— 结算 ——
-function awardMeta(win,settle){   // settle：无尽「直接结算」（准备阶段结算 = 这一波也算击退）
+function awardMeta(win,settle){for(const k in G.souls||{})if(!CFG.heroes[k])delete G.souls[k];if(META.souls)for(const k in META.souls)if(!CFG.heroes[k])delete META.souls[k];   // 0.12.0 修复：清掉不是英雄的英雄之魄（老版本精英抽到的）
+    // settle：无尽「直接结算」（准备阶段结算 = 这一波也算击退）
   const ban=!!G.banRew;if(ban){const m=CFG.run.noRewardMul,h=v=>Math.floor((v||0)*m);for(const k in G.meta)G.meta[k]=h(G.meta[k]);for(const k in G.souls)G.souls[k]=h(G.souls[k]);for(const k in G.skinFrag||{})G.skinFrag[k]=h(G.skinFrag[k]);for(const k in G.mats||{})G.mats[k]=h(G.mats[k]);G.loot=G.loot.filter((_,i)=>i%2===1)}   // v0.7.0（用户定）莉莲、冷参战过：不计通关记录；v0.7.7（用户定）奖励由 0 改成减半（noRewardMul；装备隔一件留一件）
   const tr=heroPassive('treasure')+hhRes(),got={banned:ban};   // hhRes：0.11.4 代理hh 加，黄虎「筹万物」
   for(const k in G.meta)got[k]=Math.round(G.meta[k]*(k==='银币'||k==='建材'?1+pm.scav:k==='科研点'||k==='设计点'?1+pm.inspire:1)*(k==='金币'?1:1+tr));   // 卡「拾荒搜刮」「科研灵感」；tr：v0.4.2 商人「搜山检海」
@@ -60273,7 +60274,7 @@ function soulPick(L){if(!L.length)return null;const w=soulSlotW(L.length);let r=
 function onBossKill(rb){const D=CFG.drops,night=diffAtLeast(D.nightmare),eq=rb?D.randBoss.gear:1,gl=k=>{if(!rb||Math.random()<eq)addLoot(k)};   // rb：v0.6.7 两轮后随机出的首领——装备、打造书各按 ×0.25 的概率掉，不掉英雄之魄
   gl('w');gl('b');if(night){gl('w');gl('b')}matDrop('boss');
   // 按号位权重抽一位上阵英雄，给他的英雄之魄（v0.8.11）
-  if(!rb){const n=soulRoll(),lucky=soulPick(G.heroes.filter(h=>!h.npc));G.souls[lucky.id]=(G.souls[lucky.id]||0)+n;sayT(`掉落：${lucky.d.name}的英雄之魄 ×${n}`)}   // v0.7.3 进阶形态出战掉进阶版的英雄之魄（两种各算各的）
+  if(!rb){const n=soulRoll(),lucky=soulPick(G.heroes.filter(h=>!h.npc&&!h.elite&&CFG.heroes[h.id]));if(lucky){G.souls[lucky.id]=(G.souls[lucky.id]||0)+n;sayT(`掉落：${lucky.d.name}的英雄之魄 ×${n}`)}}   // v0.7.3 进阶形态出战掉进阶版的英雄之魄（两种各算各的）   // elite：0.12.0 修复——精英不掉英雄之魄（原来会抽到精英，记成「el+编号」的英雄之魄，最后一波结算时找不到这位英雄报错、卡在结算前）
   G.meta.金币=(G.meta.金币||0)+D.bossGold*DIFF.reward*(night?2:1);   // v0.8.18 金币按结算倍率
   if(G.tmp&&Math.random()<CFG.temple.pearl.p*(DIFF.drop||DIFF.reward)*dropMul()*eq)addLoot('w','nightPearl');   // v0.5.0 沙漠神殿首领：夜明珠
   {const BI=D.bossItems&&D.bossItems[G.map];if(BI&&Math.random()<BI.p*(DIFF.drop||DIFF.reward)*dropMul()*eq)addLoot('w',BI.w)}   // v0.5.9 地图首领专属装备（腐化之地：酸蚀瓶）
@@ -63439,7 +63440,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=159,GAME_BUILD="60b4a60",GAME_BUILT=1792939927207,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=160,GAME_BUILD="d488415",GAME_BUILT=1792940489793,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -64848,7 +64849,7 @@ function showResult(win,got){
     ${got.banned?'<p class="warn">莉莲、冷参战过：这一局不计入通关记录，结算奖励减半</p>':''}${tutResultTip()}${got.autoExp?`<p class="newmap">${got.autoExp}</p>`:''}${(got.newMaps||[]).map(k=>`<p class="newmap">解锁新地图：<b>${CFG.maps[k].name}</b><span class="meta">(出征 → 常规 / 无尽模式里选择)</span></p>`).join('')}${(got.newDesign||[]).map(id=>`<p class="newmap">可以研发新建筑：<b>${BDEF[id].name}</b><span class="meta">(营地 → 建筑，花设计点和银币解锁)</span></p>`).join('')}
     <div class="stats"><div><b>${got.cleared??(win?G.wave:Math.max(0,G.wave-1))}</b><span>击退波次</span></div><div><b>${G.kills}</b><span>击杀</span></div><div><b>${DIFF.name}</b><span>${iv?'入侵战':G.expand!=null?'扩张战':MODE==='regular'?'常规':'无尽'}</span></div></div>
     <div class="rule"></div><p class="meta">结算奖励(×${DIFF.reward})：银币 <b>${got.银币||0}</b> · 建材 <b>${got.建材}</b> · 科研点 <b>${got.科研点}</b> · 设计点 <b>${got.设计点}</b>${got.金币||got.goldCut?` · 金币 <b>${got.金币}</b>(${mapDef().name}今日 ${got.goldDay}${got.goldCut?`，已到上限，少拿 ${got.goldCut}`:''})`:''}${got.trade?`<br>贸易天平(剩余 ${got.trade.g} 铜币)：${['银币','建材','科研点','设计点'].filter(k=>got.trade[k]).map(k=>`${k} +${got.trade[k]}`).join(' · ')}(已算进上面)`:''}</p>
-    <p class="meta">英雄之魄：${Object.keys(got.soulMap||{}).length?Object.entries(got.soulMap).map(([id,n])=>`${CFG.heroes[id].name} <b>+${n}</b>`).join(' · '):'本局没有击败首领(英雄之魄、金币由首领掉落)'}${got.soulCut?`<br><span class="warn">今日上限(每位英雄在别的地图每天最多 ${CFG.drops.soulDay} 个)：${Object.entries(got.soulCut).map(([id,n])=>`${CFG.heroes[id].name} 少拿 ${n}`).join('、')}</span>`:''}${Object.keys(got.skinFrag||{}).length?`<br>皮肤碎片：${Object.entries(got.skinFrag).map(([k,n])=>`${CFG.heroes[CFG.skins[k].hero].name}「${CFG.skins[k].name}」 <b>+${n}</b>`).join(' · ')}`:''}</p>
+    <p class="meta">英雄之魄：${Object.keys(got.soulMap||{}).length?Object.entries(got.soulMap).filter(([id])=>CFG.heroes[id]).map(([id,n])=>`${CFG.heroes[id].name} <b>+${n}</b>`).join(' · '):'本局没有击败首领(英雄之魄、金币由首领掉落)'}${got.soulCut?`<br><span class="warn">今日上限(每位英雄在别的地图每天最多 ${CFG.drops.soulDay} 个)：${Object.entries(got.soulCut).filter(([id])=>CFG.heroes[id]).map(([id,n])=>`${CFG.heroes[id].name} 少拿 ${n}`).join('、')}</span>`:''}${Object.keys(got.skinFrag||{}).length?`<br>皮肤碎片：${Object.entries(got.skinFrag).map(([k,n])=>`${CFG.heroes[CFG.skins[k].hero].name}「${CFG.skins[k].name}」 <b>+${n}</b>`).join(' · ')}`:''}</p>
     ${Object.keys(got.wares||{}).length?`<p class="meta">地区物资：${Object.entries(got.wares).filter(([k])=>CFG.wares.items[k]).map(([k,n])=>`${CFG.wares.items[k].name} <b>+${n}</b>`).join(' · ')}</p>`:''}
     ${Object.keys(got.mats||{}).length?`<p class="meta">强化材料：${Object.entries(got.mats).map(([k,n])=>`${matName(k.replace(/\d+$/,''),+k.replace(/^\D+/,''))} <b>+${n}</b>`).join(' · ')}</p>`:''}
     ${got.drops&&got.drops.length?dropsHTML(got.drops):`<p class="meta">战利品：这次没有掉落(武器、打造书由精英和首领掉落)</p>`}
