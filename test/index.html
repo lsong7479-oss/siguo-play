@@ -19486,6 +19486,12 @@ for(const t in EL_CFX)CFG.elite.cfam.trG[t]=CFG.elite.cfam.trG[t].concat(EL_CFX[
 CFG.elite.cfam.trAll=Object.assign({},CFG.elite.cfam.trOpts);for(const t in CFG.elite.cfam.trG)for(const o of CFG.elite.cfam.trG[t])CFG.elite.cfam.trAll[o.key]=Object.assign(o,{thr:+t});   // 说明（desc）没写的由 game/el_blood 补
 CFG.elite.cfam.spGold=50;   // 0.12.0（用户定）特别属性：空格子配上不要钱，改掉已配的要确认、花 50 金币
 
+// ---------- 0.12.0 丹药（用户定）：驻颜丹（年龄 −1）、求子丹（立刻怀孕，一年后生）；逻辑 game/el_mar（elPill…）----------
+// drop：这张地图的大首领在这个难度掉的概率（× 装备掉落加成 dropMul）；shop：通关这张地图 need 难度或以上后，神秘黑市每天 p 概率上架 1 个，gold 金币
+CFG.elite.pills={
+  y:{name:'驻颜丹', desc:'对精英使用：年龄 −1 岁', map:'taoRuins', drop:{abyss:0.25}, shop:{need:'abyss', p:0.5, gold:500}},
+  c:{name:'求子丹', desc:'对成了家的精英使用：立刻怀孕(男方用是妻子怀孕)，一年后生孩子', map:'buddhaCave', drop:{nightmare:0.2, inferno:0.3, abyss:0.5}, shop:{need:'nightmare', p:0.5, gold:300}}};
+
 // ---------- 0.11.5 官方渠道（用户定：防止别人改了游戏重新发；有新版本提示去官网或 QQ 群）；逻辑 ui/official.js，安卓签名自检 app/android/…/SiguoGuard.java ----------
 // site 官网；ver 官网上的版本清单（tools/site_ver.py 写）；qq 游戏交流群（官网打不开的玩家从群里拿安装包）；hosts 网页版只认这些域名（空串 = 本地文件 / 电脑版）
 CFG.official={site:'https://lsong7479-oss.github.io/siguo-play/', ver:'https://lsong7479-oss.github.io/siguo-play/version.json', qq:'1126694396',
@@ -19892,7 +19898,7 @@ haFgN haTpG gwK gwT
 smK smE smPI smRv smW0 smN smLit smLD smLt smBx smBy smBT
 stCapK
 e2Q
-blWm blBack blWat blRegen hhS hhT elites elMem`.trim().split(/\s+/);
+blWm blBack blWat blRegen hhS hhT elites elMem elPill`.trim().split(/\s+/);
 const G_NUM='time tick wave prepId kills legionSeq corpses waveT flowT flowVer structVer navVer flowCool sdistVer visT night shake dayIdx flashT tA wA tunnelN tombN lowT oAsk oBupo mcP'.split(' ');
 const GState=shapeCtor(G_KEYS,G_NUM);
 
@@ -60070,6 +60076,7 @@ function awardMeta(win,settle){for(const k in G.souls||{})if(!CFG.heroes[k])dele
   if(!META.heroUse)META.heroUse={};for(const id of got.heroes)META.heroUse[advBase(id)]=(META.heroUse[advBase(id)]||0)+1;   // v0.7.3 进阶形态出战算原版的次数   // v0.3.3 英雄使用次数（英雄列表按它排序）
   for(const k in got)if(k in META.wallet)META.wallet[k]+=got[k]||0;for(const id in got.soulMap)META.souls[id]=(META.souls[id]||0)+got.soulMap[id];{const SK=skinState();got.skinFrag={};for(const k in G.skinFrag||{})if(G.skinFrag[k]>0&&CFG.skins[k]){SK.frag[k]=(SK.frag[k]||0)+G.skinFrag[k];got.skinFrag[k]=G.skinFrag[k]}}for(const k in got.mats)META.mats[k]=(META.mats[k]||0)+got.mats[k];if(!META.wares)META.wares={};for(const k in got.wares)META.wares[k]=(META.wares[k]||0)+got.wares[k];META.runs=(META.runs||0)+1;   // wares：v0.9.4 商人那里买的地区物资
   try{elAward(got)}catch(e){console.error('elAward',e);dbgErr('elAward: '+((e&&e.message)||e),'awardMeta',e&&e.stack);got.elErr=String((e&&e.message)||e)}   // v0.11.4 精英：战报、功勋（game/el_battle）；0.12.0 出错也不挡结算（用户报：最后一波打完不结算）
+  if(G.elPill&&META.el){for(const k in G.elPill)elPillAdd(k,G.elPill[k]);got.elPill=Object.assign({},G.elPill)}   // 0.12.0 丹药入库
   blWaterAward(got);   // 0.11.4 代理BL 加：不老泉水入库（game/bl_water）
   if(ban){}
   else if(win&&G.expand!==null&&G.expand!==undefined)got.expanded=completeExpansion(G.expandR||'wild',G.expand);
@@ -60367,6 +60374,7 @@ function onBossKill(rb){const D=CFG.drops,night=diffAtLeast(D.nightmare),eq=rb?D
   if(!rb){const n=soulRoll(),lucky=soulPick(G.heroes.filter(h=>!h.npc&&!h.elite&&CFG.heroes[h.id]));if(lucky){G.souls[lucky.id]=(G.souls[lucky.id]||0)+n;sayT(`掉落：${lucky.d.name}的英雄之魄 ×${n}`)}}   // v0.7.3 进阶形态出战掉进阶版的英雄之魄（两种各算各的）   // elite：0.12.0 修复——精英不掉英雄之魄（原来会抽到精英，记成「el+编号」的英雄之魄，最后一波结算时找不到这位英雄报错、卡在结算前）
   G.meta.金币=(G.meta.金币||0)+D.bossGold*DIFF.reward*(night?2:1);   // v0.8.18 金币按结算倍率
   if(G.tmp&&Math.random()<CFG.temple.pearl.p*(DIFF.drop||DIFF.reward)*dropMul()*eq)addLoot('w','nightPearl');   // v0.5.0 沙漠神殿首领：夜明珠
+  if(!rb)elPillDrop();   // 0.12.0 丹药（game/el_mar）
   {const BI=D.bossItems&&D.bossItems[G.map];if(BI&&Math.random()<BI.p*(DIFF.drop||DIFF.reward)*dropMul()*eq)addLoot('w',BI.w)}   // v0.5.9 地图首领专属装备（腐化之地：酸蚀瓶）
   // 招募型英雄的专属来源（荒野困难+ → 夜鸦；腐化之地困难+ → 绝命毒师）
   if(!rb)for(const id of HIDS){const S=soulSrcs(id).find(s=>s.map===G.map);if(!S||!diffAtLeast(S.minDiff||'normal')||Math.random()>=S.chance*dropMul())continue;
@@ -60909,7 +60917,8 @@ function elTick(){if(!META)return;const m=elSt(),now=metaNow();let dt=now-m.t;if
   EL_FOLLOW_SET=elFamReach(m.follow);
   const life=x=>{const a0=x.age;x.age+=yr;if(!elSpouse(x)&&x.age>=EM().age&&!x.dead&&elAutoSpouse(x)){if(m.list.includes(x))elEv('mar',{id:x.id,auto:1});ch=true}if(x.sp&&!x.sp.dead){x.sp.age+=yr;if(x.sp.age>=(x.sp.life||75))x.sp.dead=1}   // 队外配偶到寿命去世 → 丧偶   // 0.12.0（用户定）25 岁还没成家的自己相亲
     const pa=x.spId&&elById(x.spId);if(pa&&m.list.includes(pa)&&pa.id<x.id)return;   // 队内夫妻：编号小的那位判生育
-    for(let y=Math.floor(a0)+1;y<=Math.floor(x.age);y++){if(x.kids.length<F.max&&elCanBirth(x)&&Math.random()<elFertP(x)){elBirth(x);ch=true}}};   // 0.12.0（用户定）生育概率 elFertP
+    for(let y=Math.floor(a0)+1;y<=Math.floor(x.age);y++){if(!x.pg&&x.kids.length<F.max&&elCanBirth(x)&&Math.random()<elFertP(x)){x.pg={due:now+EL().yearMs*(1-(x.age-y))};ch=true}}   // 0.12.0（用户定）生育概率 elFertP；先怀孕（记在判生育的这位身上），一年后生
+    if(x.pg&&x.pg.due<=now){delete x.pg;if(!x.dead){elBirth(x);ch=true}}};
   for(const e of m.list.slice()){life(e);
     if(e.age>=e.life-EL().retireBefore){const h=elRetire(e,true);elEv('ret',{id:e.id,heir:h?h.id:0});ch=true}}
   for(const c of m.kids)c.age+=yr;
@@ -61083,6 +61092,16 @@ function elDeployList(){const m=elSt(),L=m.list.filter(e=>e.dep);if(!m.opt.injOf
   const ok=L.filter(e=>!elHurt(e)),sub=m.list.filter(e=>!e.dep&&!elHurt(e));while(ok.length<Math.min(L.length,elDeployMax())&&sub.length)ok.push(sub.shift());return ok.slice(0,elDeployMax())}   // 伤病的换成别的没伤病的
 // 每分钟结算一次年龄（营地里）
 setInterval(()=>{try{if(META&&!(typeof running!=='undefined'&&running))elTick()}catch(err){console.warn('elTick',err)}},60000);
+// —— 0.12.0 调试（用户定，设置「调试功能」里的按钮）——
+// 推进 1 年：精英记录里所有时间戳往前挪 1 年（学习、伤病、冷却、怀孕都跟着走），再结算一次
+function elDbgYear(){const m=elSt(),Y=EL().yearMs,now=metaNow(),sh=o=>{for(const k in o){const v=o[k];if(typeof v==='number'&&v>1e12&&v<now+Y*50)o[k]=v-Y;else if(v&&typeof v==='object')sh(v)}};sh(m);elTick();saveMeta()}
+// 一键深渊通关：所有地图记成各难度通关、拿到深渊徽章（测家族升阶、结盟、商店解锁）
+function dbgAbyssAll(){const A=chAch(),b=loadBest();if(!META.mapClear)META.mapClear={};
+  for(const P of CFG.mapPages)for(const k of P.maps){if(!CFG.maps[k])continue;A.b[k]=1;META.mapClear[k]=1;for(const D of CFG.difficulties){const key=(k!=='wild'?k+'.':'')+'regular.'+D.id;b[key]=Math.max(b[key]||0,regWavesOf(D,k))}}
+  try{localStorage.setItem(BEST_KEY,JSON.stringify(b))}catch(e){console.warn('dbgAbyssAll',e)}elAllySync();saveMeta()}
+// 所有地区资源 +1000：开着的开拓地粮仓谷物、肉，所有地区物资（四种材料、加工品、特产）
+function dbgResAll(n){for(const id in(META.settle&&META.settle.R)||{}){if(!stRegionOpen(id))continue;const R=stRegion(id);R.gs=(R.gs||0)+n;R.ms=(R.ms||0)+n}
+  const W=META.wares||(META.wares={});for(const k in CFG.wares.items)W[k]=(W[k]||0)+n;stPoolDirty();saveMeta()}
 
 // ---------- 0.12.0 精英血脉（用户《0.12.0策划-家族精英大更新（用户原文）》「家族」；数据 data/el_blood.js）----------
 // 一个人：e.bl {血脉: 份数（合计 bloodN = 20）}、e.bm {属性: 倍率}（出生 / 招募时在上下限之间随机定下）、e.bt [家族特性键]
@@ -61268,7 +61287,7 @@ function elWhyOut(x,c,gone){const E=EM(),f=c.sex==='f';if(gone)return f?'彩礼�
 const elWhyMsg=()=>elWhyLast?`${elWhyLast.who}：「${elWhyLast.line}」${elWhyLast.sys?' '+elWhyLast.sys:''}`:'';
 // 戒指（0.12.0 用户定）：神秘黑市买，每天各限购 1 个；存在 META.el.ring
 const elRingN=k=>((elSt().ring||{})[k])||0;
-function elRingBuy(k){const R=EM().ring[k];if(!R)return'没有这个道具';const st=blackState(),bk='r'+k;if((st[bk]||0)>=R.day)return`${R.name}今天已经买过了`;if((META.wallet.金币||0)<R.gold)return`金币不够(需要 ${R.gold})`;
+function elRingBuy(k){const R=EM().ring[k];if(!R)return'没有这个道具';const st=blackState(),bk='r'+k;if((st[bk]||0)>=R.day&&!SET.devOn)return`${R.name}今天已经买过了`;if((META.wallet.金币||0)<R.gold)return`金币不够(需要 ${R.gold})`;
   META.wallet.金币-=R.gold;st[bk]=(st[bk]||0)+1;const m=elSt();(m.ring||(m.ring={}))[k]=elRingN(k)+1;saveMeta();return null}
 // 队内婚配（0.12.0 用户定）：50% − 年龄每差 1 岁 0.5% − 血脉纯度每差 1% 0.5%（+ 双方的提亲加成）
 const elKinOn=()=>typeof SET!=='undefined'&&!!(SET&&SET.kinMar);   // 0.12.0 设置「近亲提亲」
@@ -61322,6 +61341,26 @@ function elFamGc(){const m=elSt(),now=metaNow(),act=elFamReach(m.list.map(e=>e.i
 // 退学（用户定）：让出训练所的位子；15 岁以上的变成族人
 function elKidDrop(id){const m=elSt(),c=m.kids.find(x=>x.id===id);if(!c)return'没有这个孩子';c.enr=0;if(c.age>=EL().famKeep.adult)elToFam(c);saveMeta();return null}
 function elToFam(c){const m=elSt();m.kids=m.kids.filter(x=>x!==c);delete c.kid;c.st='fam';m.fam.push(c)}
+
+// —— 怀孕、丹药（0.12.0 用户定）——
+// 怀孕记在判生育的那位身上（x.pg = {due 生的时间}）：队内夫妻是编号小的那位，其余是本人
+function elPgJudge(x){const m=elSt(),pa=x.spId&&elById(x.spId);return pa&&m.list.includes(pa)&&pa.id<x.id?pa:x}
+const elPgOf=x=>elPgJudge(x).pg||null;
+const elPillN=k=>((elSt().pill||{})[k])||0;
+const elPillAdd=(k,n)=>{const m=elSt();(m.pill||(m.pill={}))[k]=elPillN(k)+n};
+// 商店：通关这张地图 need 难度或以上才上架；每天 p 概率上架 1 个（调试模式不限）
+function elPillOpen(k){const P=EL().pills[k],D=CFG.difficulties,i0=D.findIndex(d=>d.id===P.shop.need);let b={};try{b=loadBest()||{}}catch(e){console.warn('elPillOpen',e)}
+  for(let i=Math.max(0,i0);i<D.length;i++){const key=P.map+'.regular.'+D[i].id;if(b[key]>0&&b[key]>=regWavesOf(D[i],P.map))return true}return false}
+function elPillStock(k){const st=blackState(),q='pq'+k;if(st[q]==null)st[q]=Math.random()<EL().pills[k].shop.p?1:0;return st[q]}
+function elPillBuy(k){const P=EL().pills[k];if(!P)return'没有这个道具';if(!elPillOpen(k)&&!SET.devOn)return'还没解锁';const st=blackState();if(elPillStock(k)<1&&!SET.devOn)return`今天没有${P.name}`;
+  if((META.wallet.金币||0)<P.shop.gold)return`金币不够(需要 ${P.shop.gold})`;META.wallet.金币-=P.shop.gold;st['pq'+k]=Math.max(0,elPillStock(k)-1);elPillAdd(k,1);saveMeta();return null}
+function elPillUse(k,e){const P=EL().pills[k];if(!P||!e)return'没有这个道具';if(elPillN(k)<1)return`没有${P.name}`;
+  if(k==='y'){if(e.age<=EL().famKeep.adult+1)return'已经很年轻了';e.age-=1}
+  else{const S=elSpouse(e);if(!S||S.dead||S.st==='dead')return'要先成家';if(e.wedP)return'婚宴还没办';const J=elPgJudge(e);if(J.pg)return'已经怀孕了';if(J.kids.length>=EL().family.max)return'孩子已经够多了';J.pg={due:metaNow()+EL().yearMs}}
+  elPillAdd(k,-1);saveMeta();return null}
+// 局内掉落：大首领（game/items.onBossKill）
+function elPillDrop(){if(!G||G.story||G.invade||MODE!=='regular'||!META.el)return;const L=EL().pills;
+  for(const k in L){const P=L[k],p=P.drop[DIFF.id];if(G.map!==P.map||!p)continue;if(Math.random()<p*dropMul()){(G.elPill||(G.elPill={}))[k]=((G.elPill||{})[k]||0)+1;sayT(`掉落：${P.name}`)}}}
 
 // ---------- 0.12.0 自建家族（用户定；数据 data/el_blood.js 末尾 CFG.elite.cfam）----------
 // META.el.cf = [{id, name 姓, tier 阶（1 起）, alloc {属性: 上限}, sp [特别属性键（每个 spStep）], tr {门槛: 特性选项}, trH [用过的特性键], crest {shape, bg, pat, fg}, at 建立时间}]
@@ -63571,7 +63610,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=160,GAME_BUILD="2fed3f8",GAME_BUILT=1792944392423,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=160,GAME_BUILD="7d50e1d",GAME_BUILT=1792946411943,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -64665,7 +64704,7 @@ function showSettings(from){if(from)setFrom=from;const K=SET.keys;
   else if(setSec==='lang')body=langSecHTML();   // v0.10.0 多语言：切换、导入翻译 CSV、导出没翻到的句子
   else if(setSec==='rep')body=repSecHTML();
   else if(setSec==='loot')body=runLootHTML();
-  else body=`<div class="setrows">${SET.devOn?tg('unlockAll','测试模式','全部建筑解锁、难度全开、出战不消耗人口；各界面显示「测试：…」按钮(加资源、拿道具)')+`<div class="sr"><span>调试功能<br><span class="meta">已开启</span></span><button class="px" type="button" data-act="devoff">关闭</button></div><div class="sr"><span>一键等级<br><span class="meta">所有建筑、英雄的局外等级(建筑连同基础加成)都设成这个数，1～${CFG.olv.capMax}</span></span><span class="devpw"><input type="number" id="devLv" min="1" max="${CFG.olv.capMax}" value="${CFG.olv.capMax}" style="width:5em"><button class="px" type="button" data-act="devlv">设定</button></span></div><div class="sr"><span>一键星级<br><span class="meta">所有已拥有英雄的星级都设成这个数，1～5</span></span><span class="devpw"><input type="number" id="devStar" min="1" max="5" value="5" style="width:4em"><button class="px" type="button" data-act="devstar">设定</button></span></div>`
+  else body=`<div class="setrows">${SET.devOn?tg('unlockAll','测试模式','全部建筑解锁、难度全开、出战不消耗人口；各界面显示「测试：…」按钮(加资源、拿道具)')+`<div class="sr"><span>调试功能<br><span class="meta">已开启</span></span><button class="px" type="button" data-act="devoff">关闭</button></div><div class="sr"><span>一键等级<br><span class="meta">所有建筑、英雄的局外等级(建筑连同基础加成)都设成这个数，1～${CFG.olv.capMax}</span></span><span class="devpw"><input type="number" id="devLv" min="1" max="${CFG.olv.capMax}" value="${CFG.olv.capMax}" style="width:5em"><button class="px" type="button" data-act="devlv">设定</button></span></div><div class="sr"><span>一键星级<br><span class="meta">所有已拥有英雄的星级都设成这个数，1～5</span></span><span class="devpw"><input type="number" id="devStar" min="1" max="5" value="5" style="width:4em"><button class="px" type="button" data-act="devstar">设定</button></span></div><div class="sr"><span>测试：推进 1 年<br><span class="meta">精英年龄、学习、伤病、冷却、怀孕都往后推 1 年</span></span><button class="px" type="button" data-act="devyear">推进</button></div><div class="sr"><span>一键深渊通关<br><span class="meta">所有地图记成各难度通关、拿到深渊徽章(测家族升阶、结盟、商店)</span></span><button class="px" type="button" data-act="devabyss">通关</button></div><div class="sr"><span>所有地区资源 +1000<br><span class="meta">开拓地粮仓的谷物、肉，地区材料、加工品、特产</span></span><button class="px" type="button" data-act="devres">增加</button></div>`
         :`<div class="sr"><span>调试功能<br><span class="meta">测试模式、加资源、拿道具(需要密码)</span></span>${devAsk?`<span class="devpw"><input type="password" id="devPw" autocomplete="off" placeholder="密码"><button class="px on" type="button" data-act="devok">确认</button></span>`:'<button class="px" type="button" data-act="devask">开启</button>'}</div>`}</div>`;
   // v0.4.8 无尽模式「直接结算」：对局中打开设置时，不管在哪个分区都放在最上面
   const es=running&&G&&MODE==='endless'&&G.phase!=='over'&&G.phase!=='victory'?`<div class="setrows"><div class="sr esettle"><span>直接结算(无尽模式)<br><span class="meta">马上结束这一局，按已击退的 ${G.phase==='wave'?Math.max(0,G.wave-1):G.wave} 波领取奖励${G.phase==='wave'?'(正在打的这一波不算)':'(刚打完的这一波也算)'}</span></span><button class="px warn2" type="button" data-act="esettle">直接结算</button></div></div>`:'';
@@ -64760,7 +64799,7 @@ function onSheetClick(e){
   else if(a==='stexit'){hideModal();settleExit()}
   else if(a==='strefok'){META.settle.refund=null;META.settle.refund3=null;saveMeta();showHub('settle')}   // refund3：v0.10.0 开拓地大更新的返还说明
   else if(a==='scolall'){const got=collectAll(),t=Object.entries(got).map(([k,n])=>k+' '+n).join('、');toast(t?'领取：'+t:'暂时没有可领取的产出');if(t)sfx('pick');showHub('settle')}
-  else if(a==='stest'){for(const k of['建材','银币','科研点','设计点'])META.wallet[k]+=10000;saveMeta();showHub(hubTab)}   // v0.5.9（用户定）1000 → 10000
+  else if(a==='stest'){for(const k of['建材','银币','科研点','设计点'])META.wallet[k]+=k==='银币'?100000:10000;saveMeta();showHub(hubTab)}   // v0.5.9（用户定）1000 → 10000
   else if(a==='tcat'){techCat=v;showHub('tech')}
   else if(a==='dsign'){const r=doSign();if(r.err)toast(r.err);else{sfx('pick');toast('签到成功：'+r.got.join('、'))}showHub('daily')}   // v0.5.1 日常
   else if(a==='dclaim'){const r=dailyClaim(+v);if(r.err)toast(r.err);else{sfx('pick');toast('领取：'+r.got.join('、'))}showHub('daily')}
@@ -64878,6 +64917,9 @@ function onSheetClick(e){
   else if(a==='devlv'&&SET.devOn){const el=$('#devLv'),X=clamp(Math.round(+(el&&el.value)||1),1,CFG.olv.capMax);   // v0.11.1a（用户定）调试：所有建筑、英雄局外等级（建筑连同基础加成）设成 X
     for(const t in BTT){const r=olvRec('b',olvKey('b',t));r.lv=X;r.exp=0;r.use=0;const T=BTT[t];if(T&&T.base&&T.base.length){const st=btState(t);st.bb=st.bb||{};for(const k of T.base)st.bb[k]=X;st.bu={}}}
     for(const id in CFG.heroes){const r=olvRec('h',olvKey('h',id));r.lv=X;r.exp=0;r.use=0}saveMeta();toast(`测试：所有建筑、英雄等级设为 ${X}`);showSettings()}
+  else if(a==='devyear'&&SET.devOn){elDbgYear();toast('测试：精英推进了 1 年');showSettings()}
+  else if(a==='devabyss'&&SET.devOn){dbgAbyssAll();toast('测试：所有地图深渊通关');showSettings()}
+  else if(a==='devres'&&SET.devOn){dbgResAll(1000);toast('测试：所有地区资源 +1000');showSettings()}
   else if(a==='devstar'&&SET.devOn){const el=$('#devStar'),X=clamp(Math.round(+(el&&el.value)||1),1,5);let n=0;for(const id in META.heroes){const H=META.heroes[id];if(H&&H.owned){H.star=X;n++}}saveMeta();toast(`测试：${n} 位英雄设为 ${X}★`);showSettings()}   // v0.11.1a（用户定）调试：已拥有英雄一键星级
 }
 function beginRun(msg,sub){hideModal();running=true;paused=false;hudEl.hidden=false;speedMul=1;refreshSpeed();resize();refreshCtl();refreshPhaseUI();musicMode('prep');
@@ -65216,7 +65258,10 @@ function gsPopHTML(){const GS=shopRoll('gear'),o=GS.offers[gsPick];if(!o){gsPick
   return opPopHTML(itemName(o.it),gearCard(o.it,'',o.done?' lock':''),gsBuyBtn(o,gsPick,GS.slot)).replace(/data-act="oppx"/g,'data-act="shopgsx"')}
 // 0.12.0（用户定）婚配道具：求婚戒指、永恒戒指，每天各限购 1 个（精英队内提亲用）
 function elRingShopHTML(){if(!META.el)return'';const R=EM().ring,st=blackState(),w=META.wallet;return`<div class="box"><h4>婚配道具 <span class="meta">精英队内提亲用</span></h4><div class="hstrip">${Object.keys(R).map(k=>{const r=R[k],left=Math.max(0,r.day-(st['r'+k]||0));
-  return`<div class="hst"><b>${r.name}</b><span class="meta">${k==='e'?'提亲必定成功':'提亲按成功率'}<br>${r.gold} 金币 · 今天还能买 ${left}/${r.day}<br>持有 ${elRingN(k)}</span><button class="px" type="button" data-act="shopring" data-v="${k}" ${!left||(w.金币||0)<r.gold?'disabled':''}>购买</button></div>`}).join('')}</div></div>`}
+  return`<div class="hst"><b>${r.name}</b><span class="meta">${k==='e'?'提亲必定成功':'提亲按成功率'}<br>${r.gold} 金币 · 今天还能买 ${left}/${r.day}<br>持有 ${elRingN(k)}</span><button class="px" type="button" data-act="shopring" data-v="${k}" ${(!left&&!SET.devOn)||(w.金币||0)<r.gold?'disabled':''}>购买</button></div>`}).join('')}${elPillShopHTML()}</div></div>`}
+// 0.12.0（用户定）丹药：通关对应地图后，每天 50% 概率上架 1 个
+function elPillShopHTML(){const P=EL().pills,w=META.wallet;return Object.keys(P).filter(k=>elPillOpen(k)||SET.devOn).map(k=>{const p=P[k],n=elPillStock(k);
+  return`<div class="hst"><b>${p.name}</b><span class="meta">${p.desc}<br>${p.shop.gold} 金币 · ${n?'今天有 1 个':'今天没有'}<br>持有 ${elPillN(k)}</span><button class="px" type="button" data-act="shoppill" data-v="${k}" ${(!n&&!SET.devOn)||(w.金币||0)<p.shop.gold?'disabled':''}>购买</button></div>`}).join('')}
 function hubShop(){const w=META.wallet,t=testOn(),rf=k=>t?` <button class="px" type="button" data-act="shoprf" data-v="${k}">刷新(测试)</button>`:'';
   const tabs=`<div class="tabs sub dtabs">${SHOP_TABS.map(([k,n])=>`<button class="px${k===shopTab?' on':''}" type="button" data-act="shoptab" data-v="${k}">${n}</button>`).join('')}</div>`;
   const head=`<p class="meta">金币 <b>${Math.floor(w.金币||0)}</b>(今天战斗已拿 ${goldDaySum().got} / ${goldDaySum().cap})${helpBtn('shop-gold')} · 银币 <b>${Math.floor(w.银币||0)}</b>${t?` · <button class="px" type="button" data-act="shopgold">测试：+1000 金币</button> <button class="px" type="button" data-act="shopsilver">测试：+5000 银币</button>`:''}</p>`;
@@ -65318,6 +65363,7 @@ function shopAct(a,v){
   else if(a==='shophs'){const[i,sl]=v.split(':'),err=heroShopBuy(+i,+sl);if(err)toast(err);else{sfx('pick');toast('购买成功：英雄之魄已到账')}}
   else if(a==='shopgs'){const[i,sl]=v.split(':'),err=gearShopBuy(+i,+sl);if(err)toast(err);else{sfx('pick');toast('购买成功：已放进仓库')}}
   else if(a==='shopreg'){const r=regularBuy(v);if(r.err)toast(r.err);else{sfx('pick');toast(`购买成功：${itemName(r.item)}(工艺 ${craftOf(r.item).name})已放进仓库`)}}
+  else if(a==='shoppill'){const e=elPillBuy(v);if(e)toast(e);else{toast(`买到了${EL().pills[v].name}`);sfx('pick')}}
   else if(a==='shopring'){const e=elRingBuy(v);if(e)toast(e);else{toast(`买到了${EM().ring[v].name}`);sfx('pick')}}
   else if(a==='shopblk'){const r=blackGift(v==='1');if(r.err)toast(r.err);else{blackLast=r;sfx('pick')}}
   else if(a==='shopupr'){const err=upReroll(v,gachaPool);if(err)toast(err);else{sfx('pick');upPick=''}}
@@ -66253,7 +66299,7 @@ function hubSettle(){const got=stStored(),gl=Object.entries(got).map(([k,n])=>`$
   const regs=stRegions().map(r=>stRegionInfo(r.id));for(const r of regs)if(r.open)settleRegionEnsure(r.id);{const k=regs.findIndex(r=>!r.open);if(k>=0)regs.splice(k+1)}   // v0.8.25 每个剧情地区一个开拓地；没开放的只列下一个
   const ref=META.settle.refund;
   const sx=stSeaTxt('wild'),prod=`<div class="box"><h4>产出 <span class="meta">${sx.name}季，还剩 ${sx.left}</span>${helpBtn('st-prod')}</h4><p class="meta">${gl?'可以领取：'+gl:'暂时没有可领取的产出'}</p>
-      <div class="row2"><button class="px on" type="button" data-act="scolall" ${gl?'':'disabled'}>一键收取所有地区</button>${stMapView()?'':'<button class="px" type="button" data-act="wmkt" data-v="royal:trade">王都贸易</button><button class="px" type="button" data-act="wmopen">大地图</button>'}${testOn()?'<button class="px" type="button" data-act="stest">测试：资源 +10000</button><button class="px" type="button" data-act="stsea">测试：换到下一季</button>':''}</div></div>`,   // v0.9.0（用户定）产出、一键收取放到最上面
+      <div class="row2"><button class="px on" type="button" data-act="scolall" ${gl?'':'disabled'}>一键收取所有地区</button>${stMapView()?'':'<button class="px" type="button" data-act="wmkt" data-v="royal:trade">王都贸易</button><button class="px" type="button" data-act="wmopen">大地图</button>'}${testOn()?'<button class="px" type="button" data-act="stest">测试：资源 +10000(银币 +100000)</button><button class="px" type="button" data-act="stsea">测试：换到下一季</button>':''}</div></div>`,   // v0.9.0（用户定）产出、一键收取放到最上面
     head=`<div class="shrow"><h4 class="sh">地区${helpBtn('st-intro')}</h4><button class="px sm wmtog" type="button" data-act="stview">${stMapView()?'列表':'大地图'}</button></div>`,
     ref3=META.settle.refund3,refB=ref||ref3?`<div class="box"><h4>开拓地改版</h4><p class="meta">${ref?`原来九宫格里的建筑已经拆掉，返还了：${Object.entries(ref).map(([k,n])=>`${k} <b>${n}</b>`).join('、')}。`:''}${ref3?`开拓地大更新：建材厂、铸币厂、铁匠铺、科研所、设计所、宝石矿去掉了，主堡改成按繁荣度自动升级；返还了 ${Object.entries(ref3).map(([k,n])=>`${k} <b>${n}</b>`).join('、')}。`:''}进开拓地重新布置吧。</p><button class="px" type="button" data-act="strefok">知道了</button></div>`:'';
   if(stMapView())return`<div class="stmap" data-sk="st-m">${prod}${head}${wmHTML('settle')}${refB}</div>`;   // v0.9.51 开拓地页默认大地图（用户定），地图占整宽
@@ -67643,6 +67689,9 @@ function elMarHTML(){const m=elSt(),B=elBlood(),regs=elOpenRegs();
     <div class="elroll">${m.list.map(e=>`<div><img class="elpor2" alt="" src="${elIcon(e)}">${elSpouse(e)?`<img class="elpor2" alt="" src="${elSpouse(e).job?heroIcon(elSpr(elSpouse(e).job,elSpouse(e).sex),2):elIcon(elSpouse(e))}">`:''}<b>${elName(e)}</b>${elSexI(e)}<span class="meta">${elAgeTxt(e)} · ${elBlTxt(e)} · ${elSpouse(e)?`配偶 <b>${elName(elSpouse(e))}</b>${elSexI(elSpouse(e))}(${elBlTxt(elSpouse(e))})${e.spId?'(队内)':''}${elWidow(e)?' <span class="warn">丧偶</span>':''}`:e.mc&&e.mc.length?`<span class="warn">有 ${e.mc.length} 位人选等你挑</span>`:'未婚'} · 子女 ${e.kids.length}</span>
       ${elBtn('elxpop','mar:'+e.id,'详情')}${!elSpouse(e)?(e.single?'':(e.mc&&e.mc.length?elBtn('elxpop','mc:'+e.id,'挑人选',{on:true}):'')+elBtn('elxblind',e.id,`相亲(${elBlindCost(e)} 银)`)+elBtn('elxpop','bq:'+e.id,'宴会'))+elBtn('elxsingle',e.id,e.single?'已锁定单身':'锁定单身',{on:e.single,ti:'锁定后不会自己成家，也不能相亲、办宴会'}):e.wedP?elBtn('elxpop','wed:'+e.id,'办婚宴',{on:true}):''}</div>`).join('')||'<p class="meta">还没有精英。</p>'}</div>`}
 function elSpCard(x,extra){return`<div class="elinfo"><div class="elspc"><img class="elpor2" alt="" src="${heroIcon(elSpr(x.job||'recruit',x.sex),2)}"><div><p><b>${elName(x)}</b>${elSexI(x)} · ${elAgeTxt(x)} · ${CFG.maps[x.reg]?CFG.maps[x.reg].name:''}${x.pers?` · 性格「${EL().personality[x.pers].name}」`:''}${x.job&&x.job!=='recruit'?` · 穿${EL().jobs[x.job].name}的衣服`:''}</p>${extra||''}</div></div>${elBloodHTML(x,true)}</div>`}
+// 怀孕（0.12.0）：女方怀孕，一年后生
+function elPgHTML(e){const g=elPgOf(e);if(!g)return'';const h=Math.max(0,Math.ceil((g.due-metaNow())/3.6e6));return`<p class="meta">${e.sex==='f'?'怀孕中':'妻子怀孕中'}，约 ${h} 小时后(明年)生孩子</p>`}
+const elPillBtns=e=>Object.keys(EL().pills).filter(k=>elPillN(k)>0).map(k=>elBtn('elxpill',e.id+':'+k,`使用${EL().pills[k].name}(${elPillN(k)})`)).join('');
 function elMarDetHTML(e){const kids=(e.kids||[]).map(id=>elById(id)).filter(Boolean),gk=[];for(const c of kids)for(const id of c.kids||[]){const g=elById(id);if(g)gk.push(g)}
   const row=x=>`<div><b>${elName(x)}</b>${elSexI(x)}<span class="meta">${Math.floor(x.age)} 岁 · ${x.dead||x.st==='dead'?'已故':elSt().list.includes(x)?'在役':x.kid?(x.enr?'训练所':'在家'):x.st==='fam'?'族人':x.st==='retired'?'退休':''} · ${elBlTxt(x)}${elSpouse(x)?` · 配偶 ${elName(elSpouse(x))}`:''}</span>${(x.st==='fam'&&!x.dead||x.kid)&&x.age>=EL().family.adult?elBtn('elxkid',x.id,'招入精英'):''}${elBtn('elxjump',String(x.id),'面板')}</div>`;
   const S=elSpouse(e),m=elSt(),cand=!S&&!e.single?m.list.filter(x=>x!==e&&x.sex!==e.sex&&!elSpouse(x)&&!x.single):[];
@@ -67650,7 +67699,7 @@ function elMarDetHTML(e){const kids=(e.kids||[]).map(id=>elById(id)).filter(Bool
   const team=cand.length?`<h5>队内婚配 <span class="meta">每次提亲用一枚戒指(${R.p.name}成了才用掉，${R.e.name}必定成功)；每人 ${EM().teamCdY} 年提一次；戒指在商店的神秘黑市买</span></h5>
     <p class="meta">${R.p.name} <b>${elRingN('p')}</b> · ${R.e.name} <b>${elRingN('e')}</b>${cd?` · <span class="warn">${elName(e)}还要 ${elHrs(e.tmT-now)} 小时才能再提亲</span>`:''}</p>
     <div class="elroll">${cand.map(x=>{const rl=elRelName(e,x),free=elKin(e,x)>0&&!elKinOn(),v=e.id+':'+x.id;return`<div><img class="elpor2" alt="" src="${elIcon(x)}"><b>${elName(x)}</b>${elSexI(x)}${rl?`<span class="optag">${rl}</span>`:''}<span class="meta">${elAgeTxt(x)} · ${elBlTxt(x)} · 成功率 ${pc_(elTeamP(e,x))}</span>${free?elBtn('elxteam',v+':p','提亲'):elBtn('elxteam',v+':p',`${R.p.name}(${elRingN('p')})`,{dis:cd||elRingN('p')<1})+elBtn('elxteam',v+':e',`${R.e.name}(${elRingN('e')})`,{dis:cd||elRingN('e')<1,on:elRingN('e')>0})}</div>`}).join('')}</div>`:'';
-  return`${elSayHTML()}${e.wedP?`<p class="warn">婚宴还没办，办完才会生孩子。${elBtn('elxpop','wed:'+e.id,'办婚宴',{on:true})}</p>`:''}${S?`<h5>配偶${e.spId?'(队内)':''}</h5>${e.spId?`<p>${elName(S)}${elSexI(S)} · ${elAgeTxt(S)}</p>${elBloodHTML(S,true)}`:elSpCard(S)}`:`<p class="meta">还没成家。${e.single?'(锁定单身)':''}${e.refT>metaNow()?` 现在不想成家(还要 ${Math.ceil((e.refT-metaNow())/3.6e6)} 小时)`:''}</p>`}${team}<div class="elrow">${elFollowBtn(e)}${elBtn('elxpop','tree:'+e.id,'族谱')}</div>
+  return`${elSayHTML()}${e.wedP?`<p class="warn">婚宴还没办，办完才会生孩子。${elBtn('elxpop','wed:'+e.id,'办婚宴',{on:true})}</p>`:''}${S?`<h5>配偶${e.spId?'(队内)':''}</h5>${e.spId?`<p>${elName(S)}${elSexI(S)} · ${elAgeTxt(S)}</p>${elBloodHTML(S,true)}`:elSpCard(S)}${elPgHTML(e)}`:`<p class="meta">还没成家。${e.single?'(锁定单身)':''}${e.refT>metaNow()?` 现在不想成家(还要 ${Math.ceil((e.refT-metaNow())/3.6e6)} 小时)`:''}</p>`}${team}<div class="elrow">${elFollowBtn(e)}${elBtn('elxpop','tree:'+e.id,'族谱')}${elPillBtns(e)}</div>
     <h5>子辈 ${kids.length}</h5><div class="elroll">${kids.map(row).join('')||'<p class="meta">还没有孩子。</p>'}</div>
     <h5>孙辈 ${gk.length}</h5><div class="elroll">${gk.map(row).join('')||'<p class="meta">还没有孙辈。</p>'}</div>`}
 let EL_SAY='';   // 0.12.0 最近一次被拒的台词（婚配弹窗顶上显示，点别的就清掉）
@@ -67779,6 +67828,7 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
   else if(a==='elxblind'&&e){err=elBlind(e);if(!err){EL_POP='mc:'+e.id;toast('相亲人选来了')}}
   else if(a==='elxfeast'){const[id,fid,b]=v.split('|'),q=elById(+id);err=q?elFeast(q,fid,+b):'没有这个人';if(!err){EL_POP='mc:'+id;EL_BQF=null;toast('宴会办完了，挑一位吧')}}
   else if(a==='elxmarry'&&e){const r=elMarry(e,+y,String(v).split(':')[2]==='1');if(r==='ok'){EL_POP='wed:'+e.id;toast(`${elName(e)}成家了，办个婚宴吧`)}else if(r==='fail'){EL_SAY=elWhyMsg();toast(EL_SAY+' (可以补一份彩礼 / 嫁妆再提一次)')}else if(r==='gone'){EL_SAY=elWhyMsg()+' (这位人选走了)';toast(EL_SAY);if(!e.mc)EL_POP='mar:'+e.id}else err=r}
+  else if(a==='elxpill'&&e){err=elPillUse(y,e);if(!err)toast(y==='y'?`${elName(e)}年轻了 1 岁`:`${elName(e)}${e.sex==='f'?'':'的妻子'}怀孕了，明年生孩子`)}
   else if(a==='elxsingle'&&e){e.single=!e.single;saveMeta()}
   else if(a==='elxteam'&&e){const r=elTeamMarry(e,elById(+y),String(v).split(':')[2]);if(r==='ok'){EL_POP='wed:'+e.id;toast(`${elName(e)}和${elName(elById(+y))}成家了，办个婚宴吧`)}else if(r==='fail'||r==='kin'){EL_SAY=elWhyMsg();toast(EL_SAY)}else err=r}
   else if(a==='elxbqf')EL_BQF=v||null;
