@@ -18878,7 +18878,7 @@ CFG.elite={
   // 招募教官（0.12.0 用户定：每个地区每 24 小时 2～3 名，35～55 岁；Claude 定：会 4～6 个本职业系的技能（0.12.0 用户要多给）1～4 级、1～3 条训练特性、寿命 65～85、价格）
   insHire:{hours:24, n:[2,3], age:[35,55], life:[65,85], sk:[4,6], skLv:[1,4], tt:[1,3], price:5000, pricePerTier:2000, priceSkLv:500, priceTt:500},
   // 主动退休（0.12.0 用户定）：在部队里待了不到 rollYears 年的不进名册
-  rollYears:10,
+  rollYears:10, rollBattles:5,   // 0.12.1（用户定）出战超过 rollBattles 次才进名册
   // 转职（用户定：入队后随时花银币转职；价格 Claude 定）
   jobSilver:3000, jobChange:6000,
   // 伤病（用户定：死亡 50% 伤残；已伤残再死 50% 变残疾；伤残 24 小时恢复；治疗：伤残银币、残疾金币 / 特殊材料；价格 Claude 定）
@@ -19668,6 +19668,15 @@ CFG.elite.look={
           f:['阿琳娜','达丽娅','叶莲娜','加琳娜','伊琳娜','卡琳娜','柳博芙','玛丽娜','娜杰日达','奥尔加','波琳娜','拉丽莎','塔季扬娜','乌里扬娜','瓦尔瓦拉','雅娜','佐娅','薇拉']}};
   for(const c in A){const T=N[c]||(N[c]={m:[],f:[]});for(const s of['m','f'])T[s]=[...new Set((T[s]||[]).concat(A[c][s]))]}})();
 
+// ---------- 0.12.1 不老之泉的禁疗（用户定：史诗、传说卡和商人独特商品；名字 Claude 定；效果在 maps/bl_spring 的 afterHitE）----------
+// 我方所有单位造成伤害后，给亡灵禁疗（受到的治疗 −X%，同 engine/blk.bkEHw，几处取最高）；传说「断泉」顶替史诗「蚀泉」（拿了传说，史诗不再出、不再算）
+CFG.blHw={t:3, mc:0.3};
+CFG.cards.push({id:'blHwE', name:'蚀泉', q:'epic', map:'blSpring', unique:true, flat:true, eff:{blHwE:0.2}, avail:()=>!(pm&&pm.blHwL>0),
+  desc:'所有单位造成伤害后，目标禁疗 20%(受到的治疗 −20%)，持续 3 秒', help:'只在不老之泉出现；拿了传说「断泉」后不再出现。'});
+CFG.cards.push({id:'blHwL', name:'断泉', q:'legend', map:'blSpring', unique:true, flat:true, eff:{blHwL:0.5},
+  desc:'所有单位造成伤害后，目标禁疗 50%(受到的治疗 −50%)，持续 3 秒；顶替「蚀泉」', help:'只在不老之泉出现。'});
+CFG.merchant.items.blHw={name:'坏血弹药', map:'blSpring', base:1000, per:100, desc:'所有单位造成伤害后，目标禁疗 30%(受到的治疗 −30%)，持续 3 秒(不老之泉的商人独有)'};
+
 // ---------- 0.11.5 官方渠道（用户定：防止别人改了游戏重新发；有新版本提示去官网或 QQ 群）；逻辑 ui/official.js，安卓签名自检 app/android/…/SiguoGuard.java ----------
 // site 官网；ver 官网上的版本清单（tools/site_ver.py 写）；qq 游戏交流群（官网打不开的玩家从群里拿安装包）；hosts 网页版只认这些域名（空串 = 本地文件 / 电脑版）
 CFG.official={site:'https://lsong7479-oss.github.io/siguo-play/', ver:'https://lsong7479-oss.github.io/siguo-play/version.json', qq:'1126694396',
@@ -19828,7 +19837,7 @@ const PM_KEYS=['physAtk','bodyHp','spellAtk','dgreed','acidRes','blastRes','kbBo
   'glass','lobRange','fortK','buildMdef','shieldDef','trapDur',
   'rangeC','behead','trainSpd','castR','unitPDR','unitMDR','ccRes',
   'frostVuln','frostDmg','absZero','frostShock','wallRegen','battlement','towerNet','barbWall','slayer','unitLs','heroBlock','psnDmg','psnSpread','psnBurst','psnPlague',   // v0.9.3 流派卡（data/cards093）：冰控、城防、英雄、毒疫
-  'skWind','ajScorch','ajWalk','ajDemon'];   // v0.10.0 浮空之城的场景卡「稳若泰山 / 定风神珠」：风属性击退、牵引 −X   // v0.9.1（用户定）建筑射程（折算从 20% 起、最多 +100%）、斩首行动   // v0.8.23（用户定）玻璃大炮、弹道原理、不落要塞（独立乘区、法术防御）、盾墙防护（格挡防御）、陷阱工匠（持续时间）
+  'skWind','ajScorch','ajWalk','ajDemon','blHwE','blHwL'];   // v0.10.0 浮空之城的场景卡「稳若泰山 / 定风神珠」：风属性击退、牵引 −X   // v0.9.1（用户定）建筑射程（折算从 20% 起、最多 +100%）、斩首行动   // v0.8.23（用户定）玻璃大炮、弹道原理、不落要塞（独立乘区、法术防御）、盾墙防护（格挡防御）、陷阱工匠（持续时间）
 const EM_KEYS=['hp','dmg','speed','def','atkSpd','count','lifesteal','elites','revive','eliteHp','regen','night','smog','bloodMoon','unluck',   // unluck：v0.4.2 霉运；dmg：0.5.3 及以前的「锈刃」（老存档里还有）
   'mdmg','rdmg','sdmg','mdef','toxin','rFire','rBlast','rRanged','rMelee','rMagic','rCtrl','rPoison',   // v0.5.4：伤害拆近战 / 远程 / 法术、法术防御、毒素、七种减伤
   'mAtk','rAtk','sAtk','rLoad',
@@ -47968,7 +47977,10 @@ function blDrawWorld(cx0,cy0,cx1,cy1){if(G.phase!=='wave')return;const on=blAliv
     if(!on&&ETC[E.t[i]].key!=='blKing')continue;const hy=y-E.r[i]*2-10-(E.air[i]?20:0);rectW(x-1,hy,2,2,K_BLW,0.85);if(BL_USE[i]>1)rectW(x+2,hy,2,2,K_BLW,0.85)}}
 function blHud(){if(G.phase!=='wave')return'不老泉：亡灵倒下会在泉里复活一次 · 每秒回血 3%';if(!blAlive())return'<span style="color:#c8b080">不老泉已干涸</span>(只有大首领还能复活)';
   const d=blDry(),left=Math.max(0,BLC.dry.end-blRun());return`<span style="color:#7af0d0">不老泉</span> 干涸 ${Math.round(d*100)}% · 复活生命 ${Math.round((1-d*BLC.dry.hpLoss)*100)}% · ${Math.ceil(left)} 秒后干涸`}
-MAP_FX.blSpring={gen:genBl,pixW:blPix,start:blStart,tick:blTick,waveStart:blWaveStart,waveEnd:blWaveEnd,eSpawn:blESpawn,eRevive:blRevive,afterHpE:blAfterHp,
+// 0.12.1 禁疗（data/bl_hw）：卡「蚀泉」20% / 「断泉」50%（顶替）、商人的坏血弹药 30%，取最高
+const blHwF=()=>Math.max(pm.blHwL>0?pm.blHwL:pm.blHwE||0,G.mcOwn&&G.mcOwn.includes('blHw')?CFG.blHw.mc:0);
+function blAfterHit(i,d,o){if(d>0&&!o.dot&&E.alive[i]){const f=blHwF();if(f>0)bkEHw(i,f,CFG.blHw.t)}}
+MAP_FX.blSpring={gen:genBl,afterHitE:blAfterHit,pixW:blPix,start:blStart,tick:blTick,waveStart:blWaveStart,waveEnd:blWaveEnd,eSpawn:blESpawn,eRevive:blRevive,afterHpE:blAfterHp,
   afterHurtF:blAfterHurtF,afterHurtS:blAfterHurtS,towerOff:s=>typeof vcTowerOff==='function'&&vcTowerOff(s),buildBlock:blBuildBlock,hud:blHud,drawUnder:blDrawUnder,drawWorld:blDrawWorld};
 
 // ---------- 0.11.4 不老之泉小首领（接引使、摆渡使、判决使、轮回使）、大首领 堕落不老神王（代理 BL；数据和 Claude 定的口径见 data/bl_boss.js，样子 art/bl_boss.js）----------
@@ -59664,7 +59676,7 @@ function mcNorm(C){if(C&&!C.bought){C.bought=C.item?[C.item]:[];C.nb=C.item?1:0}
 function mcRoll(){if(!G||!G.prepEvOn||G.story||G.invade||G.expand!=null)return;const M=CFG.merchant;if(!(G.mcP>0))G.mcP=M.p0;
   if(rng()<G.mcP){G.mcP=M.p0;G.mc=mcMake();MC_HTML=null;toast('流浪商人来了：准备阶段可以去看看(右上角「商人」)');mcPre()}else{G.mcP=Math.min(1,G.mcP+M.step);G.mc=null}}
 function mcMake(){const M=CFG.merchant,P=M.pots,F=G.seenF||{};
-  const pots=shuffle(Object.keys(P).filter(id=>!P[id].seen||F[P[id].seen])).slice(0,M.potN),items=mc2Pick(Object.keys(M.items).filter(mc2Left),M.itemN);   // v0.10.3（用户定）装置这一局买过就不再出；v0.10.11 限次的买满了不再出，按权重 w 抽（mc2Pick）
+  const pots=shuffle(Object.keys(P).filter(id=>!P[id].seen||F[P[id].seen])).slice(0,M.potN),items=mc2Pick(Object.keys(M.items).filter(id=>mc2Left(id)&&!M.items[id].map),M.itemN);for(const id in M.items)if(M.items[id].map===G.map&&mc2Left(id)&&!(G.mcOwn||[]).includes(id))items.unshift(id);   // 0.12.1 地图独有的商品（map）：在这张图每次都有、买过就不再出   // v0.10.3（用户定）装置这一局买过就不再出；v0.10.11 限次的买满了不再出，按权重 w 抽（mc2Pick）
   const t=Math.max(0,Math.min(CFG.wares.tiers.length-1,mapTierOf(G.map))),T=CFG.wares.tiers[t],mp=T.maps[G.map],pool=Object.values(T.basic).concat(mp?[mp.core]:[]),lots=[];
   for(let k=0;k<M.wareN;k++){const id=pick(pool),n=pick(M.wareLots),W=CFG.wares.items[id];lots.push({id,n,price:Math.round(W.price*M.wareRate*n*(1+(rng()*2-1)*M.wareVar)),sold:false})}
   return{w:G.wave,pots,items,bought:[],nb:0,lots}}
@@ -61102,7 +61114,7 @@ function elTick(){if(!META)return;const m=elSt(),now=metaNow();let dt=now-m.t;if
     for(let y=Math.floor(a0)+1;y<=Math.floor(x.age);y++){if(!x.pg&&x.kids.length<F.max&&elCanBirth(x)&&Math.random()<elFertP(x)){x.pg={due:now+EL().yearMs*(1-(x.age-y))};ch=true}}   // 0.12.0（用户定）生育概率 elFertP；先怀孕（记在判生育的这位身上），一年后生
     if(x.pg&&x.pg.due<=now){delete x.pg;if(!x.dead){elBirth(x);ch=true}}};
   for(const e of m.list.slice()){life(e);
-    if(e.age>=e.life-EL().retireBefore){const h=elRetire(e,true);elEv('ret',{id:e.id,heir:h?h.id:0});ch=true}}
+    if(e.age>=e.life-EL().retireBefore){const h=elRetire(e,true);elEv('ret',{id:e.id,heir:h?h.id:0,hn:h?elName(h):''});ch=true}}
   for(const c of m.kids)c.age+=yr;
   for(const x of m.fam){if(x.dead)continue;life(x);if(x.age>=x.life)elFamDie(x)}   // 族人（0.12.0）：不在队里的成年家族成员
   for(const c of m.kids.slice())if(c.age>=EL().famKeep.adult){if(c.enr)elEv('grown',{id:c.id});elToFam(c);ch=true}   // 孩子长大了 → 族人；0.12.1（用户定）训练所的孩子 15 岁离开训练所，记进精英日志，可以招进队
@@ -61152,11 +61164,15 @@ function elSchoolYear(){const m=elSt(),F=EL().family,K=m.kids.filter(c=>c.enr&&c
   else{const pool=K.filter(c=>(c.ktt||0)<EL().kidTt&&elLearnable(c).some(([a])=>a==='tt'));for(const c of elDraw(pool,EL().noInsP)){const o=elLearnable(c).filter(([a])=>a==='tt');if(o.length){const[a,b]=elPick(o);elKidGive(c,a,b)}}}}
 // —— 退休、接替、名册 ——
 function elRetire(e,auto){const m=elSt(),F=EL().family;elUnequipAll(e);m.list=m.list.filter(x=>x!==e);e.st='retired';e.rAt=metaNow();e.dep=false;e.learn=null;
-  if(auto||!(e.ja>=0)||e.age-e.ja>=EL().rollYears)m.roll.push(e);else e.noRoll=1;   // 0.12.0（用户定）主动退休、在部队不到 rollYears 年的不进名册（老存档没有 ja 的照旧进）
+  if((!(e.ja>=0)||e.age-e.ja>=EL().rollYears)&&((e.log&&e.log.n)||0)>EL().rollBattles)m.roll.push(e);else e.noRoll=1;   // 0.12.1（用户定）入队 rollYears 年以上、出战超过 rollBattles 次的才进名册（老存档没有 ja 的只看出战）
   let heir=null;const r=Math.random();
   if(r<F.heirP)heir=elHeir(e,1);else if(r<F.heirP+F.grandP)heir=elHeir(e,2);
-  e.heirOf=heir?heir.id:0;if(heir)m.list.push(heir);
+  e.heirOf=0;if(heir)(m.hq||(m.hq=[])).push({h:heir,of:e.id,t:metaNow()});   // 0.12.1（用户定）推荐的接替人不自动上任：在精英日志里同意才入队
   saveMeta();return heir}
+// 接替：同意 = 入队；不同意 = 不顶替，这个人留在家里当族人
+function elHeirOk(id,yes){const m=elSt(),Q=m.hq||[],i=Q.findIndex(q=>q.h.id===id);if(i<0)return'没有这个人';const q=Q[i],h=q.h;
+  if(yes){if(m.list.length>=elCap())return`精英已满(${elCap()} 名)`;m.list.push(h);const o=elById(q.of);if(o)o.heirOf=h.id}else{delete h.kid;h.st='fam';m.fam.push(h)}
+  Q.splice(i,1);saveMeta();return null}
 // 接替的人（用户定：子辈 −16～24 岁、孙辈 −32～48 岁；继承部分经验、技能）：有在训练所里够年纪的孩子就用他，没有就新生成一位
 function elHeir(e,g){const m=elSt(),F=EL().family,rg=g===1?F.childAge:F.grandAge,age=Math.max(EL().recruit.age[0],e.age-elRi(rg[0],rg[1]));
   let h=null;if(g===1){const c=m.kids.find(k=>k.par===e.id&&k.age>=F.adult);if(c){m.kids=m.kids.filter(x=>x!==c);h=c;delete h.kid}}
@@ -63965,7 +63981,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.1',GAME_TAG='测试版',GAME_CODE=162,GAME_BUILD="e6709fe",GAME_BUILT=1792960594684,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.1b',GAME_TAG='测试版',GAME_CODE=163,GAME_BUILD="97f31b4",GAME_BUILT=1792961602591,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -67949,7 +67965,7 @@ function elInjHTML(e){const I=EL().injury,ks=Object.keys(e.inj);
     ${ks.length?`<div class="elroll">${ks.map(k=>{const J=e.inj[k],D=EL().injuries[k],st=D.st[J.lv-1];return`<div><b>${D.name[J.lv-1]}</b><span class="meta">${elStTxt(st)}</span>${elBtn('elxheal',e.id+':'+k,J.lv===1?`治疗(${I.silver} 银币)`:`治疗(${I.gold} 金币)`)}</div>`}).join('')}</div>`:'<p>没有伤病。</p>'}`}
 const EL_STN={hp:'生命上限',atk:'物攻',ap:'法攻',def:'物防',mdef:'法防',speed:'移速',vision:'视野',prec:'精准',aspd:'攻速',dodgeK:'偏斜值',hitK:'命中值',cd:'冷却速度',regen:'生命恢复',rngP:'物理远程射程'};
 const elStTxt=st=>Object.keys(st).map(k=>`${EL_STN[k]||k} ${st[k]>0?'+':''}${pc_(st[k])}`).join('、');
-function elRetHTML(e){return`<p>${elName(e)}，${elAgeTxt(e)}，出战 ${e.log.n} 次。退休后登记进名册，可以任命为教官；退休时有概率推荐子辈、孙辈接替。${e.ja>=0&&e.age-e.ja<EL().rollYears?`<br><span class="warn">入队还不到 ${EL().rollYears} 年(${Math.floor(e.age-e.ja)} 年)：现在退休不会记进名册。</span>`:''}</p>
+function elRetHTML(e){return`<p>${elName(e)}，${elAgeTxt(e)}，出战 ${e.log.n} 次。入队 ${EL().rollYears} 年以上、出战超过 ${EL().rollBattles} 次的退休后登记进名册，可以任命为教官；退休时有概率推荐子辈、孙辈接替(在精英日志里同意才入队)。${(e.ja>=0&&e.age-e.ja<EL().rollYears)||e.log.n<=EL().rollBattles?`<br><span class="warn">入队 ${e.ja>=0?Math.floor(e.age-e.ja):'?'} 年、出战 ${e.log.n} 次：现在退休不会记进名册。</span>`:''}</p>
     <p class="meta">确认退休请在下面输入 <b>ok</b>：</p><div class="elrow"><input type="text" id="elRetOk" maxlength="4" style="width:6em" autocomplete="off">${elBtn('elxret',e.id,'退休')}</div>`}
 // 族谱（用户定：可以索引到另一名谱内精英；0.11.4 改成家族分支树：从最早能找到的祖先往下画，点人看那个人的族谱）
 function elTreeHTML(e){let root=e;const up=new Set([e.id]);while(root.par){const p=elById(root.par);if(!p||up.has(p.id))break;up.add(p.id);root=p}
@@ -68134,16 +68150,17 @@ function elFamAllHTML(){const B=elBlood(),E=EL(),SP=E.bloodSpName,T=elBloodTr();
       <div class="elchips">${F.tr.map(k=>`<span class="meta">${Math.round(T[k].min*100)}%</span>${elTrChip('bt',k)}`).join('')}</div></div>`}).join('');
     return rows?`<h5>${P.name}</h5>${rows}`:''}).join('')}
 // —— 进营地时的弹窗（0.12.0 用户定）：这段时间发生的事，分「训练所」「子嗣出生」「伤病」，没有的页签不显示；关掉就清掉 ——
-const elEvPending=()=>!!(META&&META.el&&META.el.ev&&META.el.ev.length);
+const elEvPending=()=>!!(META&&META.el&&((META.el.ev&&META.el.ev.length)||(META.el.hq&&META.el.hq.length)));   // hq：0.12.1 待同意的接替人
 // 长大离开训练所（0.12.1）：可以直接招进队
 const elKidPrice=c=>{c.kidBuy=1;const p=elPrice(c);delete c.kidBuy;return p};
 function elGrownRow(x,tm){const c=elById(x.id);if(!c||c.dead)return`<div><span class="meta">(已经不在了)</span>${tm(x)}</div>`;const inL=elSt().list.includes(c);
   return`<div><img class="elpor2" alt="" src="${elIcon(c)}"><b>${elName(c)}</b>${elSexI(c)}<span>${EL().family.adult} 岁，离开训练所</span><span class="meta">${elBlTxt(c)}</span>${elTraitChips(c)}${inL?'<span class="meta">已入队</span>':elBtn('elxkid',c.id,`招入精英(${elKidPrice(c)} 银)`)}${elBtn('elxpop','info:'+c.id,'详情')}${tm(x)}</div>`}
 function elEvPopHTML(){const m=elSt(),E=m.ev,nm=id=>{const x=elById(id);return x?elName(x):'(已离开)'},F=EL().family;
-  const T={school:E.filter(x=>x.k==='learn'||x.k==='insret'||x.k==='ret'||x.k==='grown'||x.k==='lvsk'),birth:E.filter(x=>x.k==='birth'),mar:E.filter(x=>x.k==='mar'),inj:E.filter(x=>x.k==='heal')},tabs=[['school','训练所'],['birth','子嗣出生'],['mar','婚配'],['inj','伤病']].filter(([k])=>T[k].length);
+  const T={school:E.filter(x=>x.k==='learn'||x.k==='insret'||x.k==='ret'||x.k==='grown'||x.k==='lvsk'),birth:E.filter(x=>x.k==='birth'),mar:E.filter(x=>x.k==='mar'),inj:E.filter(x=>x.k==='heal'),heir:m.hq||[]},tabs=[['heir','接替'],['school','训练所'],['birth','子嗣出生'],['mar','婚配'],['inj','伤病']].filter(([k])=>T[k].length);
   if(!tabs.length){m.ev=[];return''}if(!tabs.some(([k])=>k===EL_EVT))EL_EVT=tabs[0][0];
   const tm=x=>`<span class="meta">${new Date(x.t).toLocaleString()}</span>`;let body='';
-  if(EL_EVT==='school')body=`<div class="elroll elevl">${T.school.map(x=>x.k==='learn'?`<div><b>${nm(x.id)}</b><span>${x.ins?`跟${x.ins}`:''}学会了 ${EL().skills[x.sk]?EL().skills[x.sk].name:''} ${elRoman(x.lv)} 级</span>${tm(x)}</div>`:x.k==='insret'?`<div><b>${x.name}</b><span>教官退休了</span>${tm(x)}</div>`:x.k==='grown'?elGrownRow(x,tm):x.k==='lvsk'?`<div><b>${nm(x.id)}</b><span>升到 ${x.lv} 级，${x.up?'技能升级':'自己学会'}：${EL().skills[x.sk]?EL().skills[x.sk].name:''} ${elRoman(x.slv)} 级</span>${tm(x)}</div>`:`<div><b>${nm(x.id)}</b><span>到年纪退休了${x.heir?`，推荐 ${nm(x.heir)} 接替`:''}</span>${tm(x)}</div>`).join('')}</div>`;
+  if(EL_EVT==='school')body=`<div class="elroll elevl">${T.school.map(x=>x.k==='learn'?`<div><b>${nm(x.id)}</b><span>${x.ins?`跟${x.ins}`:''}学会了 ${EL().skills[x.sk]?EL().skills[x.sk].name:''} ${elRoman(x.lv)} 级</span>${tm(x)}</div>`:x.k==='insret'?`<div><b>${x.name}</b><span>教官退休了</span>${tm(x)}</div>`:x.k==='grown'?elGrownRow(x,tm):x.k==='lvsk'?`<div><b>${nm(x.id)}</b><span>升到 ${x.lv} 级，${x.up?'技能升级':'自己学会'}：${EL().skills[x.sk]?EL().skills[x.sk].name:''} ${elRoman(x.slv)} 级</span>${tm(x)}</div>`:`<div><b>${nm(x.id)}</b><span>到年纪退休了${x.heir?`，推荐 ${x.hn||nm(x.heir)} 接替(在「接替」页签决定)`:''}</span>${tm(x)}</div>`).join('')}</div>`;
+  else if(EL_EVT==='heir')body=`<p class="meta">退休的精英推荐了子孙接替(0.12.1)：同意才入队；不同意就不顶替，这个人留在家里当族人。</p><div class="elroll elevl">${T.heir.map(q=>{const h=q.h,o=elById(q.of);return`<div><img class="elpor2" alt="" src="${elIcon(h)}"><b>${elName(h)}</b>${elSexI(h)}<span class="meta">${Math.floor(h.age)} 岁 · ${o?`${elName(o)}的${h.grandOf?'孙辈':'子女'}`:''} · ${elBlTxt(h)}</span>${elTraitChips(h)}<span class="elbr">${elBtn('elxheir',h.id+':1','同意入队',{on:true,dis:m.list.length>=elCap()})}${elBtn('elxheir',h.id+':0','不同意')}</span></div>`}).join('')}</div>`;
   else if(EL_EVT==='birth')body=`<div class="elroll elevl">${T.birth.map(x=>{const c=m.kids.find(k=>k.id===x.id);if(!c)return`<div><span class="meta">(这个孩子已经不在训练所)</span></div>`;const p=elById(x.par);   // 0.12.1（用户定）直接列出血脉和特性，详情另开弹窗
     return`<div style="display:block"><div class="elrow"><img class="elpor2" alt="" src="${elIcon(c)}"><b>${elName(c)}</b>${elSexI(c)}<span class="meta">${p?`${elName(p)}的孩子`:''} ${tm(x)}</span></div>
       <div class="elrow"><span class="meta">${elBlTxt(c)}</span>${elTraitChips(c)||'<span class="meta">没有特性</span>'}</div>
@@ -68169,6 +68186,7 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
   else if(a==='elxihero')err=elInsHero(v,true);
   else if(a==='elxihire'){const[r,n]=v.split('|');err=elInsHire(r,+n);if(!err){toast('招募成功：在「训练所」');if(EL_POP&&EL_POP.startsWith('iof:'))EL_POP=null}}
   else if(a==='elxlsort'){EL_LSORT=!v?null:EL_LSORT&&EL_LSORT[0]===v?[v,!EL_LSORT[1]]:[v,true]}else if(a==='elxmarf')EL_MARF=v||'';
+  else if(a==='elxheir'){err=elHeirOk(+x,y==='1');if(!err)toast(y==='1'?'接替的人入队了':'不顶替了，留在家里当族人')}
   else if(a==='elxioff'){if(elStudents(v).length)err='正在上课，下课后再撤换';else{elInsOff(v);saveMeta();toast('撤下了这位教官')}}   // 0.12.1（用户定）撤换：不退休、不用输入 ok
   else if(a==='elxion'){const m=elSt();if(m.ins.length>=elInsMax())err='训练所的教官已满';else if(!elInsHas(v)){m.ins.push(m.staff.find(x=>String(x.id)===String(v))?m.staff.find(x=>String(x.id)===String(v)).id:v);saveMeta()}}
   else if(a==='elxiret'){const el=document.getElementById('elInsOk');if(!el||el.value.trim().toLowerCase()!=='ok')err='请输入 ok 确认退休';else{const r=elInsRetire(v);EL_POP=null;toast(r==='wait'?'教完现在的学员就退休(不再收新学员)':'教官退休了')}}
@@ -68185,7 +68203,7 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
   else if(a==='elxjob'&&e)EL_JOBASK=y||'';
   else if(a==='elxjobok'&&e){err=elJobSet(e,y);EL_JOBASK='';if(!err)toast(`转职为${elJobD(e).name}`)}
   else if(a==='elxheal'&&e)err=elHeal(e,y);
-  else if(a==='elxret'&&e){const el=document.getElementById('elRetOk');if(!el||el.value.trim().toLowerCase()!=='ok')err='请输入 ok 确认退休';else{const h=elRetire(e);EL_POP=null;toast(`${elName(e)}退休了${e.noRoll?'(入队不到 '+EL().rollYears+' 年，没记进名册)':'，已登记进名册'}${h?`，推荐${elName(h)}接替`:''}`)}}
+  else if(a==='elxret'&&e){const el=document.getElementById('elRetOk');if(!el||el.value.trim().toLowerCase()!=='ok')err='请输入 ok 确认退休';else{const h=elRetire(e);EL_POP=null;toast(`${elName(e)}退休了${e.noRoll?`(入队不到 ${EL().rollYears} 年或出战不超过 ${EL().rollBattles} 次，没记进名册)`:'，已登记进名册'}${h?`，推荐${elName(h)}接替(去精英日志的「接替」决定)`:''}`)}}
   else if(a==='elxins')err=elInsSet(+v,true);else if(a==='elxinsx')err=elInsSet(+v,false);
   else if(a==='elxdel'){elRollDel(+v)}else if(a==='elxzip'){elRollZip();toast('名册已压缩')}
   else if(a==='elxsort')EL_SORT=v;else if(a==='elxq'){const el=document.getElementById('elQ');EL_Q=el?el.value:''}
