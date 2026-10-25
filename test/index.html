@@ -228,8 +228,8 @@ h2.hd.lose{color:var(--blood)}
   #sheet.cardsheet .card{flex:0 0 max(170px,calc((100% - (var(--n,3) - 1) * 12px) / var(--n,3)));scroll-snap-align:start}
 }
 @media (orientation:portrait){
-  #sheet.cardsheet .cards{display:grid;grid-template-columns:1fr;touch-action:pan-y;scroll-snap-type:y proximity}
-  #sheet.cardsheet .card{scroll-snap-align:start}
+  #sheet.cardsheet .cards{display:grid;grid-template-columns:1fr;grid-auto-rows:max-content;align-content:start;touch-action:pan-y;scroll-snap-type:y proximity}
+  #sheet.cardsheet .card{scroll-snap-align:start;min-height:max-content}   /* 0.12.0（用户反馈）卡多了不再被挤扁：每张卡保持自己的高度，卡牌区固定高度、上下滑 */
 }
 @media (max-height:460px){
   html{font-size:calc(12px * var(--fk,1))} body{font-size:calc(12px * var(--fk,1))}
@@ -9322,7 +9322,7 @@ CFG.drops.items=Object.assign(CFG.drops.items||{},{ssXiangliu:[{w:'xlFang', p:0.
    地图逻辑、亡灵能力在 maps/bl_spring.js；小首领、大首领、掉落在 data/bl_boss.js；正式波次、怪组、精英、物资在 data/map_blspring_fin.js（排在所有数据后面）
    地形（Claude 定）：96 × 96，主堡在正中；八个出怪口每边两个（同寒冰极地的八条路）；北边正中是不老泉（圆心 spring、半径 12 格）；
      泉水从南沿流出来，往南 split 格处分成四条支流，绕开主堡流到南边图外（branch：每条一串点，格）；
-     泉、河是浅水：能走（亡灵、守军都能走），不能建造（同水面），地上的树、石头生成时让开
+     泉、河是浅水：能走（亡灵、守军都能走）；泉不能建造，河能建造（0.12.0 用户定），地上的树、石头生成时让开
    机制（用户定的数；口径 Claude 定）：
      复活：所有亡灵（含小首领、大首领、召唤出来的）倒下时，只要这一波的不老泉还没干涸、它还有「不老泉次数」（默认 1 次，不死骨 5 次），就在不老泉里复活：
            生命 = 最大生命 × (1 − 干涸百分比 × hpLoss)，在泉里随机一处站起来（stand 秒内不动），身上的持续伤害、控制清掉；掘墓、镇压这类「无法复活」挡不住（用户定）
@@ -9391,7 +9391,7 @@ CFG.maps.blSpring={name:'不老之泉', req:CFG.mapPages[7].maps.slice(), theme:
     // 开放：通关任意一张八阶地图（Claude 定；fin 里按八阶那一页重算一次，后来加的八阶图也算）
   desc:'泰原雪山脚下的长生泉：碧绿的泉水从北边的白玉泉台里涌出来，往南分成四条河流过主堡两边；喝过泉水的亡灵怎么也打不死，倒下了又从泉里站起来',
   resNote:'所有亡灵(含首领)倒下后会在北边的不老泉里复活一次(不受无法复活影响)；所有亡灵每秒回复 3% 最大生命(首领、小首领 1%)，受到的禁疗效果减半、最多 50%；'+
-          '每一波不老泉每过 3 秒干涸 1%，复活时的生命跟着少 0.5%，300 秒后干涸失效；不老泉和河水是浅水，能走、不能建造。「不朽」：受到伤害的 X% 在 3 秒内转化为生命恢复',
+          '每一波不老泉每过 3 秒干涸 1%，复活时的生命跟着少 0.5%，300 秒后干涸失效；不老泉和河水是浅水，都能走；河上能建造，不老泉上不能。「不朽」：受到伤害的 X% 在 3 秒内转化为生命恢复',
   eStatK:{hp:1.3, dmg:1.3},   // 0.12.0（用户定）亡灵生命、伤害比八阶多 30% 左右（原来和八阶差不多）
   round:25, elites:[], boss:[], swap:{}, endless:{unlock:{}, weight:{}},
   day:{start:0, every:3}, weather:{sunny:45, overcast:20, rain:15, fog:20},   // 昼夜照常轮换；天气：高原的春天，晴天多、有雾（Claude 定）
@@ -17694,9 +17694,9 @@ CFG.olv={
     bpspd:{name:'造血', desc:'储蓄速度',     kind:'hp'},
   },
   // 用户定：塔 = 攻击、生命，另有命中、暴击两项（一般只点一个）；兵营 = 士兵攻击、士兵生命、兵营生命 + 命中、暴击；陷阱 = 攻击 + 恢复速度；
-  //   维修塔 = 生命 + 维修量（固定值）；战鼓楼 = 生命 + 攻击加成；瞭望塔 = 生命 + 光环命中；矿山没有；城墙 = 生命（会伤人的墙另加攻击，Claude 定）
+  //   维修塔 = 生命 + 维修量（固定值）；战鼓楼 = 生命 + 攻击加成；瞭望塔 = 生命 + 光环命中；矿山 = 生命(0.12.0 用户定，原来没有)；城墙 = 生命（会伤人的墙另加攻击，Claude 定）
   lists:{tower:['atk','hp','hit','crit'], camp:['satk','shp','hp','hit','crit'], trap:['atk','rearm'], wall:['hp'], wallAtk:['hp','atk'],
-    repairTower:['hp','heal'], bloodPool:['bpcap','bpspd','hp'], repairCenter:['hp','heal'], warDrum:['hp','drum'], watchtower:['hp','watch'], goldMine:[], other:['hp']},
+    repairTower:['hp','heal'], bloodPool:['bpcap','bpspd','hp'], repairCenter:['hp','heal'], warDrum:['hp','drum'], watchtower:['hp','watch'], goldMine:['hp'], other:['hp']},   // goldMine：0.12.0（用户定）矿山也能升生命上限（也进结算的经验分配）
   // v0.8.14 维修塔、战鼓楼、瞭望塔的新效果（用户定方向，数值 Claude 定）
   repairHeal:10,       // 维修塔每秒给每座建筑回的固定值（× 局内等级倍率 × 基础加成）；v0.8.24（用户定）10（之前嫌强是精械工程师的维修）
   repairPct:0.01,      // v0.8.24（用户定）维修塔另加目标最大生命的 1%（× 局内等级倍率，Lv5 = 2.4%；不吃基础加成）
@@ -47568,7 +47568,7 @@ feat('xlXiangliu',{ord:493,on:xlOn,hooks:{start:xlReset,tick:xlTick,waveEnd:xlWa
 
 // ---------- 0.11.4 九阶地区「不老之泉」（代理 BL）：地形（泉、四条河）、不老泉复活、每秒回血、禁疗减半、干涸、「不朽」、亡灵的命中效果和光环 ----------
 // 数据和口径见 data/map_blspring.js 开头；小首领、大首领在 maps/bl_boss.js；地面配色 THEME_PAL.blSpring、摆设图在 art/bl_art.js
-// 地形：G.blWm 每格是不是水（0 = 不是，1 = 不老泉，2 = 河）；水格的地形是 0（平地）或 1（路），能走、不能建造（钩子 buildBlock）
+// 地形：G.blWm 每格是不是水（0 = 不是，1 = 不老泉，2 = 河）；水格的地形是 0（平地）或 1（路），都能走；泉不能建造、河能建造（0.12.0 用户定；钩子 buildBlock）
 // 亡灵（按下标，BL_ID 对上 E.id 才算数，下标会复用）：BL_USE 还剩几次不老泉复活、BL_IR / BL_IT 不朽：每秒回多少、还要回几秒、BL_HWV 禁疗打折后写进去的值（再看到不一样 = 新上的禁疗）、
 //   BL_MB 青春永驻的基准最大生命（maps/bl_boss 用；0 = 还没定）
 // 干涸：这一波的时间 G.waveT 减去 G.blBack（不老泉涌倒回去的秒数，每波清零）= 不老泉走了几秒；每 3 秒 1%，300 秒失效
@@ -47609,7 +47609,7 @@ function blPix(P,px,py,t,lx,ly,tx,ty,h){const M=G.blWm;if(!M)return;const i=ty*M
   if(T_IS_RD(i)){const st=hash2(Math.floor(px/5),Math.floor(py/5),43);if(st>0.55)c=blMix([150,146,132],[190,186,170],hash2(px>>1,py>>1,44))}   // 路过河：踏石
   return c}
 const T_IS_RD=i=>G.terrain[i]===1;
-const blBuildBlock=i=>G.blWm&&G.blWm[i]?'不老泉和河水上不能建造':undefined;
+const blBuildBlock=i=>G.blWm&&G.blWm[i]===1?'不老泉上不能建造':undefined;   // 0.12.0（用户定）河上能走、能建造；只有泉台不能
 // ================= 干涸 =================
 const blRun=()=>G.phase==='wave'?Math.max(0,(G.waveT||0)-(G.blBack||0)):0;   // 不老泉这一波走了几秒
 const blDry=()=>Math.min(1,Math.floor(blRun()/BLC.dry.every)*BLC.dry.step);   // 干涸了几成（0～1）
@@ -63428,7 +63428,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=159,GAME_BUILD="f985cf5",GAME_BUILT=1792913801775,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.0',GAME_TAG='测试版',GAME_CODE=159,GAME_BUILD="a871878",GAME_BUILT=1792915775846,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
