@@ -19670,6 +19670,81 @@ CFG.elite.look={
           f:['阿琳娜','达丽娅','叶莲娜','加琳娜','伊琳娜','卡琳娜','柳博芙','玛丽娜','娜杰日达','奥尔加','波琳娜','拉丽莎','塔季扬娜','乌里扬娜','瓦尔瓦拉','雅娜','佐娅','薇拉']}};
   for(const c in A){const T=N[c]||(N[c]={m:[],f:[]});for(const s of['m','f'])T[s]=[...new Set((T[s]||[]).concat(A[c][s]))]}})();
 
+// ---------- 0.12.1 新职业、新技能（用户定：职业、解锁条件、狼群和赞颂之歌的数值；基础属性、武器、护甲、哪些旧技能能学 Claude 定）----------
+// unl：转职条件（逻辑 game/el_core.elJobLock）—— hero 要拥有这位英雄 star 星；tier 要通关过这一阶的地区；lv 精英等级
+// pasX：多几个被动技能位；st：职业自带的属性（同特性的属性键；hitSh [冷却, 最大生命比例] 受到攻击时获得护盾，game/el_sk2.elHitSh）
+// 小人：art/ea_elite（男 el_<职业>）、art/ef_elite（女 elf_<职业>）
+Object.assign(CFG.elite.jobs,{
+  druid:     {name:'德鲁伊',   fam:['druid'],  hp:220, atk:3,  ap:7.5, def:0.8, mdef:2.2, dodge:0.04, crit:0.05, speed:4.5, vision:8,   aspd:0,    prec:1,    weapon:['staff'], armor:['cloth','leather'], unl:{hero:'archDruid', star:3}},
+  alchemist: {name:'炼金术士', fam:['alch'],   hp:220, atk:3,  ap:7,   def:0.9, mdef:2,   dodge:0.04, crit:0.05, speed:4.4, vision:8,   aspd:0,    prec:1,    weapon:['flask'], armor:['cloth','leather'], unl:{hero:'poisoner', star:5}},
+  bard:      {name:'吟游诗人', fam:['bard'],   hp:230, atk:9,  ap:4,   def:1,   mdef:1.2, dodge:0.06, crit:0.06, speed:4.6, vision:8,   aspd:0.05, prec:1,    weapon:['sword','dagger','bow'], armor:['cloth','leather'], unl:{tier:2}},
+  paladin:   {name:'圣骑士',   fam:['warrior','shield'], hp:360, atk:11, ap:4, def:3, mdef:2, dodge:0.02, crit:0.05, speed:4.2, vision:7,   aspd:0,    prec:1,    weapon:['sword','hammer','club','shield'], armor:['chain','plate'], unl:{hero:'paladin', star:5, lv:20}, pasX:1, st:{hitSh:[8,0.15]}},
+});
+Object.assign(CFG.elite.famName,{druid:'德鲁伊系', alch:'炼金系', bard:'诗人系'});
+// 旧技能开放给新职业：德鲁伊学地刺、治疗、旋风、复苏之风；炼金术士学酸液池
+{const S=CFG.elite.skills;for(const k of['el_spike','el_heal','el_cyclone','el_revive'])if(S[k]&&S[k].fam)S[k].fam.push('druid');if(S.el_acid)S.el_acid.fam.push('alch')}
+// 新技能
+Object.assign(CFG.elite.skills,{
+  el_wolves:  {name:'召唤狼群', fam:['druid'], sk:'elWolves', o:{k:1}, sc:['k'], ico:'wolfPack'},   // 用户定：限定德鲁伊；狼的属性按技能等级 100% / 110% / 125% / 145% / 170% / 200%……（= skLvK，不削弱）
+  el_toxburst:{name:'绝命毒爆', fam:['alch'], need:'poisoner', sk:'toxicBurst', ico:'toxicBurst'},   // 毒师教
+  el_mheal:   {name:'群体治疗', fam:['alch'], need:'poisoner', sk:'massHeal', ico:'massHeal'},
+  el_song:    {name:'赞颂之歌', pas:true, fam:null, ico:'caOath', st1:{songA:[4,0.15,0.05]},   // 用户定：4 格内友军攻速 +15%、攻击 +5% / 7% / 9.5% / 12.5% / 16% / 19.5%（之后 Claude 接着排）
+    lvT:{songA:[[4,0.15,0.05],[4,0.15,0.07],[4,0.15,0.095],[4,0.15,0.125],[4,0.15,0.16],[4,0.15,0.195],[4,0.15,0.235],[4,0.15,0.28],[4,0.15,0.33],[4,0.15,0.385]]}},
+});
+CFG.skills.elWolves={name:'召唤狼群', cd:20, aim:'self', n:2, unit:'druidWolf', k:1,
+  desc:p=>`召唤 ${p.n} 只森林狼协助作战(同时最多 ${p.n} 只)，狼的属性 ${Math.round(p.k*100)}%`};
+// 技能 V 级质变（0.12.1 用户定方向「V 级给一个质变效果，数值低一点」；具体效果、数 Claude 定）：技能到 V 级起，set 覆盖参数、add 在原参数上加；t 写进说明
+//   多数借那个技能本来就有的高星效果（英雄 4～5★ 才有的那一档），数取得比英雄低（game/el_battle.elSkP 读）
+CFG.elite.skV={
+  el_stealth:  {set:{breakN:2}, t:'第 2 次攻击后才现身'},
+  el_dart:     {set:{n:3, fan:24}, t:'一次扇形掷出 3 枚'},
+  el_cleave:   {add:{splash:0.5}, t:'波及范围 +0.5 格'},
+  el_pierce:   {add:{len:1.5}, t:'穿刺距离 +1.5 格'},
+  el_lob:      {add:{rngK:0.25}, t:'攻击范围再 +25%'},
+  el_charge:   {set:{stun:0.5}, t:'路径上的亡灵眩晕 0.5 秒'},
+  el_fireball: {add:{r:0.5}, t:'爆炸范围 +0.5 格'},
+  el_cyclone:  {set:{count:2, spreadA:18}, t:'一次放出 2 道龙卷风'},
+  el_icicle:   {add:{w:0.5, slowT:1}, t:'冰锥更宽，减速多 1 秒'},
+  el_spike:    {add:{r:0.5}, t:'地刺范围 +0.5 格'},
+  el_overload: {add:{radius:1, dur:1}, t:'范围 +1 格、持续 +1 秒'},
+  el_mine:     {set:{cluster:2}, t:'爆炸后弹出 2 颗子雷(子雷伤害减半)'},
+  el_whirl:    {set:{waves:true, waveW:1, waveLen:4, waveMul:0.25, leech:0.002}, t:'每次伤害时向最近的亡灵挥出一道剑气'},
+  el_arrowrain:{add:{radius:0.5}, set:{slow:0.2}, t:'半径 +0.5 格，箭雨里的亡灵减速 20%'},
+  el_blizzard: {set:{freeze:1, frzCd:2}, t:'叠满寒冷的亡灵冻结 1 秒'},
+  el_mines:    {set:{n:6}, t:'一次埋 6 个'},
+  el_frenzy:   {set:{killCd:0.5}, t:'打死后冷却只剩 0.5 秒'},
+  el_hook:     {set:{stun:1.5}, t:'眩晕 1.5 秒'},
+  el_barrage:  {add:{r:1}, t:'弹幕范围 +1 格'},
+  el_revive:   {add:{radius:2}, t:'范围 +2 格'},
+  el_acid:     {set:{stacks:2}, t:'每次叠 2 层毒'},
+  el_pounce:   {add:{dist:1.5}, t:'冲刺距离 +1.5 格'},
+  el_holyjud:  {add:{width:0.5, range:0.5}, t:'剑气更宽、更远'},
+  el_stomp:    {set:{stun:1.2}, add:{r:0.5}, t:'范围 +0.5 格，眩晕 1.2 秒'},
+  el_rush:     {set:{kb:2}, t:'推开 2 格'},
+  el_hcharge:  {set:{n:4}, t:'沿途多带 1 只亡灵'},
+  el_order:    {add:{r:2}, t:'范围 +2 格'},
+  el_chainbomb:{set:{fan:2}, t:'每次连环至多 2 只'},
+  el_artillery:{add:{n:2}, t:'多落 2 发炮弹'},
+  el_elemrain: {add:{radius:0.5}, t:'半径 +0.5 格'},
+  el_gale:     {set:{max:10}, t:'最多斩 10 只'},
+  el_bulwark:  {add:{r:1}, t:'范围 +1 格'},
+  el_thunder:  {add:{n:1}, t:'每道雷多劈 1 只'},
+  el_burrow:   {add:{r:0.5}, t:'钻出范围 +0.5 格'},
+  el_hammer:   {set:{stun:1.5}, t:'晕眩 1.5 秒'},
+  el_caravan:  {add:{dur:10}, t:'跟随 40 秒'},
+  el_wolves:   {set:{n:3}, t:'召唤 3 只狼'},
+  el_toxburst: {set:{chain:true}, t:'被毒爆杀死的亡灵把剩余毒层的一半传给附近的亡灵'},
+  el_mheal:    {set:{ward:0.15}, t:'治疗后 4 秒受到的伤害 −15%'},
+  el_snipe:    {add:{crit:0.1}, t:'暴击率再 +10%'},
+  el_heal:     {add:{range:2}, t:'治疗范围 +2 格'},
+  el_guard:    {add:{dur:1.5}, t:'持续 +1.5 秒'},
+  el_sprint:   {add:{dur:1.5}, t:'持续 +1.5 秒'},
+  el_blink:    {set:{elitePct:0.05}, t:'对精英、首领的比例伤害提高到 5%'},
+  el_repair:   {add:{radius:1}, t:'范围 +1 格'},
+  el_faith:    {add:{dur:1}, t:'护盾持续 +1 秒'},
+};
+CFG.elite.skVLv=5;
+
 // ---------- 0.12.1 不老之泉的禁疗（用户定：史诗、传说卡和商人独特商品；名字 Claude 定；效果在 maps/bl_spring 的 afterHitE）----------
 // 我方所有单位造成伤害后，给亡灵禁疗（受到的治疗 −X%）；卡和坏血弹药是两个来源，按 engine/buff.eHwPut 相乘；传说「断泉」顶替史诗「蚀泉」（拿了传说，史诗不再出、不再算）
 CFG.blHw={t:3, mc:0.3};
@@ -20004,7 +20079,7 @@ ztZh ztKm
 kySs kySsM kyRb kyRbU
 xlFangV xlFangM xlArmV
 blGaleU blWRU blSpoutU blTideU blVerU blHellU blCycU blShU blUdV blUdN blUdT
-elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0`.trim().split(/\s+/);
+elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU`.trim().split(/\s+/);
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -36059,6 +36134,77 @@ function eaEngineer(fr){return hdFig(32,32,S=>{
   for(const x of[17.4,21])S.dt(x,6.6,1.8,[brass,2]);for(const x of[17.4,21])S.dt(x,6.6,1,'#5fb0b0');S.px(17,6,'#d8f4f4');S.px(20.6,6,'#d8f4f4');   // 推到额头的护目镜
   hdFace(S,{skin,ey:10.8,brow:'#1e1814'});
 })}
+// 鲁特琴（吟游诗人背在身后）：梨形琴身在左后腰、琴颈斜伸到左肩后上方；画在身体之前
+function eaLute(S,wood,woodD){S.part(wood,{},p=>p.cap(8.6,17.6,4.8,6.4,0.9,0.7));S.part(woodD,{},p=>p.poly([[3.4,7.2],[5.4,6.4],[4.6,3.4],[2.8,4]]));for(const[x,y]of[[3.2,4.6],[3.6,6]])S.px(x,y,'#e6dcc2');   // 琴颈 + 往后折的弦轴箱
+  S.part(wood,{R:2},p=>p.ell(7.4,21.8,3.4,4.4));S.dt(7.6,21,1,HD_INK);S.ln(5.2,7.2,7.6,24.4,[wood,4]);S.ln(6.4,24.6,8.8,24.6,[woodD,1])}   // 琴身、音孔、琴弦、琴码
+// 兜帽上的鹿角（德鲁伊）：两支短角从兜帽顶上伸出，各分一个叉
+function eaAntler(S,horn){S.part(horn,{},p=>{p.cap(12.6,4.6,10.4,0.8,0.8,0.6);p.cap(11.2,2.4,8.6,1.8,0.6,0.5);p.cap(18.8,4,20.8,0.6,0.8,0.6);p.cap(20,2,22.4,1.8,0.6,0.5)})}
+// ===== 德鲁伊：苔绿长袍 + 褐色前襟、棕灰毛皮披肩、叶形领扣，橄榄褐兜帽上伸出一对小鹿角；绳腰带挂草药包、一小枝绿叶 =====
+function eaDruid(fr){return hdFig(32,32,S=>{
+  const robe=hm('#4e6a3a','cloth'),robeD=hm('#3a5030','cloth'),inner=hm('#7a6644','cloth'),fur=hm('#7a6248','leather'),furL=hm('#a48a68','leather'),hood=hm('#6a5a3c','cloth'),horn=hm('#c0aa80','bone'),rope=hm('#8a6a44','wood'),leaf=hm('#7aa04a','cloth'),bag=hm('#6a4a30','leather'),skin=hm(EA_SKIN,'skin'),hair=hm('#6a4a2a','hair');
+  hdLegs2(S,fr,{pants:robe,boot:hm('#5a4028','leather'),bootH:2,skirt:true});
+  hdArmBack(S,{sleeve:robe,hand:skin});
+  S.part(robe,{R:3},p=>p.poly([[9.5,15],[22.5,15],[24.4,29.5],[7.6,29.5]]));   // 长袍
+  S.part(inner,{R:2},p=>p.poly([[14.6,17],[18.4,17],[19.4,29.5],[13.6,29.5]]));   // 褐色前襟
+  S.rect(8,28,16.6,1.8,robeD,{edge:false});for(let x=9;x<24;x+=3)S.px(x,29,[robeD,0]);   // 袍脚（叶形缺口）
+  hdBelt(S,21.4,rope,null);S.part(bag,{R:1},p=>p.rect(19.4,22.4,3.6,3.4,1));S.ln(9.6,23,9,26.4,[rope,1]);S.ell(9,26.6,1.2,0.9,leaf);S.px(10,25,[leaf,3]);   // 草药包、垂下的绳头和一枝叶子
+  hdArmFront(S,{sleeve:robe,hand:skin});S.ell(23.6,20.4,2.6,2.2,robe);   // 宽袖口
+  S.part(fur,{},p=>{p.ell(11,15.8,4.4,2.8);p.ell(16,15.2,7,2);p.ell(21.8,16,3.2,2.4)});for(const x of[8,10,12,20,22,24])S.px(x,17.6,[fur,0]);S.part(furL,{},p=>p.ell(9.6,15,1.8,1.2));   // 毛皮披肩
+  S.part(leaf,{},p=>p.poly([[14.8,16.6],[17.4,14.6],[18.6,15.4],[16.4,17.6]]));S.ln(15.2,16.8,17.8,15,[leaf,0]);   // 叶形领扣
+  hdHead(S,{skin,noEar:true});
+  hdU_hood(S,hood);
+  eaAntler(S,horn);
+  S.part(hair,{},p=>p.poly([[16.8,9.4],[20.6,9],[18.4,10.6],[17.2,12.2]]));   // 兜帽口的刘海
+  hdFace(S,{skin,ey:10.8,brow:'#3a2418'});
+})}
+// ===== 炼金术士：暗紫头巾（两条带子垂在脑后）、拉到脖子上的灰布口罩、灰褐衬衫、墨绿蜡皮半身围裙、斜挎皮带插一排彩色药瓶、黑皮长手套、腰间挂一只圆瓶 =====
+function eaAlchemist(fr){return hdFig(32,32,S=>{
+  const shirt=hm('#8a7e6a','cloth'),apron=hm('#3e4a3a','leather'),apronD=hm('#2c362a','leather'),strap=hm('#5a3a24','leather'),glove=hm('#2e2a28','leather'),band=hm('#5a4a6a','cloth'),bandD=hm('#443850','cloth'),mask=hm('#a8a49a','cloth'),pants=hm('#4a3e36','cloth'),boot=hm('#3a2a20','leather'),skin=hm(EA_SKIN,'skin'),hair=hm('#4a3020','hair'),brass=hdM('brass');
+  const vial=['#4ac0a0','#a070d0','#f0a040'],flask=hdMat('#7ab04a','gem');
+  hdU_body(S,fr,{pants,boot,bootH:5,cuff:true,sleeve:shirt,hand:glove,body:shirt,belt:strap,beltY:21.6,buckle:[brass,2],
+    torso:S=>{S.part(apron,{R:2},p=>p.poly([[10.6,21],[21.4,21],[22.2,28.4],[9.8,28.4]]));S.ln(16,23.6,16,28,[apronD,1]);S.px(13,25,'#6a8a3a');S.px(19,26,'#7a5a8a');   // 半身围裙（溅了药渍）
+      S.part(strap,{},p=>p.poly([[10.4,15.4],[12.6,15.4],[21.6,21.6],[19.6,22.2]]));   // 斜挎的药瓶带
+      vial.forEach((c,i)=>{const x=13+i*2.8,y=16.6+i*2;S.rc(x,y,2,3,c);S.px(x,y+1,'#f4f0e4');S.rc(x,y-1,2,1,'#b08a5a')})},   // 三只小药瓶（亮色玻璃 + 木塞）
+    after:S=>{S.rect(21.4,19.4,3.6,2,glove,{R:0.6,edge:false});   // 长手套的翻口
+      S.part(flask,{},p=>{p.ell(9.4,25.4,1.9,1.9);p.rect(8.8,22.6,1.2,1.6)});S.px(8.8,24.6,'#e4f4d4')}});   // 腰间的圆瓶
+  S.part(band,{},p=>{p.poly([[9.4,7.4],[5.4,10.6],[6,12.2],[9.8,9.4]]);p.poly([[9.4,8.2],[6.8,13.6],[8.2,13.8],[10.2,9.8]])});   // 头巾带子
+  S.part(mask,{R:1},p=>p.ell(16.2,15.2,6.4,1.9));   // 拉到脖子上的口罩
+  hdHead(S,{skin});
+  S.part(hair,{},p=>{p.ell(11.8,11.6,2.4,3);p.poly([[17,8.6],[21,8.6],[17.6,10.8]])});   // 鬓发 + 刘海
+  S.part(band,{},p=>{p.ell(15.4,7.2,7.2,4.4);p.cut.rect(0,8.4,32,9)});S.rect(8.6,7.2,14.4,1.8,bandD,{R:0.8});S.dt(9.6,8,1,[bandD,1]);   // 头巾 + 脑后的结
+  hdFace(S,{skin,ey:10.8,brow:'#2a1a10'});
+})}
+// ===== 吟游诗人：橄榄绿软帽 + 一根往后斜插的锈红长羽、栗色碎卷发、酒红紧身短上衣（芥黄开衩）、灰青短披肩、芥黄褐紧裤、翻口长靴，背后斜背一把鲁特琴 =====
+function eaBard(fr){return hdFig(32,32,S=>{
+  const doub=hm('#7a3a40','cloth'),doubD=hm('#5a2a30','cloth'),slash=hm('#c8a860','cloth'),cape=hm('#3e5a66','cloth'),capeD=hm('#2c444e','cloth'),cap=hm('#4e5a34','cloth'),capD=hm('#3a4426','cloth'),feather=hm('#a84a34','cloth'),
+    pants=hm('#7a6a42','cloth'),boot=hm('#5a3a24','leather'),lea=hm('#4a3020','leather'),wood=hm('#a8703a','wood'),woodD=hm('#6a4224','wood'),skin=hm(EA_SKIN,'skin'),hair=hm('#7a4a2a','hair'),brass=hdM('brass');
+  hdU_body(S,fr,{pants,boot,bootH:6,cuff:true,sleeve:doub,hand:skin,body:doub,belt:lea,buckle:[brass,2],
+    back:S=>eaLute(S,wood,woodD),
+    torso:S=>{for(const x of[13.2,18.8])S.ln(x,18.2,x,22,[slash,2]);S.ln(10,23,22,23,[doubD,1]);   // 开衩露出的芥黄衬里
+      S.part(lea,{},p=>p.poly([[19.6,15.4],[21.6,15.4],[11.4,23.4],[9.6,22.6]]))},   // 琴带
+    after:S=>{S.part(cape,{R:2},p=>p.poly([[8.4,14.2],[23.4,14.2],[23,17.8],[20.2,18.8],[16,17.8],[12,18.8],[9,17.8]]));S.ln(9.4,17.4,22.6,17.4,[capeD,1]);S.dt(16.4,15.4,0.8,[brass,3]);   // 短披肩 + 铜扣
+      S.ln(22.4,19,23.2,20.6,[slash,2])}});   // 袖子的开衩
+  hdHead(S,{skin});
+  S.part(hair,{},p=>{p.ell(11.8,12,2.8,4);p.ell(11,15.2,1.6,1.4);p.poly([[17,8.6],[21,8.6],[17.8,11]])});   // 碎卷发 + 刘海
+  S.part(feather,{},p=>p.poly([[12.4,5.6],[5.4,1.2],[3,1.6],[6,3.8],[11.6,7]]));S.ln(11.8,6.2,4.4,2,[feather,0]);   // 往后斜插的长羽
+  S.part(cap,{},p=>{p.ell(14.8,6.4,7.8,3.6);p.cut.rect(0,8.2,32,9)});S.rect(8.8,7,14.2,1.8,capD,{R:0.8});   // 软帽
+  hdFace(S,{skin,ey:10.8,brow:'#3a2418'});
+})}
+// ===== 圣骑士：亮钢板甲（铜边圆护肩）、垂下的锁甲兜帽围在颈上、白罩袍镶蓝边、胸前蓝十字中间一枚铜日轮、深蓝披风，不戴盔、棕色短发 =====
+function eaPaladin(fr){return hdFig(32,32,S=>{
+  const plate=hm('#b4bac4','metal'),plateD=hm('#7e8490','metal'),mail=hm('#8a909c','metal'),white=hm('#e8e4da','cloth'),blue=hm('#34507e','cloth'),cloak=hm('#2e4470','cloth'),brass=hdM('brass'),skin=hm(EA_SKIN,'skin'),hair=hm('#8a5a30','hair');
+  hdCape(S,fr,cloak,{y1:27});   // 深蓝披风
+  hdU_body(S,fr,{pants:mail,boot:plateD,bootH:5,cuff:true,sleeve:plateD,hand:plate,body:plate,belt:hm('#4a3020','leather'),buckle:[brass,2],pad:plate,
+    legs:S=>{for(const x of fr?[11,21]:[12,20])S.ell(x,26.4,2,1.7,plate)},   // 护膝
+    torso:S=>{S.part(white,{R:2},p=>p.poly([[12,15.2],[20,15.2],[20.6,27.8],[11.4,27.8]]));S.rc(11.6,26.4,9,1.2,[blue,2]);   // 白罩袍 + 蓝下摆
+      S.rc(15,16.4,2,6.6,[blue,2]);S.rc(13,18.4,6,2,[blue,2]);S.dt(16,19.4,1,[brass,3]);S.px(16,19,[brass,5])},   // 蓝十字 + 铜日轮
+    after:S=>{for(const x of[10,22]){S.ln(x-2.6,17.6,x+2.6,17.6,[brass,2]);S.px(x,15,[brass,4])}}});   // 护肩的铜边、铆钉
+  S.part(mail,{},p=>p.poly([[10,13.4],[22,13.4],[21,16.2],[11,16.2]]));for(let x=11;x<21;x+=2)S.px(x,14.8,[mail,1]);   // 垂下的锁甲兜帽
+  hdHead(S,{skin});
+  hdHairShort(S,hair,{fringe:20});
+  hdFace(S,{skin,ey:10.8,eye:'#2a3a5a',brow:'#4a2e1a'});
+})}
+Object.assign(HD_HEROES,{el_druid:eaDruid,el_alchemist:eaAlchemist,el_bard:eaBard,el_paladin:eaPaladin});   // 0.12.x 新职业
 Object.assign(HD_HEROES,{el_recruit:eaRecruit,el_assassin:eaAssassin,el_berserker:eaBerserker,el_spearman:eaSpearman,el_shieldGuard:eaShieldGuard,el_marksman:eaMarksman,
   el_cannoneer:eaCannoneer,el_musketeer:eaMusketeer,el_lightCav:eaLightCav,el_heavyCav:eaHeavyCav,el_horseArcher:eaHorseArcher,el_gunCav:eaGunCav,
   el_mage:eaMage,el_priest:eaPriest,el_engineer:eaEngineer});
@@ -36294,6 +36440,77 @@ function efeEngineer(fr){return hdFig(32,32,S=>{
   for(const x of[17.4,21])S.dt(x,6.6,1.8,[brass,2]);for(const x of[17.4,21])S.dt(x,6.6,1,'#5fb0b0');S.px(17,6,'#d8f4f4');S.px(20.6,6,'#d8f4f4');   // 推到额头的护目镜
   efeFace(S,{skin,brow:'#2e2420'});
 })}
+// ===== 德鲁伊：灰绿长袍 + 赭褐前襟、浅灰褐毛皮披肩、叶形领扣，不戴兜帽：深栗色长发垂到腰、头上一圈绿叶花环（缀两颗红浆果）；绳腰带挂草药包 =====
+function efeDruid(fr){return hdFig(32,32,S=>{
+  const robe=hm('#5e7046','cloth'),robeD=hm('#46563a','cloth'),inner=hm('#8a5e3a','cloth'),fur=hm('#8e8070','leather'),furL=hm('#b8ac98','leather'),rope=hm('#8a6a44','wood'),leaf=hm('#7aa04a','cloth'),leafD=hm('#557a36','cloth'),bag=hm('#6a4a30','leather'),skin=hm(EFE_SKIN,'skin'),hair=hm('#6a3a24','hair');
+  hdLegs2(S,fr,{pants:robe,boot:hm('#5a4028','leather'),bootH:2,skirt:true});
+  hdArmBack(S,{sleeve:robe,hand:skin});
+  S.part(robe,{R:3},p=>p.poly([[9.5,15],[22.5,15],[24.4,29.5],[7.6,29.5]]));   // 长袍
+  S.part(inner,{R:2},p=>p.poly([[14.6,17],[18.4,17],[19.4,29.5],[13.6,29.5]]));   // 前襟
+  S.rect(8,28,16.6,1.8,robeD,{edge:false});for(let x=9;x<24;x+=3)S.px(x,29,[robeD,0]);   // 袍脚（叶形缺口）
+  hdBelt(S,21.4,rope,null);S.part(bag,{R:1},p=>p.rect(19.4,22.4,3.6,3.4,1));S.ln(9.6,23,9,26.4,[rope,1]);S.ell(9,26.6,1.2,0.9,leaf);   // 草药包、绳头上的叶子
+  hdArmFront(S,{sleeve:robe,hand:skin});S.ell(23.6,20.4,2.6,2.2,robe);   // 宽袖口
+  efeLong(S,hair,21);   // 垂到腰的长发
+  S.part(fur,{},p=>{p.ell(12,16,3.6,2.4);p.ell(16.4,15.2,6.4,1.9);p.ell(21.8,16,3.2,2.4)});for(const x of[10,12,20,22,24])S.px(x,17.6,[fur,0]);S.part(furL,{},p=>p.ell(11.4,15.2,1.6,1));   // 毛皮披肩（压住后背头发的上端）
+  S.part(leaf,{},p=>p.poly([[14.8,16.6],[17.4,14.6],[18.6,15.4],[16.4,17.6]]));S.ln(15.2,16.8,17.8,15,[leaf,0]);   // 叶形领扣
+  hdHead(S,{skin});
+  efeTop(S,hair,20);
+  S.part(leafD,{},p=>{p.ell(16,6.4,6.6,2.2);p.cut.ell(16,7.6,6,2.2)});   // 花环的藤
+  S.part(leaf,{},p=>{for(const[x,y]of[[9.8,8],[11.6,5.8],[14.2,4.6],[17,4.4],[19.6,5],[21.8,6.8]])p.ell(x,y,1.4,0.9)});for(const[x,y]of[[12.8,5],[18.4,4.4]])S.px(x,y,'#c0303a');   // 叶子 + 红浆果
+  efeFace(S,{skin,brow:'#5a2e1a'});
+})}
+// ===== 炼金术士：赭红头巾（两条带子垂在脑后）、头巾下露出的栗色马尾、拉到脖子上的灰布口罩、灰蓝衬衫、褐色蜡皮半身围裙、斜挎药瓶带、黑皮长手套、腰间挂一只圆瓶 =====
+function efeAlchemist(fr){return hdFig(32,32,S=>{
+  const shirt=hm('#6e7a86','cloth'),apron=hm('#5a4632','leather'),apronD=hm('#3e3022','leather'),strap=hm('#4a3020','leather'),glove=hm('#2e2a28','leather'),band=hm('#8a4a3a','cloth'),bandD=hm('#6a3428','cloth'),mask=hm('#aaa69c','cloth'),pants=hm('#43403c','cloth'),boot=hm('#3a2a20','leather'),skin=hm(EFE_SKIN,'skin'),hair=hm('#7a4a2a','hair'),brass=hdM('brass');
+  const vial=['#4ac0a0','#a070d0','#f0a040'],flask=hdMat('#4a8ac0','gem');
+  hdU_body(S,fr,{pants,boot,bootH:5,cuff:true,sleeve:shirt,hand:glove,body:shirt,belt:strap,beltY:21.6,buckle:[brass,2],
+    torso:S=>{S.part(apron,{R:2},p=>p.poly([[10.6,21],[21.4,21],[22.2,28.4],[9.8,28.4]]));S.ln(16,23.6,16,28,[apronD,1]);S.px(13,25,'#6a8a3a');S.px(19,26,'#7a5a8a');   // 半身围裙（溅了药渍）
+      S.part(strap,{},p=>p.poly([[10.4,15.4],[12.6,15.4],[21.6,21.6],[19.6,22.2]]));   // 斜挎的药瓶带
+      vial.forEach((c,i)=>{const x=13+i*2.8,y=16.6+i*2;S.rc(x,y,2,3,c);S.px(x,y+1,'#f4f0e4');S.rc(x,y-1,2,1,'#b08a5a')})},   // 三只小药瓶（亮色玻璃 + 木塞）
+    after:S=>{S.rect(21.4,19.4,3.6,2,glove,{R:0.6,edge:false});   // 长手套的翻口
+      S.part(flask,{},p=>{p.ell(9.4,25.4,1.9,1.9);p.rect(8.8,22.6,1.2,1.6)});S.px(8.8,24.6,'#e4eef8')}});   // 腰间的圆瓶
+  efePony(S,fr,hair,bandD);   // 马尾
+  S.part(band,{},p=>{p.poly([[9.4,7.4],[5.8,9.8],[6.2,11.2],[9.8,9.4]])});   // 头巾带子
+  S.part(mask,{R:1},p=>p.ell(16.2,15.2,6.4,1.9));   // 拉到脖子上的口罩
+  hdHead(S,{skin});
+  S.part(hair,{},p=>{p.ell(11.8,11.8,2.6,3.6);p.poly([[17,8.6],[21,8.6],[17.6,11]])});   // 鬓发 + 刘海
+  S.part(band,{},p=>{p.ell(15.4,7.2,7.2,4.4);p.cut.rect(0,8.4,32,9)});S.rect(8.6,7.2,14.4,1.8,bandD,{R:0.8});S.dt(9.6,8,1,[bandD,1]);   // 头巾 + 脑后的结
+  efeFace(S,{skin,brow:'#4a3020'});
+})}
+// ===== 吟游诗人：暗酒红软帽 + 一根往后斜插的灰白长羽、浅金色及肩发、灰青紧身短上衣（锈红开衩）、芥黄短披肩、深褐紧裤、翻口长靴，背后斜背一把鲁特琴 =====
+function efeBard(fr){return hdFig(32,32,S=>{
+  const doub=hm('#3e5a66','cloth'),doubD=hm('#2c444e','cloth'),slash=hm('#a8503a','cloth'),cape=hm('#a08a4a','cloth'),capeD=hm('#7a6a36','cloth'),cap=hm('#6a2e36','cloth'),capD=hm('#4e2028','cloth'),feather=hm('#dcd6c8','cloth'),
+    pants=hm('#4a3a30','cloth'),boot=hm('#5a3a24','leather'),lea=hm('#4a3020','leather'),wood=hm('#a8703a','wood'),woodD=hm('#6a4224','wood'),skin=hm(EFE_SKIN,'skin'),hair=hm('#d0aa68','hair'),brass=hdM('brass');
+  hdU_body(S,fr,{pants,boot,bootH:6,cuff:true,sleeve:doub,hand:skin,body:doub,belt:lea,buckle:[brass,2],
+    back:S=>eaLute(S,wood,woodD),
+    torso:S=>{for(const x of[13.2,18.8])S.ln(x,18.2,x,22,[slash,2]);S.ln(10,23,22,23,[doubD,1]);   // 开衩露出的锈红衬里
+      S.part(lea,{},p=>p.poly([[19.6,15.4],[21.6,15.4],[11.4,23.4],[9.6,22.6]]))},   // 琴带
+    after:S=>{S.part(cape,{R:2},p=>p.poly([[8.4,14.2],[23.4,14.2],[23,17.8],[20.2,18.8],[16,17.8],[12,18.8],[9,17.8]]));S.ln(9.4,17.4,22.6,17.4,[capeD,1]);S.dt(16.4,15.4,0.8,[brass,3]);   // 短披肩 + 铜扣
+      S.ln(22.4,19,23.2,20.6,[slash,2])}});   // 袖子的开衩
+  S.part(hair,{},p=>p.poly([[8.2,8.6],[14,8.6],[14,14.6],[12.8,17.4],[10,17.8],[7.8,16.4],[7.4,12.6]]));S.ln(10.4,12.4,10,17,[hair,1]);   // 及肩发（压在披肩外）
+  hdHead(S,{skin});
+  efeTop(S,hair,20);
+  S.part(feather,{},p=>p.poly([[12.4,5.6],[5.4,1.2],[3,1.6],[6,3.8],[11.6,7]]));S.ln(11.8,6.2,4.4,2,[feather,1]);   // 往后斜插的长羽
+  S.part(cap,{},p=>{p.ell(14.8,6.4,7.8,3.6);p.cut.rect(0,8.2,32,9)});S.rect(8.8,7,14.2,1.8,capD,{R:0.8});   // 软帽
+  efeFace(S,{skin,brow:'#8a6a3a'});
+})}
+// ===== 圣骑士：亮钢板甲（铜边圆护肩）、锁甲兜帽围在颈上、白罩袍镶蓝边、胸前蓝十字中间一枚铜日轮、蓝灰披风，不戴盔、额上一圈细钢环、浅金长辫垂在背后 =====
+function efePaladin(fr){return hdFig(32,32,S=>{
+  const plate=hm('#b8bcc4','metal'),plateD=hm('#80848e','metal'),mail=hm('#8a909c','metal'),white=hm('#ece8de','cloth'),blue=hm('#3a5a8a','cloth'),cloak=hm('#4a5a7e','cloth'),brass=hdM('brass'),steel=hdM('steel'),skin=hm(EFE_SKIN,'skin'),hair=hm('#c8a868','hair');
+  hdCape(S,fr,cloak,{y1:27});   // 蓝灰披风
+  hdU_body(S,fr,{pants:mail,boot:plateD,bootH:5,cuff:true,sleeve:plateD,hand:plate,body:plate,belt:hm('#4a3020','leather'),buckle:[brass,2],pad:plate,
+    legs:S=>{for(const x of fr?[11,21]:[12,20])S.ell(x,26.4,2,1.7,plate)},   // 护膝
+    torso:S=>{S.part(white,{R:2},p=>p.poly([[12,15.2],[20,15.2],[20.6,27.8],[11.4,27.8]]));S.rc(11.6,26.4,9,1.2,[blue,2]);   // 白罩袍 + 蓝下摆
+      S.rc(15,16.4,2,6.6,[blue,2]);S.rc(13,18.4,6,2,[blue,2]);S.dt(16,19.4,1,[brass,3]);S.px(16,19,[brass,5])},   // 蓝十字 + 铜日轮
+    after:S=>{for(const x of[10,22]){S.ln(x-2.6,17.6,x+2.6,17.6,[brass,2]);S.px(x,15,[brass,4])}}});   // 护肩的铜边、铆钉
+  S.part(mail,{},p=>p.poly([[10,13.4],[22,13.4],[21,16.2],[11,16.2]]));for(let x=11;x<21;x+=2)S.px(x,14.8,[mail,1]);   // 锁甲兜帽围在颈上
+  hdHead(S,{skin});
+  efeTop(S,hair,20);
+  S.ln(9.4,8.2,22.4,6.6,[steel,3]);S.px(21,6.8,[brass,4]);   // 额上的细钢环
+  efeBraid(S,hair,[[9.6,14.4],[7.8,17.6],[6.8,20.6],[6.4,23.4]],[blue,2]);   // 背后的长辫（压在披风外）
+  efeFace(S,{skin,eye:'#3a4a6a',brow:'#8a6a3a'});
+})}
+Object.assign(HD_HEROES,{elf_druid:efeDruid,elf_alchemist:efeAlchemist,elf_bard:efeBard,elf_paladin:efePaladin});   // 0.12.x 新职业
 Object.assign(HD_HEROES,{elf_recruit:efeRecruit,elf_assassin:efeAssassin,elf_berserker:efeBerserker,elf_spearman:efeSpearman,elf_shieldGuard:efeShieldGuard,elf_marksman:efeMarksman,
   elf_cannoneer:efeCannoneer,elf_musketeer:efeMusketeer,elf_lightCav:efeLightCav,elf_heavyCav:efeHeavyCav,elf_horseArcher:efeHorseArcher,elf_gunCav:efeGunCav,
   elf_mage:efeMage,elf_priest:efePriest,elf_engineer:efeEngineer});
@@ -60379,8 +60596,9 @@ function bbBuy(t,k){const L=bbLv(t,k),cap=olvRec('b',t).lv;if(!designUnlocked(t)
   META.wallet.设计点-=d;META.wallet.银币-=s;const st=btState(t);(st.bb||(st.bb={}))[k]=L+1;saveMeta();return null}
 // 一键升级（v0.8.15 用户要）：买到买不起或到上限为止，返回升了几级
 function bbBuyMax(t,k){let n=0;while(!bbBuy(t,k))n++;return n}
+// only：只升这一座（建筑抽屉里的「全部升级」）
 // 0.12.1（用户定）「建筑」页一键升级：所有已解锁建筑的基础加成都往上升，每次挑等级最低的那一项（平均地升），买不起或都到建筑等级上限为止；返回 {n 升了几级, b 涉及几座建筑}
-function bbBuyAll(){const C=[],W=META.wallet;for(const t in BTT){const T=BTT[t];if(!T||!T.base||!T.base.length||!BDEF[t]||!designUnlocked(t))continue;const cap=olvRec('b',t).lv;for(const k of T.base)if(CFG.olv.items[k])C.push({t,k,cap,L:bbLv(t,k)})}
+function bbBuyAll(only){const C=[],W=META.wallet;for(const t in BTT){const T=BTT[t];if(only&&t!==only)continue;if(!T||!T.base||!T.base.length||!BDEF[t]||!designUnlocked(t))continue;const cap=olvRec('b',t).lv;for(const k of T.base)if(CFG.olv.items[k])C.push({t,k,cap,L:bbLv(t,k)})}
   let n=0;const B=new Set();for(let g=0;g<100000;g++){let x=null;for(const c of C)if(c.L<c.cap&&(!x||c.L<x.L))x=c;if(!x)break;const[d,s]=bbCost(x.L+1);if(W.设计点<d||W.银币<s)break;
     W.设计点-=d;W.银币-=s;x.L++;const st=btState(x.t);(st.bb||(st.bb={}))[x.k]=x.L;n++;B.add(x.t)}
   if(n)saveMeta();return{n,b:B.size}}
@@ -61250,9 +61468,14 @@ function elExpK(e){let k=0;for(const x of e.tr)k+=(EL().traits[x].st.exp||0);for
 const elRankNeed=e=>e.rank>=5?null:{merit:EL().merit.need[e.rank],silver:EL().merit.silver[e.rank]};
 function elRankUp(e){const N=elRankNeed(e);if(!N)return'已经是最高阶';if(e.merit<N.merit)return`功勋不够(需要 ${N.merit})`;if((META.wallet.银币||0)<N.silver)return`银币不够(需要 ${N.silver})`;
   META.wallet.银币-=N.silver;e.rank++;elAutoSk(e,true);saveMeta();return null}
-const elSlots=e=>EL().slots[Math.max(0,Math.min(4,e.rank-1))];
+const elSlots=e=>{const s=EL().slots[Math.max(0,Math.min(4,e.rank-1))],J=EL().jobs[e.job];return J&&J.pasX?[s[0],s[1]+J.pasX]:s};   // pasX：0.12.1 圣骑士多一个被动位
 // —— 转职（用户定：入队后随时花银币）——
-function elJobSet(e,job){if(!EL().jobs[job]||job==='recruit'||job===e.job)return'选一个别的职业';const c=e.job==='recruit'?EL().jobSilver:EL().jobChange;if((META.wallet.银币||0)<c)return`银币不够(需要 ${c})`;
+// 转职条件（0.12.1 用户定；数据 data/el_jobs2 的 unl）：没达到返回原因
+function elJobLock(e,job){const U=(EL().jobs[job]||{}).unl;if(!U||devOn())return'';const o=[];
+  if(U.hero){const H=META.heroes[U.hero];if(!H||!H.owned||(H.star||1)<U.star)o.push(`${CFG.heroes[U.hero].name} ${U.star} 星`)}
+  if(U.tier&&clearTier()<U.tier)o.push(`通关${(CFG.mapPages[U.tier-1]||{name:U.tier+' 阶地区'}).name}的任意一张地图`);
+  if(U.lv&&elLv(e)<U.lv)o.push(`精英 ${U.lv} 级`);return o.length?'要 '+o.join('、'):''}
+function elJobSet(e,job){if(!EL().jobs[job]||job==='recruit'||job===e.job)return'选一个别的职业';{const lk=elJobLock(e,job);if(lk)return lk}const c=e.job==='recruit'?EL().jobSilver:EL().jobChange;if((META.wallet.银币||0)<c)return`银币不够(需要 ${c})`;
   META.wallet.银币-=c;e.job=job;e.ea=e.ea.filter(k=>elSkOk(e,k));e.ep=e.ep.filter(k=>elSkOk(e,k));elGearFix(e);elAutoSk(e,true);saveMeta();return null}
 // —— 技能 ——
 const elFamOk=(e,S)=>!S.fam||S.fam.some(f=>elJobD(e).fam.includes(f));
@@ -61376,6 +61599,8 @@ function elStDesc(st){const pc=x=>Math.round(Math.abs(x)*1000)/10+'%',sg=x=>x<0?
     else if(k==='wallDmg')o.push(`站在城墙上时造成伤害 +${pc(v)}`);
     else if(k==='form')o.push(`${v[0]} 格内每有一名精英减伤 +${pc(v[1])}，至多 ${pc(v[2])}`);
     else if(k==='leadA')o.push(`${v[0]} 格内的士兵造成伤害 +${pc(v[1])}(同类光环只生效一个)`);
+    else if(k==='songA')o.push(`${v[0]} 格内的友军攻速 +${pc(v[1])}、攻击 +${pc(v[2])}(同类光环只生效一个)`);
+    else if(k==='hitSh')o.push(`受到攻击时获得 ${pc(v[1])} 最大生命的护盾，冷却 ${v[0]} 秒`);
     else if(k==='teach')o.push(`当教官时学生学得快 ${pc(v)}`);
     else if(k==='scatter')o.push(`射击额外打 ${v[0]} 个附近的亡灵，${pc(v[2])} 伤害`);
     else if(k==='fix')o.push(`${v[0]} 格内的建筑每秒回复 ${pc(v[1])} 生命上限`);
@@ -61697,14 +61922,17 @@ CFG.skills.elNone={name:'空', cd:999, aim:'self', desc:()=>'没有装配技能'
 // 技能参数（0.12.0 用户定）：那个技能的数据（byStar 取 1★ 那一档）+ 精英的覆盖参数 o = 1 级；削弱后，sc 列的项 × 等级系数 skLvK
 const elSkLvK=lv=>{const K=EL().skLvK;return K[clamp(lv|0,1,K.length)-1]};
 function elSkP(k,lv){const S=EL().skills[k],B=CFG.skills[S.sk]||CFG.skills.elNone,p=Object.assign({},B);if(B.byStar)for(const x in B.byStar)p[x]=B.byStar[x][0];if(S.o)Object.assign(p,S.o);elSkNerf(p,S);
-  const c=elSkLvK(lv);for(const x of S.sc||EL().skSc)if(typeof p[x]==='number')p[x]*=c;p.name=S.name;p.elK=k;p.lv=lv;return p}
+  const c=elSkLvK(lv);for(const x of S.sc||EL().skSc)if(typeof p[x]==='number')p[x]*=c;p.name=S.name;p.elK=k;p.lv=lv;
+  const V=EL().skV&&EL().skV[k];if(V&&lv>=EL().skVLv){if(V.set)Object.assign(p,V.set);if(V.add)for(const x in V.add)p[x]=(p[x]||0)+V.add[x];p.elV=V.t}   // 0.12.1 V 级质变（data/el_jobs2）
+  return p}
 // 0.12.0（用户定）精英技能削弱：固定数值 × fixK，比例超出 100% 的部分 × overK；持续伤害的比例（S.dot）直接 × fixK
 function elSkNerf(p,S){const N=EL().skNerf,D=(S&&S.dot)||[];for(const x of N.fix)if(typeof p[x]==='number')p[x]*=N.fixK;for(const x of N.ratio)if(typeof p[x]==='number'&&!D.includes(x)&&p[x]>1)p[x]=1+(p[x]-1)*N.overK;for(const x of D)if(typeof p[x]==='number')p[x]*=N.fixK}
 // 精英的等级倍率（0.12.0 用户定：线性）
 const elLvK=(L,k)=>1+(Math.max(1,L)-1)*EL().lvLinear[k];
 // 属性合计：地区、普通特性、训练特性、伤病、装配的被动（数组型的特殊效果取较强的）
 function elStatSum(e){const S={},add=st=>{if(!st)return;for(const k in st){const v=st[k];if(typeof v==='number')S[k]=(S[k]||0)+v;else if(Array.isArray(v)){const o=S[k];S[k]=!o||v[0]>o[0]?v:o}else S[k]=v}};
-  const R=EL().regions[e.reg];if(R)add(R.st);for(const k of e.tr)add(EL().traits[k].st);for(const k of e.tt)add(EL().train[k].st);if(e.bt)for(const k of e.bt){const T=elBloodTr()[k];if(T)add(T.st)}if(e.bsp)add(e.bsp);   // bt：0.12.0 家族特性；bsp：家族的特别属性
+  const R=EL().regions[e.reg];if(R)add(R.st);const Jb=EL().jobs[e.job];if(Jb&&Jb.st)add(Jb.st);   // Jb.st：0.12.1 职业自带（圣骑士）
+  for(const k of e.tr)add(EL().traits[k].st);for(const k of e.tt)add(EL().train[k].st);if(e.bt)for(const k of e.bt){const T=elBloodTr()[k];if(T)add(T.st)}if(e.bsp)add(e.bsp);   // bt：0.12.0 家族特性；bsp：家族的特别属性
   for(const k in e.inj){const I=EL().injuries[k];if(I)add(I.st[(e.inj[k].lv||1)-1])}{const w=elWType(e);for(const k of e.ep)if(elSkOk(e,k)&&elSkWOk(k,w))add(elPasSt(k,e.sk[k]||1))}return S}   // 被动：0.12.0 1 级的属性 × 等级系数（game/el_sk2.elPasSt）按 1～4 级
 function elDef(e){const J=elJobD(e),S=elStatSum(e),R=EL().regions[e.reg]||{},M=e.bm||{},p=k=>Math.max(0.1,1+(S[k]||0))*(M[k]||1);   // M：0.12.0 血脉的属性倍率（game/el_blood）
   return{name:elName(e),title:J.name,quality:'white',look:elSprLk(e),elite:true,allSkills:true,stars:[null,{},{},{},{}],skills:[EL_NONE,EL_NONE,EL_NONE],lore:'',
@@ -61714,7 +61942,7 @@ function elDef(e){const J=elJobD(e),S=elStatSum(e),R=EL().regions[e.reg]||{},M=e
 // 抗性：地区的 + 血脉特别属性的毒抗、冰抗、火抗（0.12.0）
 function elResOf(r,S){const o=Object.assign({},r||{});let any=!!r;for(const[a,b]of[['resPoison','poison'],['resFrost','frost'],['resFire','fire']])if(S[a]){o[b]=(o[b]||0)+S[a];any=true}return any?o:null}
 // 小人：职业的图（art 里 el_<职业>）；还没画的先借一位英雄的
-const EL_SPR_FB={recruit:'arthur',assassin:'assassin',berserker:'arthur',spearman:'arthur',shieldGuard:'paladin',marksman:'robin',cannoneer:'gunslinger',musketeer:'gunslinger',lightCav:'camelKnight',heavyCav:'camelKnight',horseArcher:'robin',gunCav:'gunslinger',mage:'merlin',priest:'priest',engineer:'engineer'};
+const EL_SPR_FB={recruit:'arthur',assassin:'assassin',berserker:'arthur',spearman:'arthur',shieldGuard:'paladin',marksman:'robin',cannoneer:'gunslinger',musketeer:'gunslinger',lightCav:'camelKnight',heavyCav:'camelKnight',horseArcher:'robin',gunCav:'gunslinger',mage:'merlin',priest:'priest',engineer:'engineer',druid:'archDruid',alchemist:'poisoner',bard:'arthur',paladin:'paladin'};
 const elSpr=(job,sex)=>sex==='f'&&SPR.heroes['elf_'+job]?'elf_'+job:SPR.heroes['el_'+job]?'el_'+job:EL_SPR_FB[job]||'arthur';   // sex：0.11.4 女性小人 elf_<职业>（art/ef_elite）
 // 出征用的配置（同英雄的 currentHeroSpec）
 function elSpec(e){const it=u=>{const x=itemByUid(u);return x&&!x.book?{base:x.base,enh:x.enh||0,q:x.q||'common',roll:x.roll||null,ax:x.ax&&x.ax.length?x.ax.map(a=>Object.assign({},a)):null}:null};
@@ -61803,7 +62031,7 @@ const EL_WEAK=new Map();const elWeakEff=v=>{let e=EL_WEAK.get(v);if(!e){e={weak:
 feat('elite',{on:()=>!!(G&&((G.elites&&G.elites.length)||elMemOn())),hooks:{
   dmgInF:(u,dmg,o)=>{if(u.isHero&&(u.elite||u.id==='scribe')){UF_DR+=elMemK();if(u.elite){const S=u.d.elS||{};if(o&&(S.drP||S.drM))UF_DR+=ufMg(o)?(S.drM||0):(S.drP||0);if(S.ss&&u.elSs>0)UF_DR+=u.elSs*S.ss[1];   // drP / drM：0.12.0 血脉的物理 / 法术减伤
       if(S.xd){if(!(u.elXdU>G.time))u.elXdN=0;u.elXdN=Math.min(S.xd[2]/S.xd[0],(u.elXdN||0)+1);u.elXdU=G.time+S.xd[1];UF_DR+=u.elXdN*S.xd[0]}
-      if(S.stk){if(!(u.elStkU>G.time))u.elStkN=0;u.elStkN=Math.min(S.stk[2],(u.elStkN||0)+1);u.elStkU=G.time+S.stk[1];UF_DR+=u.elStkN*S.stk[0]}UF_DR+=elDr2(u,S)}}return dmg},   // stk：0.12.0 家族特性「每次受伤叠减伤」（不免控）
+      if(S.stk){if(!(u.elStkU>G.time))u.elStkN=0;u.elStkN=Math.min(S.stk[2],(u.elStkN||0)+1);u.elStkU=G.time+S.stk[1];UF_DR+=u.elStkN*S.stk[0]}UF_DR+=elDr2(u,S);if(S.hitSh&&dmg>0)elHitSh(u,S.hitSh)}}return dmg},   // stk：0.12.0 家族特性「每次受伤叠减伤」（不免控）
   ccInF:(u,t)=>u&&u.elite&&u.d.elS?(u.d.elS.xd?0:u.d.elS.ccR?t*Math.max(0,1-u.d.elS.ccR):t):t,   // ccR：0.12.0 训练「意志训练」
   afterHitE:(i,dmg,o)=>{const h=o&&o.hk;if(h&&h.elite&&!E.alive[i]&&h.d.elS&&h.d.elS.killHeal&&!h.dead)healF(h,h.maxHp*h.d.elS.killHeal)}}});   // killHeal：0.12.0 特性「嗜血」
 // 克劳德自己的增伤（heroRecalc 末尾，和精英一起）
@@ -61860,14 +62088,15 @@ const EL_PAS=new Map();
 function elPasSt(k,lv){const key=k+'|'+lv;let o=EL_PAS.get(key);if(o)return o;const P=EL().skills[k];if(!P)return null;const b=P.st1||P.st;if(!b)return null;
   const c=elSkLvK(lv),A=EL().skScA,D=EL().skScD,r4=x=>Math.round(x*10000)/10000;o={};
   for(const x in b){const v=b[x];if(typeof v==='number')o[x]=x==='backstab'||x==='night'||x==='noble'?v:r4(v*c);else if(Array.isArray(v)){const a=v.slice();for(const i of A[x]||[])a[i]=r4(a[i]*c);for(const i of D[x]||[])a[i]=Math.round(a[i]/c*10)/10;o[x]=a}else o[x]=v}
+  if(P.lvT)for(const x in P.lvT){const T=P.lvT[x];o[x]=T[Math.min(T.length,Math.max(1,lv|0))-1]}   // lvT：0.12.1 按等级查表（赞颂之歌）
   EL_PAS.set(key,o);return o}
 // 技能说明：按这一级的参数写（主动用那个技能的 desc(p)，被动按属性自动写）
 function elSkDesc(k,lv){const S=EL().skills[k];if(!S)return'';lv=Math.max(1,lv|0);const wq=S.wreq?`(要拿${S.wreq.map(t=>(CFG.weaponTypes[t]||{name:t}).name).join(' / ')})`:'';if(S.pas)return(elStDesc(elPasSt(k,lv))||S.desc||'')+wq;
-  const B=CFG.skills[S.sk];try{if(B&&typeof B.desc==='function')return B.desc(elSkP(k,lv))+wq}catch(e){console.warn('elSkDesc',k,e)}return(S.desc||'')+wq}
+  const B=CFG.skills[S.sk],V=EL().skV&&EL().skV[k],vt=V?(lv>=EL().skVLv?`【V 级】${V.t}`:`(V 级起：${V.t})`):'';try{if(B&&typeof B.desc==='function')return B.desc(elSkP(k,lv))+wq+vt}catch(e){console.warn('elSkDesc',k,e)}return(S.desc||'')+wq}
 // 精英拿的武器类型（被动的武器要求用）
 const elWType=e=>{const w=e&&e.gear&&e.gear.w?itemByUid(e.gear.w):null;return w&&CFG.weapons[w.base]?{type:CFG.weapons[w.base].type}:null};
 // —— 每帧（EL_FX.tick 开头）：大地重锤蓄力、驼队到时间、各种被动 ——
-const EL_CMD_E=new Map(),EL_WALL_E=new Map(),EL_TMP_E=new Map(),EL_LEAD_E=new Map();
+const EL_SONG_E=new Map(),EL_CMD_E=new Map(),EL_WALL_E=new Map(),EL_TMP_E=new Map(),EL_LEAD_E=new Map();
 const elEffOf=(M,k,f)=>{let e=M.get(k);if(!e){e=f();M.set(k,e)}return e};
 function elFx2Tick(h,dt,S){
   if(h.haSmT>0){if(!(h.busyT>0))h.haSmT=0;else{h.haSmT-=dt;if(h.haSmT<=0){h.haSmT=0;haSmash(h,h.haSmP)}}}   // 大地重锤（同 heroes/ha_andrew 的 tick）
@@ -61888,6 +62117,7 @@ function elFx2Tick(h,dt,S){
     bkCast({k:'rect',len:S.jav[1],w:0.8},{who:'E',maxN:3,crit:h.crit,pen:(h.ws.pen||0)+2,mix:{pierce:1},fx:null},bkCH(h,skV(h,0,S.jav[2]),h.x,h.y,ang));h.facing=Math.cos(ang)>=0?1:-1;h.thrust=0.15;sfx('swing',h.x,h.y)}}   // 标枪
   if(S.imm){if(h.immN>0)h.elImU=0;else if(!h.elImU)h.elImU=T+S.imm[0];else if(T>=h.elImU){h.immN=1;h.immT=1e9;h.elImU=0}}   // 圣光护盾：每隔一段时间免疫下一次伤害
   if(S.decoy&&T>=(h.elDcU||0)&&h.hp<h.maxHp*S.decoy[1]&&h.layer!==1&&SK.decoyBomb){h.elDcU=T+S.decoy[0];SK.decoyBomb.cast(h,elHeroSkP('decoyBomb'))}   // 金蝉脱壳
+  if(S.songA)bfAuraF(h.x,h.y,S.songA[0]*16,'elSongA',elEffOf(EL_SONG_E,S.songA[1]+'|'+S.songA[2],()=>({aspd:S.songA[1],atk:S.songA[2]})));   // 赞颂之歌（0.12.1）：友军（含英雄）攻速、攻击；同 id 不叠加
   if(S.cmdA)bfAuraF(h.x,h.y,S.cmdA[0]*16,'elCmdA',elEffOf(EL_CMD_E,S.cmdA[1],()=>({aspd:S.cmdA[1]})),{heroes:false});   // 统御：同 id 不叠加
   if(S.wallA)bfAuraF(h.x,h.y,S.wallA[0]*16,'elWallA',elEffOf(EL_WALL_E,S.wallA[1],()=>({dr:S.wallA[1]})));
   if(S.temperA)bfAuraF(h.x,h.y,S.temperA[0]*16,'elTempA',elEffOf(EL_TMP_E,S.temperA[1],()=>({atk:S.temperA[1],dr:S.temperA[1]})));
@@ -61942,7 +62172,17 @@ function elBwHit(h,i){if(h.elBwU>G.time&&h.ws.cls==='melee'&&E.alive[i])shieldBa
 // 条件增伤 / 减伤（0.12.0 特性、训练）：EL_FX.ampX、feat('elite').dmgInF 里加
 const elNight=()=>typeof ENV!=='undefined'&&ENV.dayVis<1;
 function elAmp2(h,S){let x=h.elAlone||0;if(S.lowDmg&&h.hp<h.maxHp*S.lowDmg[0])x+=S.lowDmg[1];if(S.nightDmg&&elNight())x+=S.nightDmg;if(S.wallDmg&&h.layer===1)x+=S.wallDmg;if(S.home&&G.invade)x+=S.home;return x}
+// 圣骑士（0.12.1 用户定）：受到攻击时获得最大生命 v[1] 的护盾，冷却 v[0] 秒
+function elHitSh(u,v){if(G.time<(u.elHsU||0))return;u.elHsU=G.time+v[0];const a=u.maxHp*v[1];if(!(u.shieldHp>a)){u.shieldHp=a;u.shieldMax=a}u.shieldT=Math.max(u.shieldT||0,v[0]);healFx(u.x,u.y-10,'#f3d47c')}
 function elDr2(u,S){let x=(u.elCrowdDR||0)+(u.elFormDR||0);if(S.lowDr&&u.hp<u.maxHp*S.lowDr[0])x+=S.lowDr[1];if(S.home&&G.invade)x+=S.home;return x}
+// 召唤狼群（0.12.1 用户定，限定德鲁伊）：召唤 p.n 只森林狼（同时最多 p.n 只），属性 × p.k（技能等级系数）；狼借英雄艾伦尼塔的 druidWolf
+const elWolfN=h=>{let n=0;for(let i=0;i<G.soldiers.length;i++){const s=G.soldiers[i];if(!s.dead&&s.summon&&s.owner===h&&s.type==='druidWolf')n++}return n};
+SK.elWolves={cast(h,p){const k=Math.min(p.n,p.n-elWolfN(h));if(k<=0)return false;const m=p.k||1;
+    for(let q=0;q<k;q++){const a=q/k*Math.PI*2+vr(0,1);let x=clamp(h.x+Math.cos(a)*14,8,MW-8),y=clamp(h.y+Math.sin(a)*10,8,MH-8);if(!friendPassPt(x,y)){x=h.x;y=h.y}
+      const u=makeSoldier({level:1,x,y,slots:0},p.unit||'druidWolf');u.camp=null;u.owner=h;u.summon=true;u.pet=true;u.x=x;u.y=y;u.statMul=m;u.baseHp=u.c.hp*m;u.maxHp=u.baseHp*(1+pm.unitHp+TM.uHp);u.hp=u.maxHp;G.soldiers.push(u);
+      if(inViewPt(x,y))for(let i=0;i<8;i++)pp(x+vr(-6,6),y,0,vr(-10,10),vr(-6,6),vr(6,14),0,vr(0.4,0.8),vpick(LEAF_C),2,2,1)}
+    sfx('summon');return true},
+  ai(h,p){return G.phase==='wave'&&elWolfN(h)<p.n&&countNear(h.x,h.y,10*16)>=1?{}:null}};
 
 // ---------- 0.12.0 精英的样貌（数据 data/el_look.js）：生成、遗传、合成小人 ----------
 // x.lk = {sk, hr, ey, ear, b}（下标）。没有的（老存档、配偶）第一次用到时补：有父母的按父母遗传，没有的按地区文化圈 + 家族出
@@ -64005,7 +64245,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.1d',GAME_TAG='测试版',GAME_CODE=163,GAME_BUILD="1572942",GAME_BUILT=1792979822347,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.1e',GAME_TAG='测试版',GAME_CODE=163,GAME_BUILD="81e6644",GAME_BUILT=1792981288483,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -64709,15 +64949,15 @@ function showHub(tab){
   v14Notes();   // v0.11.4 红色英雄五星返还的提示
   if(META.bbRefund){const R=META.bbRefund;delete META.bbRefund;saveMeta();setTimeout(()=>toast(`血池的基础加成换成了储蓄上限、储蓄速度、生命：原来点的已返还设计点 ${R.d}、银币 ${R.s}`),350)}   // v0.10.10（game/olv bbMigrate）
   if(META.olvRefund){const R=META.olvRefund;delete META.olvRefund;saveMeta();setTimeout(()=>toast(`建筑科技的基础三项改成了「建筑等级 + 基础加成」：已返还设计点 ${R.d}、银币 ${R.s}`),300)}   // v0.8.14   // invCheck：v0.6.2 入侵——过了 6 小时的时段就掷一次
-  if(hubTab==='go')body=hubGo();else if(hubTab==='settle')body=elTopTabs()+(EL_TOP==='elite'?elHub():hubSettle());else if(hubTab==='tech')body=hubTech();else if(hubTab==='hero')body=hubHero_();else if(hubTab==='shop')body=hubShop();else if(hubTab==='daily')body=chDaily();else if(hubTab==='soul')body=hubSoul();   // chDaily：代理 CH 日常页加「成就」页签（ui/ch_ach）
+  if(hubTab==='go')body=hubGo();else if(hubTab==='settle')body=hubSettle();else if(hubTab==='tech')body=hubTech();else if(hubTab==='hero')body=elTopTabs()+(EL_TOP==='elite'?elHub():hubHero_());else if(hubTab==='shop')body=hubShop();else if(hubTab==='daily')body=chDaily();else if(hubTab==='soul')body=hubSoul();   // chDaily：代理 CH 日常页加「成就」页签（ui/ch_ach）   // 英雄页：0.12.1（用户定）精英从开拓地挪过来，顶上「英雄 / 精英」
   else if(hubTab==='design'){body=hubDesign();over=btOpen?btDrawer(btOpen):(btShown=null,'')}else body=hubStore();
   if(hubTab!=='go')contPop=false;else if(contPop&&allSaves().length)over=contPopHTML();
-  if(hubTab==='settle')over=EL_TOP==='elite'?elPopHTML():wmPopHTML('settle');else if(hubTab!=='settle'&&sheet.dataset.view==='hub:settle')WM_POP=null;   // EL_TOP：v0.11.4 开拓地页顶部「开拓地 / 精英」
-  if(!running&&(!over||(hubTab==='settle'&&EL_TOP==='elite'))){try{elTick()}catch(e){}if(EL_EVON&&elEvPending())over=elEvPopHTML()+(over||'')}   // 0.12.1 日志里点「详情」等：精英弹窗叠在日志上面   // 0.12.0 精英日志：不自动弹，玩家点「日志」(有红点)才弹（ui/el_ui）
+  if(hubTab==='settle')over=wmPopHTML('settle');else if(hubTab==='hero'&&EL_TOP==='elite')over=elPopHTML();else if(hubTab!=='settle'&&sheet.dataset.view==='hub:settle')WM_POP=null;   // EL_TOP：v0.11.4 开拓地页顶部「开拓地 / 精英」
+  if(!running&&(!over||(hubTab==='hero'&&EL_TOP==='elite'))){try{elTick()}catch(e){}if(EL_EVON&&elEvPending())over=elEvPopHTML()+(over||'')}   // 0.12.1 日志里点「详情」等：精英弹窗叠在日志上面   // 0.12.0 精英日志：不自动弹，玩家点「日志」(有红点)才弹（ui/el_ui）
   if(hubTab!=='settle')ST_GAR=ST_AL=ST_DET=ST_NOGAR=ZL_ED=KT2_GOD=null;else if(ZL_ED)over=zlEdPopHTML()||over;else if(ST_NOGAR)over=stNoGarPopHTML()||over;else if(ST_GAR)over=stGarPopHTML()||over;else if(ST_AL)over=stAlPopHTML()||over;else if(ST_DET&&!stMapView())over=stDetPopHTML()||over;   // ST_GAR：第三步驻扎英雄的弹窗   // v0.10.0 开拓地调配的弹窗（盖在大地图的地区面板上，关掉回到那里）   // v0.9.51 开拓地页默认大地图：点地区弹面板   // 代理 KT：列表模式也用大地图的地区面板（用户定：两边共用一套）   // ZL_ED：代理 ZL 加，开拓地政令的弹窗（ui/zl_settle）
-  openModal('start',scrHTML({title:'营地',back:['menu','','主界面'],rail:hubRail(hubTab),sk:'hub-'+hubTab,body:hubIntro(hubTab)+body,over}),null,true,'hub:'+hubTab);
+  openModal('start',scrHTML({title:'营地',back:['menu','','主界面'],rail:hubRail(hubTab),sk:'hub-'+hubTab+(hubTab==='hero'&&EL_TOP==='elite'?'-el':''),body:hubIntro(hubTab)+body,over}),null,true,'hub:'+hubTab);
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(railMoreSync);
-  if(hubTab==='hero'&&typeof requestAnimationFrame==='function')requestAnimationFrame(()=>skinPagerInit(0));   // v0.10.2 英雄页的皮肤切换
+  if(hubTab==='hero'&&EL_TOP!=='elite'&&typeof requestAnimationFrame==='function')requestAnimationFrame(()=>skinPagerInit(0));   // v0.10.2 英雄页的皮肤切换
   clearInterval(hubTimer);
 }
 const starsHTML=n=>`<span class="stars">${'★'.repeat(n)}<i>${'★'.repeat(5-n)}</i></span>`;
@@ -65281,6 +65521,7 @@ function onSheetClick(e){
   else if(a==='btopen'){btOpen=btOpen===v?null:v;if(btOpen&&BDEF[v])designCat=BDEF[v].cat;showHub('design')}
   else if(a==='dcat'){designCat=v;btOpen=null;showHub('design')}   // v0.3.4 建筑页分类
   else if(a==='btclose'){btOpen=null;showHub('design')}
+  else if(a==='bbtall'){const r=bbBuyAll(v);if(r.n){sfx('pick');toast(`${BDEF[v].name}：基础加成共升了 ${r.n} 级`)}else toast('没有能升的：都到建筑等级上限了，或者设计点、银币不够');showHub('design')}
   else if(a==='bball'){if(!BB_ALL){BB_ALL=true;showHub('design');return}BB_ALL=false;const r=bbBuyAll();if(r.n){sfx('pick');toast(`一键升级：${r.b} 座建筑的基础加成共升了 ${r.n} 级`)}else toast('没有能升的：都到建筑等级上限了，或者设计点、银币不够');showHub('design')}
   else if(a==='btbuy'){const[t,k]=v.split(':'),err=btBuy(t,k);if(err)toast(err);else{sfx('pick');toast(`${BDEF[t].name}：${CFG.btech.base[k].name} 升到 ${btLv(t,k)} 级`)}showHub('design')}
   else if(a==='evobuy'){const[t,id]=v.split(':'),err=evoBuy(t,id);if(err)toast(err);else{sfx('pick');toast(`${BDEF[t].name}：解锁「${BTT[evoK(t)].evo[id].name}」`)}showHub('design')}
@@ -65506,7 +65747,7 @@ function olvUseSet(v){const[kind,k,d]=v.split(':'),r=olvRec(kind,k),dev=devOn(),
 // 基础加成的行（建筑抽屉）：v0.8.15 每一项一根使用等级拉条 + 输入框（大于已买等级取已买、小于 0 取 0，默认最大），升级 / 一键升级
 function bbRowsHTML(t){const T=BTT[t];if(!T||!T.base.length)return'<p class="meta">这座建筑没有基础加成</p>';const W=META.wallet,cap=olvRec('b',t).lv,un=designUnlocked(t),O=CFG.olv;
   const fv=(I,n)=>I.kind==='atk'?'×'+(Math.round(u2BAtk(n)*1000)/1000):I.kind==='hp'?'×'+(Math.round(u2BHp(n)*1000)/1000):I.fmt==='%'?'+'+Math.round(n*I.per*1000)/10+'%':'+'+(Math.round(n*I.per*100)/100).toFixed(2);
-  return T.base.map(k=>{const I=O.items[k],L=bbLv(t,k),u=bbUse(t,k),[d,s]=bbCost(L+1),ok=W.设计点>=d&&W.银币>=s;
+  return`<div class="row2"><button class="px on" type="button" data-act="bbtall" data-v="${t}" ${un?'':'disabled'}>一键升级全部基础加成</button><span class="meta">每次挑等级最低的一项升一级，到建筑等级上限或设计点、银币不够为止</span></div>`+T.base.map(k=>{const I=O.items[k],L=bbLv(t,k),u=bbUse(t,k),[d,s]=bbCost(L+1),ok=W.设计点>=d&&W.银币>=s;
     return`<div class="btrow bbrow"><div><b>${I.name}</b><span class="meta">${I.desc} · 已升 Lv${L} / ${cap}${(I.kind==='atk'||I.kind==='hp')&&L<O.capMax?` · 下一级 +${Math.round(u2BStep(L+1,I.kind)*1000)/10}%`:''}</span></div><span class="btv">${u?fv(I,u):'—'}</span>
       ${rlFold('bu:'+t+':'+k,'使用 Lv<b class="rlv">'+u+'</b>',`<span class="bbuse">使用 <input type="range" min="0" max="${L}" step="1" value="${u}" data-bu="${t}:${k}" ${L?'':'disabled'} aria-label="${I.name} 使用等级"><input type="number" min="0" max="${L}" step="1" value="${u}" data-bu="${t}:${k}" class="olvn" ${L?'':'disabled'} aria-label="${I.name} 使用等级"></span>`)}
       ${L>=cap?`<span class="meta">${cap>=O.capMax?'满级':'到建筑等级上限'}</span>`:`<span class="row2"><button class="px" type="button" data-act="bbbuy" data-v="${t}:${k}" ${un&&ok?'':'disabled'}>升级<em>${d} 设计 · ${s} 银</em></button><button class="px" type="button" data-act="bbmax" data-v="${t}:${k}" ${un&&ok?'':'disabled'}>一键升级</button></span>`}</div>`}).join('')}
@@ -67817,10 +68058,10 @@ Object.assign(F1_BN,{hhBw:'布武之策',hhDs:'定四方'});   // 选中士兵 /
 META_LATE.push(['hhOlvMax',m=>{if(!m)return;const O=m.olv||(m.olv={b:{},h:{}}),H=O.h||(O.h={}),r=H[HH_ID]||(H[HH_ID]={lv:1,exp:0,use:0});r.lv=CFG.olv.capMax;r.exp=0}]);
 
 // ---------- 0.11.4 精英士兵：界面（用户 2026-10-24 策划；逻辑 game/el_core、game/el_battle）----------
-// 开拓地页顶部「开拓地 / 精英」（EL_TOP）；精英页分「精英 · 名册 · 教官 · 训练所」（EL_SUB）；地区面板多一个「招募」页签（elRecHTML）
+// 英雄页顶部「英雄 / 精英」（EL_TOP；0.12.1 用户定，从开拓地页挪过来）；精英页分「精英 · 名册 · 教官 · 训练所」（EL_SUB）；地区面板多一个「招募」页签（elRecHTML）
 // 弹窗（EL_POP）：属性详情、装备、技能、转职、日志、伤病、退休（要输入 ok）、族谱；局内指挥面板的「精英」页（elCmdBody）
 // 0.11.4 界面调整（用户 2026-10-24）：卡片按钮横排在右侧、信息进「属性详情」；装备栏 / 仓库、转职平铺；技能只列能学的；族谱是分支树；精英页多「招募」页签（各地区竖排，人横排）
-let EL_EVX=new Set(),EL_EVT='',EL_TOP='settle',EL_SUB='list',EL_POP=null,EL_SORT='id',EL_Q='',EL_CARDV='sk',EL_EQT='st',EL_EQS='',EL_JOBASK='';   // 0.12.0：EL_CARDV 卡片右侧显示技能 / 装备；EL_EQT 装备弹窗的页签（属性 / 装备背包）；EL_EQS 背包只看哪个部位；EL_JOBASK 等确认的转职
+let EL_EVX=new Set(),EL_EVT='',EL_TOP='hero',EL_SUB='list',EL_POP=null,EL_SORT='id',EL_Q='',EL_CARDV='sk',EL_EQT='st',EL_EQS='',EL_JOBASK='';   // 0.12.0：EL_CARDV 卡片右侧显示技能 / 装备；EL_EQT 装备弹窗的页签（属性 / 装备背包）；EL_EQS 背包只看哪个部位；EL_JOBASK 等确认的转职
 {const css=`
 .eltop{display:flex;gap:8px;margin:0 0 10px}.eltop .px{min-height:40px;font-size:1.05rem;padding:6px 18px}
 .elhead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}.elhead .meta{margin-right:auto}
@@ -67868,7 +68109,7 @@ let EL_EVX=new Set(),EL_EVT='',EL_TOP='settle',EL_SUB='list',EL_POP=null,EL_SORT
 .elhs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;touch-action:pan-x pan-y}.elto{flex:none;width:9.5em;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;background:#1a1622;box-shadow:inset 0 0 0 1px var(--iron);color:var(--bone);font:inherit;text-align:center;cursor:pointer;border:0}.elto b{font-weight:400;font-size:.84rem}.elto span{font-size:.72rem;color:var(--ash);line-height:1.3}.elto.on{box-shadow:inset 0 0 0 2px var(--brass)}.elto.pk{box-shadow:0 0 0 2px var(--brass-hi)}.elto:disabled{opacity:.45;cursor:default}
 .elslots{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:4px 0}.elslot{padding:2px 8px;font-size:.78rem;background:#120f17;box-shadow:inset 0 0 0 1px var(--iron);color:var(--ash)}.elslot.on{color:var(--brass-hi);box-shadow:inset 0 0 0 1px var(--brass)}
 .elspg{display:grid;grid-template-columns:repeat(auto-fill,minmax(8.5em,1fr));gap:6px;margin:6px 0}.elspk{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;background:#1a1622;box-shadow:inset 0 0 0 1px var(--iron)}.elspk.on{box-shadow:inset 0 0 0 2px var(--brass)}.elspk b{font-weight:400;color:var(--bone)}.elspv{color:var(--brass-hi);font-size:1.05rem}
-.elbrow{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px}   /* 0.12.1 按钮固定一行、详情在最前 */
+.elbrow{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px}.elok{color:#7ad07a!important}.elng{color:#e06a5a!important}.elcfm{font-size:.8rem;padding:1px 6px;box-shadow:inset 0 0 0 1px var(--iron)}   /* 0.12.1 按钮固定一行、详情在最前 */
 .elmer{display:flex;align-items:center;gap:8px;margin:6px 0}.elmerb{position:relative;flex:1;height:20px;background:#0e0c12;box-shadow:inset 0 0 0 1px var(--iron)}.elmerb span{position:absolute;left:0;top:0;bottom:0;background:#7a5a20}.elmerb em{position:relative;display:block;text-align:center;line-height:20px;font-style:normal;font-size:.8rem;color:#fff;text-shadow:1px 1px 0 #000}
 .elskr{display:flex;gap:4px;overflow-x:auto;max-width:100%;padding:2px 0 4px;touch-action:pan-x pan-y}.elskc{flex:none;display:flex;flex-direction:column;align-items:center;width:4.2em}.elskc small{font-size:.68rem;color:var(--ash);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.elskc .elski{display:inline-block}
 .elchip[role=button]{cursor:pointer}.eltip{width:min(calc(360px * var(--fk,1)),calc(100% - 30px))}.elcftr{padding:4px 0;border-bottom:1px solid #2a2433}.elopt.pk{box-shadow:0 0 0 2px var(--brass-hi)}.elpk{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#120f17;padding:6px 8px;margin:2px 0 4px}.elpk .elbr{margin-left:auto}
@@ -67895,6 +68136,7 @@ let EL_TIP=null;
 function elTrInfo(kind,key){if(kind==='tr'){const T=EL().traits[key];return T&&{ico:elIc(T.q<0?'tr:neg':'tr:pos'),name:T.name,cls:T.q<0?'bad':'',desc:T.desc,sub:T.q<0?'负面特性':'特性'}}
   if(kind==='tt'){const T=EL().train[key];return T&&{ico:elIc('tr:train'),name:T.name,cls:'tt',desc:T.desc,sub:`训练特性 · ${T.lv} 阶`}}
   if(kind==='bt'){const T=elBloodTr()[key];if(!T)return null;const B=elBlood()[T.blood];return{ico:elCrI(T.blood),name:T.name,cls:'fam',desc:T.desc,sub:`${B?B.name:''}家族特性 · 血脉到 ${Math.round(T.min*100)}% 才可能有`}}
+  if(kind==='pe'){const P=EL().personality[key];return P&&{ico:'',name:'性格「'+P.name+'」',cls:'',desc:P.desc||'',sub:'性格决定局内的走位、什么时候回城回血'}}   // 0.12.1（用户定）性格说明收进问号
   if(kind==='co'){const[thr,k]=String(key).split('|'),O=CFG.elite.cfam.trAll[k];if(!O)return null;const px=EL().bloodTrPX[+thr]||[0,0];return{ico:elIc('tr:pos'),name:O.name,cls:'fam',desc:O.desc,sub:`自建家族特性 · ${Math.round(+thr*100)}% 那一格 · 要家族 ${O.t} 阶`}}return null}
 const elTrChip=(kind,key)=>{const I=elTrInfo(kind,key);return I?`<span class="elchip${I.cls?' '+I.cls:''}" role="button" data-act="elxtip" data-v="${kind}|${key}">${I.ico}${I.name}</span>`:''};
 function elTipHTML(){const i=EL_TIP.indexOf('|'),I=elTrInfo(EL_TIP.slice(0,i),EL_TIP.slice(i+1));if(!I){EL_TIP=null;return''}
@@ -67905,7 +68147,7 @@ const elAgeTxt=e=>`${Math.floor(e.age)} 岁`;
 const elBtn=(a,v,t,o)=>{o=o||{};return`<button class="px${o.on?' on':''}" type="button" data-act="${a}" data-v="${v}"${o.dis?' disabled':''}${o.ti?` title="${o.ti}"`:''}>${t}</button>`};
 // —— 开拓地页顶部 ——
 let EL_EVON=false;   // 0.12.0（用户定）日志不自动弹，点了才弹
-function elTopTabs(){const ev=elEvPending();return`<div class="eltop">${[['settle','开拓地'],['elite','精英']].map(([k,n])=>elBtn('elxtop',k,n,{on:EL_TOP===k})).join('')}<span class="elbr${ev?' elnew':''}">${elBtn('elxevo','',ev?`精英日志 ${elSt().ev.length}`:'精英日志',{dis:!ev,ti:ev?'这段时间精英的事：学会技能、出生、成家、伤好了':'暂时没有新日志'})}</span></div>`}
+function elTopTabs(){const ev=elEvPending();return`<div class="eltop">${[['hero','英雄'],['elite','精英']].map(([k,n])=>elBtn('elxtop',k,n,{on:(EL_TOP==='elite')===(k==='elite')})).join('')}<span class="elbr${ev?' elnew':''}">${elBtn('elxevo','',ev?`精英日志 ${elSt().ev.length}`:'精英日志',{dis:!ev,ti:ev?'这段时间精英的事：学会技能、出生、成家、伤好了':'暂时没有新日志'})}</span></div>`}
 function elHub(){elTick();elAllySync();const m=elSt();const tabs=`<div class="tabs sub">${[['list','精英'],['rec','招募'],['mar','婚配'],['rep','声望'],['cf','家族'],['roll','名册'],['kids','训练所']].map(([k,n])=>elBtn('elxsub',k,n,{on:EL_SUB===k})).join('')}</div>`;
   return`<div class="kt2 elui">${tabs}${EL_SUB==='rec'?elRecAllHTML():EL_SUB==='mar'?elMarHTML():EL_SUB==='rep'?elRepHTML():EL_SUB==='cf'?elCfHTML():EL_SUB==='roll'?elRollHTML():EL_SUB==='ins'||EL_SUB==='kids'?elKidsHTML():elListHTML()}</div>`}
 // —— 精英列表 ——
@@ -67945,7 +68187,7 @@ function elMeritBar(e,N){const m=Math.round(e.merit),p=N?Math.min(1,m/Math.max(1
 function elInfoHTML(e){const J=elJobD(e),P=EL().personality[e.pers],R=EL().regions[e.reg],N=elRankNeed(e),d=elDef(e),lv=elLv(e);
   const L=e.learn?`<p>正在学：<b>${EL().skills[e.learn.k].name} ${elRoman(e.learn.lv)} 级</b>，还要 ${Math.max(0,Math.ceil((e.learn.end-metaNow())/60000))} 分钟</p>`:'';
   return`<div class="elinfo"><p><b>${J.name}</b> · Lv${lv} · 功勋 ${e.rank} 阶 · 第 ${e.gen||1} 代</p>
-    <p class="meta">${elAgeTxt(e)}(${e.life-EL().retireBefore} 岁退休) · ${CFG.maps[e.reg]?CFG.maps[e.reg].name:''}${R?`(${R.desc})`:''}<br>性格「${P.name}」：${P.desc||''}</p>
+    <p class="meta">${elAgeTxt(e)}(${e.life-EL().retireBefore} 岁退休) · ${CFG.maps[e.reg]?CFG.maps[e.reg].name:''}${R?`(${R.desc})`:''}<br>性格「${P.name}」<span class="hq" role="button" data-act="elxtip" data-v="pe|${e.pers}" aria-label="说明">?</span></p>
     ${elMeritBar(e,N)}<p class="meta">${N?`升到 ${e.rank+1} 阶要 ${N.merit} 功勋 + ${N.silver} 银币 · `:''}出战 ${e.log.n} 次、击杀 ${e.log.k}</p>${L}
     <div class="elchips">${elTraitChips(e)||'<span class="meta">没有特性</span>'}${elInjChips(e)}</div>
     <p class="meta">${e.tr.map(k=>EL().traits[k]).concat(e.tt.map(k=>EL().train[k])).map(T=>`${T.name}：${T.desc}`).join('<br>')}</p>
@@ -68011,7 +68253,7 @@ function elSkHTML(e){const sl=elSlots(e),N=elRankNeed(e),av=elSkAvail(e);
 function elJobHTML(e){const J=EL().jobs,c=e.job==='recruit'?EL().jobSilver:EL().jobChange;
   return`<p class="meta">现在：<b>${elJobD(e).name}</b>。转职花 ${c} 银币(新兵第一次转职 ${EL().jobSilver}，之后换职业 ${EL().jobChange})；换职业后，新职业用不了的技能、装备会卸下(技能等级保留)。</p>
     <div class="elgrid">${Object.keys(J).filter(k=>k!=='recruit').map(k=>{const j=J[k];   // 0.11.4（用户定）平铺：名字在上、小人在中、转职按钮在下
-      return`<div class="hst${k===e.job?' on':''}" title="生命 ${j.hp} · 物攻 ${j.atk} · 法攻 ${j.ap} · 物防 ${j.def} · 移速 ${j.speed}"><b>${j.name}</b><img class="gp" alt="" src="${heroIcon(elSprLk({job:k,sex:e.sex,lk:elLook(e)}),2)}"><span class="meta">${j.fam.map(f=>EL().famName[f]).join(' / ')}<br>${j.weapon.map(t=>CFG.weaponTypes[t].name).join('、')}</span>${k===e.job?elBtn('elxjob',e.id+':'+k,'当前',{dis:true}):EL_JOBASK===k?elBtn('elxjobok',e.id+':'+k,`确认(${c} 银币)`,{on:true})+elBtn('elxjob',e.id+':','取消'):elBtn('elxjob',e.id+':'+k,'转职')}</div>`}).join('')}</div>`}   // 0.12.0（用户定）转职要确认
+      return`<div class="hst${k===e.job?' on':''}" title="生命 ${j.hp} · 物攻 ${j.atk} · 法攻 ${j.ap} · 物防 ${j.def} · 移速 ${j.speed}"><b>${j.name}</b><img class="gp" alt="" src="${heroIcon(elSprLk({job:k,sex:e.sex,lk:elLook(e)}),2)}"><span class="meta">${j.fam.map(f=>EL().famName[f]).join(' / ')}<br>${j.weapon.map(t=>CFG.weaponTypes[t].name).join('、')}${j.pasX?`<br>被动技能位 +${j.pasX}`:''}${j.st?'<br>'+elStDesc(j.st):''}</span>${k===e.job?elBtn('elxjob',e.id+':'+k,'当前',{dis:true}):elJobLock(e,k)?`<span class="meta warn">${elJobLock(e,k)}</span>`+elBtn('elxjob',e.id+':'+k,'转职',{dis:true}):EL_JOBASK===k?elBtn('elxjobok',e.id+':'+k,`确认(${c} 银币)`,{on:true})+elBtn('elxjob',e.id+':','取消'):elBtn('elxjob',e.id+':'+k,'转职')}</div>`}).join('')}</div>`}   // 0.12.0（用户定）转职要确认
 function elLogHTML(e){const g=e.log;
   return`${e.st?`<p class="meta">${e.st==='dead'?'已故':'已退休'} · ${elAgeTxt(e)} ${elBtn('elxpop','tree:'+e.id,'族谱')}</p>`:''}<p>出战 <b>${g.n}</b> 次 · 击杀 <b>${g.k}</b> · 输出 <b>${numK(g.d)}</b> · 承伤 <b>${numK(g.t)}</b> · 治疗 <b>${numK(g.h)}</b> · 控制 <b>${f1g(g.c)}</b> 秒</p>
     <table class="ellog"><tr><th>时间</th><th>地图</th><th>波</th><th>击杀</th><th>输出</th><th>承伤</th><th>治疗</th><th>控制</th><th>功勋</th></tr>${g.L.map(L=>L.birth?`<tr><td>${new Date(L.at).toLocaleString()}</td><td colspan="8">生下了 <b>${(elById(L.birth)&&elName(elById(L.birth)))||L.bn||''}</b></td></tr>`:`<tr><td>${new Date(L.at).toLocaleString()}${L.dead?' (倒下)':''}</td><td>${CFG.maps[L.map]?CFG.maps[L.map].name:''}</td><td>${L.w}</td><td>${L.k}</td><td>${numK(L.d)}</td><td>${numK(L.t)}</td><td>${numK(L.h)}</td><td>${L.c}</td><td>+${L.m}</td></tr>`).join('')}</table>`}
@@ -68206,7 +68448,13 @@ function elCfTabHTML(cf,t){const C=CFG.elite.cfam,E=EL(),SP=E.bloodSpName,id='f_
   if(t==='cr'){const P=EL_CRE[cf.id]||cf.crest,ch=['shape','bg','pat','fg'].some(k=>P[k]!==cf.crest[k]);return`<div class="elrow">${elCrestImg(cf.crest,48)}${ch?`<span class="meta">→</span>${elCrestImg(P,48)}`:''}<span class="meta">建立后改徽记要 ${C.crestGold} 金币：先在下面挑好，再点确认。</span>${ch?elBtn('elxcfcok',cf.id,`确认修改(${C.crestGold} 金币)`,{on:true})+elBtn('elxcfcno',cf.id,'还原'):''}</div>${elCrestPick(P,'elxcfc',cf.id+'|')}`}
   const N=elCfUpNeed(cf),SPt=elCfSpTxt(cf.sp),TRt=C.thr.filter(x=>cf.tr[x]).map(x=>`${Math.round(x*100)}% ${elTrChip('co',x+'|'+cf.tr[x])}`).join(' ')||'无';
   return`<div class="elrow">${elCrestImg(cf.crest,48)}<div><b>${B?B.name:cf.name}</b> <span class="meta">${cf.tier} 阶 · 王都 · 现有 ${elBlCount(id)} 人带这个血脉</span><br><span class="meta">属性上限已分配 ${Math.round(elCfUsed(cf)*100)}% · 特别属性：${SPt} · 家族特性：${TRt}</span></div></div>
-    <h5>升阶</h5>${N?`<p class="meta">升到 ${cf.tier+1} 阶：要 ${CFG.mapPages[cf.tier-1].name} 的地图都拿到深渊徽章${N.badge.length?`(还差 ${N.badge.map(k=>CFG.maps[k].name).join('、')})`:'(已齐)'}；消耗 ${N.core.map(([w,n])=>`${CFG.wares.items[w].name} ${n}(有 ${Math.floor((META.wares||{})[w]||0)})`).join('、')}。升阶后属性上限封顶变高、多一个特别属性、可选的家族特性变多；只影响以后出生的人。</p>${elBtn('elxcfup',cf.id,'升阶',{on:true})}`:'<p class="meta">已经是最高阶</p>'}`}
+    <h5>升阶${helpBtn('el-cfup')}</h5>${N?elCfUpBox(cf,N):'<p class="meta">已经是最高阶</p>'}`}
+// 0.12.1（用户定）升阶：说明收进问号；下面是深渊徽章、特产图标 + 已有 / 需求（不够标红、够了标绿）
+function elCfUpBox(cf,N){const W=META.wares||{},ok=!N.badge.length&&N.core.every(([w,n])=>(W[w]||0)>=n),c=b=>b?'elok':'elng';
+  const bd=N.maps.map(k=>`<span class="elcfm ${c(!N.badge.includes(k))}">${CFG.maps[k].name}</span>`).join('');
+  const mt=N.core.map(([w,n])=>{const h=Math.floor(W[w]||0);return`<span class="elcost" title="${CFG.wares.items[w].name}">${wareIco(w)}<b class="${c(h>=n)}">${h} / ${n}</b></span>`}).join('');
+  return`<p class="meta">升到 ${cf.tier+1} 阶 · 深渊徽章：</p><div class="elcosts">${bd}</div><p class="meta">材料：</p><div class="elcosts">${mt}</div><div class="elrow">${elBtn('elxcfup',cf.id,'升阶',{on:ok,dis:!ok})}</div>`}
+HELP['el-cfup']=()=>({t:'家族升阶',b:'<p>要这个家族当前阶的地图都拿到深渊徽章，并消耗当前阶各地区的特产。</p><p>升阶后：属性上限的封顶变高、下限自动拉到本阶平民的水准，多一个特别属性，可选的家族特性变多，并且可以免费改一次家族特性。</p><p>升阶只影响以后出生的人，已经出生的成员属性不变。</p>'});
 // 各地家族（0.12.0）：按地区阶列出所有家族：徽记、地区、结盟 / 声望、特别属性、家族特性
 function elFamAllHTML(){const B=elBlood(),E=EL(),SP=E.bloodSpName,T=elBloodTr();
   return CFG.mapPages.map(P=>{const rows=P.maps.flatMap(reg=>elRegFamsAll(reg)).map(fid=>{const F=B[fid],al=elAllied(fid);
