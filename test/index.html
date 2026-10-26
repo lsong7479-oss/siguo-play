@@ -19688,9 +19688,11 @@ Object.assign(CFG.elite.skills,{
   el_wolves:  {name:'召唤狼群', fam:['druid'], sk:'elWolves', o:{k:1}, sc:['k'], ico:'wolfPack'},   // 用户定：限定德鲁伊；狼的属性按技能等级 100% / 110% / 125% / 145% / 170% / 200%……（= skLvK，不削弱）
   el_toxburst:{name:'绝命毒爆', fam:['alch'], need:'poisoner', sk:'toxicBurst', ico:'toxicBurst'},   // 毒师教
   el_mheal:   {name:'群体治疗', fam:['alch'], need:'poisoner', sk:'massHeal', ico:'massHeal'},
-  el_song:    {name:'赞颂之歌', pas:true, fam:null, ico:'caOath', st1:{songA:[4,0.15,0.05]},   // 用户定：4 格内友军攻速 +15%、攻击 +5% / 7% / 9.5% / 12.5% / 16% / 19.5%（之后 Claude 接着排）
-    lvT:{songA:[[4,0.15,0.05],[4,0.15,0.07],[4,0.15,0.095],[4,0.15,0.125],[4,0.15,0.16],[4,0.15,0.195],[4,0.15,0.235],[4,0.15,0.28],[4,0.15,0.33],[4,0.15,0.385]]}},
+  el_song:    {name:'赞颂之歌', fam:['bard'], sk:'elSong', ico:'caOath', sc:[], lvT:{atk:[0.1,0.11,0.12,0.13,0.15,0.16,0.17,0.18,0.19,0.2]}},   // 用户定：吟游诗人专属主动；4 格内友军攻速 +15%、攻击 +10% / 11% / 12% / 13% / 15% / 16% / 17% / 18% / 19% / 20%
 });
+// 赞颂之歌：唱 dur 秒，期间每 0.25 秒给身边 r 格内的友军（含英雄）刷新一次光环（game/el_sk2 的 elFx2Tick；冷却、持续 Claude 定）
+CFG.skills.elSong={name:'赞颂之歌', cd:18, aim:'self', r:4, dur:8, aspd:0.15, atk:0.1,
+  desc:p=>`唱 ${p.dur} 秒赞歌：身边 ${p.r} 格内的友军攻速 +${Math.round(p.aspd*100)}%、攻击 +${Math.round(p.atk*100)}%(同类效果只生效一个)`};
 CFG.skills.elWolves={name:'召唤狼群', cd:20, aim:'self', n:2, unit:'druidWolf', k:1,
   desc:p=>`召唤 ${p.n} 只森林狼协助作战(同时最多 ${p.n} 只)，狼的属性 ${Math.round(p.k*100)}%`};
 // 技能 V 级质变（0.12.1 用户定方向「V 级给一个质变效果，数值低一点」；具体效果、数 Claude 定）：技能到 V 级起，set 覆盖参数、add 在原参数上加；t 写进说明
@@ -19742,8 +19744,14 @@ CFG.elite.skV={
   el_blink:    {set:{elitePct:0.05}, t:'对精英、首领的比例伤害提高到 5%'},
   el_repair:   {add:{radius:1}, t:'范围 +1 格'},
   el_faith:    {add:{dur:1}, t:'护盾持续 +1 秒'},
+  el_song:     {add:{r:1, dur:2}, t:'范围 +1 格、多唱 2 秒'},
 };
 CFG.elite.skVLv=5;
+// 0.12.1（用户定）科技「精英训练」开到 Ⅸ 级：每通关一阶地区解锁下一级（通关一阶 Ⅰ … 通关九阶 Ⅸ）；技能最高等级跟着走
+CFG.elite.skMax=9;CFG.elite.insFree=4;   // insFree：教官的技能超过这个等级时，按教官自己的等级教（不受科技限制，0.12.1 前定的规矩）
+CFG.elite.learnH=[2,4,8,16,24,32,40,48,60];   // 学到第几级要几小时（Ⅴ 级起 Claude 定）
+{const T=CFG.techs.elTrainT,R=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ'];if(T){delete T.maxT3;delete T.maxT5;delete T.maxT7;for(let k=2;k<=9;k++)T['maxT'+k]=k;
+  T.dl=(v,L)=>`技能最高 ${R[Math.max(0,L-1)]} 级；解锁 ${R[Math.max(0,Math.min(4,L)-1)]} 级及以下的训练特性(Ⅰ～Ⅸ 级分别要通关一～九阶地区)`}}
 
 // ---------- 0.12.1 不老之泉的禁疗（用户定：史诗、传说卡和商人独特商品；名字 Claude 定；效果在 maps/bl_spring 的 afterHitE）----------
 // 我方所有单位造成伤害后，给亡灵禁疗（受到的治疗 −X%）；卡和坏血弹药是两个来源，按 engine/buff.eHwPut 相乘；传说「断泉」顶替史诗「蚀泉」（拿了传说，史诗不再出、不再算）
@@ -20079,7 +20087,7 @@ ztZh ztKm
 kySs kySsM kyRb kyRbU
 xlFangV xlFangM xlArmV
 blGaleU blWRU blSpoutU blTideU blVerU blHellU blCycU blShU blUdV blUdN blUdT
-elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU`.trim().split(/\s+/);
+elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU elSongU elSongR elSongE`.trim().split(/\s+/);
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -60370,7 +60378,7 @@ const techCampNames=tier=>Object.keys(CFG.camps).filter(k=>CFG.camps[k].tier===t
 // v0.6.0（用户定）最高通关地区：常规模式打满过的地图里最高的阶（1 = 一阶地区……；0 = 还没通关过），一张地图就算
 const clearTier=()=>{let n=0;for(const k in(META.mapClear||{}))if(META.mapClear[k]&&CFG.maps[k])n=Math.max(n,mapTierOf(k)+1);return n};
 const clearTierName=()=>{const n=clearTier();return n?CFG.mapPages[n-1].name:'还没有'};
-const TECH_MXT=[7,6,5,4,3];   // 7：v0.11.4 精英训练 Ⅳ（通关七阶）   // v0.10.1 加 maxT5 / maxT6（过目不忘：通关六阶后 V）
+const TECH_MXT=[9,8,7,6,5,4,3,2];   // 9 / 8 / 2：0.12.1 精英训练开到 Ⅸ（每通关一阶 +1）   // 7：v0.11.4 精英训练 Ⅳ（通关七阶）   // v0.10.1 加 maxT5 / maxT6（过目不忘：通关六阶后 V）
 const techMax=t=>{const T=clearTier();for(const k of TECH_MXT)if(t['maxT'+k]&&T>=k)return t['maxT'+k];return t.max};
 const techNextCap=t=>{const T=clearTier();for(const k of TECH_MXT.slice().reverse())if(t['maxT'+k]&&T<k)return[k,t['maxT'+k]];return null};   // 还没解锁的更高上限：[第几阶, 上限]
 const techCapText=t=>{const c=techNextCap(t);return c?`通关${CFG.mapPages[c[0]-1].name}后上限提高到 ${roman(c[1])}`:''};
@@ -61497,7 +61505,7 @@ function elLearnDone(e){const L=e.learn;if(!L)return;e.sk[L.k]=Math.max(e.sk[L.k
 // 开课（0.12.0 用户定：技能只在训练所学；教官挑好学生，一批一起学，学完全部学会 / 升一级）
 //   能来上课的：在役、没在学、职业能学、下一级不超过教官的等级和科技上限；用时按这批里最高的那一级算
 // 教到几级（0.12.1 用户定）：科技「精英训练」的上限以内；教官本身超过基础上限 skMax（后期地区招来的）就按教官的等级教
-const elTeachCap=ins=>ins>EL().skMax?Math.min(ins,EL().skLvK.length):Math.min(ins,elSkMax());
+const elTeachCap=ins=>ins>(EL().insFree||4)?Math.min(ins,EL().skLvK.length):Math.min(ins,elSkMax());
 function elClassCands(key){const m=elSt(),k=m.tch[String(key)];if(!k)return[];const ins=elInsSkills(key)[k]||0,cap=elTeachCap(ins);
   return m.list.filter(e=>!e.learn&&elSkOk(e,k)&&(e.sk[k]||0)+1<=cap)}
 function elClassStart(key,ids){const m=elSt(),k=m.tch[String(key)];if(!elInsHas(key))return'不是教官';if(!k)return'先选要教的技能';if(elStudents(key).length)return'这一批还没学完';if(m.irq[String(key)])return'这位教官要退休了，不再开课';
@@ -61923,7 +61931,8 @@ CFG.skills.elNone={name:'空', cd:999, aim:'self', desc:()=>'没有装配技能'
 const elSkLvK=lv=>{const K=EL().skLvK;return K[clamp(lv|0,1,K.length)-1]};
 function elSkP(k,lv){const S=EL().skills[k],B=CFG.skills[S.sk]||CFG.skills.elNone,p=Object.assign({},B);if(B.byStar)for(const x in B.byStar)p[x]=B.byStar[x][0];if(S.o)Object.assign(p,S.o);elSkNerf(p,S);
   const c=elSkLvK(lv);for(const x of S.sc||EL().skSc)if(typeof p[x]==='number')p[x]*=c;p.name=S.name;p.elK=k;p.lv=lv;
-  const V=EL().skV&&EL().skV[k];if(V&&lv>=EL().skVLv){if(V.set)Object.assign(p,V.set);if(V.add)for(const x in V.add)p[x]=(p[x]||0)+V.add[x];p.elV=V.t}   // 0.12.1 V 级质变（data/el_jobs2）
+  const V=EL().skV&&EL().skV[k];if(S.lvT)for(const x in S.lvT){const T=S.lvT[x];p[x]=T[Math.min(T.length,Math.max(1,lv|0))-1]}   // lvT：0.12.1 按等级查表（赞颂之歌）
+  if(V&&lv>=EL().skVLv){if(V.set)Object.assign(p,V.set);if(V.add)for(const x in V.add)p[x]=(p[x]||0)+V.add[x];p.elV=V.t}   // 0.12.1 V 级质变（data/el_jobs2）
   return p}
 // 0.12.0（用户定）精英技能削弱：固定数值 × fixK，比例超出 100% 的部分 × overK；持续伤害的比例（S.dot）直接 × fixK
 function elSkNerf(p,S){const N=EL().skNerf,D=(S&&S.dot)||[];for(const x of N.fix)if(typeof p[x]==='number')p[x]*=N.fixK;for(const x of N.ratio)if(typeof p[x]==='number'&&!D.includes(x)&&p[x]>1)p[x]=1+(p[x]-1)*N.overK;for(const x of D)if(typeof p[x]==='number')p[x]*=N.fixK}
@@ -62117,7 +62126,7 @@ function elFx2Tick(h,dt,S){
     bkCast({k:'rect',len:S.jav[1],w:0.8},{who:'E',maxN:3,crit:h.crit,pen:(h.ws.pen||0)+2,mix:{pierce:1},fx:null},bkCH(h,skV(h,0,S.jav[2]),h.x,h.y,ang));h.facing=Math.cos(ang)>=0?1:-1;h.thrust=0.15;sfx('swing',h.x,h.y)}}   // 标枪
   if(S.imm){if(h.immN>0)h.elImU=0;else if(!h.elImU)h.elImU=T+S.imm[0];else if(T>=h.elImU){h.immN=1;h.immT=1e9;h.elImU=0}}   // 圣光护盾：每隔一段时间免疫下一次伤害
   if(S.decoy&&T>=(h.elDcU||0)&&h.hp<h.maxHp*S.decoy[1]&&h.layer!==1&&SK.decoyBomb){h.elDcU=T+S.decoy[0];SK.decoyBomb.cast(h,elHeroSkP('decoyBomb'))}   // 金蝉脱壳
-  if(S.songA)bfAuraF(h.x,h.y,S.songA[0]*16,'elSongA',elEffOf(EL_SONG_E,S.songA[1]+'|'+S.songA[2],()=>({aspd:S.songA[1],atk:S.songA[2]})));   // 赞颂之歌（0.12.1）：友军（含英雄）攻速、攻击；同 id 不叠加
+  if(h.elSongU>T){bfAuraF(h.x,h.y,h.elSongR*16,'elSongA',h.elSongE);if(inViewPt(h.x,h.y)&&Math.random()<0.5)pp(h.x+vr(-6,6),h.y-14,0,vr(-6,6),-16,vr(5,9),0,vr(0.6,1),vpick(['#f3d47c','#e8a8d8','#a8d8f0']),2,0,1)}   // 赞颂之歌（0.12.1）：唱歌期间刷新光环（友军含英雄；同 id 不叠加）
   if(S.cmdA)bfAuraF(h.x,h.y,S.cmdA[0]*16,'elCmdA',elEffOf(EL_CMD_E,S.cmdA[1],()=>({aspd:S.cmdA[1]})),{heroes:false});   // 统御：同 id 不叠加
   if(S.wallA)bfAuraF(h.x,h.y,S.wallA[0]*16,'elWallA',elEffOf(EL_WALL_E,S.wallA[1],()=>({dr:S.wallA[1]})));
   if(S.temperA)bfAuraF(h.x,h.y,S.temperA[0]*16,'elTempA',elEffOf(EL_TMP_E,S.temperA[1],()=>({atk:S.temperA[1],dr:S.temperA[1]})));
@@ -62183,6 +62192,10 @@ SK.elWolves={cast(h,p){const k=Math.min(p.n,p.n-elWolfN(h));if(k<=0)return false
       if(inViewPt(x,y))for(let i=0;i<8;i++)pp(x+vr(-6,6),y,0,vr(-10,10),vr(-6,6),vr(6,14),0,vr(0.4,0.8),vpick(LEAF_C),2,2,1)}
     sfx('summon');return true},
   ai(h,p){return G.phase==='wave'&&elWolfN(h)<p.n&&countNear(h.x,h.y,10*16)>=1?{}:null}};
+// 赞颂之歌（0.12.1 用户定：吟游诗人专属主动）：唱 p.dur 秒，期间身边 p.r 格内的友军攻速、攻击加成（elFx2Tick 每 0.25 秒刷新）
+SK.elSong={cast(h,p){h.elSongU=G.time+p.dur;h.elSongR=p.r;h.elSongE=elEffOf(EL_SONG_E,p.aspd+'|'+p.atk,()=>({aspd:p.aspd,atk:p.atk}));
+    if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-4),r:p.r*16,life:0.6,c:'#f3d47c'});sfx('zap',h.x,h.y);return true},
+  ai(h,p){if(G.phase!=='wave'||h.elSongU>G.time)return null;let n=0;const R=p.r*16;for(const u of G.friends)if(u!==h&&!u.dead&&Math.hypot(u.x-h.x,u.y-h.y)<=R)n++;return n>=2&&countNear(h.x,h.y,8*16)>=1?{}:null}};
 
 // ---------- 0.12.0 精英的样貌（数据 data/el_look.js）：生成、遗传、合成小人 ----------
 // x.lk = {sk, hr, ey, ear, b}（下标）。没有的（老存档、配偶）第一次用到时补：有父母的按父母遗传，没有的按地区文化圈 + 家族出
@@ -64245,7 +64258,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.1e',GAME_TAG='测试版',GAME_CODE=163,GAME_BUILD="81e6644",GAME_BUILT=1792981288483,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.1f',GAME_TAG='测试版',GAME_CODE=163,GAME_BUILD="77da171",GAME_BUILT=1792981985204,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
