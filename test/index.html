@@ -64333,7 +64333,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2a',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="35addf5",GAME_BUILT=1792984848893,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2b',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="bcaf374",GAME_BUILT=1792986212772,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -65430,6 +65430,7 @@ function showSettings(from){if(from)setFrom=from;const K=SET.keys;
       ${tg('twoP','双人模式(电脑)','玩家 2：方向键移动，小键盘 1 普攻、2/3/4 技能、0 换武器、5 换英雄；主堡 Lv3 第二位英雄上阵后由玩家 2 操控，战斗阶段分屏(新对局生效)')}
       ${tg('helpQ','显示说明问号','标题、卡片旁边的「?」，点开看详细规则；关掉后界面更干净')}
       <div class="sr"><span>新手引导<br><span class="meta">${tutOn()?'进行中':'已完成或已跳过'}：重新开始后，营地和下一局里会再提示一遍</span></span><button class="px" type="button" data-act="tutreset">重新开始</button></div>
+      <div class="sr"><span>精英玩法引导<br><span class="meta">精英怎么招、怎么用，以及婚配、家族这些可选玩法；各页签的一句说明也会重新显示</span></span><button class="px" type="button" data-act="elguide">重新查看</button></div>
 </div>`+offSetHTML();
   else if(setSec==='lang')body=langSecHTML();   // v0.10.0 多语言：切换、导入翻译 CSV、导出没翻到的句子
   else if(setSec==='rep')body=repSecHTML();
@@ -65636,6 +65637,7 @@ function onSheetClick(e){
   else if(a==='sexport')showExport();
   else if(a==='sexpf')exportFile();
   else if(a==='simpf'){if(!running)importFile()}
+  else if(a==='elguide'){elTutReplay();if(running){toast('回到营地后，在「英雄 → 精英」里显示');showSettings()}else{hubTab='hero';showHub('hero')}}   // 0.12.2 精英玩法引导（ui/el_tut）
   else if(a==='tutreset'){tutReset();toast('新手引导已重新开始');showSettings()}
   else if(a==='tutskip'){tutSkip();const vw=sheet.dataset.view||'';if(vw==='diff')showDiff();else if(vw.startsWith('hub:'))showHub(hubTab)}
   else if(a==='tutok'){tutHubOk(v);showHub(hubTab)}
@@ -68237,12 +68239,12 @@ const elBtn=(a,v,t,o)=>{o=o||{};return`<button class="px${o.on?' on':''}" type="
 let EL_EVON=false;   // 0.12.0（用户定）日志不自动弹，点了才弹
 function elTopTabs(){const ev=elEvPending();return`<div class="eltop">${[['hero','英雄'],['elite','精英']].map(([k,n])=>elBtn('elxtop',k,n,{on:(EL_TOP==='elite')===(k==='elite')})).join('')}<span class="elbr${ev?' elnew':''}">${elBtn('elxevo','',ev?`精英日志 ${elSt().ev.length}`:'精英日志',{dis:!ev,ti:ev?'这段时间精英的事：学会技能、出生、成家、伤好了':'暂时没有新日志'})}</span></div>`}
 function elHub(){elTick();elAllySync();const m=elSt();const tabs=`<div class="tabs sub">${[['list','精英'],['rec','招募'],['mar','婚配'],['rep','声望'],['cf','家族'],['roll','名册'],['kids','训练所']].map(([k,n])=>elBtn('elxsub',k,n,{on:EL_SUB===k})).join('')}</div>`;
-  return`<div class="kt2 elui">${tabs}${EL_SUB==='rec'?elRecAllHTML():EL_SUB==='mar'?elMarHTML():EL_SUB==='rep'?elRepHTML():EL_SUB==='cf'?elCfHTML():EL_SUB==='roll'?elRollHTML():EL_SUB==='ins'||EL_SUB==='kids'?elKidsHTML():elListHTML()}</div>`}
+  return`<div class="kt2 elui">${tabs}${elTutHub()}${EL_SUB==='rec'?elRecAllHTML():EL_SUB==='mar'?elMarHTML():EL_SUB==='rep'?elRepHTML():EL_SUB==='cf'?elCfHTML():EL_SUB==='roll'?elRollHTML():EL_SUB==='ins'||EL_SUB==='kids'?elKidsHTML():elListHTML()}</div>`}
 // —— 精英列表 ——
 let EL_LSORT=null,EL_MARF='';   // 0.12.1 精英列表排序 [键, 倒序]；婚配页筛选（'' 全部 / 'y' 已婚 / 'n' 未婚）
 function elListHTML(){const m=elSt(),dep=m.list.filter(e=>e.dep).length;
   const head=`<div class="elhead"><span class="meta">在役 <b>${m.list.length}</b> / ${elCap()} 名(每个开拓地 +${EL().capPer}) · 上阵 <b>${dep}</b> / ${elDeployMax()} · 在「招募」页签招人</span>
-    ${elBtn('elxautog','','一键装备',{ti:'没锁定配置的精英，从仓库里挑能穿的最好的商店普通装备'})}${elBtn('elxautos','','一键搭配技能',{ti:'没锁定配置的精英按技能等级自动装配'})}${elBtn('elxinj','',`伤病自动不上阵：${m.opt.injOff?'开':'关'}`,{on:m.opt.injOff})}${elBtn('elxcv','',`切换显示：${EL_CARDV==='eq'?'装备':'技能'}`,{ti:'卡片右侧显示装配的技能还是穿着的装备'})}</div>`;
+    ${elBtn('elxautoall','','全部自动',{on:true,ti:'一键装备、一键搭配技能，再把没伤病的人排上阵(锁定配置的不改装备和技能)'})}${elBtn('elxautog','','一键装备',{ti:'没锁定配置的精英，从仓库里挑能穿的最好的商店普通装备'})}${elBtn('elxautos','','一键搭配技能',{ti:'没锁定配置的精英按技能等级自动装配'})}${elBtn('elxinj','',`伤病自动不上阵：${m.opt.injOff?'开':'关'}`,{on:m.opt.injOff})}${elBtn('elxcv','',`切换显示：${EL_CARDV==='eq'?'装备':'技能'}`,{ti:'卡片右侧显示装配的技能还是穿着的装备'})}</div>`;
   if(!m.list.length)return head+'<p class="meta">还没有精英。在上面的「招募」页签(或大地图上开拓地的「招募」页签)用银币招募有名字的精英士兵。</p>';
   const sk=EL_LSORT,L=sk?m.list.slice().sort((a,b)=>(sk[0]==='lv'?elLv(a)-elLv(b):a.age-b.age)*(sk[1]?-1:1)):m.list,sb=(k,n)=>elBtn('elxlsort',k,`${n}${sk&&sk[0]===k?(sk[1]?' ↓':' ↑'):''}`,{on:!!(sk&&sk[0]===k)});   // 0.12.1（用户定）排序：再点一次倒序
   return head+`<div class="elrow"><span class="meta">排序：</span>${elBtn('elxlsort','','默认',{on:!sk})}${sb('lv','按等级')}${sb('age','按年龄')}</div><div class="elcards">${L.map(elCardHTML).join('')}</div>`}
@@ -68255,7 +68257,7 @@ function elCardHTML(e){const J=elJobD(e),hurt=elHurt(e);
 // 卡片右侧显示装备（0.12.0 用户定「切换显示」）：五个部位的图标，空的暗色
 function elGearRow(e){return`<div class="elssr">${EL_SLOTS.map(([s,n])=>{const it=itemByUid(e.gear[s]);return it?`<span class="elss" style="background:#16131b;box-shadow:inset 0 0 0 2px ${CFG.itemQ[baseQ(it.base)].color}" title="${n}：${itemName(it)}"><img alt="" src="${itemIcon(it)}">${it.enh?`<i>+${it.enh}</i>`:''}</span>`:`<span class="elss emp" title="${n}：空"></span>`}).join('')}</div>`}
 // —— 弹窗 ——
-function elPopHTML(){return elPopHTML0()+(EL_TIP?elTipHTML():'')}
+function elPopHTML(){if(EL_GUIDE!=null)return elGuideHTML();return elPopHTML0()+(EL_TIP?elTipHTML():'')}   // EL_GUIDE：0.12.2 精英玩法引导（ui/el_tut）
 function elPopHTML0(){try{return elPopHTML1()}catch(err){console.error('elPop',err);dbgErr('elPop '+EL_POP+': '+((err&&err.message)||err),'elPopHTML0',err&&err.stack);const t=EL_POP;EL_POP=null;return`<div class="mpopbg" data-act="elxpx" role="button" aria-label="关闭"></div><div class="mpop oppop elpop kt2" role="dialog"><div class="oph"><b>打不开</b><button class="px sq" type="button" data-act="elxpx" aria-label="关闭">×</button></div><div class="opb"><p class="warn">这个弹窗出错了(${t})：${(err&&err.message)||err}</p><p class="meta">请在 设置 → 问题报告 里发调试信息。</p></div></div>`}}   // 0.12.1 出错不再静默打不开
 function elPopHTML1(){if(!EL_POP)return'';const i=EL_POP.indexOf(':'),k=EL_POP.slice(0,i),rest=EL_POP.slice(i+1);let T='',body='',wide=false;
   if(k==='ins'){const W=elInsWho(rest);if(!W||!elInsHas(rest)){EL_POP=null;return''}T=`${W.name} · 教官`;body=elInsPopHTML(rest)}
@@ -68580,7 +68582,8 @@ const elCmdLk=h=>{const e=h&&h.elite?elById(h.elite):null;return!!(e&&e.clk)};
 function elCmdBody(hrow){const L=G.heroes.filter(h=>h.elite);return`<div class="cmrow"><b>全部精英<i>锁定的不变</i></b><div class="cmb">${Object.keys(HERO_MODES).map(m=>cmdBtn(false,'ea',m,'全部'+HERO_MODES[m])).join('')}</div></div>`+L.map(hrow).join('')}
 function elCmdAct(a,v){if(a==='elk'){const e=elById(+v);if(e){e.clk=!e.clk;saveMeta()}}else for(const h of G.heroes)if(h.elite&&!elCmdLk(h)){G.heroModes[h.id]=v;h.aiT=0;h.wpost=null;const e=elById(h.elite);if(e)e.cmd=v}cmdRender(true)}
 // —— 操作 ——
-function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=null;EL_SAY='';
+function elAct(a,v){if(elTutAct(a,v)){sfx('click');showHub(hubTab);return}   // 0.12.2 引导、全部自动（ui/el_tut）
+const[x,y]=String(v||'').split(':'),e=elById(+x);let err=null;EL_SAY='';
   if(a==='elxtop'){EL_TOP=v;EL_POP=null}
   else if(a==='elxsub'){EL_SUB=v;EL_POP=null}
   else if(a==='elxpop'){if(EL_POP!==v){EL_EQT='st';EL_EQS='';EL_JOBASK='';EL_BQF=null}EL_POP=v}else if(a==='elxpx')EL_POP=null;
@@ -68644,6 +68647,44 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
   else if(a==='elxevt')EL_EVT=v;else if(a==='elxevx'){elSt().ev=[];saveMeta();EL_EVT='';EL_EVON=false}else if(a==='elxevo')EL_EVON=true;
   if(err)toast(err);else if(a!=='elxtop'&&a!=='elxsub'&&a!=='elxpop'&&a!=='elxpx')sfx('click');
   showHub(hubTab)}
+
+// ---------- 0.12.2 精英玩法引导（用户定：做一个精英的新手引导，「设置 → 其它」里能重新看）----------
+// META.elTut = {seen 看过第一次的弹窗, steps:{s_<页签>:1 那一页的说明点过「知道了」}, off 页签说明全部不再显示}
+// 两层：① 第一次进精英页弹出几页说明（最少要做的四步 + 可选玩法），能翻页、跳到对应页签；② 每个子页签第一次打开时顶上一句说明
+let EL_GUIDE=null;   // 引导弹窗翻到第几页（null = 没开）
+const elTutSt=()=>META.elTut||(META.elTut={seen:0,steps:{},off:0});
+const EL_GUIDE_P=[
+  {t:'精英是什么',b:'精英是有名字的士兵：局内像英雄一样作战(自己行动，不用你操控)，会升级、会变老退休，还能成家生子。<br><br>精英是<b>可选玩法</b>。想省事的话，只要做下面四步就能用上：招募 → 转职 → 装备和技能 → 上阵。婚配、家族这些都可以不管。'},
+  {t:'第一步：招募',b:'在「招募」页签用银币招新兵，每隔一段时间刷新一批。在役人数的上限随开拓地数量增加。',go:'rec',gn:'去招募'},
+  {t:'第二步：转职',b:'新兵很弱。点精英卡片上的「转职」，花银币选一个职业，属性、能用的武器和技能都跟着变。<br><br>德鲁伊、圣骑士这些二阶职业要满足条件，还要更多银币和地区特产。'},
+  {t:'第三步：装备和技能',b:'「一键装备」从仓库里挑能穿的最好装备，「一键搭配技能」把学会的技能自动装上。<br><br>技能在「训练所」学：请教官来开课，学完一级要几个小时。',go:'kids',gn:'去训练所'},
+  {t:'第四步：上阵',b:'卡片上的「待命 / 上阵」切换。上阵的精英下一局会跟英雄一起出战；人数受科技「精英编制」限制，有伤病的会自动换下。<br><br>最省事：精英页上的「全部自动」，一次配好装备、技能和上阵。',go:'list',gn:'去精英页'},
+  {t:'想深入的话（都可以不管）',b:'<b>婚配</b>：让精英成家，孩子继承父母的血脉和特性。<br><b>声望</b>：打某个地区会涨那里家族的声望，声望高了能招到这个家族的人、和他们结亲。<br><b>家族</b>：各地家族的血脉一览，后期还能自建家族。<br><b>名册</b>：退休的老精英，可以请回来当教官。<br><br>每个页签第一次打开时，顶上会有一句说明；标题旁的「?」里有详细规则。这份引导随时可以在「设置 → 其它」里重新看。'}];
+const EL_SUB_INTRO={
+  list:'精英：在役精英一览。卡片上可以转职、换装备、学技能、切换上阵；「全部自动」一次配好装备、技能和上阵。',
+  rec:'招募：「新兵」用银币招有名字的新兵；「教官」招会技能的老兵，放进训练所教课，后期地区的教官技能等级更高。',
+  mar:'婚配：让精英成家，夫妻会生孩子，孩子继承父母的血脉和特性。和别的家族结亲要有声望。不感兴趣可以不管。',
+  rep:'声望：打某个地区的地图会涨那里家族的声望。到「接纳」以上，招募时会出这个家族的人，也能和他们办宴会结亲。',
+  cf:'家族：各地家族的血脉、特性一览，也能在王都自建家族、升阶。属于后期玩法，可以先不管。',
+  roll:'名册：退休的老精英都在这里，可以请回来当教官，也能看族谱。',
+  kids:'训练所：安排教官、开课教技能；精英的孩子在这里长大，成年后可以入队。'};
+// 精英页顶上：第一次进来自动打开引导；子页签的一句说明
+function elTutHub(){const S=elTutSt();if(!S.seen){S.seen=1;EL_GUIDE=0;saveMeta()}
+  const k=EL_SUB==='ins'?'kids':EL_SUB;if(S.off||S.steps['s_'+k]||!EL_SUB_INTRO[k])return'';
+  return`<div class="tutbox"><p>${EL_SUB_INTRO[k]}</p><div class="actions">${elBtn('elxgdok','s_'+k,'知道了',{on:true})}${elBtn('elxgdoff','','都不再显示')}${elBtn('elxgd','0','精英玩法引导')}</div></div>`}
+function elGuideHTML(){const n=EL_GUIDE_P.length,i=Math.max(0,Math.min(n-1,EL_GUIDE|0)),P=EL_GUIDE_P[i];
+  return`<div class="mpopbg" data-act="elxgdx" role="button" aria-label="关闭"></div><div class="mpop oppop elpop" role="dialog"><div class="oph"><b>精英玩法引导 · ${i+1} / ${n}</b><button class="px sq" type="button" data-act="elxgdx" aria-label="关闭">×</button></div>
+    <div class="opb"><h4>${P.t}</h4><p>${P.b}</p><div class="elrow">${i>0?elBtn('elxgd',String(i-1),'上一页'):''}${P.go?elBtn('elxgdgo',P.go,P.gn):''}<span class="elbr">${i<n-1?elBtn('elxgd',String(i+1),'下一页',{on:true}):elBtn('elxgdx','','开始吧',{on:true})}</span></div></div></div>`}
+// 「全部自动」（0.12.2 用户同意）：没锁定配置的精英一键装备、搭配技能，再按顺序把没伤病的人排上阵（到上限为止）
+function elAutoAll(){elAutoGearAll();const m=elSt();for(const q of m.list)elAutoSk(q,true);let n=m.list.filter(x=>x.dep).length;
+  for(const q of m.list){if(n>=elDeployMax())break;if(!q.dep&&!elHurt(q)){q.dep=true;n++}}saveMeta();return n}
+// 动作（elAct 开头转过来）：返回 true = 处理了
+function elTutAct(a,v){if(a==='elxgd'){EL_GUIDE=+v||0;return true}if(a==='elxgdx'){EL_GUIDE=null;return true}
+  if(a==='elxgdgo'){EL_GUIDE=null;EL_SUB=v;EL_POP=null;return true}
+  if(a==='elxgdok'){elTutSt().steps[v]=1;saveMeta();return true}if(a==='elxgdoff'){elTutSt().off=1;saveMeta();return true}
+  if(a==='elxautoall'){const n=elAutoAll();toast(`已自动配好装备、技能，上阵 ${n} 名(锁定配置的不改装备和技能)`);return true}return false}
+// 设置 → 其它：重新看精英玩法引导（页签说明也重新显示）
+function elTutReplay(){const S=elTutSt();S.steps={};S.off=0;S.seen=1;EL_GUIDE=0;EL_TOP='elite';EL_SUB='list';EL_POP=null;saveMeta()}
 
 // ---------- 0.11.5 官方渠道（数据 data/official.js）：防二次打包、新版本提示 ----------
 // 1. 安卓：原生插件 SiguoGuard 比对签名证书和包名（app/android/…/SiguoGuard.java；原生那边自己也会弹一次提示），这里再在游戏里提示一次
