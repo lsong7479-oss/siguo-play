@@ -19449,78 +19449,83 @@ const EL_LATE={
 Object.assign(CFG.elite.bloodSrc,EL_LATE);
 
 // ---------- 0.12.0 家族特性重做（用户：「家族特性都是模板化的…很多特性可以做成效果…各个家族要有自己的特色」；名字、数 Claude 定）----------
-// 每个家族四条，门槛 40% / 60% / 80% / 100%（p、x 照 data/el_blood 的 bloodTrPX）；说明不写，按属性自动生成（game/el_blood.elStDesc）
+// 0.12.2 按用户定的五档规矩重排（项目索引「家族特性分档规矩」）：一般 2～4 条，少数强家族 5 条；每条一般是单一属性，强家族的 80% 可以是双属性（第二项减半）
+//   20% 固定值（hpF atkF apF defF mdefF，地区阶越高给得越多、涨得多）· 40% 特殊属性（百分比：分类伤害、抗性、击退抗性、暴击、偏斜、视野、射程、装填……阶高涨得少）
+//   60% 百分比数值 / 效果（生命、攻击、防御、攻速、冷却、提亲、经验、回血、命中附带中毒 / 减速 / 虚弱）· 80% 独立乘区（hpX atkX apX defX mdefX aspdX）· 100% 独特效果（每个家族的招牌，同一阶不重复）
+//   数值由 Claude 的生成脚本按阶算好写死（固定值按阶查表；百分比每高一阶 +5% / +4%；乘区 1.06～1.12，法术攻击 ×0.8、攻速 ×0.6）
+//   特性键按门槛记（f_<家族>_<20/40/60/80/100>，game/el_blood）；老存档按序号记的在 game/el_core 的 v10 换过来，新表里没有的那一档去掉
 // 属性键（game/el_battle）：百分比照旧（hp atk ap def mdef speed aspd vision rng reloadK dmg dmgM dmgR dmgS critR critDmg cd dodgeR dodgeK toughK drP drM exp marry kbA terrain）
 //   hpF atkF apF defF mdefF：固定值（0.12.0 用户定：不吃成长，直接加在最终属性上；heroes/hero.heroStat）
 //   aspdX：攻速按比例（×(1 + 值)，乘在最后）；slowRes：寒冰减速抗性；resPoison / resFrost / resFire：毒 / 冰 / 火抗；hps：每秒恢复生命上限的比例
 //   venom [比例, 秒]：命中附带中毒（这一击伤害的比例）；frost [比例, 秒]：命中减速；weak [比例, 秒]：命中虚弱
 //   stk [每层, 秒, 层数]：每次受到伤害减伤 +每层，持续几秒，至多几层（不带免控，免控的是训练特性「先登」xd）
 //   und [秒, 冷却]：濒死免死；awe [格, 比例]：周围亡灵物防、法防降低；ss [格, 每个, 层数]：周围每有一个敌人增伤、减伤；boss：对精英、首领、重型增伤
+//   0.12.2 新的独特效果（game/el_fam3）：dist [每格, 至多] 目标越远伤害越高 · cap 比例 每秒受到的伤害封顶 · share [格, 点] 替身边的友军分担伤害 · thorn 比例 近战反伤
+//     ls 比例 普攻吸血 · kStk [每层, 秒, 层] 击杀叠增伤 · fStk [每层, 层] 连续打同一个目标叠增伤 · waveSh 比例 每波开始护盾 · still [秒, 减伤] 站定减伤 · dbl [概率, 比例] 普攻追加一击
+//     fullE 增伤 对满血亡灵 · lowE [生命线, 增伤] 对残血亡灵；另外借用训练特性、被动的键（aid ward imm hitSh alone crowd lowDmg lowDr nightDmg wallDmg killHeal leadA cmdA wallA night，game/el_sk2）
 CFG.elite.famFx={
-  // —— 一～四阶 ——
-  lawrence:  [['劳伦斯之力',0.4,{atkF:10}],['劳伦斯的荣耀',0.6,{dmg:0.1}],['致命之握',0.8,{critDmg:0.25}],['天赐神力',1,{atk:0.1,aspdX:0.1}]],
-  osborne:   [['腐土亲和',0.4,{resPoison:0.15}],['毒噬',0.6,{venom:[0.1,3]}],['疫医',0.8,{hps:0.003}],['不腐之躯',1,{hp:0.12,resPoison:0.2}]],
-  ragnarsson:[['霜狼之心',0.4,{slowRes:0.15}],['狂战之血',0.6,{atk:0.08}],['熊之坚韧',0.8,{stk:[0.03,3,8]}],['雪原王者',1,{hp:0.12,und:[1.5,20]}]],
-  goldfeather:[['金羽之速',0.4,{speed:0.05}],['林间猎手',0.6,{dodgeK:0.1}],['毒箭传承',0.8,{venom:[0.08,3],dmgR:0.05}],['羽蛇之子',1,{aspdX:0.12}]],
-  asad:      [['沙暴之怒',0.4,{aspd:0.05}],['烈阳之血',0.6,{resFire:0.15}],['弯刀之舞',0.8,{dmgM:0.1,critR:0.03}],['沙海之王',1,{aspdX:0.15}]],
-  stclair:   [['圣徒之光',0.4,{hps:0.002}],['信仰之盾',0.6,{drM:0.04}],['圣言',0.8,{apF:12}],['圣者遗泽',1,{und:[2,20]}]],
-  hogson:    [['冰甲',0.4,{defF:2}],['霜之守护',0.6,{slowRes:0.2,resFrost:0.1}],['寒冰之拳',0.8,{frost:[0.12,2]}],['极地巨人',1,{hp:0.12,hpF:200}]],
-  fahd:      [['法老之眼',0.4,{vision:0.1}],['神殿秘法',0.6,{apF:12}],['太阳祭司',0.8,{dmgS:0.12,resFire:0.1}],['金字塔守护',1,{cd:0.15}]],
-  stein:     [['精工之手',0.4,{reloadK:0.08}],['炮术世家',0.6,{dmgR:0.1}],['测距大师',0.8,{rng:0.1}],['钢铁之心',1,{boss:0.2}]],
-  valois:    [['堕落之力',0.4,{dmg:0.05}],['黑暗祷言',0.6,{weak:[0.15,3]}],['血之契约',0.8,{critDmg:0.25}],['不洁之王',1,{dmg:0.1,hps:0.003}]],
-  nadim:     [['无影步',0.4,{dodgeK:0.1}],['影刃',0.6,{critR:0.05}],['断喉',0.8,{weak:[0.2,2]}],['绝影',1,{dodgeR:0.08,aspdX:0.1}]],
-  starspeak: [['星光',0.4,{apF:12}],['元素共鸣',0.6,{dmgS:0.12}],['霜语',0.8,{frost:[0.1,2]}],['星语者',1,{cd:0.2}]],
-  eisenberg: [['铁血',0.4,{atkF:5,defF:2}],['钢铁纪律',0.6,{kbA:0.25}],['要塞之盾',0.8,{stk:[0.04,3,8]}],['铁血统帅',1,{dmg:0.08,drP:0.06}]],
-  brandon:   [['拓荒者之躯',0.4,{hpF:100}],['篱墙',0.6,{def:0.08}],['开荒',0.8,{terrain:0.25}],['守家',1,{drP:0.05,und:[1,20]}]],
-  mordred:   [['腐刃',0.4,{dmgM:0.05}],['疫病之握',0.6,{venom:[0.12,3]}],['黑血',0.8,{critDmg:0.15}],['叛逆',1,{dmg:0.1,weak:[0.15,3]}]],
-  hollow:    [['苔藓护身',0.4,{mdef:0.06}],['毒沼之子',0.6,{resPoison:0.2}],['腐土之根',0.8,{hps:0.003}],['毒沼之主',1,{hp:0.1,stk:[0.03,3,8]}]],
-  bjorn:     [['雪盾',0.4,{def:0.05}],['冰原猎手',0.6,{dmgR:0.08}],['雪地行军',0.8,{slowRes:0.2}],['寒铁之心',1,{drP:0.06,frost:[0.08,2]}]],
-  jaguar:    [['豹之爪',0.4,{critR:0.03}],['林间突袭',0.6,{dmgM:0.08}],['猎豹',0.8,{speed:0.08}],['撕咬',1,{critDmg:0.2,aspdX:0.1}]],
-  raindance: [['雨林低语',0.4,{apF:10}],['药草传承',0.6,{hps:0.003}],['雨歌',0.8,{resPoison:0.15,slowRes:0.1}],['雨歌祭司',1,{dmgS:0.1,cd:0.1}]],
-  sultani:   [['沙堡',0.4,{defF:2}],['骆驼之耐',0.6,{hp:0.08,resFire:0.1}],['不动沙丘',0.8,{kbA:0.3}],['沙漠王裔',1,{drP:0.05,stk:[0.03,3,8]}]],
-  zahir:     [['星象',0.4,{vision:0.1}],['沙之秘术',0.6,{apF:12}],['海市蜃楼',0.8,{dodgeR:0.05}],['灼沙',1,{dmgS:0.1,weak:[0.12,3]}]],
-  beaumont:  [['守墓人',0.4,{def:0.05}],['圣骑传承',0.6,{hpF:120}],['圣盾',0.8,{drM:0.05}],['不灭誓言',1,{und:[2,20]}]],
-  skadi:     [['冰弓',0.4,{dmgR:0.05}],['雪盲',0.6,{critR:0.04}],['霜箭',0.8,{frost:[0.12,2]}],['霜狩之王',1,{critDmg:0.25,slowRes:0.15}]],
-  khafre:    [['石像之躯',0.4,{hpF:120}],['神殿守卫',0.6,{mdef:0.1}],['石化凝视',0.8,{kbA:0.3,slowRes:0.15}],['永恒守望',1,{drM:0.06,stk:[0.03,3,8]}]],
-  sakh:      [['狮神之怒',0.4,{atkF:10}],['血祭',0.6,{critDmg:0.2}],['战争女神',0.8,{dmg:0.08}],['狮心',1,{atk:0.1,aspdX:0.1}]],
-  krupp:     [['装甲世家',0.4,{defF:2}],['铆钉之躯',0.6,{hp:0.08}],['钢铁意志',0.8,{toughK:0.15,kbA:0.3}],['重炮',1,{boss:0.25}]],
-  montfort:  [['十字军',0.4,{atk:0.05}],['狂信',0.6,{dmg:0.06}],['圣战',0.8,{stk:[0.03,3,10]}],['异端审判',1,{awe:[4,0.08]}]],
-  borgia:    [['毒杯',0.4,{apF:12}],['阴谋',0.6,{critR:0.04}],['教廷之毒',0.8,{venom:[0.15,3]}],['黑弥撒',1,{ap:0.12,resPoison:0.2}]],
-  qasim:     [['影咒',0.4,{ap:0.05}],['黑沙之盾',0.6,{mdef:0.1}],['影缚',0.8,{weak:[0.15,3]}],['影之主',1,{dmgS:0.12,dodgeR:0.05}]],
-  moonleaf:  [['月光箭',0.4,{dmgR:0.05}],['林地视界',0.6,{vision:0.12}],['月影',0.8,{dodgeK:0.12}],['月神之子',1,{aspdX:0.15}]],
-  stoneroot: [['树皮肤',0.4,{defF:2}],['古树',0.6,{hp:0.1}],['盘根',0.8,{kbA:0.4}],['森之守护',1,{drP:0.06,hps:0.002}]],
-  vonhorn:   [['铁骑',0.4,{atk:0.05}],['冲锋传统',0.6,{dmgM:0.1}],['骑枪',0.8,{critDmg:0.2}],['铁血骑士',1,{boss:0.2,kbA:0.3}]],
-  rhein:     [['炮兵世家',0.4,{dmgR:0.05}],['弹道学',0.6,{rng:0.08}],['速射',0.8,{reloadK:0.12}],['莱茵之火',1,{dmg:0.08,resFire:0.15}]],
-  // —— 五～九阶（更强一点）——
-  macleod:   [['高地之怒',0.4,{atkF:15}],['风笛战吼',0.6,{awe:[4,0.08]}],['影中刀',0.8,{critR:0.05}],['唯一的王',1,{dmgM:0.12,und:[1.5,20]}]],
-  tesla:     [['电弧',0.4,{apF:20}],['线圈',0.6,{cd:0.1}],['感应',0.8,{weak:[0.15,2]}],['雷霆之子',1,{dmgS:0.08,aspdX:0.15}]],
-  brand:     [['炉火之躯',0.4,{hpF:200}],['锻炉',0.6,{resFire:0.25}],['锻锤',0.8,{atk:0.1}],['熔岩之心',1,{drP:0.06,stk:[0.03,3,10]}]],
-  zhang:     [['符箓',0.4,{apF:20}],['五雷正法',0.6,{dmgS:0.12}],['天师道统',0.8,{mdef:0.12,resPoison:0.15}],['张天师',1,{cd:0.2,weak:[0.15,3]}]],
-  ge:        [['丹方',0.4,{hps:0.003}],['抱朴',0.6,{resPoison:0.25}],['炼丹',0.8,{hpF:250}],['金丹',1,{drM:0.06,und:[2,25]}]],
-  drake:     [['私掠许可',0.4,{dmgR:0.06}],['舷炮齐射',0.6,{rng:0.08}],['环球航行',0.8,{speed:0.08,slowRes:0.15}],['金鹿号',1,{dmg:0.08,aspdX:0.1}]],
-  watt:      [['蒸汽之力',0.4,{defF:3}],['飞轮',0.6,{aspd:0.08}],['压力阀',0.8,{stk:[0.04,3,8]}],['工业之心',1,{toughK:0.2,reloadK:0.15}]],
-  yue:       [['关墙守望',0.4,{defF:3}],['重步方阵',0.6,{kbA:0.4}],['寸土不让',0.8,{stk:[0.04,3,10]}],['守关之誓',1,{drP:0.08,ss:[5,0.03,8]}]],
-  yang:      [['长枪传承',0.4,{atkF:15}],['满门骑士',0.6,{hp:0.1}],['狮吼',0.8,{awe:[4,0.1]}],['狮心',1,{critDmg:0.25,und:[1.5,20]}]],
-  derais:    [['堕落圣骑',0.4,{atk:0.06}],['血祭坛',0.6,{apF:20}],['诅咒',0.8,{weak:[0.2,3]}],['蓝胡子',1,{critDmg:0.3,hps:0.003}]],
-  battuta:   [['行者',0.4,{speed:0.06}],['星图',0.6,{vision:0.12}],['沙海老手',0.8,{resFire:0.2,slowRes:0.2}],['万里之行',1,{dodgeR:0.08,terrain:0.3}]],
-  amundsen:  [['极地行军',0.4,{hpF:200}],['雪橇犬',0.6,{slowRes:0.25}],['极夜',0.8,{resFrost:0.2,hps:0.003}],['南极点',1,{hp:0.15,frost:[0.12,2]}]],
-  crusoe:    [['荒岛求生',0.4,{hps:0.003}],['自给自足',0.6,{hpF:200}],['野性',0.8,{resPoison:0.2}],['二十八年',1,{drP:0.06,und:[2,25]}]],
-  nemo:      [['鹦鹉螺',0.4,{mdefF:3}],['深海之眼',0.6,{vision:0.12}],['深海重压',0.8,{frost:[0.15,2]}],['海底两万里',1,{dmgS:0.15}]],
-  huo:       [['角斗步法',0.4,{aspd:0.06}],['竞技场之王',0.6,{dmgM:0.1}],['观众的欢呼',0.8,{ss:[5,0.04,8]}],['血与沙',1,{critR:0.06,aspdX:0.12}]],
-  ye:        [['盾墙训练',0.4,{defF:3}],['破甲一击',0.6,{weak:[0.2,3]}],['不屈',0.8,{stk:[0.04,3,10]}],['起义领袖',1,{dmg:0.1,und:[1.5,20]}]],
-  montgolfier:[['高空视野',0.4,{vision:0.1}],['俯射',0.6,{dmgR:0.1}],['乘风',0.8,{speed:0.1}],['热气球',1,{rng:0.1,terrain:0.3}]],
-  ouye:      [['淬火',0.4,{atkF:15}],['玄钢',0.6,{critR:0.05}],['铸剑师',0.8,{dmgM:0.12}],['神匠',1,{atk:0.12,boss:0.2}]],
-  decken:    [['幽灵船员',0.4,{dodgeK:0.1}],['永世漂泊',0.6,{hps:0.003}],['怨灵之触',0.8,{frost:[0.15,2]}],['飞翔的荷兰人',1,{drM:0.08,und:[2,20]}]],
-  akagi:     [['赤心',0.4,{atkF:15}],['居合',0.6,{critR:0.06}],['一刀流',0.8,{critDmg:0.3}],['剑豪',1,{dmgM:0.12,aspdX:0.15}]],
-  ymir:      [['霜巨人之血',0.4,{hpF:250}],['冰川之躯',0.6,{slowRes:0.3,resFrost:0.15}],['寒冰重击',0.8,{frost:[0.15,2]}],['始祖巨人',1,{hp:0.15,kbA:0.5}]],
-  kazami:    [['风读',0.4,{speed:0.06}],['疾风',0.6,{aspd:0.08}],['风之刃',0.8,{dmgR:0.1}],['风之神子',1,{dodgeR:0.05,aspdX:0.2}]],
-  dracula:   [['夜之贵族',0.4,{hps:0.004}],['穿刺公',0.6,{critDmg:0.25}],['血之渴望',0.8,{weak:[0.2,3]}],['不死伯爵',1,{hp:0.15,und:[3,25]}]],
-  bathory:   [['血浴',0.4,{hps:0.003}],['青春永驻',0.6,{apF:20}],['铁处女',0.8,{venom:[0.15,3]}],['血色伯爵夫人',1,{dmgS:0.15,stk:[0.03,3,8]}]],
-  usher:     [['敏锐感官',0.4,{vision:0.1}],['家宅诅咒',0.6,{weak:[0.15,3]}],['幽闭',0.8,{mdef:0.12}],['崩塌之屋',1,{awe:[5,0.12]}]],
-  medici:    [['银行世家',0.4,{marry:0.1}],['文艺复兴',0.6,{cd:0.12}],['赞助人',0.8,{exp:0.25}],['教皇之家',1,{ap:0.15,marry:0.1}]],
-  winters:   [['雪夜行者',0.4,{slowRes:0.2}],['寒风',0.6,{aspd:0.08}],['霜刃',0.8,{frost:[0.12,2]}],['长冬之子',1,{dodgeR:0.08,aspdX:0.12}]],
-  noel:      [['祈火',0.4,{apF:20}],['守夜人',0.6,{resFrost:0.2,mdef:0.08}],['圣火',0.8,{resFire:0.2}],['圣夜',1,{dmgS:0.12,hps:0.003}]],
-  peng:      [['泉水祝福',0.4,{hps:0.004}],['青春之泉',0.6,{hpF:300}],['不老',0.8,{stk:[0.04,3,10]}],['永生者',1,{drP:0.08,drM:0.08,und:[2,25]}]]};
+  lawrence:   [['劳伦斯之力',0.2,{atkF:8}],['劳伦斯的荣耀',0.6,{atk:0.1}],['致命之握',1,{lowE:[0.3,0.15]}]],
+  brandon:    [['拓荒者之躯',0.2,{hpF:40}],['开荒',0.4,{terrain:0.15}],['守家',1,{share:[3,30]}]],
+  osborne:    [['腐土亲和',0.4,{resPoison:0.12}],['疫医',1,{aid:[10,4,0.05]}]],
+  mordred:    [['腐刃',0.4,{dmgM:0.08}],['疫病之握',0.6,{venom:[0.1,3]}],['叛逆',1,{alone:[4,0.15]}]],
+  hollow:     [['苔藓护身',0.2,{mdefF:1}],['毒沼之主',1,{thorn:0.15}]],
+  ragnarsson: [['霜狼之心',0.2,{hpF:60}],['狂战之血',0.4,{critDmg:0.16}],['熊之坚韧',0.8,{hpX:0.07}],['狂战士',1,{lowDmg:[0.5,0.2]}]],
+  bjorn:      [['雪地行军',0.4,{slowRes:0.125}],['雪盾',0.6,{def:0.105}],['寒铁之心',1,{stk:[0.03,3,6]}]],
+  goldfeather:[['林间猎手',0.4,{dodgeR:0.0325}],['毒箭传承',0.6,{venom:[0.1,3]}],['羽蛇之子',1,{dist:[0.01,0.12]}]],
+  jaguar:     [['豹之爪',0.2,{atkF:10}],['猎豹',0.4,{speed:0.05}],['撕咬',1,{fullE:0.2}]],
+  raindance:  [['雨林低语',0.2,{apF:15}],['药草传承',0.6,{hps:0.002}],['雨歌祭司',1,{ward:[12,4,0.06]}]],
+  asad:       [['烈阳之血',0.4,{resFire:0.125}],['沙暴之怒',0.6,{aspd:0.06}],['弯刀之舞',1,{fStk:[0.02,6]}]],
+  sultani:    [['沙堡',0.2,{defF:1.5}],['骆驼之耐',0.6,{hp:0.105}],['沙漠王裔',1,{crowd:[4,0.03,0.12]}]],
+  zahir:      [['星象',0.4,{vision:0.085}],['星夜秘术',1,{nightDmg:0.15}]],
+  stclair:    [['圣言',0.2,{apF:18}],['圣徒之光',0.6,{hps:0.002}],['圣者遗泽',1,{und:[1.5,25]}]],
+  beaumont:   [['圣骑传承',0.2,{hpF:80}],['圣盾',0.4,{drM:0.045}],['不灭誓言',1,{hitSh:[8,0.08]}]],
+  hogson:     [['冰甲',0.2,{defF:2}],['极地巨人',0.8,{hpX:0.08}],['霜之守护',1,{cap:0.3}]],
+  skadi:      [['冰弓',0.4,{dmgR:0.09}],['霜箭',0.6,{frost:[0.13,2]}],['霜狩之王',1,{dist:[0.01,0.15]}]],
+  fahd:       [['神殿秘法',0.2,{apF:18}],['太阳祭司',0.4,{dmgS:0.09}],['金字塔守护',1,{imm:[12]}]],
+  khafre:     [['石像之躯',0.2,{hpF:80}],['永恒守望',1,{still:[2,0.15]}]],
+  sakh:       [['狮神之怒',0.2,{atkF:12}],['血祭',0.4,{critDmg:0.165}],['战争女神',1,{kStk:[0.02,5,8]}]],
+  stein:      [['精工之手',0.4,{reloadK:0.09}],['炮术世家',0.8,{atkX:0.08}],['钢铁之心',1,{boss:0.2}]],
+  krupp:      [['装甲世家',0.2,{defF:2}],['钢铁意志',0.4,{kbA:0.13}],['重炮',1,{dbl:[0.15,0.5]}]],
+  valois:     [['堕落之力',0.4,{dmg:0.07}],['黑暗祷言',0.6,{weak:[0.13,3]}],['血之契约',1,{ls:0.06}]],
+  montfort:   [['十字军',0.2,{atkF:15}],['狂信',0.6,{atk:0.11}],['异端审判',1,{awe:[4,0.08]}]],
+  borgia:     [['毒杯',0.2,{apF:22}],['教廷之毒',0.6,{venom:[0.11,3]}],['黑弥撒',1,{lowE:[0.3,0.2]}]],
+  nadim:      [['影刃',0.4,{critR:0.035}],['绝影',0.8,{aspdX:0.05}],['断喉',1,{fullE:0.25}]],
+  qasim:      [['黑沙之盾',0.4,{drM:0.045}],['影之主',1,{night:[15,3]}]],
+  starspeak:  [['星光',0.2,{apF:22}],['元素共鸣',0.6,{cd:0.09}],['星辰回响',1,{dbl:[0.2,0.5]}]],
+  moonleaf:   [['月影',0.4,{dodgeR:0.035}],['月神之子',0.8,{aspdX:0.05}],['月光箭',1,{dist:[0.01,0.18]}]],
+  stoneroot:  [['树皮肤',0.2,{defF:2.5}],['古树',0.8,{hpX:0.08}],['森之守护',1,{wallA:[4,0.06]}]],
+  eisenberg:  [['铁血',0.2,{atkF:15}],['钢铁纪律',0.4,{kbA:0.14}],['要塞之盾',0.6,{def:0.11}],['铁血统帅',1,{leadA:[4,0.08]}]],
+  vonhorn:    [['冲锋传统',0.4,{dmgM:0.09}],['铁骑',0.8,{atkX:0.08}],['骑枪',1,{fStk:[0.03,6]}]],
+  rhein:      [['速射',0.4,{reloadK:0.09}],['炮兵世家',0.6,{atk:0.11}],['莱茵之火',1,{cmdA:[4,0.08]}]],
+  macleod:    [['高地之怒',0.2,{atkF:18}],['影中刀',0.4,{critR:0.035}],['高地之王',0.8,{atkX:0.09}],['风笛战吼',1,{ss:[5,0.03,8]}]],
+  tesla:      [['电弧',0.2,{apF:27}],['线圈',0.6,{cd:0.095}],['雷霆之子',1,{dbl:[0.25,0.5]}]],
+  brand:      [['炉火之躯',0.2,{hpF:150}],['锻炉',0.4,{resFire:0.145}],['熔岩之心',1,{thorn:0.3}]],
+  zhang:      [['符箓',0.2,{apF:27}],['五雷正法',0.4,{dmgS:0.095}],['天师道统',0.8,{apX:0.07}],['张天师',1,{waveSh:0.15}]],
+  ge:         [['抱朴',0.4,{resPoison:0.145}],['丹方',0.6,{hps:0.0025}],['金丹',1,{und:[2,25]}]],
+  drake:      [['私掠许可',0.4,{dmgR:0.095}],['金鹿号',0.8,{aspdX:0.05}],['劫掠',1,{killHeal:0.03}]],
+  watt:       [['蒸汽之力',0.2,{defF:4}],['飞轮',0.6,{aspd:0.07}],['工业之心',1,{stk:[0.04,3,8]}]],
+  yue:        [['关墙守望',0.2,{defF:4}],['重步方阵',0.4,{kbA:0.15}],['寸土不让',0.8,{defX:0.1}],['守关之誓',1,{share:[3,80]}]],
+  yang:       [['长枪传承',0.2,{atkF:22}],['满门骑士',0.6,{hp:0.12}],['狮吼',1,{awe:[4,0.12]}]],
+  derais:     [['血祭坛',0.2,{apF:33}],['诅咒',0.6,{weak:[0.14,3]}],['蓝胡子',1,{ls:0.1}]],
+  battuta:    [['行者',0.4,{speed:0.06}],['万里见闻',0.6,{exp:0.18}],['独行万里',1,{alone:[4,0.25]}]],
+  amundsen:   [['极地行军',0.2,{hpF:190}],['雪橇犬',0.4,{slowRes:0.15}],['南极点',1,{cap:0.25}]],
+  crusoe:     [['野性',0.4,{resPoison:0.15}],['自给自足',0.6,{hps:0.0025}],['二十八年',1,{lowDr:[0.3,0.25]}]],
+  nemo:       [['鹦鹉螺',0.2,{mdefF:5}],['深海之眼',0.4,{vision:0.105}],['海底两万里',1,{dist:[0.015,0.25]}]],
+  huo:        [['角斗步法',0.4,{dodgeR:0.04}],['竞技场之王',0.6,{aspd:0.075}],['血与沙',0.8,{atkX:0.1,aspdX:0.06}],['观众的欢呼',1,{kStk:[0.04,6,8]}]],
+  ye:         [['盾墙训练',0.2,{defF:5}],['破甲一击',0.6,{weak:[0.15,3]}],['起义领袖',1,{crowd:[4,0.04,0.2]}]],
+  montgolfier:[['高空视野',0.4,{vision:0.105}],['俯射',1,{wallDmg:0.3}]],
+  ouye:       [['淬火',0.2,{atkF:26}],['玄钢',0.4,{critR:0.04}],['铸剑师',0.6,{atk:0.125}],['神匠',0.8,{atkX:0.1,defX:0.05}],['百炼',1,{fStk:[0.04,8]}]],
+  decken:     [['幽灵船员',0.4,{dodgeR:0.04}],['怨灵之触',0.6,{frost:[0.15,2]}],['飞翔的荷兰人',1,{imm:[8]}]],
+  akagi:      [['赤心',0.2,{atkF:26}],['居合',0.4,{critR:0.04}],['剑豪',0.8,{atkX:0.1}],['一刀流',1,{fullE:0.4}]],
+  ymir:       [['霜巨人之血',0.2,{hpF:240}],['冰川之躯',0.4,{resFrost:0.155}],['寒冰重击',0.6,{frost:[0.15,2]}],['始祖巨人',0.8,{hpX:0.1,defX:0.05}],['巨人之躯',1,{cap:0.2}]],
+  kazami:     [['风读',0.4,{speed:0.065}],['风之神子',0.8,{aspdX:0.06}],['风之刃',1,{dbl:[0.3,0.6]}]],
+  dracula:    [['夜之贵族',0.2,{hpF:290}],['穿刺公',0.4,{critDmg:0.2}],['血之渴望',0.6,{hps:0.0025}],['不死伯爵',0.8,{hpX:0.11,atkX:0.06}],['鲜血盛宴',1,{ls:0.15}]],
+  bathory:    [['青春永驻',0.2,{apF:45}],['血浴',0.6,{hps:0.0025}],['血色伯爵夫人',1,{killHeal:0.05}]],
+  usher:      [['敏锐感官',0.4,{vision:0.11}],['家宅诅咒',0.6,{weak:[0.15,3]}],['崩塌之屋',1,{awe:[5,0.15]}]],
+  medici:     [['赞助人',0.2,{apF:45}],['权谋',0.4,{critR:0.04}],['银行世家',0.6,{marry:0.13}],['教皇之家',0.8,{apX:0.09}],['美第奇之盾',1,{ward:[8,5,0.1]}]],
+  winters:    [['雪夜行者',0.4,{slowRes:0.16}],['长冬之子',0.8,{aspdX:0.07}],['霜刃',1,{nightDmg:0.3}]],
+  noel:       [['祈火',0.2,{apF:45}],['守夜人',0.4,{resFrost:0.16}],['圣夜',1,{aid:[6,5,0.08]}]],
+  peng:       [['青春之泉',0.2,{hpF:350}],['不老',0.4,{drP:0.055}],['泉水祝福',0.6,{hps:0.0025}],['永生者',0.8,{hpX:0.12,defX:0.06}],['永生',1,{und:[3,20]}]]};
 for(const reg in CFG.elite.bloodSrc){const S=CFG.elite.bloodSrc[reg];for(const F of(Array.isArray(S.f)?S.f:S.f?[S.f]:[])){const k=F.key||CFG.elite.bloodFamKey[reg];if(CFG.elite.famFx[k])F.tr=CFG.elite.famFx[k]}}
 
 // 自建家族的五格特性（0.12.0 用户：「自定义家族的特性太少…可以左右滑动」）：每格再加一批，带效果的放在后面几阶；老的键都留着（老存档选过的还认）
@@ -20175,7 +20180,7 @@ ztZh ztKm
 kySs kySsM kyRb kyRbU
 xlFangV xlFangM xlArmV
 blGaleU blWRU blSpoutU blTideU blVerU blHellU blCycU blShU blUdV blUdN blUdT
-elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU elSongU elSongR elSongE elWarU elWarR elWarE elThz elRjU elRjN elRjR elRjP`.trim().split(/\s+/);
+elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elKsN elKsU elFsI elFsN elCapT elCapD elWsW elStT elStX elStY elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU elSongU elSongR elSongE elWarU elWarR elWarE elThz elRjU elRjN elRjR elRjP`.trim().split(/\s+/);
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -50395,7 +50400,7 @@ function heroStat(h,k,n){const d=h.d,S=CFG.heroStars,s=clamp(h.star,1,5)-1,B=CFG
   const w=cv?v+heroStat(h,'atk',n)/(h.elite?elLvK(heroLv(h),'atk'):olvAtk(heroLv(h)))*cv[s]:v;
   const lv=heroLv(h),kA=h.elite?elLvK(lv,'atk'):olvAtk(lv),fx=h.elite&&d.elF?d.elF[k]||0:0;return fx+(k==='hp'?v*(h.elite?elLvK(lv,'hp'):olvHp(lv)):k==='atk'?v*kA:k==='ap'?w*kA:(k==='def'||k==='mdef')?v*(1+CFG.olv.heroDefPer*(heroLv(h)-1)):v)}   // v0.8.18 物防、法防每级 +0.5%   // v0.8.14 局外等级：生命、物攻、法攻 × 等级倍率（防御不乘）
 // v0.8.24 物攻 / 法攻 + 饰品的基础属性（h.gAcc，heroRecalc 里先算好）
-const heroStatG=(h,k)=>(heroStat(h,k)+((h.gAcc&&h.gAcc[k])||0))*(h.elAtkK>0&&(k==='atk'||k==='ap')?h.elAtkK:1);   // elAtkK：0.12.0 精英亲人同队的双攻
+const heroStatG=(h,k)=>(heroStat(h,k)+((h.gAcc&&h.gAcc[k])||0))*(h.elAtkK>0&&(k==='atk'||k==='ap')?h.elAtkK:1)*(h.elite&&(k==='atk'||k==='ap')?elXK(h,k):1);   // elXK：0.12.2 家族特性的独立乘区（game/el_fam3）   // elAtkK：0.12.0 精英亲人同队的双攻
 // v0.8.0 新卡「淬火兵器」「魔力晶石」：只算这一局上场的英雄（营地里看英雄属性不吃上一局剩下的卡）；v0.8.1 不再乘在物攻 / 法攻属性上，和别的伤害加成相加（heroDmgM 的 k）
 const heroCardB=(h,k)=>G&&G.heroes&&G.heroes.indexOf(h)>=0?(k==='atk'?pm.physAtk:pm.spellAtk)*CFG.cardRules.heroShareK:0;   // heroShareK：v0.8.21（用户定）共用卡对英雄只算一半   // 生命（淬炼战甲）在 heroRecalc 里和卡牌英雄生命相加
 // 局内倍率（武器、技能共用）：v0.8.1（用户定）加成相加后乘一次——卡（英雄伤害、全体伤害；mag = 法术、治疗：法术伤害；k = atk / ap：物理 / 法术攻击）+ 科技「超人力量」+ 饰品「伤害」；主堡等级加成单独乘
@@ -61434,7 +61439,10 @@ function elSt(){const m=META.el||(META.el={});if(!(m.t>0))m.t=metaNow();if(!(m.n
     const fix=x=>{if(!x)return;if(x.bl){const o={};for(const id in x.bl)o[fx(id)]=(o[fx(id)]||0)+x.bl[id];x.bl=o}if(x.bt)x.bt=x.bt.map(fx);if(x.sp)fix(x.sp);(x.mc||[]).forEach(c=>{fix(c);if(c.src&&c.src.fid)c.src.fid=fx(c.src.fid)})};
     for(const L of[m.list,m.kids,m.roll,m.staff,m.fam])L.forEach(fix);for(const r in m.rec)(m.rec[r].offers||[]).forEach(fix);for(const r in m.irec)(m.irec[r].offers||[]).forEach(fix);const R={};for(const id in m.rep)R[fx(id)]=(R[fx(id)]||0)+m.rep[id];m.rep=R}
   if(!m.v5){m.v5=1;const S=x=>{if(x&&!x.sex)x.sex=elSexOf(x.given)};for(const L of[m.list,m.kids,m.roll])L.forEach(S);for(const r in m.rec)(m.rec[r].offers||[]).forEach(S)}   // v5：0.11.4 加性别，老存档按名字认
-  if(!m.v4){m.v4=1;for(const L of[m.list,m.kids,m.roll])for(const e of L)if(e&&e.sk)for(const k in e.sk)if(e.sk[k]>EL().skMax)e.sk[k]=EL().skMax}return m}   // v4：0.11.4 技能等级改成最高 4 级，老存档的 5 级压到 4 级
+  if(!m.v4){m.v4=1;for(const L of[m.list,m.kids,m.roll])for(const e of L)if(e&&e.sk)for(const k in e.sk)if(e.sk[k]>EL().skMax)e.sk[k]=EL().skMax}   // v4：0.11.4 技能等级改成最高 4 级，老存档的 5 级压到 4 级
+  if(!m.v10){m.v10=1;const FX=EL().famFx,TH=[40,60,80,100],fx=id=>{const a=String(id).match(/^f_([A-Za-z]+)_([0-3])$/);if(!a)return id;const L=FX[a[1]],t=TH[+a[2]];return L&&L.some(x=>Math.round(x[1]*100)===t)?'f_'+a[1]+'_'+t:null};   // v10：0.12.2 家族特性键从序号（f_x_0～3 = 40～100%）改成门槛（f_x_40），新表里没有那一档的去掉
+    const fix=x=>{if(!x)return;if(x.bt)x.bt=x.bt.map(fx).filter(Boolean);if(x.sp)fix(x.sp);(x.mc||[]).forEach(fix)};for(const L of[m.list,m.kids,m.roll,m.staff,m.fam])L.forEach(fix);for(const r in m.rec)(m.rec[r].offers||[]).forEach(fix);for(const r in m.irec)(m.irec[r].offers||[]).forEach(fix)}
+  return m}
 const elById=id=>{const m=elSt();return m.list.find(e=>e.id===id)||m.kids.find(e=>e.id===id)||m.roll.find(e=>e.id===id)||m.staff.find(e=>e.id===id)||m.fam.find(e=>e.id===id)||null};
 const elName=e=>e?(e.gone?'(已故)':e.nf?e.fam+e.given:`${e.given}·${e.fam}`):'';   // gone：记录已清掉的队内配偶；nf：0.12.0 中文、日文名姓在前
 // 0.12.0 名字风格：家族有自己的 cul（比如佛窟的厄舍）就按家族的，否则按地区的；重新取名并记下姓在前不在前
@@ -61701,12 +61709,21 @@ function dbgResAll(n){for(const id in(META.settle&&META.settle.R)||{}){if(!stReg
 const EL_STD={hp:'生命上限',atk:'物理攻击',ap:'法术攻击',def:'物理防御',mdef:'法术防御',speed:'移动速度',aspd:'攻击速度',vision:'视野',rng:'射程',rngP:'物理远程射程',reloadK:'装填速度',regen:'生命恢复',prec:'精准',
   dmg:'造成伤害',dmgM:'近战物理伤害',dmgR:'远程物理伤害',dmgS:'法术伤害',critR:'暴击率',critDmg:'暴击伤害',cd:'冷却速度',dodgeR:'偏斜率',dodgeK:'偏斜值',hitK:'命中值',toughK:'坚韧值',drP:'物理减伤',drM:'法术减伤',
   exp:'经验获取',marry:'提亲成功率',resPoison:'毒抗',resFrost:'冰抗',resFire:'火抗',slowRes:'寒冰减速抗性',kbA:'击退抗性',eva:'闪避率',boss:'对精英、首领、重型单位造成伤害'};
+// 0.12.2 家族特性：独立乘区、100% 档的独特效果（game/el_fam3）
+const EL_STDX={hpX:'生命上限',atkX:'物理攻击',apX:'法术攻击',defX:'物理防御',mdefX:'法术防御'};
+const EL_STD3={dist:(v,pc)=>`目标每远 1 格，造成的伤害 +${pc(v[0])}，至多 +${pc(v[1])}`,cap:(v,pc)=>`每秒受到的伤害至多为生命上限的 ${pc(v)}`,
+  share:(v,pc)=>`${v[0]} 格内的友军受到伤害时，替其承受至多 ${v[1]} 点(自己不会因此倒下)`,thorn:(v,pc)=>`受到近战攻击时，对攻击者造成这次伤害 ${pc(v)} 的反伤`,ls:(v,pc)=>`普攻造成伤害的 ${pc(v)} 转为自己的生命`,
+  kStk:(v,pc)=>`击杀亡灵后造成伤害 +${pc(v[0])}，持续 ${v[1]} 秒，至多 ${v[2]} 层`,fStk:(v,pc)=>`连续攻击同一个目标时，每次造成伤害 +${pc(v[0])}，至多 ${v[1]} 层(换目标清零)`,
+  waveSh:(v,pc)=>`每波开始时获得 ${pc(v)} 生命上限的护盾，持续 30 秒`,still:(v,pc)=>`站定 ${v[0]} 秒后减伤 +${pc(v[1])}(移动后重新计时)`,dbl:(v,pc)=>`普攻有 ${pc(v[0])} 概率追加一次 ${pc(v[1])} 伤害的攻击`,
+  fullE:(v,pc)=>`对生命全满的亡灵造成伤害 +${pc(v)}`,lowE:(v,pc)=>`对生命低于 ${pc(v[0])} 的亡灵造成伤害 +${pc(v[1])}`};
 const EL_STDF={hpF:'生命',atkF:'物理攻击',apF:'法术攻击',defF:'物理防御',mdefF:'法术防御'};
 function elStDesc(st){const pc=x=>Math.round(Math.abs(x)*1000)/10+'%',sg=x=>x<0?'−':'+',o=[];
   for(const k in st||{}){const v=st[k];
     if(EL_STD[k]&&typeof v==='number')o.push(`${EL_STD[k]} ${sg(v)}${pc(v)}`);
     else if(EL_STDF[k])o.push(`${EL_STDF[k]} ${sg(v)}${Math.abs(v)}(固定值)`);
     else if(k==='aspdX')o.push(`攻击速度 ×${Math.round((1+v)*100)/100}`);
+    else if(EL_STDX[k])o.push(`${EL_STDX[k]} ×${Math.round((1+v)*100)/100}`);
+    else if(EL_STD3[k])o.push(EL_STD3[k](v,pc));
     else if(k==='hps')o.push(`每秒恢复 ${pc(v)} 生命上限`);
     else if(k==='terrain')o.push(`地形移动惩罚 −${pc(v)}`);
     else if(k==='critTaken')o.push(`被暴击伤害 −${pc(v)}`);
@@ -61773,7 +61790,7 @@ function elBloodBuild(){const E=CFG.elite,v=(META&&META.el&&META.el.cfv)||0;if(E
     for(const F of(Array.isArray(S.f)?S.f:S.f?[S.f]:[])){const key=F.key||E.bloodFamKey[reg],id='f_'+key,st={};
       for(const[k]of E.bloodStats){if(F.raw){st[k]=F.raw[k]||[1,1];continue}const base=cHi(k,S.c[1]),cf=E.bloodCap.f[tt(k)],lv=F.L[k]||0;   // 0.12.0 家族以同地区平民为底：正档往家族封顶靠，负档在平民上减
         const hi=r2(comp(k,lv>0?base+(cf-base)*E.bloodLV[String(lv)]:base-E.bloodNeg*(-lv)));st[k]=[r2(hi-spr(k,F.v)),hi]}
-      B[id]={name:F.name||F.fam+'家族',fam:F.fam,reg,key,kind:'f',crest:F.key?'f_'+F.key:'f_'+reg,crestCfg:F.crest||null,cul:F.cul||null,ally:t>=(E.allyTier!=null?E.allyTier:99)?1:0,st,sp:F.sp||E.bloodSpSrc[key]||{},tr:F.tr.map((x,i)=>{const k=id+'_'+i,[p,xx]=E.bloodTrPX[x[1]];T[k]={name:x[0],blood:id,min:x[1],p,x:xx,st:x[2],desc:x[3]||elStDesc(x[2])};return k})}}}
+      B[id]={name:F.name||F.fam+'家族',fam:F.fam,reg,key,kind:'f',crest:F.key?'f_'+F.key:'f_'+reg,crestCfg:F.crest||null,cul:F.cul||null,ally:t>=(E.allyTier!=null?E.allyTier:99)?1:0,st,sp:F.sp||E.bloodSpSrc[key]||{},tr:F.tr.map(x=>{const k=id+'_'+Math.round(x[1]*100),[p,xx]=E.bloodTrPX[x[1]];T[k]={name:x[0],blood:id,min:x[1],p,x:xx,st:x[2],desc:x[3]||elStDesc(x[2])};return k})}}}
   if(typeof elCfBuild==='function')elCfBuild(B,T)}
 const elBlood=()=>{elBloodBuild();return CFG.elite.blood};
 const elBloodTr=()=>{elBloodBuild();return CFG.elite.bloodTr};
@@ -62104,6 +62121,7 @@ function elRecalc(h){const e=elById(h.elite);if(!e)return;const S=h.d.elS||{},w=
   {const t=(typeof TM!=='undefined'&&TM)||{};   // v0.11.4（用户定）精英吃士兵的卡牌和科技：生命、伤害、攻速、冷却的池子在 heroes/hero（heroHpPool、heroDmgM、heroAtkInt）；这里补移速、近战 / 远程伤害、攻速、防御、法防、偏斜
     h.speed*=1+(t.uMove||0)+(pm.moveSpd||0);h.gDmg+=w.cls==='melee'?(t.uMelee||0):rg?(t.uRanged||0):0;h.aspd+=w.cls==='melee'?(t.uMeleeSpd||0):rg?(t.uRgSpd||0):0;
     h.def+=t.uDef||0;h.mdef+=t.uMDef||0;h.dodge+=t.uDodge||0}
+  elXApply(h,S);   // 0.12.2 家族特性的独立乘区：生命、物防、法防（game/el_fam3）
   if(h.elGrief){const B=EL().bond,gx=1+(S.griefX||0);h.def*=1-Math.min(0.9,B.griefDef*gx);h.mdef*=1-Math.min(0.9,B.griefDef*gx)}}   // griefX：0.12.0 特性「护短」   // 0.12.0（用户定）亲人倒下：双防 −10%
 // 亲人同队的双攻倍率（heroRecalc 开头算，武器伤害要用）：亲人倒下过 +20%，否则有活着的亲人同队 +10%
 function elBondCalc(h){const B=EL().bond,gx=1+((h.d.elS&&h.d.elS.griefX)||0);h.elAtkK=1+(h.elGrief?B.griefAtk*gx:h.elRel&&h.elRel.length&&G&&G.heroes&&G.heroes.some(o=>o.elite&&!o.dead&&h.elRel.includes(o.elite))?B.atk:0)}
@@ -62146,18 +62164,18 @@ function elInjure(e){const I=EL().injury,k=1-Math.min(0.9,elTM().elRescue||0),pa
 // —— 每帧 / 命中 / 增伤（EL_FX）——
 const EL_AWE_T=0.6;
 const EL_FX={g:83,
-  tick(h,dt){const S=h.d.elS||{};elFx2Tick(h,dt,S);const P=h.elP||(h.elP=EL().personality[(elById(h.elite)||{}).pers]||EL().personality.brave);
+  tick(h,dt){const S=h.d.elS||{};elFx2Tick(h,dt,S);elFx3Tick(h,S);const P=h.elP||(h.elP=EL().personality[(elById(h.elite)||{}).pers]||EL().personality.brave);
     if(P.dodge&&G.phase==='wave'){h.elDgT=(h.elDgT||0)-dt;if(h.elDgT<=0){h.elDgT=0.12;elDodge(h)}}if(h.elBlkV>0&&G.time>=h.elBlkU){h.block=Math.max(0,h.block-h.elBlkV);h.elBlkV=0}
     if(h.retreat&&Math.hypot(h.x-G.base.x,h.y-G.base.y)<40&&h.hp<h.maxHp)healF(h,h.maxHp*EL().backRegen*dt);
     h.elT=(h.elT||0)-dt;if(h.elT>0)return;h.elT=0.5;if(P.healer)elHealSeek(h);
     if(S.awe){const R=S.awe[0]*16;eQuery(h.x,h.y,R,j=>{bkEDefDn(j,S.awe[1],EL_AWE_T)},true)}
     if(S.ss){let n=0;eQuery(h.x,h.y,S.ss[0]*16,()=>{n++},true);h.elSs=Math.min(S.ss[2],n)}},
-  ampX(h,i,o){const S=h.d.elS||{};let x=0;if(S.ss&&h.elSs>0)x+=h.elSs*S.ss[1];if(S.boss){const c=CFG.enemies[ETYPES[E.t[i]]];if(c&&(c.mini||c.tier>=4||c.heavy||c.heavyM||c.siege))x+=S.boss}if(h.elChgU>G.time&&h.dashT>0&&h.dashKind==='charge')x+=h.elChgK||0;return x+elAmp2(h,S)},
+  ampX(h,i,o){const S=h.d.elS||{};let x=0;if(S.ss&&h.elSs>0)x+=h.elSs*S.ss[1];if(S.boss){const c=CFG.enemies[ETYPES[E.t[i]]];if(c&&(c.mini||c.tier>=4||c.heavy||c.heavyM||c.siege))x+=S.boss}if(h.elChgU>G.time&&h.dashT>0&&h.dashKind==='charge')x+=h.elChgK||0;return x+elAmp2(h,S)+elAmp3(h,i,S)},   // elAmp3：0.12.2 家族独特效果（game/el_fam3）
   atkHitE(h,i,dmg,o){const S=h.d.elS||{};if(!E.alive[i])return;
     if(S.frost){E.slowF[i]=Math.max(E.slowF[i]||0,S.frost[0]);E.slowT[i]=slowMx(i,S.frost[1])}
     if(S.venom)poisonE(i,dmg*S.venom[0],S.venom[1]);
     if(S.weak)bfAddE(i,'elWeak',elWeakEff(S.weak[0]),S.weak[1],{debuff:true});
-    elFx2Hit(h,i,dmg,o,S);if(!E.alive[i])return;
+    elFx3Hit(h,i,dmg,o,S);elFx2Hit(h,i,dmg,o,S);if(!E.alive[i])return;
     if(S.scatter&&o&&!o.elSc&&h.ws.cls!=='melee'){let n=0;const so={hk:h,mix:o.mix,magic:o.magic,elSc:1,crit:h.crit};eQuery(E.x[i],E.y[i],1.5*16,j=>{if(n>=S.scatter[0]||j===i)return;n++;dealE(j,dmg*S.scatter[2],so)},true)}}};
 // 躲弹道（用户定：英勇、谨慎、睿智会尽可能躲；照亡灵的 maps/polar.eDodge）：飞向自己、0.45 秒内会打中的亡灵弹道，横跨 1.3 格躲开（冷却 0.6 秒）
 function elDodge(h){if(h.dashT>0||h.frzT>0||h.rootT>0||h.layer===1||h.busyT>0)return;const P=G.eproj,y0=h.y-6-(h.elev||0);
@@ -62179,7 +62197,7 @@ feat('elite',{on:()=>!!(G&&((G.elites&&G.elites.length)||elMemOn())),hooks:{
   ccInF:(u,t)=>u&&u.elite&&u.d.elS?(u.d.elS.xd?0:u.d.elS.ccR?t*Math.max(0,1-u.d.elS.ccR):t):t,   // ccR：0.12.0 训练「意志训练」
   healInF:(u,amt,src)=>{const a=u&&u.elite&&u.d.elS&&u.d.elS.alchK,b=src&&src!==u&&src.elite&&src.d&&src.d.elS&&src.d.elS.alchK;return amt*(1+(a||0)+(b||0))},   // 药剂学（0.12.1）：受到的治疗、发出的治疗
   dmgInE:(i,dmg,o)=>{const h=o&&o.hk,k=h&&h.elite&&h.d.elS&&h.d.elS.alchK;return k&&o.mix&&(o.mix.acid||o.mix.poison||o.mix.fire)?dmg*(1+k):dmg},   // 药剂学：自己的酸蚀、毒、火焰伤害
-  afterHitE:(i,dmg,o)=>{const h=o&&o.hk;if(h&&h.elite&&!E.alive[i]&&h.d.elS&&h.d.elS.killHeal&&!h.dead)healF(h,h.maxHp*h.d.elS.killHeal)}}});   // killHeal：0.12.0 特性「嗜血」
+  afterHitE:(i,dmg,o)=>{const h=o&&o.hk;if(h&&h.elite&&E.hp[i]<=0&&h.d.elS&&h.d.elS.killHeal&&!h.dead)healF(h,h.maxHp*h.d.elS.killHeal)}}});   // killHeal：0.12.0 特性「嗜血」（0.12.2 修复：原来按 alive 判断，这时还没结算死亡，从来不触发）
 // 克劳德自己的增伤（heroRecalc 末尾，和精英一起）
 function elMemRecalc(h){if(h.id==='scribe')h.gDmg+=elMemK()}
 // —— 结算：战报、功勋、经验 ——
@@ -62324,7 +62342,7 @@ const elNight=()=>typeof ENV!=='undefined'&&ENV.dayVis<1;
 function elAmp2(h,S){let x=h.elAlone||0;if(S.lowDmg&&h.hp<h.maxHp*S.lowDmg[0])x+=S.lowDmg[1];if(S.nightDmg&&elNight())x+=S.nightDmg;if(S.wallDmg&&h.layer===1)x+=S.wallDmg;if(S.home&&G.invade)x+=S.home;return x}
 // 圣骑士（0.12.1 用户定）：受到攻击时获得最大生命 v[1] 的护盾，冷却 v[0] 秒
 function elHitSh(u,v){if(G.time<(u.elHsU||0))return;u.elHsU=G.time+v[0];const a=u.maxHp*v[1];if(!(u.shieldHp>a)){u.shieldHp=a;u.shieldMax=a}u.shieldT=Math.max(u.shieldT||0,v[0]);healFx(u.x,u.y-10,'#f3d47c')}
-function elDr2(u,S){let x=(u.elCrowdDR||0)+(u.elFormDR||0);if(S.lowDr&&u.hp<u.maxHp*S.lowDr[0])x+=S.lowDr[1];if(S.home&&G.invade)x+=S.home;return x}
+function elDr2(u,S){let x=(u.elCrowdDR||0)+(u.elFormDR||0)+elStillDr(u,S);if(S.lowDr&&u.hp<u.maxHp*S.lowDr[0])x+=S.lowDr[1];if(S.home&&G.invade)x+=S.home;return x}
 // 召唤狼群（0.12.1 用户定，限定德鲁伊）：召唤 p.n 只森林狼（同时最多 p.n 只），属性 × p.k（技能等级系数）；狼借英雄艾伦尼塔的 druidWolf
 const elWolfN=h=>{let n=0;for(let i=0;i<G.soldiers.length;i++){const s=G.soldiers[i];if(!s.dead&&s.summon&&s.owner===h&&s.type==='druidWolf')n++}return n};
 SK.elWolves={cast(h,p){const k=Math.min(p.n,p.n-elWolfN(h));if(k<=0)return false;const na=(h.d&&h.d.elS&&h.d.elS.natA)||0,m=(p.k||1)*(1+na);   // na：自然亲和（0.12.1）召唤物属性、移速
@@ -62363,6 +62381,38 @@ SK.elThorns={cast(h,p,a){const j=nearestEnemy(a?a.x:h.x,a?a.y:h.y,p.range*16*1.1
   ai(h,p){const j=nearestEnemy(h.x,h.y,p.range*16,true);return j>=0?{x:E.x[j],y:E.y[j]}:null}};
 SK.elRejuv={cast(h,p){h.elRjU=G.time+p.dur;h.elRjN=G.time+1;h.elRjR=p.r;h.elRjP=p.pct;if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-4),r:p.r*16,life:0.6,c:'#9ae07a'});sfx('zap',h.x,h.y);return true},
   ai(h,p){if(G.phase!=='wave')return null;let n=0;const R=p.r*16;for(const u of G.friends)if(!u.dead&&u.hp<u.maxHp*0.8&&Math.hypot(u.x-h.x,u.y-h.y)<=R)n+=u.isHero?2:1;return n>=3?{}:null}};
+
+// ---------- 0.12.2 家族特性 100% 档的独特效果（用户定五档规矩；数据 data/el_famfx.js 文件头有键的说明）----------
+// 增伤（EL_FX.ampX 末尾加）：dist 目标越远越高、fullE 对满血亡灵、lowE 对残血亡灵、kStk 击杀叠层、fStk 连续打同一个目标叠层
+function elAmp3(h,i,S){let x=0;
+  if(S.dist){const d=Math.hypot(E.x[i]-h.x,E.y[i]-h.y)/16;x+=Math.min(S.dist[1],d*S.dist[0])}
+  if(S.fullE&&E.hp[i]>=E.mhp[i]-0.01)x+=S.fullE;
+  if(S.lowE&&E.hp[i]<E.mhp[i]*S.lowE[0])x+=S.lowE[1];
+  if(S.kStk&&h.elKsU>G.time)x+=h.elKsN*S.kStk[0];
+  if(S.fStk&&h.elFsI===E.id[i])x+=h.elFsN*S.fStk[0];
+  return x}
+// 普攻命中（EL_FX.atkHitE 开头）：连续打同一个目标的层数、吸血、追加一击
+function elFx3Hit(h,i,dmg,o,S){
+  if(S.fStk){const id=E.id[i];if(h.elFsI===id)h.elFsN=Math.min(S.fStk[1],h.elFsN+1);else{h.elFsI=id;h.elFsN=0}}   // 这一下按命中前的层数算（ampX 在前），打完再加一层
+  if(S.ls&&dmg>0&&!h.dead)healF(h,dmg*S.ls);
+  if(S.dbl&&!(o&&o.elDb)&&E.alive[i]&&Math.random()<S.dbl[0])dealE(i,dmg*S.dbl[1],{hk:h,crit:h.crit,magic:o&&o.magic,mix:(o&&o.mix)||h.ws.mix||{pierce:1},elDb:1})}
+// 每帧（EL_FX.tick）：每波开始的护盾、站定计时
+function elFx3Tick(h,S){
+  if(S.waveSh&&G.phase==='wave'&&h.elWsW!==G.wave&&!h.dead){h.elWsW=G.wave;const a=h.maxHp*S.waveSh;if(!(h.shieldHp>a)){h.shieldHp=a;h.shieldMax=a}h.shieldT=Math.max(h.shieldT||0,30);healFx(h.x,h.y-10,'#f3d47c')}
+  if(S.still){if(Math.abs(h.x-h.elStX)>0.5||Math.abs(h.y-h.elStY)>0.5||!(h.elStT>0)){h.elStX=h.x;h.elStY=h.y;h.elStT=G.time}}}
+const elStillDr=(u,S)=>S.still&&u.elStT>0&&G.time-u.elStT>=S.still[0]?S.still[1]:0;
+// 受伤：每秒受到的伤害封顶（cap）、替身边的友军分担（share）、近战反伤（thorn）；击杀叠增伤（kStk）
+feat('elite3',{on:()=>!!(G&&G.elites&&G.elites.length),hooks:{
+  dmgRedF:(u,dmg,o)=>{if(!(dmg>0))return dmg;
+    if(!o.dot)for(let k=0;k<G.heroes.length;k++){const h=G.heroes[k];if(h===u||h.dead||!h.elite)continue;const S=h.d.elS;if(!S||!S.share)continue;const R=S.share[0]*16;
+      if(Math.abs(h.x-u.x)>R||Math.abs(h.y-u.y)>R||Math.hypot(h.x-u.x,h.y-u.y)>R||h.hp<=1)continue;const t=Math.min(S.share[1],dmg,h.hp-1);if(t>0){dmg-=t;h.hp-=t}break}
+    if(u.elite){const S=u.d.elS;if(S&&S.cap){if(!(G.time<u.elCapT)){u.elCapT=G.time+1;u.elCapD=0}const lim=Math.max(0,u.maxHp*S.cap-u.elCapD);if(dmg>lim)dmg=lim;u.elCapD+=dmg}}
+    return dmg},
+  afterHurtF:(u,dmg,o)=>{if(!u.elite||!o.melee||o.dot||!(o.src>=0)||!E.alive[o.src])return;const S=u.d.elS;if(S&&S.thorn&&(o.sid===undefined||E.id[o.src]===o.sid))dealE(o.src,dmg*S.thorn,{hk:u,mix:{pierce:1},thorn:1,noFx:1})},
+  afterHitE:(i,dmg,o)=>{const h=o&&o.hk;if(!h||!h.elite||E.hp[i]>0)return;const S=h.d.elS;if(!S||!S.kStk)return;if(!(h.elKsU>G.time))h.elKsN=0;h.elKsN=Math.min(S.kStk[2],h.elKsN+1);h.elKsU=G.time+S.kStk[1]}}});   // E.hp：afterHitE 在扣血之后、死亡结算之前（engine/enemy.dealE），这时 alive 还是 true
+// 独立乘区（80% 档）：物理攻击、法术攻击在 heroes/hero.heroStatG 乘；生命、物防、法防在 elRecalc 末尾乘
+const elXK=(h,k)=>{const S=h.elite&&h.d.elS;return S&&S[k+'X']>0?1+S[k+'X']:1};
+function elXApply(h,S){if(S.hpX>0){const r=h.maxHp>0?h.hp/h.maxHp:1;h.maxHp*=1+S.hpX;h.hp=h.maxHp*r}if(S.defX>0)h.def*=1+S.defX;if(S.mdefX>0)h.mdef*=1+S.mdefX}
 
 // ---------- 0.12.0 精英的样貌（数据 data/el_look.js）：生成、遗传、合成小人 ----------
 // x.lk = {sk, hr, ey, ear, b}（下标）。没有的（老存档、配偶）第一次用到时补：有父母的按父母遗传，没有的按地区文化圈 + 家族出
@@ -64436,7 +64486,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2a',GAME_TAG='测试版',GAME_CODE=166,GAME_BUILD="38a59ed",GAME_BUILT=1793029228220,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2a',GAME_TAG='测试版',GAME_CODE=166,GAME_BUILD="5cb1a5b",GAME_BUILT=1793030526877,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
