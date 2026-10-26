@@ -64390,7 +64390,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="50fff80",GAME_BUILT=1793014327282,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="c540c30",GAME_BUILT=1793014391431,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -67678,13 +67678,14 @@ function kt2StatRow(s,el,rb){const g=s.st&&s.st.god,k=`kt2s|${g||''}|${s.level}|
 function kt2SelAct(s,a,b){if(a==='kt2kp'){KT2_KP=b.dataset.v;sfx('click')}else if(a==='kt2god'){KT2_GSEL=null;sfx('click');kt2GodOpen(G.settleId)}}
 
 // ---------- 0.12.2 开拓地「套用布局」（玩家要、用户定：选一个别的开拓地或存好的模板，自动清障，能放的直接开始造 1 级，撞位置 / 放不下的跳过）----------
-// 各开拓地的可建区域都以地图中心（主堡）为中心，坐标通用；模板 META.stTpl = [{n 名字, b:[{k,x,y}]}]（至多 TPL_MAX 套，存当前开拓地的布局）
+// 各开拓地的可建区域以主堡为中心，但各图大小、主堡位置不同（stMapDims 的 cx / cy），所以布局一律按「相对主堡」的坐标搬；模板 META.stTpl = [{n 名字, b:[{k,x,y}]}]，x / y 存相对主堡的（至多 TPL_MAX 套）
 // 防御建筑、陷阱照 tryBuild 花银币、立刻建好；开拓地建筑花建材等、照常排进建造（kt_build）；障碍按清障价花银币清掉
 const TPL_MAX=4;
 const stTplList=()=>META.stTpl||(META.stTpl=[]);
 // 能拿来套用的：别的开拓地（有建筑的）+ 存好的模板
-function stTplSrcs(){const o=[],cur=G&&G.settleId;for(const id in((META.settle&&META.settle.R)||{})){const R=stRegion(id);if(id===cur||!R||!R.b||!R.b.length||!stRegionOpen(id)||!CFG.maps[id])continue;o.push({key:'r:'+id,name:CFG.maps[id].name+'开拓地',b:R.b})}
-  stTplList().forEach((t,i)=>o.push({key:'t:'+i,name:t.n,b:t.b}));return o}
+function stTplSrcs(){const o=[],cur=G&&G.settleId;for(const id in((META.settle&&META.settle.R)||{})){const R=stRegion(id);if(id===cur||!R||!R.b||!R.b.length||!stRegionOpen(id)||!CFG.maps[id])continue;const D=stMapDims(id);o.push({key:'r:'+id,name:CFG.maps[id].name+'开拓地',b:R.b.map(e=>({k:e.k,x:e.x-D.cx,y:e.y-D.cy}))})}
+  stTplList().forEach((t,i)=>o.push({key:'t:'+i,name:t.n,b:t.b}));
+  for(const s of o)s.b=s.b.map(e=>({k:e.k,x:e.x+TERR_CX,y:e.y+TERR_CY}));return o}   // 相对主堡 → 这张图的坐标
 const stTplSrc=key=>stTplSrcs().find(s=>s.key===key)||null;
 // 预览：有几座会撞到现有建筑 / 超出范围（一定跳过），其余尝试建造
 function stTplPeek(b){let hit=0,out=0;const R=settleRect();for(const e of b){if(!BDEF[e.k])continue;const n=bSize(e.k);if(e.x<R.x0||e.y<R.y0||e.x+n-1>R.x1||e.y+n-1>R.y1){out++;continue}
@@ -67702,7 +67703,7 @@ function stTplApply(b){const R=settleRect(),why={},bump=k=>{why[k]=(why[k]||0)+1
     if(!cleared){bump('障碍清不掉');continue}
     const err=tryBuild(e.k,e.x,e.y,true);if(err){bump(err.length>12?'不能建造':err);continue}ok++}
   settleSave(true);return{ok,clr,why}}
-function stTplSave(){const L=stTplList(),b=layoutSnap().b.map(e=>({k:e.k,x:e.x,y:e.y}));if(!b.length)return{err:'这个开拓地还没有建筑'};
+function stTplSave(){const L=stTplList(),b=layoutSnap().b.map(e=>({k:e.k,x:e.x-TERR_CX,y:e.y-TERR_CY}));if(!b.length)return{err:'这个开拓地还没有建筑'};
   if(L.length>=TPL_MAX)return{err:`模板最多存 ${TPL_MAX} 套，先删掉一套`};L.push({n:`${CFG.maps[G.settleId].name}布局 ${L.length+1}`,b});saveMeta();return{}}
 // 弹窗（开拓地场景里，主堡面板的「套用布局」打开）
 function stTplHTML(){const S=stTplSrcs(),rows=S.map(s=>{const P=stTplPeek(s.b);return`<div class="sr"><span><b>${s.name}</b><br><span class="meta">${P.n} 座建筑${P.hit?`，${P.hit} 座和现有建筑撞位置(跳过)`:''}${P.out?`，${P.out} 座超出这里的范围(跳过)`:''}</span></span>
