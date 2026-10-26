@@ -11233,7 +11233,7 @@ CFG.story.regions.push(
      eBuf {hp, dmg} 整章亡灵加强 · dragonFoe 龙系生物一直是敌人（maps/lava）· troopLv 借来的兵的等级 · militia 第三项 = 等级
    三张地图第 5 / 10 / 15 波是地图自己的小首领，所以前三章 noBoss（最后一波不换成大首领）、bossE 指定小首领；德拉贡传第四章的首领换成法夫纳（data/story_lava）
    Claude 定的：难度（困难、困难、噩梦、噩梦）、首通金币（40 / 50 / 60 / 80）；特斯拉家的三个精英做成满级的有名字的民兵（台本只给了莉娜的名字）；
-     德拉贡传第三章的削弱 = 德拉贡不加强、亡灵数量 ×1.3、生命 ×1.3、伤害 ×1.2（用户：幅度实现时定）；第四章铁血要塞的精锐 = 满级长枪手、火枪手各 10，重骑兵、火炮手各 6，倒下的 15 秒后从主堡补上 */
+     德拉贡传第三章的削弱 = 德拉贡不加强、亡灵数量 ×1.3、生命 ×1.3、伤害 ×1.2（用户：幅度实现时定）；第四章铁血要塞的精锐 = 满级赤血禁卫、赤血砲手各 10、赤血铁骑 8，倒下的 15 秒后从主堡补上；格拉传第四章麦克劳德家、比索斯家的人做成满级民兵（用户：用民兵、换高级一点的兵种；赤血禁卫 4、赤血铁骑 2、赤血砲手 4，倒下不补） */
 CFG.story.regions.push(
   // ================= 幽影高原 · 格拉传 =================
   {id:'graveTale', name:'幽影高原', bio:'格拉传', vol:2, map:'shadowHigh', seed:61091, req:'homeWild', chapters:[
@@ -11262,7 +11262,7 @@ CFG.story.regions.push(
        boss:[['n','坡顶下来一个穿旧王甲、戴着冠的大个子。它抡着刀一圈一圈地转，身边的人都在挨砍。'],['graveRaider','从坡顶那座坟里出来的……是骑士王亚瑟。我挖的就是他的坟。'],['robin','亚瑟，你什么时候干上当亡灵的勾当了？'],['arthur','就你嘴贫。'],['merlin','离它远一点打！贴着它的人都在挨刀。'],['npc','提示','战争旋风：死灵骑士王持续旋转攻击周围的守军，旋转时间越长，护盾越厚，期间不会普通攻击。无前陷阵：它会向前冲锋，对撞到的守军造成重击并使其眩晕，对建筑造成更高的伤害。']],
        e_scream:[['n','骑士王仰头喊了一声。墙上的人拉弓，一下子慢了一半。'],['priest','我的治疗没有效果了！被喊到的人先退下来！'],['npc','提示','死灵尖啸：周围大范围内的我方单位攻速降低，受到的治疗大幅减少，持续一段时间。死灵召唤：它会召唤一队死灵骑士、骑兵和战士。']],
        win:[['n','天亮了。骑士王倒在坡上，冠滚进了草里。'],['n','梅林下了一趟洞，上来的时候，袍子下摆结了一层霜。'],['merlin','底下那东西，已经顶到石板了。最多还能撑三夜。'],['n','格拉往北坡去了。']]}},
-    {id:'gt4', name:'幽影魔王', waves:20, diff:'nightmare', lead:'graveRaider', lineup:['graveRaider','judgeKnight','priest','arthur','robin','merlin','assassin'], allyMap:'shadowHigh', gold:80, desc:'格拉带着麦克劳德家的人回来了。',
+    {id:'gt4', name:'幽影魔王', waves:20, diff:'nightmare', lead:'graveRaider', lineup:['graveRaider','judgeKnight','priest','arthur','robin','merlin','assassin'], militia:[['bloodGuard','麦克劳德家',CFG.maxLevel],['bloodGuard','麦克劳德家',CFG.maxLevel],['bloodGuard','麦克劳德家',CFG.maxLevel],['bloodGuard','麦克劳德家',CFG.maxLevel],['bloodKnight','麦克劳德家',CFG.maxLevel],['bloodKnight','麦克劳德家',CFG.maxLevel],['bloodGunner','比索斯家护卫',CFG.maxLevel],['bloodGunner','比索斯家护卫',CFG.maxLevel],['bloodGunner','比索斯家护卫',CFG.maxLevel],['bloodGunner','比索斯家护卫',CFG.maxLevel]], allyMap:'shadowHigh', gold:80, desc:'格拉带着麦克劳德家的人回来了。',
      say:{
        start:[['n','第二天傍晚，格拉回来了。他身后跟着四十来个麦克劳德家的人，有几个背着风笛。'],['n','比索斯家的二十个护卫前一天就到了，守在东边。麦克劳德家领头的是个红胡子的老人，他先找到了亚瑟。'],['npc','安格斯','我是安格斯·麦克劳德。北坡三个羊圈都烧了，死了两个放羊的。格拉说，你们管饭。我带了四十个人。'],['arthur','饭管够。你的人还是你带，去守西边。'],['npc','安格斯','行。']],
        p5:[['n','掘墓者又从坡上下来了。'],['graveRaider','这东西头一夜就让我打死了。'],['judgeKnight','把坡顶的洞口守住！缝越裂越大，打死了的也会再爬上来。']],
@@ -11322,9 +11322,9 @@ CFG.story.regions.push(
      say:{
        start:[['n','德拉贡走到半山腰，身上一阵冷一阵热，鳞缝里不停地往外冒白气。'],['n','山道两边的熔岩里，龙一条接一条地爬了出来。'],['npc','提示','沉眠被打断，德拉贡体内的力量还没有稳定下来，这一章他的属性被削弱；亡灵的数量更多，属性也更高。']],
        boss:[['n','山顶上飞下来一条龙，比别的龙大得多，翅膀上的鳞烧得发黑。'],['npc','提示','地狱龙会飞行。火焰喷射：朝前方扇形区域持续喷火，从侧面躲开可以避开。烈焰穿行：向前飞扑一段距离，在路上留下一段时间的熔岩裂痕，踩上去会受到伤害并灼烧。烈焰爆破：向附近投掷火球，在落点造成范围伤害并灼烧。']],
-       win:[['n','地狱龙倒在了山顶的熔岩边上。'],['n','龙群后面走出来一个龙人，比德拉贡还高，鳞甲是暗金色的。'],['dragonLord','法夫纳？是你带的头？'],['n','法夫纳没有回答，朝他扑了过来。'],['n','德拉贡身上的力气时有时无。法夫纳的爪子撕开了他胸口的鳞甲，又把他按进了熔岩里。'],['n','德拉贡不肯退，被打倒了两回，又站了起来。'],['n','后来一条腿撑不住了，他才从熔岩河边滚下去，逃下了山。']],
+       win:[['n','地狱龙倒在了山顶的熔岩边上。德拉贡拄着刀，喘了几口气。'],['n','他身后的熔岩里忽然伸出一只暗金色的爪子，抓住他的腿，把他拖倒在地。'],['n','一个龙人从熔岩里爬了上来，比德拉贡还高，鳞甲是暗金色的。'],['dragonLord','法夫纳？是你带的头？'],['n','法夫纳没有回答。他的爪子撕开了德拉贡胸口的鳞甲，又把他按进了熔岩里。'],['n','德拉贡身上的力气时有时无。他不肯退，被打倒了两回，又站了起来。'],['n','后来一条腿撑不住了，他才从熔岩河边滚下去，逃下了山。']],
        lose:[['n','德拉贡身上的力气时有时无，龙越来越多。'],['n','龙群后面走出来一个龙人，比德拉贡还高，鳞甲是暗金色的。法夫纳的爪子撕开了他胸口的鳞甲，又把他按进了熔岩里。'],['n','后来一条腿撑不住了，他才从熔岩河边滚下去，逃下了山。']]}},
-    {id:'dt4', name:'收复', waves:20, diff:'nightmare', lead:'dragonLord', lineup:['dragonLord'], aiH:['ironMarshal'], troops:[['spearman',10],['musketeer',10],['knight',6],['gunner',6]], troopLv:CFG.maxLevel, dragonFoe:true, wave:{20:{boss:'lvFafnir'}}, allyMap:'lavaLand', gold:80, desc:'东边的山道上，来了铁血要塞的大军。',
+    {id:'dt4', name:'收复', waves:20, diff:'nightmare', lead:'dragonLord', lineup:['dragonLord'], aiH:['ironMarshal'], troops:[['bloodGuard',10],['bloodGunner',10],['bloodKnight',8]], troopLv:CFG.maxLevel, dragonFoe:true, wave:{20:{boss:'lvFafnir'}}, allyMap:'lavaLand', gold:80, desc:'东边的山道上，来了铁血要塞的大军。',
      say:{
        start:[['n','德拉贡在山脚下歇了两天，伤口还在冒白气。他打算往东走，找个地方养伤。'],['n','东边的山道上，来了一支大军，扛着铁血要塞的旗子，队伍拉得很长，一眼望不到头。'],['n','领头的老人骑在马上，看见了他，抬手让队伍停下。'],['ironMarshal','前面是什么人？'],['dragonLord','火焰领主，德拉贡。你们是谁的兵？'],['ironMarshal','我是铁血要塞的霍恩。布兰德家几个月没交货，派去问的人也没回来，我带人来看看出了什么事。'],['dragonLord','山上的龙反了，底下的恶魔也上来了。那块地方，我本来也不想要了。'],['dragonLord','不过山里的财宝还在。你们帮我打进去，财宝分你们三成。'],['ironMarshal','这件事我做不了主，得请示盟主。'],['dragonLord','盟主？这么多兵，上面还有人？'],['ironMarshal','联盟的盟主，亚瑟。'],['dragonLord','你身上的甲是帝国的。帝国的兵，什么时候要听别人的了？'],['ironMarshal','帝国三十年前就撤走了。我们这些留下的人，现在跟着联盟。'],['dragonLord','这个亚瑟，手下有多少兵？'],['ironMarshal','像我这样带兵的，联盟里还有好几个。'],['n','当天，霍恩派了一个骑兵去给盟主送信。'],['n','傍晚，队伍到了布兰德家的镇子。艾格尼丝把霍恩请进了铺子。'],['npc','艾格尼丝','统帅，能不能先打上去？等盟主的回信，来回得一个多月。山上有龙，底下有死人，镇子撑不到那时候。'],['ironMarshal','龙有多少？'],['npc','艾格尼丝','数不清。领主一个人上去，被打成了这样。'],['ironMarshal','不等了。明天就打上去。'],['n','那天夜里，霍恩又写了一封信：「盟主：熔岩之地情况危急，我先带兵打上去了。有什么事，我担着。」'],['npc','提示','霍恩和铁血要塞的精锐士兵加入了战斗，由 AI 操控。']],
        boss:[['n','山顶的龙道里走出来法夫纳，身边绕着一群龙。'],['dragonLord','离他近的人先撤！他每杀一个人，就会变强一分！'],['dragonLord','他一抬头看天，所有人就马上散开！火会从天上掉下来！'],['dragonLord','他变成龙的时候，别跟他硬拼，等他变回来再打！'],['npc','提示','法夫纳每亲手杀死一个敌人，全属性都会提高。天降火劫：短暂延迟后，在大范围内落下火焰，造成极高伤害并灼烧。化身巨龙：一段时间内伤害和减伤大幅提高。他还会周期性地召唤地火蜥蜴、烈焰地龙和地狱飞龙。']],
@@ -64585,7 +64585,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2b',GAME_TAG='测试版',GAME_CODE=167,GAME_BUILD="aaaa08d",GAME_BUILT=1793032403060,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2b',GAME_TAG='测试版',GAME_CODE=167,GAME_BUILD="70ec652",GAME_BUILT=1793037772467,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
