@@ -11224,31 +11224,111 @@ CFG.story.regions.push(
      say:{start:[['n','仗打完的第十天，罗兰来了荒野。'],['paladin','陛下请公主和亚瑟进京。'],['saintKnight','我私放他的事呢？'],['paladin','陛下说，不提了。'],['n','王都的墙上有人写亚瑟的名字，写了又被擦掉，擦掉又有人写。'],['n','国王还是在书房里见的他们。'],['npc','国王','我老了。'],['npc','国王','王位给奥薇尔。荒野、冰原、丛林、荒漠，还给你。'],['npc','国王','你们……愿意结婚吗？'],['saintKnight','不合适吧？'],['arthur','这些事情以后再说，我不会对王室怎么样，您还能安度晚年。'],['n','国王看了他们很久，笑了起来。'],['npc','国王','好。'],['n','加冕那天，奥薇尔把王冠戴歪了，然后又扶正了。'],['saintKnight','以后王都有难处……'],['arthur','写信给我，我会来援。'],['n','亚瑟回到荒野。城门上的旗换了下来，管事把册子交给了罗宾汉。'],['n','荒野的第一场秋雨落下时，城里有人关窗，有人收麦，有人回家吃饭。'],['npc','提示','重返荒野剧情完成。第一卷完。']]}},
   ]});
 
-/* ---------- 0.12.2 剧情第二卷：人物传记（台本《剧情第二卷-幽影高原·格拉传.md》，大纲用户 2026-10-26，望楼写、用户审过；设定见《剧情设定（望楼）》）----------
-   第二卷的地区写 vol:2（选章页分卷显示；不开开拓地，game/settle.stRegions 跳过）、bio 传记名；第一卷「重返荒野」通关后开放
-   用户定：一个章节一个小版本（0.12.2a 第一章、b 第二章……）；wip = 后面章节还没加时选章页上的一句说明（全部加完删掉）
-   章节新字段（game/story）：lead 主角英雄（0 号位，五星、属性照全盛英雄加强，由玩家操控；有这位英雄就用你的装备）· bossE 最后一波的「首领」是这种亡灵（say.boss 在它出场时放）
-     allyMap 这一章通关 → 这张地图结盟（elAllyStory，开放精英招募、家族声望、婚配）
-   幽影高原：第 5 / 10 / 15 波是地图自己的小首领（死灵掘墓者、鸦影法师、死灵骑士王·亚瑟），所以前三章 noBoss（最后一波不换成幽影魔王）、bossE 指定小首领 */
+/* ---------- 0.12.2 剧情第二卷：人物传记（台本《剧情第二卷-幽影高原·格拉传》《-秘法工厂·凡恩传》《-熔岩之地·德拉贡传》，大纲用户 2026-10-26，望楼写、用户审过；设定见《剧情设定（望楼）》）----------
+   第二卷的地区写 vol:2（选章页分卷显示；不开开拓地，game/settle.stRegions 跳过）、bio 传记名；第一卷「重返荒野」通关后开放，三篇各自独立
+   对白由 Claude 的转换脚本从台本原样生成（旁白 → n、英雄 → 英雄 id、其他人和提示 → npc）；【结尾】接在【胜利】后面，【失败】= lose
+   章节新字段（game/story）：lead 主角英雄（0 号位，五星、属性照全盛英雄加强，由玩家操控；有这位英雄就用你的装备）· leadPlain 主角不加强 · bossE 最后一波的「首领」是这种亡灵（say.boss 在它出场时放）
+     allyMap 这一章通关 → 这张地图结盟（elAllyStory）· joinP {波次: 英雄} 打完第 N 波的对白放完后加入 · aiH 由 AI 操控的剧情英雄（用你的英雄，没有就派一星）
+     say.e_<事件> 首领放技能时的对白（maps/shadowhigh 调 stEvt：rite 群鸦血祭、scream 死灵尖啸、reborn 魔王再临、horn 魔王号角、grip 魔王之握）
+     eBuf {hp, dmg} 整章亡灵加强 · dragonFoe 龙系生物一直是敌人（maps/lava）· troopLv 借来的兵的等级 · militia 第三项 = 等级
+   三张地图第 5 / 10 / 15 波是地图自己的小首领，所以前三章 noBoss（最后一波不换成大首领）、bossE 指定小首领；德拉贡传第四章的首领换成法夫纳（data/story_lava）
+   Claude 定的：难度（困难、困难、噩梦、噩梦）、首通金币（40 / 50 / 60 / 80）；特斯拉家的三个精英做成满级的有名字的民兵（台本只给了莉娜的名字）；
+     德拉贡传第三章的削弱 = 德拉贡不加强、亡灵数量 ×1.3、生命 ×1.3、伤害 ×1.2（用户：幅度实现时定）；第四章铁血要塞的精锐 = 满级长枪手、火枪手各 10，重骑兵、火炮手各 6，倒下的 15 秒后从主堡补上 */
 CFG.story.regions.push(
   // ================= 幽影高原 · 格拉传 =================
-  {id:'graveTale', name:'幽影高原', bio:'格拉传', vol:2, map:'shadowHigh', seed:61091, req:'homeWild', wip:'格拉传后面三章还在写，会在之后的几个小版本里陆续加上。', chapters:[
+  {id:'graveTale', name:'幽影高原', bio:'格拉传', vol:2, map:'shadowHigh', seed:61091, req:'homeWild', chapters:[
     {id:'gt1', name:'封石', waves:5, diff:'hard', lead:'graveRaider', lineup:['graveRaider'], noBoss:true, bossE:'yyDigger', gold:40, desc:'坡顶那座大坟，格拉已经挖了三夜。',
-     say:{start:[['n','坡顶那座大坟，格拉已经挖了三夜。坟前的碑倒在草里，上面刻着：骑士王亚瑟。'],['n','高原上的老人都说，这座坟里的陪葬，够买下半个镇子。'],['n','洞口外面不时有死人走过去，拖着脚，看都不看他一眼。'],
-         ['n','第三夜，镐头碰到的不是棺木，是石头。一圈石头围着一块黑石板，石头上刻满了字和纹路，纹路里透着一点白光。'],['n','格拉以为是棺床的底座，撬开了一块，想从旁边绕过去。'],
-         ['n','石缝里冒上来一股冷风。纹路里的光，从他撬开的那块开始，一块接一块暗了下去。黑石板底下，有东西在敲。'],['n','格拉往外爬。爬出洞口，整片墓园的死人都站了起来，全都转向坡下。礼拜堂的窗户里，还亮着火。'],
-         ['n','他跑回礼拜堂的时候，艾菲还在添柴。'],['graveRaider','都起来，进里屋，把门顶上。'],['npc','艾菲','又有东西过来了？'],['graveRaider','今晚来的比平时多。'],['npc','伊恩','是不是坡顶底下的魔王出来了？'],['graveRaider','那是吓唬小孩的。快进去。'],
-         ['npc','提示','幽影高原永远处于深夜：士兵和英雄的移速降低，视野缩短。']],
+     say:{
+       start:[['n','坡顶那座大坟，格拉已经挖了三夜。坟前的碑倒在草里，上面刻着：骑士王亚瑟。'],['n','高原上的老人都说，这座坟里的陪葬，够买下半个镇子。'],['n','洞口外面不时有死人走过去，拖着脚，看都不看他一眼。'],['n','第三夜，镐头碰到的不是棺木，是石头。一圈石头围着一块黑石板，石头上刻满了字和纹路，纹路里透着一点白光。'],['n','格拉以为是棺床的底座，撬开了一块，想从旁边绕过去。'],['n','石缝里冒上来一股冷风。纹路里的光，从他撬开的那块开始，一块接一块暗了下去。黑石板底下，有东西在敲。'],['n','格拉往外爬。爬出洞口，整片墓园的死人都站了起来，全都转向坡下。礼拜堂的窗户里，还亮着火。'],['n','他跑回礼拜堂的时候，艾菲还在添柴。'],['graveRaider','都起来，进里屋，把门顶上。'],['npc','艾菲','又有东西过来了？'],['graveRaider','今晚来的比平时多。'],['npc','伊恩','是不是坡顶底下的魔王出来了？'],['graveRaider','那是吓唬小孩的。快进去。'],['npc','提示','幽影高原永远处于深夜：士兵和英雄的移速降低，视野缩短。']],
        p1:[['n','砍倒的死人里，有的又爬了起来。'],['npc','提示','亡灵死后有一半的概率复活一次（首领、小首领除外）。格拉杀死的亡灵无法复活；五星时，格拉周围较大范围内被任何单位杀死的亡灵都无法复活。']],
        p3:[['n','坡上有几个死人，走着走着就看不见了，到了墙根底下才露出来。'],['npc','提示','幽影刺客、幽影弓手处于隐身状态，守军或建筑靠近后才会显形，受到攻击或出手时也会显形。']],
-       boss:[['n','坡上下来一个扛铲子的死人，比别的高出一截。它走一段，就停下来往地里挖。'],['npc','艾菲','它在挖地！'],['graveRaider','它想从底下钻过来。'],['n','格拉盯着它挖出来的洞看了一会儿。'],
-         ['graveRaider','别怕，它那个洞没撑木头，它要是倒了，洞就塌了。'],['n','它走过的地方，冒出一座一座新坟，坟里往外爬死人。'],['graveRaider','我去把它刨的坟平了。你们别出来。'],
-         ['npc','提示','死灵掘墓者会朝主堡挖掘地道，它死亡后地道随之坍塌；它还会建造坟墓，坟墓会持续放出死灵战士，在它死亡后依然存在，需要单独摧毁。它在场时，英雄复活变慢。']],
-       win:[['n','天亮了，死人退回坡上，躺回了土里。'],['n','格拉把孩子挨个数了一遍，七个，都在。'],['n','他回到洞里，举着灯，把那圈石头上的土擦掉。石头上的字是很老的写法，他在坡上最老的几块碑上见过。'],
-         ['n','「此下镇幽影之王。后来者，勿动此石。」'],['n','他把撬开的那块石头搬回原处，对好了缝。纹路没有再亮起来，冷风还在从缝里往上冒。'],['graveRaider','……还真有。'],
-         ['n','回到礼拜堂，他把孩子叫到一起。'],['graveRaider','艾菲，收拾东西，带他们去安格斯家的牧场住几天。'],['npc','艾菲','那你呢？'],['graveRaider','我去一趟教廷国。'],['npc','艾菲','你又惹事了？'],['graveRaider','这回惹大了。'],
-         ['n','格拉掏出一把铜板，塞给艾菲。'],['graveRaider','给安格斯，说是饭钱。'],['npc','艾菲','他不会要的。'],['graveRaider','那你就塞他家羊圈里。'],['npc','艾菲','教廷的人会不会抓你？'],
-         ['graveRaider','要是抓了，你们就在安格斯那儿住着，别回来。那几块石头，除了教廷的人，没人会修。']]}},
+       boss:[['n','坡上下来一个扛铲子的死人，比别的高出一截。它走一段，就停下来往地里挖。'],['npc','艾菲','它在挖地！'],['graveRaider','它想从底下钻过来。'],['n','格拉盯着它挖出来的洞看了一会儿。'],['graveRaider','别怕，它那个洞没撑木头，它要是倒了，洞就塌了。'],['n','它走过的地方，冒出一座一座新坟，坟里往外爬死人。'],['graveRaider','我去把它刨的坟平了。你们别出来。'],['npc','提示','死灵掘墓者会朝主堡挖掘地道，它死亡后地道随之坍塌；它还会建造坟墓，坟墓会持续放出死灵战士，在它死亡后依然存在，需要单独摧毁。它在场时，英雄复活变慢。']],
+       win:[['n','天亮了，死人退回坡上，躺回了土里。'],['n','格拉把孩子挨个数了一遍，七个，都在。'],['n','他回到洞里，举着灯，把那圈石头上的土擦掉。石头上的字是很老的写法，他在坡上最老的几块碑上见过。'],['n','「此下镇幽影之王。后来者，勿动此石。」'],['n','他把撬开的那块石头搬回原处，对好了缝。纹路没有再亮起来，冷风还在从缝里往上冒。'],['graveRaider','……还真有。'],['n','回到礼拜堂，他把孩子叫到一起。'],['graveRaider','艾菲，收拾东西，带他们去安格斯家的牧场住几天。'],['npc','艾菲','那你呢？'],['graveRaider','我去一趟教廷国。'],['npc','艾菲','你又惹事了？'],['graveRaider','这回惹大了。'],['n','格拉掏出一把铜板，塞给艾菲。'],['graveRaider','给安格斯，说是饭钱。'],['npc','艾菲','他不会要的。'],['graveRaider','那你就塞他家羊圈里。'],['npc','艾菲','教廷的人会不会抓你？'],['graveRaider','要是抓了，你们就在安格斯那儿住着，别回来。那几块石头，除了教廷的人，没人会修。']]}},
+    {id:'gt2', name:'教廷的人', waves:10, diff:'hard', lead:'graveRaider', lineup:['graveRaider','judgeKnight','priest'], noBoss:true, bossE:'yyRavenMage', gold:50, desc:'第九天，格拉带着教廷的人回到了礼拜堂。',
+     say:{
+       start:[['n','第九天，格拉回到了礼拜堂，身后跟着瑟塔洛斯、希尔德加德，还有十二个惩戒骑士和几个牧师。'],['judgeKnight','教廷正在调人，准备收复大圣堂。我在这里最多待一个月。联盟那边，教廷也去了信。'],['graveRaider','一个月够吗？'],['judgeKnight','先下去看看封口。'],['n','洞里，瑟塔洛斯蹲在那圈石头前，看了很久。希尔德加德摸了摸石头上的纹路，又看了看那行字。'],['priest','这不是教廷的封印，教廷的书上没写过这种。'],['judgeKnight','我补不上。只能守着，底下上来一个，就打回去一个。'],['priest','就是你撬的这块？'],['graveRaider','就是这块。'],['priest','力气不小。'],['judgeKnight','盗墓，按教规是重罪。'],['graveRaider','知道。到时候怎么罚？是关起来，还是罚钱？'],['judgeKnight','先守住再说。'],['n','回到礼拜堂，希尔德加德看见墙边一排小铺，地上扔着几个木头削的小玩意儿。'],['priest','这里住孩子？'],['graveRaider','镇上没人要的，在这儿避雨。前几天送到山上去了。'],['priest','你送的？'],['graveRaider','顺路的事。']],
+       w1:[['n','天黑以后，坡上飞下来一群乌鸦，先扑向了塔上和墙上的人。'],['npc','提示','腐化乌鸦是飞行单位，近战无法攻击，远程攻击也有较高概率落空；它们优先攻击远程士兵、远程英雄，以及城墙上和塔上的守军。']],
+       p4:[['priest','瑟塔洛斯，往他那边靠！他身边倒下的，一个都没再起来。'],['graveRaider','干这行的，总得知道怎么让它们躺好。']],
+       boss:[['n','坡上走下来一个穿黑袍的死人，肩上、袖子上落满了乌鸦。它一到，砍倒的死人一个接一个全都爬了起来。'],['judgeKnight','先杀它！有它在，倒下的全都会再爬起来！'],['npc','提示','鸦影法师在场时，腐化乌鸦获得强化，所有倒下的亡灵都会复活；它还会持续召唤乌鸦。']],
+       e_rite:[['n','黑袍一抬手，满天的乌鸦一齐掉了下来。墙上的人身上都是一疼。'],['priest','见一只乌鸦就打一只，别让它们攒起来！它一杀乌鸦，所有人都会掉血！'],['npc','提示','群鸦血祭：鸦影法师会杀死场上所有腐化乌鸦，乌鸦越多，我方所有单位受到的伤害越高。它召唤的乌鸦死亡越多，它自身死后复活的概率越高。']],
+       win:[['n','天亮了。两个惩戒骑士没能回来。'],['n','瑟塔洛斯又下了一趟洞。黑石板上多了一道裂缝，往上冒的冷风比前几天大。'],['judgeKnight','我写信给亚瑟。亡灵一夜比一夜多，照这样下去，撑不到一个月。'],['priest','教廷那边也确实调不出人了。'],['judgeKnight','上回在铁血要塞，我说那份情还清了。这回又要欠他。'],['priest','那就接着欠。'],['graveRaider','亚瑟？跟坡顶那位一个名字的？'],['priest','活着的那个。'],['n','当天，瑟塔洛斯的信就送下了高原。']]}},
+    {id:'gt3', name:'骑士王', waves:15, diff:'nightmare', lead:'graveRaider', lineup:['graveRaider','judgeKnight','priest'], joinP:{2:['arthur','robin','merlin','assassin']}, noBoss:true, bossE:'yyKingArthur', gold:60, desc:'信送出去以后，又守了六夜。',
+     say:{
+       start:[['n','信送出去以后，又守了六夜。惩戒骑士只剩下九个。'],['n','希尔德加德的绷带用完了，牧师们把自己的袍子撕成了条。']],
+       p2:[['n','北边的路上来了一队火把。领头的人骑着马，隔着老远就喊了起来。'],['arthur','支援来了！'],['n','罗宾汉、梅林、夜鸦跟在后面，后头还有几十个荒野的兵。'],['npc','提示','亚瑟、罗宾汉、梅林、夜鸦加入了战斗。']],
+       p4:[['robin','草，这鬼地方怎么这么黑，箭都不知道往哪射。'],['assassin','影子里，有东西。走近了，才看得见。'],['npc','提示','幽影之魂处于强隐身状态，守军或建筑贴近后才会显形，受到攻击、出手或被照明时均不会显形；它可以穿墙。']],
+       p6:[['n','歇下来的时候，格拉走到了亚瑟面前。'],['graveRaider','封口是我撬开的。'],['arthur','我知道，瑟塔洛斯信上写了。'],['arthur','镇上有多少人能打？'],['graveRaider','比索斯家有三十来个护卫，守着他们自家的宅子。以前是借不来的，你来了，就借得来了。'],['arthur','罗宾汉，天亮了你去镇上一趟。'],['robin','我？人家看我这样，能借给我？'],['arthur','你现在是守备官。'],['robin','……行，我去。']],
+       p10:[['n','第二天傍晚，罗宾汉从镇上回来了。'],['robin','比索斯家答应了，明天派二十个护卫过来，还送十车粮。管事的罗德里克托我问候你，又问了一句，这事是谁惹出来的。'],['graveRaider','二十个不够。再去找安格斯吧。麦克劳德家北坡的羊圈前几天被烧了，他正憋着火。我去，孩子还在他那儿，顺便看一眼。天亮就走。'],['arthur','让他的人后天天黑以前到。'],['graveRaider','他要是问饭钱呢？'],['arthur','饭钱联盟出。']],
+       boss:[['n','坡顶下来一个穿旧王甲、戴着冠的大个子。它抡着刀一圈一圈地转，身边的人都在挨砍。'],['graveRaider','从坡顶那座坟里出来的……是骑士王亚瑟。我挖的就是他的坟。'],['robin','亚瑟，你什么时候干上当亡灵的勾当了？'],['arthur','就你嘴贫。'],['merlin','离它远一点打！贴着它的人都在挨刀。'],['npc','提示','战争旋风：死灵骑士王持续旋转攻击周围的守军，旋转时间越长，护盾越厚，期间不会普通攻击。无前陷阵：它会向前冲锋，对撞到的守军造成重击并使其眩晕，对建筑造成更高的伤害。']],
+       e_scream:[['n','骑士王仰头喊了一声。墙上的人拉弓，一下子慢了一半。'],['priest','我的治疗没有效果了！被喊到的人先退下来！'],['npc','提示','死灵尖啸：周围大范围内的我方单位攻速降低，受到的治疗大幅减少，持续一段时间。死灵召唤：它会召唤一队死灵骑士、骑兵和战士。']],
+       win:[['n','天亮了。骑士王倒在坡上，冠滚进了草里。'],['n','梅林下了一趟洞，上来的时候，袍子下摆结了一层霜。'],['merlin','底下那东西，已经顶到石板了。最多还能撑三夜。'],['n','格拉往北坡去了。']]}},
+    {id:'gt4', name:'幽影魔王', waves:20, diff:'nightmare', lead:'graveRaider', lineup:['graveRaider','judgeKnight','priest','arthur','robin','merlin','assassin'], allyMap:'shadowHigh', gold:80, desc:'格拉带着麦克劳德家的人回来了。',
+     say:{
+       start:[['n','第二天傍晚，格拉回来了。他身后跟着四十来个麦克劳德家的人，有几个背着风笛。'],['n','比索斯家的二十个护卫前一天就到了，守在东边。麦克劳德家领头的是个红胡子的老人，他先找到了亚瑟。'],['npc','安格斯','我是安格斯·麦克劳德。北坡三个羊圈都烧了，死了两个放羊的。格拉说，你们管饭。我带了四十个人。'],['arthur','饭管够。你的人还是你带，去守西边。'],['npc','安格斯','行。']],
+       p5:[['n','掘墓者又从坡上下来了。'],['graveRaider','这东西头一夜就让我打死了。'],['judgeKnight','把坡顶的洞口守住！缝越裂越大，打死了的也会再爬上来。']],
+       p12:[['n','西边的墙下，风笛响了起来。麦克劳德家的人跟着笛声，一排一排往前压。']],
+       boss:[['n','坡顶的坟塌了下去。坑里升起一个东西，比骑士王还高两个头，身上的黑气往四面漫开。'],['n','它一出来，墙上墙下的人身子都是一沉，像被抽走了一半的力气。'],['priest','所有人退回来！我先给你们补上！'],['npc','提示','魔王降世：幽影魔王出场时，我方所有单位和建筑立即失去一半生命，主堡不受影响。它在场时，英雄复活大幅变慢。']],
+       e_reborn:[['n','魔王倒下了一回。它身上的黑气钻进了坡上的骑士王身体里，骑士王站了起来。'],['merlin','先打骑士王！它附到骑士王身上去了，场上只要还有小的，它就死不了。'],['npc','提示','魔王再临：幽影魔王被杀死时，如果场上有小首领，它会附身于其中生命最高者并复活。']],
+       e_horn:[['n','魔王吹了一声号角，地图边上涌进来一支死灵军团。'],['merlin','小的一清完，就趁它下一回吹号之前，所有人一起打它！不然它一吹号，又会叫三个出来。'],['npc','提示','魔王号角：它会持续从地图边缘召唤死灵军团；场上没有小首领时，还会召唤死灵掘墓者、鸦影法师和死灵骑士王。魔王咆哮：全场我方单位的攻速、冷却速度和移速降低，持续一段时间。']],
+       e_grip:[['n','魔王朝前伸出一只黑爪，爪子一路往前，挡在路上的士兵一个接一个倒下了。'],['judgeKnight','它伸手了！那条线上的人快让开！'],['npc','提示','魔王之握：它向前伸出一道很长的魔爪，直接摧毁路径上生命较低的单位，遇到无法摧毁的目标时停下，并在该处造成大范围的十字伤害。']],
+       win:[['n','天亮了。坡顶的坑里，不再往上冒冷风了。'],['n','中午，坡下上来一个穿橙色兜帽长袍的人，背着一本比他还宽的名册。'],['arthur','克劳德？你怎么来了？'],['scribe','听说高原打了一仗。'],['n','克劳德挨个问死去的人的名字。惩戒骑士的名字，他去问瑟塔洛斯；麦克劳德家的，问安格斯；荒野的兵，问罗宾汉。镇上的人，格拉在旁边一个一个地报。'],['n','问完了，克劳德站在坡上，看了一圈墓碑。'],['scribe','这里，我好像来过。'],['graveRaider','你看哪块碑都像来过。'],['n','格拉看了看他的袍子。'],['graveRaider','不过以前倒真有个穿得跟你一样的，像个大橙子，老在这一带晃。'],['scribe','什么时候？'],['graveRaider','十几年前吧，那会儿我还是个半大小子。'],['n','克劳德把这句话记在了名册的空白处。'],['n','下午，镇上来了八个护卫，簇拥着一个穿呢子外套的人。'],['npc','罗德里克','亚瑟大人，我是罗德里克·比索斯。家里的护卫，没给您添麻烦吧？'],['arthur','没有。东边那一段，多亏了他们。'],['n','罗德里克看见了格拉，抬手一指。'],['npc','罗德里克','就是他，挖了骑士王的坟，撬了封口。镇上谁都知道他是个挖坟的。按高原的规矩，挖坟的要吊死。'],['graveRaider','是我挖的。'],['arthur','那封印有些年头了。就算他不挖，过些年它也会自己裂开。'],['arthur','到那时候，高原上没有教廷的人，也没有联盟的人，光靠你们比索斯家和麦克劳德家，守不住的。'],['npc','罗德里克','……大人说的是。'],['n','罗德里克退到一边，跟护卫说话去了。格拉走到亚瑟旁边。'],['graveRaider','刚才那话，谢了。'],['arthur','我说的是实话。'],['n','北坡的路上下来一辆羊毛车，艾菲带着孩子们跳下车，一窝蜂跑到了格拉身边。'],['arthur','这些都是你的？'],['graveRaider','我哪生得出这么多。'],['arthur','你挖坟的钱，都花哪了？'],['graveRaider','都喝酒了。'],['npc','艾菲','他不喝酒。'],['arthur','那钱呢？'],['graveRaider','……我没媳妇，怕老了没人养老，先养几个。'],['n','亚瑟笑了，转头看向罗德里克。'],['arthur','镇上没人管这些孩子？'],['npc','罗德里克','高原上没爹娘的孩子多了，镇上哪管得过来……'],['arthur','镇上有多少这样的孩子？'],['npc','罗德里克','这……没数过。'],['arthur','那就回去数一数，三天以后告诉我。'],['npc','罗德里克','是、是。'],['n','罗德里克带着护卫走了，走得很快。'],['arthur','安格斯，坡顶这个洞，往后由你们家的人守，联盟出粮，出饷。高原上的事，往后我找你们两家一起商量。'],['npc','安格斯','那比索斯家收的羊税呢？'],['arthur','羊税照旧。有不合适的地方，两家坐下来一起谈。'],['arthur','格拉，你跟着我干。守这个洞，礼拜堂归你管，孩子的口粮，联盟出。'],['graveRaider','那坟还挖不挖？'],['arthur','不用挖了，联盟发的饷够你养孩子。'],['n','回营地的路上，罗宾汉跟在亚瑟旁边。'],['robin','这小子，跟我当年一个德行。'],['arthur','也跟我当年一个德行。'],['robin','你当年可没他机灵。'],['n','晚上，瑟塔洛斯来辞行。一个月到了，教廷那边在等他。'],['arthur','我在高原住一阵。你回去跟教廷说，打大圣堂那天，联盟的人从高原这边过去。'],['judgeKnight','这份情……'],['arthur','这回不算情。大圣堂离高原只有几天的路，大圣堂打不下来，高原也安生不了。'],['judgeKnight','我回去就禀告。'],['npc','提示','幽影高原剧情完成。幽影高原加入联盟：开放这里的精英招募、家族声望和婚配。']]}},
+  ]},
+  // ================= 秘法工厂 · 凡恩传 =================
+  {id:'faneTale', name:'秘法工厂', bio:'凡恩传', vol:2, map:'arcaneFactory', seed:61092, req:'homeWild', chapters:[
+    {id:'ft1', name:'醒来', waves:5, diff:'hard', lead:'fane', lineup:['fane'], noBoss:true, bossE:'afZOMG', gold:40, desc:'门卫凡恩在一张工作台上醒了过来。',
+     say:{
+       start:[['n','三十年前，秘法工厂的法师们去了东边，说三个月就回来。'],['n','门卫凡恩每天早晚在大门口点一次名，七个法师，都是未到。'],['n','每月初一给它上油、检修的人也没有回来。它胸口的晶石一年比一年暗，后来光弱到撑不住了，它就在大门口进入了休眠。'],['n','最近，亡灵占了工厂，把它拖到了厂里的一张工作台上，撬开了它胸口的格子。一个穿工装的亡灵拿着一块黑色的芯片，要换掉它的。'],['n','凡恩醒了过来。'],['fane','门卫凡恩，重新启动。'],['n','它抓住那个亡灵的手，把它甩开，从工作台上站了起来。'],['n','厂房里的炉子在烧，传送带在转，一架飞艇刚装上翅膀。'],['fane','工厂在运转。门卫没有接到开工的命令。'],['npc','提示','工厂里的魔法水晶会为附近的傀儡回复生命；电磁机关地板会周期性地使上面的大型器械暂时失灵。']],
+       p1:[['npc','提示','这里的亡灵对法术、爆炸和元素伤害有额外抗性；我方的法术单位越多，亡灵造成的法术伤害越高。']],
+       p3:[['n','凡恩退到了大门口。厂里的傀儡和飞艇还在一批一批地出来。'],['fane','门卫无法独立守住工厂。按条令，应当向法师请求支援。'],['fane','法师不在，就向工厂外面的人请求支援。']],
+       boss:[['n','厂房顶上升起一艘黑色的大飞艇，比别的大了好几倍，炮口全转向了大门。'],['npc','提示','Z.O.M.G. 会进行散弹炮齐射和机炮轮射，并从地图边缘召唤其他飞艇；被击落后，会解体为多艘较小的飞艇。']],
+       win:[['n','大飞艇被打了下来，散开的几艘小飞艇也一艘一艘落了地。'],['n','凡恩推开大门，走了出去。'],['fane','门卫离岗。原因：请求支援。'],['n','凡恩看了看周围，这里已经没有其他人了。']]}},
+    {id:'ft2', name:'路上', waves:10, diff:'hard', lead:'fane', lineup:['fane'], noBoss:true, bossE:'afArcEng', gold:50, desc:'凡恩去特斯拉家的镇子请求支援。',
+     say:{
+       start:[['n','元素森林的西边烧秃了一大片。焦黑的树桩中间，有一条土路。'],['n','克劳德往西走了两天。迎面走来一个比他高出一倍的傀儡，一条胳膊垂着，胸口的晶石一明一暗。'],['fane','来访者。你是法师吗？'],['scribe','不是。我叫克劳德。'],['fane','我是秘法工厂的门卫凡恩。工厂被敌人占据，我需要支援。'],['scribe','我不擅长打仗。不过，我可以帮你找能打的人。'],['fane','哪里有能打的人？'],['scribe','往北有个镇子，是特斯拉家的，他们家人多。元素森林的大德鲁伊跟亚瑟的联盟有约，我再给她写封信。'],['fane','好，先去镇子。'],['n','特斯拉家的镇子在山谷里，街上都是铁匠铺和钟表铺，屋顶上竖着一根根铜杆。'],['n','镇口坐着一个老人，一条胳膊是铁的。他看见凡恩，站了起来。'],['npc','弗兰茨','……凡恩？你还能动？我是弗兰茨啊，以前在厂里当学徒的。'],['fane','弗兰茨，我认得你。你看起来老了很多。'],['npc','弗兰茨','我今年六十了。你多久没开机了？'],['fane','你当学徒的时候三十岁。原来已经过去三十年了，看来这段时间发生了很多事。'],['n','当天，克劳德的信就跟着一支收木炭的车队，往林子去了。'],['n','特斯拉家的人在议事厅里吵了三天，也没吵出个结果。'],['npc','海因茨','工厂空了三十年，能搬的早就搬光了。打下来，特斯拉家能拿到什么？'],['npc','当家的','亡灵占着厂子，又没打出来。去惹它们，要是死了人，谁管？'],['npc','弗兰茨','凡恩给厂里看了几十年的门，现在它来求我们，总不能不管。'],['npc','海因茨','叔叔，家里几百口人，不能为了一个傀儡去拼命。'],['n','凡恩在议事厅门口等着，每天早上都进去问一遍：请求支援。']],
+       w1:[['n','第五天夜里，镇子上空飞来了一群飞艇。炸弹落在屋顶上，铜杆一根接一根倒了下来。'],['fane','那是工厂的飞艇。我去拦住它们。']],
+       p5:[['n','歇下来的时候，凡恩转过身，对着南边工厂的方向。'],['fane','晚点名。'],['fane','首席法师，奥斯瓦尔德·魏斯，未到。'],['n','它一个一个念下去。七个法师，都是未到。'],['fane','傀儡凡罗，未到。'],['fane','门卫凡恩，到。'],['scribe','首席法师是什么样的人？'],['fane','身高一米八一。左手少一根小指。说话前先咳一声。茶里放两块糖，说放三块的是野蛮人。'],['scribe','其他人呢？'],['n','凡恩一个一个地说，克劳德写满了四页。']],
+       boss:[['n','飞艇后面跟来一个穿工装的亡灵，背上背着一圈工具。凡恩停下了脚步。'],['fane','它打开过我的动力核心舱。'],['npc','提示','秘法工程师会为全场亡灵施加一层共用的魔法护盾，法术伤害需要先击破护盾；它会释放电磁风暴，使大型器械和魔法塔轮流失效；它还会在周围布下大量可以连锁引爆的地雷。']],
+       win:[['n','天亮了。镇上烧了十几座房子，死了七个人。克劳德去问了他们的名字。'],['n','中午，海因茨把家里的人叫到了议事厅。'],['npc','海因茨','把人叫齐。门卫，工厂我们帮你打回来。']]}},
+    {id:'ft3', name:'凡罗', waves:15, diff:'nightmare', lead:'fane', lineup:['fane','archDruid','elemArcher'], militia:[['mechGunner','莉娜·特斯拉',CFG.maxLevel],['mechEngineer','特斯拉家精英',CFG.maxLevel],['mechWarrior','特斯拉家精英',CFG.maxLevel]], noBoss:true, bossE:'afFanluo', gold:60, desc:'元素森林的人到了，特斯拉家出了三个人。',
+     say:{
+       start:[['n','第二天，收木炭的车队回来了，后面跟着几匹灰狼。'],['n','艾伦尼塔走在最前面，艾琳背着弓，跟在旁边。'],['archDruid','林子西边又烧了两片。克劳德的信上说，是厂里的飞艇。'],['npc','海因茨','前天夜里，它们炸了我们的镇子。特斯拉家出三个人，莉娜带队，跟你们一起去。'],['archDruid','好。'],['n','艾琳绕着凡恩走了一圈，敲了敲它的铁腿。'],['elemArcher','你吃什么？'],['fane','我的动力来源是秘法核心。'],['elemArcher','好吃吗？'],['fane','这不是吃的，不能吃。'],['elemArcher','好吧……']],
+       w1:[['npc','提示','特斯拉家的三名精英、艾伦尼塔、艾琳加入了战斗。']],
+       p6:[['n','夜里，艾伦尼塔坐在弗兰茨家门口，看凡恩点名。'],['archDruid','厂里的法师呢？三十多年前，他们还常到林子里来采晶石。'],['npc','弗兰茨','……车队在东边的山口被亡灵堵了，一个都没回来。赶车的鲁道夫钻进沟里，才活下来，回来报的信。'],['archDruid','凡恩知道吗？'],['npc','弗兰茨','不知道。凡罗就是出去找他们的，再也没回来。我怕说了，凡恩也会走。'],['archDruid','我的老师迷失神志的那几年，她让我们别过去，我就真的没去。等我去的时候，她已经认不出我了。'],['archDruid','早点告诉它吧。'],['npc','弗兰茨','等打完这一仗，我就告诉它。']],
+       p9:[['npc','海因茨','门卫，工厂打下来以后，里面的炉子和机器，特斯拉家要用。'],['fane','工厂归法师。只有法师和登记在册的工匠，可以进出。'],['npc','海因茨','那就把我们的人登记上。'],['fane','登记要首席签字。'],['npc','莉娜','首席三十年都没回来了！'],['npc','海因茨','……先打下来再说。']],
+       boss:[['n','工厂的方向走来一个傀儡，和凡恩一样高，胸口的晶石是黑的。'],['fane','傀儡凡罗，到。'],['n','那个傀儡没有回答，抬手就是一道激光。'],['npc','提示','凡罗拥有与凡恩相同的技能：魔法屏障使它受到的法术伤害降低，命中时还会为自身附加护盾；激光和导弹交替释放；雷霆万钧会麻痹周围大片守军。']],
+       win:[['n','凡罗倒在木栅前面。凡恩跪下来，打开了它胸口的格子。'],['n','格子里插着一块黑色的芯片。芯片后面，塞着七块铜牌，边上都烧黑了，每一块上都刻着一个名字。'],['fane','首席法师，奥斯瓦尔德·魏斯。'],['n','它一块一块地念完了。弗兰茨开了口。'],['npc','弗兰茨','……鲁道夫三十年前就回来说过。车队在东边的山口被亡灵堵了，一个都没回来。我一直没告诉你。'],['fane','凡罗找到了他们。'],['n','凡恩把铜牌放回了凡罗的格子里，站了起来。'],['fane','首席法师，奥斯瓦尔德·魏斯，阵亡。'],['n','它把七个法师一个一个念了一遍，都是阵亡。'],['fane','傀儡凡罗，阵亡。'],['fane','莉娜。炉心的阀门在三楼，你会开吗？'],['npc','莉娜','……会。'],['fane','我把你登记成工匠。首席不在了，由我来签字。'],['fane','明天天亮，我带你进去。']]}},
+    {id:'ft4', name:'炉心', waves:20, diff:'nightmare', lead:'fane', lineup:['fane','archDruid','elemArcher'], militia:[['mechGunner','莉娜·特斯拉',CFG.maxLevel],['mechEngineer','特斯拉家精英',CFG.maxLevel],['mechWarrior','特斯拉家精英',CFG.maxLevel]], allyMap:'arcaneFactory', gold:80, desc:'凡恩推开了工厂的大门。',
+     say:{
+       start:[['n','天亮的时候，凡恩推开了工厂的大门。莉娜跟在后面，手里拿着扳手。'],['n','厂房里堆满了拆下来的铁板，传送带还在转。'],['npc','莉娜','炉心在三楼。上楼的路，被它们堵死了。'],['fane','那就一层一层打上去。']],
+       p8:[['n','二楼是法师们的房间。门都锁着，门牌上落满了灰。']],
+       p14:[['elemArcher','这里的晶石好亮！凡恩，这个也是秘法核心吗？'],['fane','不是。能清掉的，先清掉。那是魔法水晶，会给附近的傀儡修复损伤，它们的傀儡也在用。'],['npc','提示','魔法水晶会阻挡道路，可以花费铜币清除。']],
+       boss:[['n','三楼的炉心前面站着一个披深紫色长袍的亡灵，头顶悬着一圈晶石。它的身边，站着一具比墙还高的傀儡。'],['fane','来访者，不在册。请离开工厂。'],['n','凡恩的激光打在长袍上，一点痕迹也没留下。'],['archDruid','拿刀枪打！法术对它没用！'],['npc','提示','秘法之主免疫法术伤害。它会发射贯穿全场的魔光炮，每穿过一个单位，后面的伤害就降低一些；生命较低时，它会进入一段定身状态，期间不会死亡，结束时生命恢复到进入时的数值。秘法傀儡几乎免疫物理伤害，会践踏、发射导弹和激光。']],
+       win:[['n','莉娜拧开了阀门。炉心的光一点一点暗下去，传送带停了。'],['n','屋顶上的飞艇一架接一架落下来，没有再动。'],['n','晚上，凡恩回到了大门口。克劳德拿着纸笔过来。'],['fane','克劳德，这是你要的名字。'],['n','它从首席开始，一个一个地说。每个名字怎么写，它都对着克劳德的纸看过一遍。'],['scribe','七个法师。还有凡罗。'],['fane','凡罗不是法师。'],['scribe','我记死去的人。'],['fane','……那就写上。傀儡凡罗。'],['fane','法师都阵亡了。我还要守门吗？'],['scribe','首席的命令是守到他回来。这道命令，他没有收回。'],['fane','命令还有效。那我就继续守门。'],['fane','特斯拉家的工匠，我都登记上了，以后可以进出工厂。'],['npc','弗兰茨','那维护呢？'],['fane','每月初一。'],['npc','弗兰茨','初一我给你上油。'],['n','第二天早上，克劳德背上名册，从大门口经过。'],['fane','克劳德，路上小心。'],['n','中午，艾伦尼塔也要回林子了。海因茨送她到厂门口。'],['archDruid','炉子要烧炭。林子边上的枯木，你们可以拿去烧。活的树别砍。'],['npc','海因茨','好。往后哪边先看见飞艇、看见火，就先给另一边报信。'],['archDruid','之前林子里的人看见飞艇，我就让狼去报信了。'],['npc','提示','凡恩传完成。特斯拉家与元素森林结盟，秘法工厂加入联盟：开放这里的精英招募、家族声望和婚配。']]}},
+  ]},
+  // ================= 熔岩之地 · 德拉贡传 =================
+  {id:'dragonTale', name:'熔岩之地', bio:'德拉贡传', vol:2, map:'lavaLand', seed:61093, req:'homeWild', chapters:[
+    {id:'dt1', name:'刺杀', waves:5, diff:'hard', lead:'dragonLord', lineup:['dragonLord'], dragonFoe:true, noBoss:true, bossE:'lvHellArch', gold:40, desc:'德拉贡在火山深处的石厅里睡了四十多年。',
+     say:{
+       start:[['n','火山深处有一间石厅，德拉贡在里面睡了四十多年。'],['n','石厅外面原本有一个布兰德家的营地，几个守卫轮流看着门口。现在营地里没有人，炉子早就凉了。'],['n','这天夜里，几条龙从熔岩里爬了上来，眼睛都是红的。它们身后飘着一个长翅膀的恶魔，手里托着一团黑火。'],['n','最前面的那条龙一口咬在德拉贡的肩上。德拉贡醒了过来。'],['dragonLord','停下！你们在干什么？'],['n','龙没有停下来。'],['dragonLord','来人！布兰德家的人呢？'],['n','没有人回答。'],['npc','提示','火焰领主德拉贡（五星）由你操控。这一篇里的龙系生物全部是敌人。'],['npc','提示','熔岩河会对站在上面的单位持续造成火焰伤害并使其灼烧；熔岩喷泉会周期性地对周围造成火焰伤害。这里的亡灵对火焰伤害有很高的抗性。']],
+       boss:[['n','那个托着黑火的恶魔落到了石厅门口。'],['npc','提示','地狱大法师会释放地狱火、天火陨石和抗拒火环，并召唤援兵；生命较低时，它会飞到熔岩喷泉旁边回复生命。']],
+       win:[['n','恶魔倒在了门口，剩下的龙退回了熔岩里。'],['n','德拉贡走出石厅。营地的帐篷塌了一半，地上落满了灰，看样子已经空了好些日子。'],['n','他身上的鳞一直在发烫，比平时烫很多。'],['dragonLord','布兰德家的人都去哪了？我下山去问问他们。']]}},
+    {id:'dt2', name:'质问', waves:10, diff:'hard', lead:'dragonLord', lineup:['dragonLord'], dragonFoe:true, noBoss:true, bossE:'lvBerserker', gold:50, desc:'德拉贡下山，去布兰德家的镇子问话。',
+     say:{
+       start:[['n','布兰德家的镇子在火山脚下。原来那圈木墙已经不用了，新的木墙修在里面，围起来的地方小了一大圈，两道墙中间是一片烧黑的空地。'],['n','德拉贡走进最大的那间铁匠铺。一个女人正在打刀，看见他，放下了锤子。'],['dragonLord','谁让你们撤走的？龙都摸到我身边来了。'],['npc','艾格尼丝','……您醒了？'],['dragonLord','先回答我，是谁让你们撤走的？'],['npc','艾格尼丝','是我让撤的。这些年，我们一直有人在山上守着您，不敢让那些东西靠近石厅。最近底下爬出来的越来越多，人手不够，只能先撤回来守镇子。'],['dragonLord','什么东西？'],['npc','艾格尼丝','死人。三十年前，到处的死人都爬了起来。这两年，又有恶魔从地底下上来，山上的龙一条接一条，都跟着它们走了。'],['dragonLord','三十年前？我睡了多久？'],['npc','艾格尼丝','四十多年了。我小时候，是我爹带我上山给您送的兵器。'],['n','德拉贡从墙上取下了一把刀。'],['dragonLord','我去把那些龙收拾了。'],['npc','艾格尼丝','您先帮我们守过今晚。天一黑，它们就要来了。']],
+       w1:[['n','天黑以后，镇子外面的空地上冒出了火光，小恶魔先飞了过来，后面跟着烧着的骷髅。'],['npc','提示','小恶魔会飞行，近战无法攻击到它，远程攻击有概率被闪避；燃烧的骷髅不受火焰影响。']],
+       boss:[['n','一个比别的恶魔高出一头的家伙从空地那边走了过来，两只手各拎着一把斧子。'],['dragonLord','别跟它耗，一口气打死它！它受的伤越重，下手越狠。'],['npc','提示','地狱狂战士受到的伤害越多，造成的伤害和减伤越高。它会蓄力重劈前方，也会连续向前冲劈三次，一次比一次远。']],
+       win:[['n','天亮了，墙外的空地上堆满了烧焦的骨头。'],['dragonLord','山上的事，我自己去。你们守好镇子。'],['npc','艾格尼丝','我让奥斯卡带几个人跟着您。'],['dragonLord','不用。你们的人去了，我还得分心照看。'],['n','德拉贡背上刀，往山上走了。']]}},
+    {id:'dt3', name:'反攻', waves:15, diff:'nightmare', lead:'dragonLord', leadPlain:true, lineup:['dragonLord'], dragonFoe:true, countMul:1.3, eBuf:{hp:1.3, dmg:1.2}, passOnLose:true, noBoss:true, bossE:'lvHellDragon', gold:60, desc:'德拉贡一个人往山上走。',
+     say:{
+       start:[['n','德拉贡走到半山腰，身上一阵冷一阵热，鳞缝里不停地往外冒白气。'],['n','山道两边的熔岩里，龙一条接一条地爬了出来。'],['npc','提示','沉眠被打断，德拉贡体内的力量还没有稳定下来，这一章他的属性被削弱；亡灵的数量更多，属性也更高。']],
+       boss:[['n','山顶上飞下来一条龙，比别的龙大得多，翅膀上的鳞烧得发黑。'],['npc','提示','地狱龙会飞行。火焰喷射：朝前方扇形区域持续喷火，从侧面躲开可以避开。烈焰穿行：向前飞扑一段距离，在路上留下一段时间的熔岩裂痕，踩上去会受到伤害并灼烧。烈焰爆破：向附近投掷火球，在落点造成范围伤害并灼烧。']],
+       win:[['n','地狱龙倒在了山顶的熔岩边上。'],['n','龙群后面走出来一个龙人，比德拉贡还高，鳞甲是暗金色的。'],['dragonLord','法夫纳？是你带的头？'],['n','法夫纳没有回答，朝他扑了过来。'],['n','德拉贡身上的力气时有时无。法夫纳的爪子撕开了他胸口的鳞甲，又把他按进了熔岩里。'],['n','德拉贡不肯退，被打倒了两回，又站了起来。'],['n','后来一条腿撑不住了，他才从熔岩河边滚下去，逃下了山。']],
+       lose:[['n','德拉贡身上的力气时有时无，龙越来越多。'],['n','龙群后面走出来一个龙人，比德拉贡还高，鳞甲是暗金色的。法夫纳的爪子撕开了他胸口的鳞甲，又把他按进了熔岩里。'],['n','后来一条腿撑不住了，他才从熔岩河边滚下去，逃下了山。']]}},
+    {id:'dt4', name:'收复', waves:20, diff:'nightmare', lead:'dragonLord', lineup:['dragonLord'], aiH:['ironMarshal'], troops:[['spearman',10],['musketeer',10],['knight',6],['gunner',6]], troopLv:CFG.maxLevel, dragonFoe:true, wave:{20:{boss:'lvFafnir'}}, allyMap:'lavaLand', gold:80, desc:'东边的山道上，来了铁血要塞的大军。',
+     say:{
+       start:[['n','德拉贡在山脚下歇了两天，伤口还在冒白气。他打算往东走，找个地方养伤。'],['n','东边的山道上，来了一支大军，扛着铁血要塞的旗子，队伍拉得很长，一眼望不到头。'],['n','领头的老人骑在马上，看见了他，抬手让队伍停下。'],['ironMarshal','前面是什么人？'],['dragonLord','火焰领主，德拉贡。你们是谁的兵？'],['ironMarshal','我是铁血要塞的霍恩。布兰德家几个月没交货，派去问的人也没回来，我带人来看看出了什么事。'],['dragonLord','山上的龙反了，底下的恶魔也上来了。那块地方，我本来也不想要了。'],['dragonLord','不过山里的财宝还在。你们帮我打进去，财宝分你们三成。'],['ironMarshal','这件事我做不了主，得请示盟主。'],['dragonLord','盟主？这么多兵，上面还有人？'],['ironMarshal','联盟的盟主，亚瑟。'],['dragonLord','你身上的甲是帝国的。帝国的兵，什么时候要听别人的了？'],['ironMarshal','帝国三十年前就撤走了。我们这些留下的人，现在跟着联盟。'],['dragonLord','这个亚瑟，手下有多少兵？'],['ironMarshal','像我这样带兵的，联盟里还有好几个。'],['n','当天，霍恩派了一个骑兵去给盟主送信。'],['n','傍晚，队伍到了布兰德家的镇子。艾格尼丝把霍恩请进了铺子。'],['npc','艾格尼丝','统帅，能不能先打上去？等盟主的回信，来回得一个多月。山上有龙，底下有死人，镇子撑不到那时候。'],['ironMarshal','龙有多少？'],['npc','艾格尼丝','数不清。领主一个人上去，被打成了这样。'],['ironMarshal','不等了。明天就打上去。'],['n','那天夜里，霍恩又写了一封信：「盟主：熔岩之地情况危急，我先带兵打上去了。有什么事，我担着。」'],['npc','提示','霍恩和铁血要塞的精锐士兵加入了战斗，由 AI 操控。']],
+       boss:[['n','山顶的龙道里走出来法夫纳，身边绕着一群龙。'],['dragonLord','离他近的人先撤！他每杀一个人，就会变强一分！'],['dragonLord','他一抬头看天，所有人就马上散开！火会从天上掉下来！'],['dragonLord','他变成龙的时候，别跟他硬拼，等他变回来再打！'],['npc','提示','法夫纳每亲手杀死一个敌人，全属性都会提高。天降火劫：短暂延迟后，在大范围内落下火焰，造成极高伤害并灼烧。化身巨龙：一段时间内伤害和减伤大幅提高。他还会周期性地召唤地火蜥蜴、烈焰地龙和地狱飞龙。']],
+       win:[['n','法夫纳倒在了山顶。剩下的龙四散飞走了。'],['n','第二天，克劳德跟着霍恩的人上山收尸。在石厅外面的营地里，他问艾格尼丝，这些年守山的人死了多少。'],['npc','艾格尼丝','十一个。名字我都记着。'],['n','艾格尼丝一个一个报，克劳德一个一个记。德拉贡站在旁边听着。'],['dragonLord','这十一家的人，以后我来养。'],['n','下午，霍恩来找德拉贡。'],['ironMarshal','你身上一直在冒白气，需要帮助吗？'],['dragonLord','不用。四十多年前，我去东边的泰原，找到了一口泉，叫不老泉。我喝了泉水，要睡一阵子，才能把那股力量压下去。'],['dragonLord','睡到一半，被那些龙吵醒了，现在还没压完。'],['n','德拉贡叫人把石厅里的财宝搬出来三成，堆在霍恩面前。'],['dragonLord','说好的三成，都在这儿了。'],['ironMarshal','我会报给盟主。'],['dragonLord','替我告诉你们的盟主，过些日子，我去拜会他。'],['n','当天，霍恩给盟主写了第三封信。'],['npc','提示','德拉贡传完成。熔岩之地加入联盟：开放这里的精英招募、家族声望和婚配。']]}},
   ]},
 );
 
@@ -18561,6 +18641,11 @@ S('blJudge',150000,240,45,40);   // 不老之泉 · 堕落判决使（小首领�
 S('blCycle',150000,240,45,40);   // 不老之泉 · 堕落轮回使（小首领）
 S('blKing',320000,320,55,50);   // 不老之泉 · 堕落不老神王（大首领；小首领在时至少复活 1 次、不死不灭，所以主体比标准线低一点）
 }
+
+// ---------- 0.12.2 剧情第二卷·德拉贡传：第四章的首领「法夫纳」（用户定：用火焰领主德拉贡的模型和技能，改成敌对首领，去掉「龙之贪婪」里让龙系生物中立的那一半）----------
+// 放在各轮数值表（data/stats）之后：照抄改好数值的火焰领主德拉贡；fafnir = 敌对（不打亡灵、召来的龙系生物也是敌人），亲手杀死我方单位时全属性提高（maps/lava.lvFafKill）
+CFG.enemies.lvFafnir=Object.assign(JSON.parse(JSON.stringify(CFG.enemies.lvDragonLord)),{name:'法夫纳', neutral:false, fafnir:true,
+  note:'德拉贡传第四章的首领：龙人，敌对；每亲手杀死一个我方单位，全属性 +1%，最多 +100%；技能同火焰领主德拉贡——火焰喷射、天降火劫、化身巨龙、召唤龙系生物；在场时每 60 秒亡灵多拿一张白色卡'});
 
 // ---------- 代理 OP（用户 2026-10-22「游戏优化与反馈」）的数据：商店装备价格、圣灵品质的显示、商店专属英雄槽 ----------
 // 逻辑在 game/op_misc.js，界面在 ui/op_pop.js
@@ -27523,7 +27608,7 @@ function a1Drake(fr,o){const W=o.W,k=W/88,H=Math.round(68*k),boss=!!o.boss,b=fr=
 // —— 登记：英雄本体 / 攻击 / 喷火三套、化身巨龙两套（走 + 喷火）；首领三帧（第 3 帧 = 攻击 / 喷火）+ 化身巨龙换图 ——
 // 旧的 HD_HEROES.dragonLordDragon（48×46 的巨龙）还留着：地狱飞龙、地狱龙（art/hd_lava）是在它上面改色缩放的
 // 英雄本体 / 攻击 / 喷火、化身巨龙的登记在 art/hd_b1big（用户 2026-10-21：玩家的德拉贡保持原来大小 → 32×32、48×46 重新排的小图；代理 B1）
-{const f=fr=>a1DragonMan(fr<2?fr:1,fr<2?0:2,{k:1.5,boss:true}),g=fr=>a1Drake(fr,{W:104,boss:true});f.nf=3;g.nf=3;HD_ENEMY.lvDragonLord=f;HD_ENEMY_ALT.lvDragonLord=g}   // 盖掉 art/hd_lava 里原来的（英雄小人放大改色）
+{const f=fr=>a1DragonMan(fr<2?fr:1,fr<2?0:2,{k:1.5,boss:true}),g=fr=>a1Drake(fr,{W:104,boss:true});f.nf=3;g.nf=3;HD_ENEMY.lvDragonLord=f;HD_ENEMY_ALT.lvDragonLord=g;HD_ENEMY.lvFafnir=f;HD_ENEMY_ALT.lvFafnir=g}   // lvFafnir：0.12.2 德拉贡传的法夫纳借德拉贡的模型   // 盖掉 art/hd_lava 里原来的（英雄小人放大改色）
 // —— 英雄按状态换图（heroes/heroes070b 的德拉贡 tick 调）：喷火（按住火焰喷射）、攻击（挥砍 / 射击 / 施法的一下）；换了皮肤的按皮肤自己的三套（SB_DLSK），没有的不换 ——
 const A1_DLK={dragonLord:1,a1DLAtk:1,a1DLBreath:1};
 function a1DLPose(h){const df=h.fly,base=h.sprBase&&!A1_DLK[h.sprBase]?h.sprBase:'dragonLord',K=base==='dragonLord'?['dragonLord','a1DLAtk','a1DLBreath']:SB_DLSK[base];if(!df&&!K)return;   // K：皮肤的三套姿势（art/hd_skins2b 的 SB_DLSK；代理 SB 加）
@@ -39296,7 +39381,7 @@ const K_YDIRT=C('#4a4038'),K_YDIRT2=C('#6a5a48'),K_YHOLE=C('#0a0806');
 function yyRavenAbil(i,c,x,y,tgt,stg,dt){E.pA[i]-=dt;E.pB[i]-=dt;const fight=tgt||stg||G.sdist[tidx(x,y)]<12;
   if(c.callCrows&&E.pA[i]<=0&&fight){const P=c.callCrows;E.pA[i]=P.cd;const id=E.id[i];for(let k=0;k<P.n;k++){const a=k/P.n*Math.PI*2,j=eSpawn(EIDX.yyCrow,x+Math.cos(a)*16,y+Math.sin(a)*10);if(j>=0){E.yI[j]=id;E.yJ[j]=i;E.ng[j]=1}}
     if(inViewPt(x,y)){addFx({k:'ring',x:Math.round(x),y:Math.round(y-8),r:20,life:0.5,c:'#b0306a'});for(let k=0;k<16;k++)pp(x+vr(-10,10),y-vr(0,16),0,vr(-30,30),vr(-30,0),vr(4,10),0,vr(0.5,1),vpick(['#1a1418','#3a2a34','#b0306a']),2,2,1);sfx('summon')}}
-  if(c.bloodRite&&E.pB[i]<=0&&fight){const P=c.bloodRite,T=EIDX.yyCrow;let n=0;
+  if(c.bloodRite&&E.pB[i]<=0&&fight){const P=c.bloodRite,T=EIDX.yyCrow;let n=0;if(G.story)stEvt('rite');   // stEvt：0.12.2 剧情的事件对白（game/story）
     for(let j=0;j<E.n;j++){if(!E.alive[j]||E.t[j]!==T)continue;n++;const cx=E.x[j],cy=E.y[j];E.nrv[j]=1;E.yI[j]=0;E.ng[j]=1;E.hp[j]=0;killEnemy(j);if(inViewPt(cx,cy))for(let k=0;k<6;k++)pp(cx+vr(-4,4),cy-8,4,vr(-20,20),vr(-20,10),vr(6,14),120,vr(0.4,0.8),vpick(['#8a1a2a','#c8303a','#1a1418']),1,0,0)}
     if(!n){E.pB[i]=2;return false}E.pB[i]=P.cd;const f=Math.min(P.cap,n*P.per);E.yA[i]=Math.min(1,E.yA[i]+n*c.ravenShadow.per);
     for(let i_4=0,a_4=G.friends.slice();i_4<a_4.length;i_4++){const u=a_4[i_4];if(u.dead||u.hp<=1)continue;u.hp=Math.max(1,u.hp-u.hp*f);u.flash=0.15}
@@ -39325,7 +39410,7 @@ function yyArthurAbil(i,c,x,y,tgt,stg,dt){E.cd[i]=9;E.pA[i]-=dt;E.pB[i]-=dt;E.pC
   // 死灵召唤
   if(E.pA[i]<=0&&fight){E.pA[i]=c.kSummon.cd;yySummon(i,c.kSummon.list,40);sayT(`${c.name}：死灵召唤`)}
   // 死灵尖啸：15 格内我方单位攻速 −50%、受到的治疗 −80%
-  if(E.pB[i]<=0&&fight){const S=c.kScream,R=S.r*16,u0=G.time+S.dur;E.pB[i]=S.cd;let n=0;
+  if(E.pB[i]<=0&&fight){const S=c.kScream,R=S.r*16,u0=G.time+S.dur;E.pB[i]=S.cd;let n=0;if(G.story)stEvt('scream');
     for(let i_8=0,a_8=G.friends;i_8<a_8.length;i_8++){const u=a_8[i_8];if(u.dead||Math.hypot(u.x-x,u.y-y)>R)continue;u.scrU=u0;u.scrF=S.atk;u.rotT=Math.max(u.rotT||0,u0);u.rotF=Math.max(u.rotT>G.time?u.rotF||0:0,S.heal);n++}
     if(inViewPt(x,y)){addFx({k:'ring',x:Math.round(x),y:Math.round(y-8),r:Math.min(R,160),life:0.6,c:'#7ab8c8'});sfx('horn')}if(n)sayT(`${c.name}：死灵尖啸——${S.r} 格内我方单位攻速 −${Math.round(S.atk*100)}%、受到的治疗 −${Math.round(S.heal*100)}%`)}
   // 无前陷阵：目标在 3～len 格之间时朝它冲
@@ -39343,18 +39428,18 @@ function yyKingAbil(i,c,x,y,tgt,stg,dt){E.pA[i]-=dt;E.pB[i]-=dt;E.pC[i]-=dt;cons
   if(E.pA[i]<=0&&fight){const R=c.dkRoar;E.pA[i]=R.cd;G.roarU=G.time+R.dur;G.roarK=R;if(inViewPt(x,y))addFx({k:'ring',x:Math.round(x),y:Math.round(y-10),r:120,life:0.7,c:'#7a3aa8'});G.shake=Math.max(G.shake,2.5);sfx('horn');
     sayT(`${c.name}：魔王咆哮——${R.dur} 秒内我方单位攻速、冷却速度、移速 −${Math.round(R.atk*100)}%`)}
   // 魔王号角：地图边上来一支死灵军团；没有小首领时再来三个
-  if(E.pB[i]<=0){const H=c.dkHorn;E.pB[i]=H.cd;const S=shuffle(G.spawns.slice()),s0=S[0];
+  if(E.pB[i]<=0){const H=c.dkHorn;E.pB[i]=H.cd;const S=shuffle(G.spawns.slice()),s0=S[0];if(G.story)stEvt('horn');
     YY_NOESC=true;try{for(const[t,m]of H.list)for(let k=0;k<m;k++){const j=eSpawn(EIDX[t],clamp(s0.x*16+8+vr(-24,24),8,MW-8),clamp(s0.y*16+8+vr(-24,24),8,MH-8));if(j>=0){E.ng[j]=1;if(ETC[E.t[j]].tier>=4)E.smn[j]=1}}
       let mini=false;for(let j=0;j<E.n;j++)if(E.alive[j]&&ETC[E.t[j]].mini){mini=true;break}
       if(!mini)H.minis.forEach((k,q)=>{const s=S[(q+1)%S.length],j=eSpawn(EIDX[k],clamp(s.x*16+8,8,MW-8),clamp(s.y*16+8,8,MH-8));if(j>=0)E.smn[j]=1})
       sayB(`${c.name}：魔王号角`,mini?'死灵军团从地图边上杀来':'死灵军团和三位小首领从地图边上杀来')}finally{YY_NOESC=false}sfx('horn')}
   // 魔王之握：瞄准 0.6 秒（地上一道红线），然后伸出魔爪
-  const T=tgt||stg||G.base;if(E.pC[i]<=0&&(tgt||stg||G.sdist[tidx(x,y)]<16)){const G_=c.dkGrip,tx=T.x,ty=T===tgt?T.y:T.y-8,a=Math.atan2(ty-y,tx-x);E.pC[i]=G_.cd;E.pD[i]=0.6;E.face[i]=tx>=x?1:-1;
+  const T=tgt||stg||G.base;if(E.pC[i]<=0&&(tgt||stg||G.sdist[tidx(x,y)]<16)){const G_=c.dkGrip,tx=T.x,ty=T===tgt?T.y:T.y-8,a=Math.atan2(ty-y,tx-x);E.pC[i]=G_.cd;E.pD[i]=0.6;E.face[i]=tx>=x?1:-1;if(G.story)stEvt('grip');
     addZone({k:'yyGrip',x,y:y-8,a,L:G_.len*16,t:0,delay:0.6,src:i,sid:E.id[i],dmg:E.dmg[i],P:G_,kt:E.t[i],hit:-1});if(inViewPt(x,y))sfx('zap',x,y);return true}
   return false}
 // 魔王再临：死的时候场上有小首领 → 附身在生命最高的那个身上，用它的生命复活（冷却 30 秒）
 function yyKingDie(i){const c=ETC[E.t[i]];if(E.yB[i]>G.time)return false;let b=-1,bh=0;for(let j=0;j<E.n;j++)if(E.alive[j]&&j!==i&&ETC[E.t[j]].mini&&E.hp[j]>bh){bh=E.hp[j];b=j}
-  if(b<0)return false;const x=E.x[b],y=E.y[b],mh=E.mhp[b];eKill(b);E.x[i]=x;E.y[i]=y;E.hp[i]=bh;E.mhp[i]=mh;E.yB[i]=G.time+c.dkReborn.cd;E.stun[i]=0.5;E.burnT[i]=0;E.psn[i]=0;E.bld[i]=0;E.pD[i]=0;E.tile[i]=-1;for(let i_10=0,a_10=G.zones;i_10<a_10.length;i_10++){const z=a_10[i_10];if(z.k==='yyGrip'&&z.sid===E.id[i]&&!z.done)z.dead=true;}   // v0.7.0 修复：还没落下的魔王之握跟着取消（原来会在死的地方落下）
+  if(b<0)return false;if(G.story)stEvt('reborn');const x=E.x[b],y=E.y[b],mh=E.mhp[b];eKill(b);E.x[i]=x;E.y[i]=y;E.hp[i]=bh;E.mhp[i]=mh;E.yB[i]=G.time+c.dkReborn.cd;E.stun[i]=0.5;E.burnT[i]=0;E.psn[i]=0;E.bld[i]=0;E.pD[i]=0;E.tile[i]=-1;for(let i_10=0,a_10=G.zones;i_10<a_10.length;i_10++){const z=a_10[i_10];if(z.k==='yyGrip'&&z.sid===E.id[i]&&!z.done)z.dead=true;}   // v0.7.0 修复：还没落下的魔王之握跟着取消（原来会在死的地方落下）
   if(inViewPt(x,y)){addFx({k:'ring',x:Math.round(x),y:Math.round(y-10),r:26,life:0.8,c:'#7a3aa8'});for(let k=0;k<24;k++)pp(x+vr(-10,10),y-vr(0,24),0,vr(-30,30),vr(-40,0),vr(6,14),0,vr(0.6,1.2),vpick(['#1a1020','#7a3aa8','#c070ff']),2,2,1)}
   G.shake=Math.max(G.shake,3);sayB(`${c.name}：魔王再临`,'魔王附身在小首领身上复活了');sfx('summon');return true}
 // 魔王之握（区域）：前摇画红线，到点后沿直线逐格往前伸，生命低于 攻击 × kill 的直接摧毁；碰到摧毁不了的就停在那里十字爆
@@ -39716,7 +39801,7 @@ function lvTick(dt){
   // 火焰领主德拉贡在不在场：龙系生物跟着变中立；龙之贪婪每 60 秒给亡灵一张白卡
   G.lvT-=dt;if(G.lvT<=0){G.lvT=LV.river.tick;const T=LV.river.tick,Rv=LV.river;
     let lord=-1;for(let i_1=0,a_1=G.bosses;i_1<a_1.length;i_1++){const b=a_1[i_1];if(eOk(b.i,b.id)&&ETC[E.t[b.i]].lord){lord=b.i;break}}G.lvLordI=lord;
-    for(let j=0;j<E.n;j++)if(E.alive[j]&&ELV_DRG[E.t[j]])E.nu[j]=lord>=0?1:0;
+    for(let j=0;j<E.n;j++)if(E.alive[j]&&ELV_DRG[E.t[j]])E.nu[j]=lord>=0&&!G.stDrF?1:0;   // stDrF：0.12.2 德拉贡传，龙系生物一直是敌人（game/story）
     // 熔岩河：站在上面的（飞着的、在墙上的不算）
     for(let i_2=0,a_2=G.friends;i_2<a_2.length;i_2++){const u=a_2[i_2];if(u.dead||u.layer||u.fly||u.elev>4||!lvOnLava(u.x,u.y))continue;hurtF(u,u.maxHp*Rv.dps*T,LV_RIVER_HIT);burnFriend(u,u.maxHp*Rv.burn,Rv.burnT)}
     for(let j=0;j<E.n;j++){if(!E.alive[j]||E.air[j]||E.ug[j]>0||!lvOnLava(E.x[j],E.y[j]))continue;const k=lvBossK(j);dealE(j,E.mhp[j]*Rv.dps*T*k,LV_RIVER_HIT);if(E.alive[j])burnE(j,E.mhp[j]*Rv.burn*k,Rv.burnT)}}
@@ -39863,22 +39948,22 @@ function lvHDAbil(i,c,x,y,tgt,stg,dt){E.pA[i]-=dt;E.pB[i]-=dt;E.pD[i]-=dt;
     if(E.pD[i]<=0&&d<=c.fireBlast.range*16){const F=c.fireBlast;E.pD[i]=F.cd;E.lu[i]=0.3;addZone({k:'lvBlast',x:T.x,y:T.y,r:F.r*16,delay:Math.max(0.3,d/(10*16)),dmg:E.dmg[i]*F.mul,burn:F.burn,burnT:F.burnT,mix:{fire:1},kt:E.t[i],src:i,neu:!!E.nu[i],t:0})}}
   return factoryAbil(i,c,x,y,tgt,stg,dt)}
 // —— 火焰领主德拉贡（中立）——
-function lvLordInit(i,c){E.nu[i]=1;E.yC[i]=E.dmg[i];E.yD[i]=0;E.pA[i]=c.lBreath.cd*0.5;E.pB[i]=c.lMeteor.cd*0.5;E.pC[i]=c.lForm.cd*0.6;E.pD[i]=c.lCall.cd*0.3;E.yA[i]=0;E.yB[i]=0;E.yJ[i]=-1;
-  G.lvGreedT=c.lord.greed;sayB(`${c.name}降临了`,'中立：他会攻击亡灵，也会攻击你；不打龙系生物。他在场时龙系生物都是中立的，每 60 秒亡灵多拿一张白色卡')}
+function lvLordInit(i,c){E.nu[i]=c.fafnir?0:1;E.yC[i]=E.dmg[i];E.yD[i]=0;E.pA[i]=c.lBreath.cd*0.5;E.pB[i]=c.lMeteor.cd*0.5;E.pC[i]=c.lForm.cd*0.6;E.pD[i]=c.lCall.cd*0.3;E.yA[i]=0;E.yB[i]=0;E.yJ[i]=-1;
+  G.lvGreedT=c.lord.greed;if(c.fafnir){sayB(`${c.name}降临了`,'每亲手杀死一个敌人，全属性提高；每 60 秒亡灵多拿一张白色卡');return}sayB(`${c.name}降临了`,'中立：他会攻击亡灵，也会攻击你；不打龙系生物。他在场时龙系生物都是中立的，每 60 秒亡灵多拿一张白色卡')}   // fafnir：0.12.2 德拉贡传的法夫纳（data/story_lava），敌对，不打亡灵
 function lvLordAbil(i,c,x,y,tgt,stg,dt){E.pA[i]-=dt;E.pB[i]-=dt;E.pC[i]-=dt;E.pD[i]-=dt;
   const F=c.lForm;E.alt[i]=E.yB[i]>0?1:0;if(E.yB[i]>0){E.yB[i]-=dt;E.air[i]=1;if(E.yB[i]<=0){if(eFree(x,y)){E.air[i]=0;E.tile[i]=-1}else E.yB[i]=0.2}}   // 化身巨龙：飞着，伤害、减伤提高
   E.dmg[i]=E.yC[i]*(1+E.yD[i])*(E.yB[i]>0?1+F.dmg:1);
   if(E.yA[i]>0){E.yA[i]-=dt;E.walk[i]=0;E.vx[i]=E.vy[i]=0;E.lu[i]=Math.max(E.lu[i],0.1);return true}   // v0.11.x alt = 化身巨龙的图、喷火时一直用出手的那一帧（art/hd_a1dragon，代理 A1 加）
   // 目标：我方和亡灵谁近打谁
-  if((G.tick+i)%15===0||!(E.yJ[i]>=0)||!eOk(E.yJ[i],E.yI[i])){const j=lvNeuPick(i,x,y,c.aggro*16*1.5);E.yJ[i]=j;E.yI[i]=j>=0?E.id[j]:0}   // 每 15 帧重挑一次
-  const j=E.yJ[i]>=0&&eOk(E.yJ[i],E.yI[i])?E.yJ[i]:-1,Tf=tgt&&!tgt.dead?tgt:null,df=Tf?Math.hypot(Tf.x-x,Tf.y-y):1e9,de=j>=0?Math.hypot(E.x[j]-x,E.y[j]-y):1e9;
+  if(!c.fafnir&&((G.tick+i)%15===0||!(E.yJ[i]>=0)||!eOk(E.yJ[i],E.yI[i]))){const j=lvNeuPick(i,x,y,c.aggro*16*1.5);E.yJ[i]=j;E.yI[i]=j>=0?E.id[j]:0}   // 每 15 帧重挑一次；法夫纳不打亡灵
+  const j=!c.fafnir&&E.yJ[i]>=0&&eOk(E.yJ[i],E.yI[i])?E.yJ[i]:-1,Tf=tgt&&!tgt.dead?tgt:null,df=Tf?Math.hypot(Tf.x-x,Tf.y-y):1e9,de=j>=0?Math.hypot(E.x[j]-x,E.y[j]-y):1e9;
   const P=de<df?{x:E.x[j],y:E.y[j]}:Tf,d=Math.min(df,de);
   if(!(E.silT[i]>0)){
     if(E.pC[i]<=0&&(P||E.hp[i]<E.mhp[i]*0.7)){E.pC[i]=F.cd;E.yB[i]=F.dur;E.air[i]=1;sayB(`${c.name}：化身巨龙`,`${F.dur} 秒内伤害 +${pcG(F.dmg)}、减伤 +${pcG(F.dr)}`);if(inViewPt(x,y)){addFx({k:'ring',x:Math.round(x),y:Math.round(y-10),r:30,life:0.6,c:'#ff7a2e'});sfx('summon')}}
-    if(E.pD[i]<=0){const S=c.lCall;E.pD[i]=S.cd;for(const[t,n]of S.list)for(let q=0;q<n;q++){const a=q/n*Math.PI*2+vr(0,1),k=eSpawn(EIDX[t],clamp(x+Math.cos(a)*28,12,MW-12),clamp(y+Math.sin(a)*20,12,MH-12));if(k>=0){E.smn[k]=1;E.nu[k]=1}}
+    if(E.pD[i]<=0){const S=c.lCall;E.pD[i]=S.cd;for(const[t,n]of S.list)for(let q=0;q<n;q++){const a=q/n*Math.PI*2+vr(0,1),k=eSpawn(EIDX[t],clamp(x+Math.cos(a)*28,12,MW-12),clamp(y+Math.sin(a)*20,12,MH-12));if(k>=0){E.smn[k]=1;E.nu[k]=c.fafnir||G.stDrF?0:1}}
       sayT(`${c.name}召来了龙系生物`);if(inViewPt(x,y))sfx('horn',x,y)}
-    if(P&&E.pA[i]<=0&&d<=c.lBreath.len*16){const B=c.lBreath;E.pA[i]=B.cd;E.yA[i]=B.dur;E.face[i]=P.x>=x?1:-1;addZone({k:'lvBreath',src:i,sid:E.id[i],x,y,a:Math.atan2(P.y-y,P.x-x),arc:B.arc,len:B.len*16,tick:B.tick,tk:0,dmg:E.dmg[i]*B.mul,dur:B.dur,neu:true,kt:E.t[i],t:0});return true}
-    if(P&&E.pB[i]<=0&&d<=c.lMeteor.range*16){const M=c.lMeteor;E.pB[i]=M.cd;E.lu[i]=0.4;addZone({k:'lvBlast',x:P.x,y:P.y,r:M.r*16,delay:M.delay,dmg:E.dmg[i]*M.mul,burn:M.burn,burnT:M.burnT,mix:{fire:1},fz:{dur:M.burnT,dps:E.dmg[i]*0.4},meteor:true,smul:1,neu:true,kt:E.t[i],src:i,t:0});
+    if(P&&E.pA[i]<=0&&d<=c.lBreath.len*16){const B=c.lBreath;E.pA[i]=B.cd;E.yA[i]=B.dur;E.face[i]=P.x>=x?1:-1;addZone({k:'lvBreath',src:i,sid:E.id[i],x,y,a:Math.atan2(P.y-y,P.x-x),arc:B.arc,len:B.len*16,tick:B.tick,tk:0,dmg:E.dmg[i]*B.mul,dur:B.dur,neu:!c.fafnir,kt:E.t[i],t:0});return true}
+    if(P&&E.pB[i]<=0&&d<=c.lMeteor.range*16){const M=c.lMeteor;E.pB[i]=M.cd;E.lu[i]=0.4;addZone({k:'lvBlast',x:P.x,y:P.y,r:M.r*16,delay:M.delay,dmg:E.dmg[i]*M.mul,burn:M.burn,burnT:M.burnT,mix:{fire:1},fz:{dur:M.burnT,dps:E.dmg[i]*0.4},meteor:true,smul:1,neu:!c.fafnir,kt:E.t[i],src:i,t:0});
       sayT(`${c.name}：天降火劫`)}}
   return lvNeuAct(i,c,x,y,tgt,dt)}
 // ================= 画 =================
@@ -39903,7 +39988,11 @@ for(const k of ETYPES){const c=CFG.enemies[k];if(!c.lava)continue;const t=EIDX[k
   else if(c.hover){EAB[t]=factoryAbil;EINIT[t]=factoryInit}
   else if(c.dragon)EAB[t]=lvDragonAbil}
 // v0.8.10 熔岩之地：亡灵的攻击附带灼烧
-MAP_FX.lavaLand.afterHurtF=(u,d,o,raw)=>{if(G.lvOn&&!o.dot)lvBurnHit(u,raw,o)};
+MAP_FX.lavaLand.afterHurtF=(u,d,o,raw)=>{if(G.lvOn&&!o.dot)lvBurnHit(u,raw,o);if(u.hp<=0&&G.stDrF)lvFafKill(o)};
+// 0.12.2 法夫纳亲手杀死一个我方单位：全属性提高（同德拉贡的成长 lvLordGrow）；技能（kt）打死的也算
+function lvFafKill(o){let i=o.src>=0&&E.alive[o.src]&&(o.sid===undefined||E.id[o.src]===o.sid)?o.src:-1;if(i>=0&&!ETC[E.t[i]].fafnir)i=-1;
+  if(i<0&&o.kt>=0&&ETC[o.kt]&&ETC[o.kt].fafnir)for(let k=0;k<G.bosses.length;k++){const b=G.bosses[k];if(eOk(b.i,b.id)&&ETC[E.t[b.i]].fafnir){i=b.i;break}}
+  if(i>=0)lvLordGrow(i)}
 
 // ---------- v0.7.0 五阶地区「道观废墟」：废墟道观与符墙、五神法、张道成（一直在场、免疫伤害）、天雷符咒、尸毒、东方僵尸、四个小首领、不化骨 ----------
 // 数据见 data/map_taoruins.js（字段说明在文件开头）。地图机制登记在 MAP_FX.taoRuins（engine/mapfx）；亡灵能力登记在 EAB / EINIT / EDIE（engine/enemy）
@@ -63164,7 +63253,9 @@ function stPrimeSpec(id){const P=SDY.prime;return Object.assign(stBareSpec(id,P.
 // v0.7.3 助战英雄（圣堂墓园的奥薇尔、牧师）：五星、AI 操控、不能切换操控，不加强（不是全盛）；开局就在场
 function stAllySpec(id){return Object.assign(stBareSpec(id,SDY.allyStar),{called:true,noCtl:true,ally:true})}
 // 0.12.2 第二卷传记的主角（lead，用户定：0 号位固定是当地英雄的五星版本，由玩家操控）：有这位英雄就用你的装备，没有只拿开局武器；星级按五星，属性照全盛英雄加强（SDY.prime），能切换操控
-function stLeadSpec(id){const H=META.heroes[id];return Object.assign(H&&H.owned?currentHeroSpec(id):stBareSpec(id,SDY.prime.star),{star:SDY.prime.star,prime:true})}
+function stLeadSpec(id,plain){const H=META.heroes[id];return Object.assign(H&&H.owned?currentHeroSpec(id):stBareSpec(id,SDY.prime.star),{star:SDY.prime.star,prime:!plain})}   // plain：不加强（德拉贡传第三章「被削弱」）
+// 0.12.2 AI 操控的剧情英雄（aiH，德拉贡传第四章的霍恩）：用你的英雄（没有就派一星），由 AI 操控、不能切换
+const stAiSpec=id=>Object.assign(stHeroSpec(id),{called:true,noCtl:true,ally:true});
 function stAllyAI(){for(let i_1=0,a_1=G.heroes;i_1<a_1.length;i_1++){const h=a_1[i_1];if(h.spec&&h.spec.ally){h.ai=true;G.heroModes[h.id]='sortie'}}}
 // v0.7.3 这一章在哪张图上打：map（不写 = 地区的图）、terr 地形长成哪张图的样子、mdo 改掉的地图设定（开局套件、墓园……）；读档时也按这个重建
 const stMapOpts=st=>{const x=st&&stC(st.c);if(!x)return{};const{R,C}=x;return{map:C.map||R.map,terr:C.terr,mdo:C.mdo}};
@@ -63180,7 +63271,7 @@ function stFreePt(x,y){for(let r=0;r<12;r++)for(let k=0;k<Math.max(1,r*8);k++){c
 // —— 开新的一章 ——
 function startStory(cid){const x=stC(cid);if(!x||!stPlayable(cid))return false;const{R,C}=x;
   if(C.cutscene){storyCutscene(x);return true}
-  const lineup=C.lineup==='all'?currentLineup().map(sp=>Object.assign(sp,{called:true})):stLineupIds(C).map((id,k)=>!k&&C.lead?stLeadSpec(id):Object.assign(stHeroSpec(id),k?{called:true}:{}));for(const id of C.ally||[])lineup.push(stAllySpec(id));
+  const lineup=C.lineup==='all'?currentLineup().map(sp=>Object.assign(sp,{called:true})):stLineupIds(C).map((id,k)=>!k&&C.lead?stLeadSpec(id,C.leadPlain):Object.assign(stHeroSpec(id),k?{called:true}:{}));for(const id of C.ally||[])lineup.push(stAllySpec(id));for(const id of C.aiH||[])lineup.push(stAiSpec(id));
   const load=C.own?stOwnLoad():C.only?C.loadout.slice():[...new Set(SDY.base.concat(stUnlocks(C.id),C.loadout||[]))];   // v0.7.0（用户定）剧情只能造城墙、城门、民兵训练营、箭塔、瞭望塔 + 剧情解锁的
   newGame(Object.assign({mode:'regular',diff:C.diff,seed:R.seed,heroes:lineup,loadout:load,total:C.waves,story:{c:C.id,r:R.id,f:{}}},stMapOpts({c:C.id})));
   if(C.from){G.wave=C.from;envFor(G.wave+1,true);G.nextPlan=planWave(G.wave+1)}   // v0.7.0 从第 from + 1 波打起（继承上一章的城，接着打 11–20 波）
@@ -63189,7 +63280,8 @@ function startStory(cid){const x=stC(cid);if(!x||!stPlayable(cid))return false;c
   const ask=C.choice&&!C.choice.at,L0=stSay(C,'start');if(L0)storySay(L0,ask?()=>stAsk(C):null);else if(ask)stAsk(C);return true}   // stSay：v0.10.0 开场也按之前的选择分两线（荒漠第三章 start_escort / start_leave）
 // 开局布置（d = 读档时的存档）
 function storySetup(d){const x=stCur();if(!x)return;const{R,C}=x,S=G.story;
-  G.noBuild=!!C.noBuild;G.stImm=!!(C.immune&&S.f.immune);G.stBuf=new Map();G.stWx=C.weather||null;G.stMia=!!C.miasma;if(G.stWx){G.weather=G.stWx;envApply()}
+  G.noBuild=!!C.noBuild;G.stDrF=!!C.dragonFoe;   // dragonFoe：0.12.2 德拉贡传，龙系生物一直是敌人（maps/lava）
+  G.stImm=!!(C.immune&&S.f.immune);G.stBuf=new Map();G.stWx=C.weather||null;G.stMia=!!C.miasma;if(G.stWx){G.weather=G.stWx;envApply()}
   if(!d){
     if(C.preset)stPreset(C.preset);
     if(C.inherit){const L=stMeta().lay[R.id];if(L)settleLoad(L)}
@@ -63198,7 +63290,7 @@ function storySetup(d){const x=stCur();if(!x)return;const{R,C}=x,S=G.story;
     if(C.plan)stPlanSet(C.plan,1,[]);
     if(C.startGold==='plan')G.gold=stPlanCost()+SDY.grantMargin;
     if(C.grantStart){G.gold+=C.grantStart;toast(`补给到了：铜币 +${C.grantStart}`)}   // toast：v0.10.0 剧情重做后对白里不再写补给，改成提示
-    if(C.ally)stAllyAI();
+    if(C.ally||C.aiH)stAllyAI();
     if(C.militia)stMilitia(C.militia);
     if(C.troops)stTroops(C.troops)}
   else if(S.plan)stPlanTerrain(d.cleared||[]);
@@ -63206,13 +63298,13 @@ function storySetup(d){const x=stCur();if(!x)return;const{R,C}=x,S=G.story;
   G.structVer++;G.flowDirty=true;G.visDirty=true;computeFlow();G.flowDirty=false;computeAuras();if(UI.ready){refreshPhaseUI();refreshHeroBar()}}
 // —— v0.7.8 有名字的民兵（用户：亚瑟一个人守不合适，加几个民兵，用弓箭手、战士之类的模板，头上写个名字）：militia [[兵种, 名字], ...] ——
 //   开局站在主堡边上守着（没有兵营，像兵营的兵一样守主堡）；死了不补；名字画在头上（ui/draw）；存档里带着名字
-function stMilitia(L){const B=G.base;L.forEach(([t,nm],k)=>{const a=k/L.length*Math.PI*2,x=clamp(B.x+Math.cos(a)*22,8,MW-8),y=clamp(B.y+12+Math.sin(a)*12,8,MH-8);
-  const u=makeSoldier({level:1,x,y,slots:0},t);u.camp=null;u.x=x;u.y=y;u.px=x;u.py=y;u.mName=nm;G.soldiers.push(u)})}
+function stMilitia(L){const B=G.base;L.forEach(([t,nm,lv],k)=>{const a=k/L.length*Math.PI*2,x=clamp(B.x+Math.cos(a)*22,8,MW-8),y=clamp(B.y+12+Math.sin(a)*12,8,MH-8);   // lv：0.12.2 民兵的等级（凡恩传特斯拉家的精英，满级）
+  const u=makeSoldier({level:lv||1,x,y,slots:0},t);u.camp=null;u.x=x;u.y=y;u.px=x;u.py=y;u.mName=nm;G.soldiers.push(u)})}
 // —— v0.10.0 借来的友军（用户定：铁血要塞第二到四章，拿破仑借的炮兵、圣堂的圣骑士 / 僧侣 / 牧师、法里斯的驼队）：troops [[兵种, 数量], ...] ——
 //   开局站在主堡周围守着（没有兵营，同民兵）；死了从主堡复活：每种兵少了，隔 SDY_TROOP_RE 秒补一个（Claude 定 15 秒）；u.stTr = 兵种（存档里带着，读档后照样补）
 const SDY_TROOP_RE=15;
-function stTroopOne(t,k,n){const B=G.base,a=k/Math.max(1,n)*Math.PI*2+t.length,r=30+(k%3)*8,x=clamp(B.x+Math.cos(a)*r,8,MW-8),y=clamp(B.y+12+Math.sin(a)*r*0.6,8,MH-8);
-  const u=makeSoldier({level:1,x,y,slots:0},t);u.camp=null;u.x=x;u.y=y;u.px=x;u.py=y;u.stTr=t;G.soldiers.push(u);return u}
+function stTroopOne(t,k,n){const B=G.base,a=k/Math.max(1,n)*Math.PI*2+t.length,r=30+(k%3)*8,x=clamp(B.x+Math.cos(a)*r,8,MW-8),y=clamp(B.y+12+Math.sin(a)*r*0.6,8,MH-8),x_=stCur();
+  const u=makeSoldier({level:x_&&x_.C.troopLv||1,x,y,slots:0},t);u.camp=null;u.x=x;u.y=y;u.px=x;u.py=y;u.stTr=t;G.soldiers.push(u);return u}   // troopLv：0.12.2 借来的兵的等级（德拉贡传第四章铁血要塞的精锐，满级）
 function stTroops(L){for(const[t,n]of L)for(let k=0;k<n;k++)stTroopOne(t,k,n)}
 function stTroopTick(C,S){S.trC=(S.trC||0)-1;if(S.trC>0)return;S.trC=60;if(!S.trN)S.trN={};   // 每 60 帧看一次
   for(const[t,n]of C.troops){let a=0;for(let i_9=0,a_9=G.soldiers;i_9<a_9.length;i_9++){const u=a_9[i_9];if(!u.dead&&u.stTr===t)a++}
@@ -63287,13 +63379,15 @@ function storyPrep(){const x=stCur();if(!x)return false;const{C}=x,S=G.story,n=G
   const ML=C.militiaAt&&C.militiaAt[n];if(ML&&!S.f['ml'+n]){S.f['ml'+n]=1;stMilitia(ML)}   // v0.10.0 打完第 N 波民兵才赶到（腐化之地第一章：奥托、汉斯和布阵一起来）
   const LV=C.leave&&C.leave[n],lv=()=>{if(!LV||S.f['lv'+n])return;S.f['lv'+n]=1;for(const id of[].concat(LV)){const k=G.lineup.findIndex(sp=>sp.id===id);if(k>0)heroDismiss(k)}if(UI.ready){refreshHeroBar();refreshPhaseUI()}saveRun()};   // v0.10.0 leave {波次: 英雄}：打完第 N 波这位英雄离队（丛林第二章夜鸦去请毒师），放完这一段对白再走
   const ML2=C.militiaLeave&&C.militiaLeave[n],mlv=()=>{if(ML2&&!S.f['mq'+n]){S.f['mq'+n]=1;stMilitiaLeave(ML2)}};
-  const Q=C.choice,ask=Q&&Q.at===n&&!S.f.ch,go=()=>{lv();mlv();if(ask)stAsk(C)};   // choice.at：这一段对白放完再问
+  const JP=C.joinP&&C.joinP[n],jp=()=>{if(JP&&!S.f['jp'+n]){S.f['jp'+n]=1;for(const id of[].concat(JP))stJoin(id,false,[0,9]);saveRun()}};   // joinP：0.12.2 打完第 N 波这段对白放完，这几位英雄加入（格拉传第三章的援军）
+  const Q=C.choice,ask=Q&&Q.at===n&&!S.f.ch,go=()=>{lv();mlv();jp();if(ask)stAsk(C)};   // choice.at：这一段对白放完再问
   const L=stSay(C,'p'+n);if(L&&!S.f['sp'+n]){S.f['sp'+n]=1;storySay(L,go);hold=true}else{go();if(ask)hold=true}
   return hold}
 // 每帧（update 里，准备阶段时停之前）：赴约、首领出现后全盛英雄加入、最后一波加强、守满时间秒杀首领
 function storyTick(dt){const x=stCur();if(!x||dlgOn)return;const{C}=x,S=G.story;
   if(G.residents&&G.residents.length)stResidentsTick(dt);
   if(C.troops&&G.phase==='wave')stTroopTick(C,S);
+  if(C.eBuf&&G.phase==='wave'){S.ebT=(S.ebT||0)-dt;if(S.ebT<=0){S.ebT=0.25;stEBuf(C.eBuf)}}   // eBuf：0.12.2 整章亡灵加强（德拉贡传第三章）
   stTick70(C,S,dt);   // v0.7.0 毒瘴、首领锁血、守满时间英雄加入、收服首领
   if(S.meet&&!S.f.met&&G.phase==='prep'){const h=G.hero;if(h&&!h.dead&&Math.hypot(h.x-S.meet.x,h.y-S.meet.y)<26){S.f.met=1;G.stWalk=false;h.walking=false;if(UI.ready)refreshPhaseUI();
     storySay(C.say.meet,()=>{if(C.meet.hero){const j=stJoin(C.meet.hero,true,null);if(j){j.x=S.meet.x+8;j.y=S.meet.y}}S.meet=null;saveRun()})}}   // v0.7.5 没写 hero：只是去那里看一眼（寒冰极地的沉船），没人加入
@@ -63310,6 +63404,10 @@ function stLastWave(C){const W=SDY.lastWave,B=G.stBuf;
     E.hp[j]*=hm;E.mhp[j]*=hm;const base=E.dmg[j]*W.dmg;B.set(id,base);E.dmg[j]=base*(C.ramp?stRampMul():1)}}
 function stRampApply(){const B=G.stBuf;for(let j=0;j<E.n;j++)if(E.alive[j]){const b=B.get(E.id[j]);if(b!==undefined)E.dmg[j]=b*stRampMul()}
   if(G.story.rampK>0)toast(`亡灵越来越凶：伤害 +${Math.round((stRampMul()-1)*100)}%`)}
+// 0.12.2 整章亡灵加强 eBuf {hp, dmg}：新出现的亡灵生命、伤害 × 倍率（和最后一波加强共用 G.stBuf，不重复乘）
+function stEBuf(W){const B=G.stBuf;for(let j=0;j<E.n;j++){if(!E.alive[j])continue;const id=E.id[j];if(B.has(id))continue;E.hp[j]*=W.hp;E.mhp[j]*=W.hp;const base=E.dmg[j]*W.dmg;B.set(id,base);E.dmg[j]=base}}
+// 0.12.2 事件对白（say.e_<事件>）：地图代码在首领放技能时调 stEvt（maps/shadowhigh 的群鸦血祭、死灵尖啸、魔王再临 / 号角 / 之握），每章每种只放一次
+function stEvt(k){if(!G||!G.story)return;const x=stCur();if(!x)return;const S=G.story;if(S.f['e_'+k])return;const L=stSay(x.C,'e_'+k);if(!L)return;S.f['e_'+k]=1;storySay(L)}
 // 全盛毒师「时机已到」：首领（和它的傀儡）被毒爆秒杀
 function stPoisonKill(){for(let j=0;j<E.n;j++){if(!E.alive[j]||ETC[E.t[j]].tier<5)continue;const x=E.x[j],y=E.y[j];
     for(let k=0;k<40;k++)pp(x+vr(-14,14),y-vr(0,18),vr(0,6),vr(-50,50),vr(-50,20),vr(20,60),40,vr(0.8,1.6),vpick(['#7fe05a','#b8f080','#4a9a2a']),vpick([1,2,2]),0,1);
@@ -64487,7 +64585,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2a',GAME_TAG='测试版',GAME_CODE=166,GAME_BUILD="265c9b7",GAME_BUILT=1793030856506,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2b',GAME_TAG='测试版',GAME_CODE=167,GAME_BUILD="aaaa08d",GAME_BUILT=1793032403060,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -67966,6 +68064,7 @@ function planSteps(pre,lv){const S=()=>G.story,uts=()=>[...new Set(S().plan.map(
   return L}
 const moveTx=()=>isTouchUI()?`左下角<b>摇杆</b>移动亚瑟${SET.autoAttack?'，靠近亡灵会自动攻击':''}；右下角是<b>攻击</b>和<b>技能</b>按钮(技能按住拖动瞄准、松开放出)。`
   :`${kn('up')}${kn('left')}${kn('down')}${kn('right')} 移动亚瑟(右键点地面也能走)；${SET.autoAttack?'靠近亡灵会自动攻击，也可以':''}按住 ${kn('attack')} 普攻；${kn('skill1')}${kn('skill2')} 放技能，按住瞄准、松开释放。`;
+const stBioCoach=nm=>[{id:'a',next:1,when:()=>G.phase==='prep'&&G.wave===0,at:()=>$('#heroBar'),text:()=>`第二卷是人物传记。这一篇你操控<b>五星的${nm}</b>(属性照全盛英雄加强)，可以照常建造。`}];
 const SCH={
   w1:[{id:'a',next:1,when:()=>G.phase==='prep'&&G.wave===0,at:()=>$('#btnWave'),text:()=>`这一章不能建造，只有亚瑟、几个民兵和主堡，主堡自己也会开火。准备阶段时间是停着的。准备好就点右上角「开始第 1 波」${isTouchUI()?'':`(或按 ${kn('wave')})`}。`},
     {id:'b',next:1,auto:18,when:()=>G.phase==='wave'&&G.wave===1&&!G.hero.dead,at:()=>isTouchUI()?$('#joyBase'):$('#combat'),text:moveTx},
@@ -67981,7 +68080,7 @@ const SCH={
   c1:[{id:'a',next:1,when:()=>G.phase==='prep'&&G.wave===0,at:()=>$('#heroBar'),text:()=>'你操控亚瑟，梅林、夜鸦一起开局上阵(点左上角的头像可以换人操控)。头两波先靠英雄和主堡顶住，第三波之前荒野的民兵会赶到。'},...planSteps('c1',1)],
   c4:planSteps('c4',2),
   s1:[{id:'a',next:1,when:()=>G.phase==='prep'&&G.wave===0,at:keepRect,text:()=>'王城的城墙、瓮城、塔楼、兵营全是满级。奥薇尔和希尔德加德(五星)由 AI 操控，不能切换。'}],
-  gt1:[{id:'a',next:1,when:()=>G.phase==='prep'&&G.wave===0,at:()=>$('#heroBar'),text:()=>'第二卷是人物传记。这一篇你操控<b>五星的格拉</b>(属性照全盛英雄加强)，可以照常建造。'}],   // 0.12.2
+  gt1:stBioCoach('格拉'),ft1:stBioCoach('凡恩'),dt1:stBioCoach('德拉贡'),   // 0.12.2 第二卷各篇第一章
   s2:[{id:'a',next:1,when:()=>G.phase==='prep'&&G.wave===0,at:keepRect,text:()=>'在墓园外面立起要塞，补给的铜币够造一圈。开打后奥薇尔身边跟着 10 名圣女侍从，倒下 10 秒后回到她身边。'}],
 };
 function storyCoachPick(){const S=G.story,L=SCH[S.c];if(!L)return null;
