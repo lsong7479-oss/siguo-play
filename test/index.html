@@ -11224,6 +11224,34 @@ CFG.story.regions.push(
      say:{start:[['n','仗打完的第十天，罗兰来了荒野。'],['paladin','陛下请公主和亚瑟进京。'],['saintKnight','我私放他的事呢？'],['paladin','陛下说，不提了。'],['n','王都的墙上有人写亚瑟的名字，写了又被擦掉，擦掉又有人写。'],['n','国王还是在书房里见的他们。'],['npc','国王','我老了。'],['npc','国王','王位给奥薇尔。荒野、冰原、丛林、荒漠，还给你。'],['npc','国王','你们……愿意结婚吗？'],['saintKnight','不合适吧？'],['arthur','这些事情以后再说，我不会对王室怎么样，您还能安度晚年。'],['n','国王看了他们很久，笑了起来。'],['npc','国王','好。'],['n','加冕那天，奥薇尔把王冠戴歪了，然后又扶正了。'],['saintKnight','以后王都有难处……'],['arthur','写信给我，我会来援。'],['n','亚瑟回到荒野。城门上的旗换了下来，管事把册子交给了罗宾汉。'],['n','荒野的第一场秋雨落下时，城里有人关窗，有人收麦，有人回家吃饭。'],['npc','提示','重返荒野剧情完成。第一卷完。']]}},
   ]});
 
+/* ---------- 0.12.2 剧情第二卷：人物传记（台本《剧情第二卷-幽影高原·格拉传.md》，大纲用户 2026-10-26，望楼写、用户审过；设定见《剧情设定（望楼）》）----------
+   第二卷的地区写 vol:2（选章页分卷显示；不开开拓地，game/settle.stRegions 跳过）、bio 传记名；第一卷「重返荒野」通关后开放
+   用户定：一个章节一个小版本（0.12.2a 第一章、b 第二章……）；wip = 后面章节还没加时选章页上的一句说明（全部加完删掉）
+   章节新字段（game/story）：lead 主角英雄（0 号位，五星、属性照全盛英雄加强，由玩家操控；有这位英雄就用你的装备）· bossE 最后一波的「首领」是这种亡灵（say.boss 在它出场时放）
+     allyMap 这一章通关 → 这张地图结盟（elAllyStory，开放精英招募、家族声望、婚配）
+   幽影高原：第 5 / 10 / 15 波是地图自己的小首领（死灵掘墓者、鸦影法师、死灵骑士王·亚瑟），所以前三章 noBoss（最后一波不换成幽影魔王）、bossE 指定小首领 */
+CFG.story.regions.push(
+  // ================= 幽影高原 · 格拉传 =================
+  {id:'graveTale', name:'幽影高原', bio:'格拉传', vol:2, map:'shadowHigh', seed:61091, req:'homeWild', wip:'格拉传后面三章还在写，会在之后的几个小版本里陆续加上。', chapters:[
+    {id:'gt1', name:'封石', waves:5, diff:'hard', lead:'graveRaider', lineup:['graveRaider'], noBoss:true, bossE:'yyDigger', gold:40, desc:'坡顶那座大坟，格拉已经挖了三夜。',
+     say:{start:[['n','坡顶那座大坟，格拉已经挖了三夜。坟前的碑倒在草里，上面刻着：骑士王亚瑟。'],['n','高原上的老人都说，这座坟里的陪葬，够买下半个镇子。'],['n','洞口外面不时有死人走过去，拖着脚，看都不看他一眼。'],
+         ['n','第三夜，镐头碰到的不是棺木，是石头。一圈石头围着一块黑石板，石头上刻满了字和纹路，纹路里透着一点白光。'],['n','格拉以为是棺床的底座，撬开了一块，想从旁边绕过去。'],
+         ['n','石缝里冒上来一股冷风。纹路里的光，从他撬开的那块开始，一块接一块暗了下去。黑石板底下，有东西在敲。'],['n','格拉往外爬。爬出洞口，整片墓园的死人都站了起来，全都转向坡下。礼拜堂的窗户里，还亮着火。'],
+         ['n','他跑回礼拜堂的时候，艾菲还在添柴。'],['graveRaider','都起来，进里屋，把门顶上。'],['npc','艾菲','又有东西过来了？'],['graveRaider','今晚来得多。'],['npc','伊恩','是不是坡顶底下的魔王出来了？'],['graveRaider','那是吓唬小孩的。快进去。'],
+         ['npc','提示','幽影高原永远是深夜：士兵和英雄都走得更慢，视野也更短。']],
+       p1:[['n','砍倒的死人里，有的又爬了起来。'],['npc','提示','亡灵死后有一半的机会再爬起来一次（首领、小首领不会）。格拉杀死的亡灵爬不起来；五星的格拉身边一大圈之内，谁杀的亡灵都爬不起来。']],
+       p3:[['n','坡上有几个死人，走着走着就看不见了，到了墙根底下才露出来。'],['npc','提示','幽影刺客、幽影弓手会隐身，守军或建筑靠近了才显形，挨打、出手时也会显形。']],
+       boss:[['n','坡上下来一个扛铲子的死人，比别的高出一截。它走一段，就停下来往地里挖。'],['npc','艾菲','它在挖地！'],['graveRaider','它想从底下钻过来。'],['n','格拉盯着它挖出来的洞看了一会儿。'],
+         ['graveRaider','别怕，它那个洞没撑木头，它要是倒了，洞就塌了。'],['n','它走过的地方，冒出一座一座新坟，坟里往外爬死人。'],['graveRaider','我去把它刨的坟平了。你们别出来。'],
+         ['npc','提示','死灵掘墓者会朝主堡挖地道，它死了地道就塌；它还会造坟墓，坟墓会不停地放出死灵战士，它死了坟墓还在，要另外打掉。它在场时，英雄复活变慢。']],
+       win:[['n','天亮了，死人退回坡上，躺回了土里。'],['n','格拉把孩子挨个数了一遍，七个，都在。'],['n','他回到洞里，举着灯，把那圈石头上的土擦掉。石头上的字是很老的写法，他在坡上最老的几块碑上见过。'],
+         ['n','「此下镇幽影之王。后来者，勿动此石。」'],['n','他把撬开的那块石头搬回原处，对好了缝。纹路没有再亮起来，冷风还在从缝里往上冒。'],['graveRaider','……还真有。'],
+         ['n','回到礼拜堂，他把孩子叫到一起。'],['graveRaider','艾菲，收拾东西，带他们去安格斯家的牧场住几天。'],['npc','艾菲','那你呢？'],['graveRaider','我去一趟教廷国。'],['npc','艾菲','你又惹事了？'],['graveRaider','这回惹大了。'],
+         ['n','格拉掏出一把铜板，塞给艾菲。'],['graveRaider','给安格斯，说是饭钱。'],['npc','艾菲','他不会要的。'],['graveRaider','那你就塞他家羊圈里。'],['npc','艾菲','教廷的人会不会抓你？'],
+         ['graveRaider','要是抓了，你们就在安格斯那儿住着，别回来。那几块石头，除了教廷的人，没人会修。']]}},
+  ]},
+);
+
 /* ---------- v0.8.0 策划第一部分（用户 2026-10-08）：英雄决策、骑兵、新卡、新建筑 ----------
    骑兵（用户定）：撞到障碍物速度清零；待命时站着不动（不跟着驻守点换布防乱跑）；确认目标后先调整方向再加速冲锋
      cavAim {v, err}：速度低于满速 × v、要转的角度大于 err（弧度）时只转向不加速（units/soldiers.cavMove；数值 Claude 定） */
@@ -61353,10 +61381,10 @@ function settleMigrate(m){const S=m.settle;if(S&&S.v2)return;const C=CFG.settlem
 // —— 入侵（每个开放的地区各算各的）：R.inv = {d 难度, w 天气, t 出现时间} 或 null；R.invS = 已经掷过的 6 小时时段；R.clr = {难度: 1} 打赢过（可以扫荡）——
 const INV=SB.invade;
 const invSlotNow=()=>Math.floor((metaNow()-new Date(metaNow()).getTimezoneOffset()*6e4)/(INV.every*3.6e6));   // 本机时间的 0 / 6 / 12 / 18 点换时段
-// v0.8.25（用户定）每打通一个剧情地区，在那张地图开一个开拓地：荒野一开始就有；剧情地区（不算英雄试炼、重返荒野这种重复的图）按剧情顺序排
+// v0.8.25（用户定）每打通一个剧情地区，在那张地图开一个开拓地：荒野一开始就有；剧情地区（不算英雄试炼、重返荒野这种重复的图；0.12.2 第二卷传记 vol 也不算，五阶以后不建开拓地）按剧情顺序排
 let ST_REG=null;
 function stRegions(){if(ST_REG)return ST_REG;const L=[{id:'wild',sr:null}],seen=new Set(['wild']);
-  for(const R of(CFG.story&&CFG.story.regions)||[]){if(R.adv||!R.map||seen.has(R.map)||!CFG.maps[R.map])continue;seen.add(R.map);L.push({id:R.map,sr:R.id})}
+  for(const R of(CFG.story&&CFG.story.regions)||[]){if(R.adv||R.vol||!R.map||seen.has(R.map)||!CFG.maps[R.map])continue;seen.add(R.map);L.push({id:R.map,sr:R.id})}
   return ST_REG=L.map(r=>Object.assign(r,{name:CFG.maps[r.id].name,tier:mapTierOf(r.id)}))}
 const stStoryOf=id=>{const r=stRegions().find(x=>x.id===id);return r?r.sr:null};
 const stRegionOpen=id=>{if(id==='wild')return true;const sr=stStoryOf(id);return!!sr&&typeof stRegionDone==='function'&&(stRegionDone(sr)||!!stMeta().paid['R:'+sr])};   // v0.7.0 重置剧情阶段后也不关（paid）   // 腐化之地：v0.6.3 剧情模式通关腐化之地后开放（v0.7.0 重置剧情阶段后也不关）
@@ -63084,6 +63112,8 @@ function stHeroSpec(id){const H=META.heroes[id];return H&&H.owned?currentHeroSpe
 function stPrimeSpec(id){const P=SDY.prime;return Object.assign(stBareSpec(id,P.star),{called:true,prime:true,noCtl:true,spr:P.spr[id]||null})}
 // v0.7.3 助战英雄（圣堂墓园的奥薇尔、牧师）：五星、AI 操控、不能切换操控，不加强（不是全盛）；开局就在场
 function stAllySpec(id){return Object.assign(stBareSpec(id,SDY.allyStar),{called:true,noCtl:true,ally:true})}
+// 0.12.2 第二卷传记的主角（lead，用户定：0 号位固定是当地英雄的五星版本，由玩家操控）：有这位英雄就用你的装备，没有只拿开局武器；星级按五星，属性照全盛英雄加强（SDY.prime），能切换操控
+function stLeadSpec(id){const H=META.heroes[id];return Object.assign(H&&H.owned?currentHeroSpec(id):stBareSpec(id,SDY.prime.star),{star:SDY.prime.star,prime:true})}
 function stAllyAI(){for(let i_1=0,a_1=G.heroes;i_1<a_1.length;i_1++){const h=a_1[i_1];if(h.spec&&h.spec.ally){h.ai=true;G.heroModes[h.id]='sortie'}}}
 // v0.7.3 这一章在哪张图上打：map（不写 = 地区的图）、terr 地形长成哪张图的样子、mdo 改掉的地图设定（开局套件、墓园……）；读档时也按这个重建
 const stMapOpts=st=>{const x=st&&stC(st.c);if(!x)return{};const{R,C}=x;return{map:C.map||R.map,terr:C.terr,mdo:C.mdo}};
@@ -63099,7 +63129,7 @@ function stFreePt(x,y){for(let r=0;r<12;r++)for(let k=0;k<Math.max(1,r*8);k++){c
 // —— 开新的一章 ——
 function startStory(cid){const x=stC(cid);if(!x||!stPlayable(cid))return false;const{R,C}=x;
   if(C.cutscene){storyCutscene(x);return true}
-  const lineup=C.lineup==='all'?currentLineup().map(sp=>Object.assign(sp,{called:true})):stLineupIds(C).map((id,k)=>Object.assign(stHeroSpec(id),k?{called:true}:{}));for(const id of C.ally||[])lineup.push(stAllySpec(id));
+  const lineup=C.lineup==='all'?currentLineup().map(sp=>Object.assign(sp,{called:true})):stLineupIds(C).map((id,k)=>!k&&C.lead?stLeadSpec(id):Object.assign(stHeroSpec(id),k?{called:true}:{}));for(const id of C.ally||[])lineup.push(stAllySpec(id));
   const load=C.own?stOwnLoad():C.only?C.loadout.slice():[...new Set(SDY.base.concat(stUnlocks(C.id),C.loadout||[]))];   // v0.7.0（用户定）剧情只能造城墙、城门、民兵训练营、箭塔、瞭望塔 + 剧情解锁的
   newGame(Object.assign({mode:'regular',diff:C.diff,seed:R.seed,heroes:lineup,loadout:load,total:C.waves,story:{c:C.id,r:R.id,f:{}}},stMapOpts({c:C.id})));
   if(C.from){G.wave=C.from;envFor(G.wave+1,true);G.nextPlan=planWave(G.wave+1)}   // v0.7.0 从第 from + 1 波打起（继承上一章的城，接着打 11–20 波）
@@ -63217,7 +63247,7 @@ function storyTick(dt){const x=stCur();if(!x||dlgOn)return;const{C}=x,S=G.story;
   if(S.meet&&!S.f.met&&G.phase==='prep'){const h=G.hero;if(h&&!h.dead&&Math.hypot(h.x-S.meet.x,h.y-S.meet.y)<26){S.f.met=1;G.stWalk=false;h.walking=false;if(UI.ready)refreshPhaseUI();
     storySay(C.say.meet,()=>{if(C.meet.hero){const j=stJoin(C.meet.hero,true,null);if(j){j.x=S.meet.x+8;j.y=S.meet.y}}S.meet=null;saveRun()})}}   // v0.7.5 没写 hero：只是去那里看一眼（寒冰极地的沉船），没人加入
   if(G.phase!=='wave')return;
-  const boss=()=>{for(let i_6=0,a_6=G.bosses;i_6<a_6.length;i_6++){const o=a_6[i_6];const i=o.i;if(E.alive[i]&&E.id[i]===o.id&&ETC[E.t[i]].tier>=5)return i}return-1};
+  const boss=()=>{for(let i_6=0,a_6=G.bosses;i_6<a_6.length;i_6++){const o=a_6[i_6];const i=o.i;if(E.alive[i]&&E.id[i]===o.id&&(C.bossE?E.t[i]===EIDX[C.bossE]:ETC[E.t[i]].tier>=5))return i}return-1};   // bossE：0.12.2 最后一波的「首领」是这种亡灵（格拉传前三章的小首领）
   if(!C.bossPrime&&stSay(C,'boss')&&!S.f.bs&&G.wave===G.total&&boss()>=0){S.f.bs=1;storySay(stSay(C,'boss'))}   // v0.10.0 没有全盛英雄跟着来的章节，首领出现时也放 say.boss（荒野第六章、冰原第四章）
   if(C.bossPrime&&!S.f.bp&&G.wave===G.total&&boss()>=0){S.bT=(S.bT||0)+dt;if(S.bT>=(C.bossDelay||0)){S.f.bp=1;storySay(C.say.boss,()=>stJoin(C.bossPrime,true,[0,-6]))}}
   if(C.w20&&G.wave===G.total){S.bufT=(S.bufT||0)-dt;if(S.bufT<=0){S.bufT=0.25;stLastWave(C)}if(C.ramp){S.rampT=(S.rampT||0)+dt;const k=Math.floor(S.rampT/SDY.lastWave.ramp.every);if(k!==(S.rampK||0)){S.rampK=k;stRampApply()}}}
@@ -63257,6 +63287,7 @@ const stExtraTxt=x=>Object.entries(x.wallet).filter(e=>e[1]>0).map(([k,v])=>`${k
 function stPay(R,C,out){const M=stMeta();if(!M.paid[C.id]){M.paid[C.id]=1;out.first=true;out.gold=C.gold||0;META.wallet.金币=(META.wallet.金币||0)+out.gold;
     {const X=stExtra(R,C);for(const k in X.wallet)META.wallet[k]=(META.wallet[k]||0)+X.wallet[k];for(const w in X.wares)trAdd(w,X.wares[w]);out.extra=stExtraTxt(X)}
     if(C.souls){out.souls=[];for(const id in C.souls){META.souls[id]=(META.souls[id]||0)+C.souls[id];out.souls.push(`${CFG.heroes[id].name}之魄 ×${C.souls[id]}`)}}}
+  if(C.allyMap&&typeof elAllyStory==='function'){elAllyStory(C.allyMap);out.ally=C.allyMap}   // 0.12.2 第二卷传记完成 → 这个地区结盟（开放精英招募、家族声望、婚配；重打也调，不重复）
   if(stRegionDone(R.id)&&!M.paid['R:'+R.id]){M.paid['R:'+R.id]=1;out.unlock=stUnlock(R)}}
 // 地区全部通关：英雄直接入队（已经有了就换成他的英雄之魄，数量 = 招募价）；腐化之地开放开拓地
 // v0.7.3 hero 可以是数组（圣堂墓园：奥薇尔、牧师）；adv = 通关后这位英雄可以进阶（试炼）
@@ -64405,7 +64436,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.1.1',GAME_TAG='稳定版',GAME_CODE=165,GAME_BUILD="fb441af",GAME_BUILT=1793020847819,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2a',GAME_TAG='测试版',GAME_CODE=166,GAME_BUILD="4209add",GAME_BUILT=1793027171089,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -67899,6 +67930,7 @@ const SCH={
   c1:[{id:'a',next:1,when:()=>G.phase==='prep'&&G.wave===0,at:()=>$('#heroBar'),text:()=>'你操控亚瑟，梅林、夜鸦一起开局上阵(点左上角的头像可以换人操控)。头两波先靠英雄和主堡顶住，第三波之前荒野的民兵会赶到。'},...planSteps('c1',1)],
   c4:planSteps('c4',2),
   s1:[{id:'a',next:1,when:()=>G.phase==='prep'&&G.wave===0,at:keepRect,text:()=>'王城的城墙、瓮城、塔楼、兵营全是满级。奥薇尔和希尔德加德(五星)由 AI 操控，不能切换。'}],
+  gt1:[{id:'a',next:1,when:()=>G.phase==='prep'&&G.wave===0,at:()=>$('#heroBar'),text:()=>'第二卷是人物传记。这一篇你操控<b>五星的格拉</b>(属性照全盛英雄加强)，可以照常建造。'}],   // 0.12.2
   s2:[{id:'a',next:1,when:()=>G.phase==='prep'&&G.wave===0,at:keepRect,text:()=>'在墓园外面立起要塞，补给的铜币够造一圈。开打后奥薇尔身边跟着 10 名圣女侍从，倒下 10 秒后回到她身边。'}],
 };
 function storyCoachPick(){const S=G.story,L=SCH[S.c];if(!L)return null;
@@ -67913,17 +67945,21 @@ function storyDraw(cx0,cy0,cx1,cy1){const S=G.story;if(!S)return;const ph=0.5+0.
     const fr=SPR.heroes[G.story.r==='wild'?'assassin':'poisoner'];if(fr)drawUnitSpr(fr,x+8,y,false,0,-1,0,0,0.85)}}
 // —— 营地：剧情选章页 ——
 let storyRegion='wild',storyArm='';
-function showStory(rid){if(rid)storyRegion=rid;if(!stRegionOpenS(storyRegion))storyRegion='wild';const R=stR(storyRegion),sv=readSave('story');
-  const tabs=SDY.regions.map(r=>{const open=stRegionOpenS(r.id),n=r.chapters.filter(c=>stCleared(c.id)).length;
-    return`<button class="px${r.id===storyRegion?' on':''}" type="button" data-act="stor" data-v="${r.id}" ${open?'':'disabled'}>${r.name}<em>${open?`${n}/${r.chapters.length}`:`先通关${stR(r.req).name}剧情`}</em></button>`}).join('');
+// 0.12.2 分卷（第二卷起是人物传记，区域上写 vol）：选章页顶上切换第一卷 / 第二卷，只列这一卷的阶段
+const stVolOf=r=>r.vol||1,stVols=()=>[...new Set(SDY.regions.map(stVolOf))];
+function stVolPick(v){const L=SDY.regions.filter(r=>stVolOf(r)===v),o=L.filter(r=>stRegionOpenS(r.id));return(o.find(r=>r.chapters.some(c=>stPlayable(c.id)))||o[o.length-1]||L[0]).id}
+function showStory(rid){if(rid)storyRegion=rid;if(!stRegionOpenS(storyRegion))storyRegion='wild';const R=stR(storyRegion),sv=readSave('story'),vol=stVolOf(R),VS=stVols();
+  const vtabs=VS.length>1?`<div class="row2 sttabs">${VS.map(v=>`<button class="px${v===vol?' on':''}" type="button" data-act="stor" data-v="${stVolPick(v)}">第${'一二三四五六七八九'[v-1]}卷</button>`).join('')}</div>`:'';
+  const tabs=vtabs+'<div class="row2 sttabs">'+SDY.regions.filter(r=>stVolOf(r)===vol).map(r=>{const open=stRegionOpenS(r.id),n=r.chapters.filter(c=>stCleared(c.id)).length;
+    return`<button class="px${r.id===storyRegion?' on':''}" type="button" data-act="stor" data-v="${r.id}" ${open?'':'disabled'}>${r.name}${r.bio?' · '+r.bio:''}<em>${open?`${n}/${r.chapters.length}`:`先通关${stR(r.req).name}剧情`}</em></button>`}).join('')+'</div>';
   const who=C=>C.cutscene?'纯剧情':(C.lineup==='all'?'你的出战阵容全部上阵':stLineupIds(C).map(id=>CFG.heroes[id].name).join('、'))+(C.ally?` · 助战 ${C.ally.map(id=>CFG.heroes[id].name).join('、')}`:'');   // ally：v0.7.3 AI 助战英雄
   const card=(C,i)=>{const open=stPlayable(C.id),clr=stCleared(C.id);   // v0.7.0 只能打最新的一章
     return`<div class="stc${clr?' clr':''}${open?'':' lock'}"><div class="stcn">${i+1}</div><div class="stb"><b>${C.name}</b><span class="meta">${C.cutscene?'剧情':`${C.from?`第 ${C.from+1}–${C.waves} 波`:`${C.waves} 波`} · ${DIFFS[C.diff].name}`} · ${who(C)}</span>
       <p class="meta">${open||clr?C.desc:'先通关上一章'}</p><span class="stg">${clr?'已通关':stMeta().paid[C.id]?'首通奖励已领过':`首次通关 +${C.gold} 金币${SDY.pay?'、银币、科研点、设计点、地区物资':''}`}</span></div>
       ${open?`<button class="px on" type="button" data-act="stgo" data-v="${C.id}">${storyArm===C.id?'再点一次(会覆盖剧情存档)':C.cutscene?'观看':'开始'}</button>`:''}</div>`};
-  const body=`<div class="stpage"><div class="row2 sttabs">${tabs}</div>
+  const body=`<div class="stpage">${tabs}
     ${sv?`<button class="mode cont" type="button" data-act="continue" data-v="story"><b>继续剧情</b><span>${saveLine(sv)}</span></button>`:''}
-    <p class="meta">每个阶段只能打最新的一章。每章第一次通关给金币(不计每日上限；重置后重打不再给)。${R.name}剧情全部通关：${stPrizeText(R)}。</p>
+    <p class="meta">每个阶段只能打最新的一章。每章第一次通关给金币(不计每日上限；重置后重打不再给)。${stPrizeText(R)?`${R.name}剧情全部通关：${stPrizeText(R)}。`:''}${R.wip?R.wip:''}</p>
     <div class="stlist">${R.chapters.map(card).join('')}</div>
     <div class="actions">${R.chapters.some(c=>stCleared(c.id))?`<button class="px" type="button" data-act="streset" data-v="${R.id}">${storyArm==='reset:'+R.id?'再点一次：清掉这个阶段的进度，从第一章重新开始':'重置本阶段'}</button>`:''}${stMeta().bak[R.id]?`<button class="px" type="button" data-act="strestore" data-v="${R.id}">${storyArm==='rest:'+R.id?'再点一次：恢复到上次重置之前':'恢复重置前的进度'}</button>`:''}</div></div>`;
   openModal('start',scrHTML({title:'剧情模式',back:['hub','go','营地'],body,sk:'story'}),null,true,'hub:story')}
@@ -67936,7 +67972,9 @@ function stUnlockHTML(U){if(!U)return'';const L=(U.heroes||[]).map(o=>{const H=C
 // 选章页上写的地区奖励
 function stPrizeText(R){const L=[];const hs=[].concat(R.hero||[]).map(id=>CFG.heroes[id].name);if(hs.length)L.push(`<b>${hs.join('、')}</b>加入你的队伍`);if(R.map&&R.map!=='wild'&&stRegions().some(x=>x.sr===R.id))L.push(`${CFG.maps[R.map].name}开拓地开放`);
   if(R.adv)L.push(`${CFG.heroes[R.adv].name} ${CFG.heroStars.maxStar} 星后可以进阶为<b>${CFG.heroes[ADV_ID[R.adv]].name}</b>`);
-  if(SDY.regions.some(r=>r.req===R.id&&r.adv))L.push('三位英雄的试炼开放');return L.join('，')}
+  if(SDY.regions.some(r=>r.req===R.id&&r.adv))L.push('三位英雄的试炼开放');
+  {const A=R.chapters.find(c=>c.allyMap);if(A)L.push(`${CFG.maps[A.allyMap].name}加入联盟：开放这里的精英招募、家族声望和婚配`)}   // 0.12.2 第二卷传记
+  return L.join('，')}
 // —— 结算：先放结尾对白，再出结算框 ——
 function storyResult(win,got){const x=stCur(),O=got.story||(got.banned?{pass:win,win}:{});if(!x){showResult(win,got);return}const{R,C}=x;
   const lines=win?stSay(C,'win'):O.pass?stSay(C,'lose'):null;   // stSay：v0.7.5 结尾也按之前的选择换一套（沙漠神殿第三章）
@@ -67945,7 +67983,7 @@ function storyResult(win,got){const x=stCur(),O=got.story||(got.banned?{pass:win
   openModal('over',`<h2 class="hd${O.pass?'':' lose'}">${O.pass?(win?`${C.name} · 完成`:`${C.name} · 通过`):'主堡陷落'}</h2>
     <p class="meta">${R.name}剧情 第 ${i+1} 章${O.first?` · 首次通关：金币 <b>+${O.gold}</b>`:O.pass?' · 已经领过首通奖励':''}</p>${O.extra?`<p class="newmap">首通奖励：${O.extra}</p>`:''}
     ${got.banned?'<p class="warn">莉莲、冷参战过：这一章不计入通关记录，结算奖励减半</p>':''}
-    ${stUnlockHTML(O.unlock)}${O.souls?`<p class="newmap">获得：${O.souls.join('、')}</p>`:''}
+    ${stUnlockHTML(O.unlock)}${O.ally?`<p class="newmap">${CFG.maps[O.ally].name}加入联盟：开放这里的精英招募、家族声望和婚配</p>`:''}${O.souls?`<p class="newmap">获得：${O.souls.join('、')}</p>`:''}
     <div class="stats"><div><b>${got.cleared??G.wave}</b><span>击退波次</span></div><div><b>${G.kills}</b><span>击杀</span></div><div><b>${DIFF.name}</b><span>剧情</span></div></div>
     <p class="meta">战斗奖励(×${DIFF.reward})：银币 <b>${got.银币||0}</b> · 建材 <b>${got.建材||0}</b> · 科研点 <b>${got.科研点||0}</b> · 设计点 <b>${got.设计点||0}</b>${got.金币?` · 金币 <b>${got.金币}</b>`:''}</p>
     ${O.pass?'':'<p class="meta">别灰心：升一升科技、英雄和装备再来；每章开始前也可以在营地调整出战阵容。</p>'}
@@ -67953,7 +67991,7 @@ function storyResult(win,got){const x=stCur(),O=got.story||(got.banned?{pass:win
 // 纯剧情章节放完
 function storyCutResult(x,O){const{R,C}=x,last=R.chapters.indexOf(C)===R.chapters.length-1,nx=R.chapters[R.chapters.indexOf(C)+1];
   openModal('over',`<h2 class="hd">${C.name}</h2><p class="meta">${R.name}剧情${last?'全部完成':` 第 ${R.chapters.indexOf(C)+1} 章`}${O.first?` · 金币 <b>+${O.gold}</b>`:''}</p>${O.extra?`<p class="newmap">首通奖励：${O.extra}</p>`:''}
-    ${stUnlockHTML(O.unlock)}${O.souls?`<p class="newmap">获得：${O.souls.join('、')}</p>`:''}
+    ${stUnlockHTML(O.unlock)}${O.ally?`<p class="newmap">${CFG.maps[O.ally].name}加入联盟：开放这里的精英招募、家族声望和婚配</p>`:''}${O.souls?`<p class="newmap">获得：${O.souls.join('、')}</p>`:''}
     <div class="actions">${nx&&stPlayable(nx.id)?`<button class="px big on" type="button" data-act="stnext" data-v="${nx.id}">下一章：${nx.name}</button>`:''}<button class="px${nx&&stPlayable(nx.id)?'':' big on'}" type="button" data-act="stlist" data-v="${R.id}">剧情章节</button><button class="px" type="button" data-act="tohub">返回营地</button></div>`,'[data-act=stnext],[data-act=stlist]')}
 
 // ---------- v0.6.8 问题报告（用户：设置里能看到「最卡的一次」的具体逻辑结构，方便玩家反馈卡顿）----------
