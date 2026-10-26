@@ -64335,7 +64335,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2c',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="6c32935",GAME_BUILT=1792991254322,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2d',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="6dc3086",GAME_BUILT=1793011691497,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -65373,11 +65373,11 @@ const hvShowPage=(P,i)=>hvAll()||i+1<=hvMax()||P.maps.some(m=>(META.mapClear&&ME
 const hvMore=(n,what)=>n>0?`<p class="meta hvmore">还有 ${n} ${what}，通关更高阶的地区后显示</p>`:'';   // 文案 Claude 定
 
 // ---------- 界面（四）：设置、弹窗按钮分发（onSheetClick）、开局、暂停、强化卡选择、结算 ----------
-let setFrom='menu',devAsk=false,setSec='av',resetAsk=false;
+let setFrom='menu',devAsk=false,setSec='av',resetAsk=false,devShow=false,devTaps=[];   // devShow：0.12.2（用户定）「调试」分区默认藏起来，「问题报告」里 10 秒内连点 10 次「复制调试信息」后显示（这次打开游戏有效）
 // v0.3.3 设置改成整屏：左边分区（声音画面 / 战斗 / 触屏操控 / 存档 / 按键 / 调试），右边是这一区的选项
 const SET_SECS=[['av','声音画面'],['play','战斗'],['touch','触屏操控'],['save','存档'],['misc','其它'],['lang','语言'],['keys','按键'],['rep','问题报告'],['dev','调试']];   // rep：v0.6.8（ui/perfrep）
 function showSettings(from){if(from)setFrom=from;const K=SET.keys;
-  const inRun=!!(running&&G&&G.loot),SECS=inRun?[...SET_SECS.slice(0,2),['loot','本局掉落'],...SET_SECS.slice(2)]:SET_SECS;if(setSec==='loot'&&!inRun)setSec='av';   // loot：v0.10.0 对局中才有「本局掉落」
+  const inRun=!!(running&&G&&G.loot),S0=SET.devOn||devShow?SET_SECS:SET_SECS.filter(([k])=>k!=='dev'),SECS=inRun?[...S0.slice(0,2),['loot','本局掉落'],...S0.slice(2)]:S0;if(setSec==='dev'&&!SECS.some(([k])=>k==='dev'))setSec='av';if(setSec==='loot'&&!inRun)setSec='av';   // loot：v0.10.0 对局中才有「本局掉落」
   const tg=(k,label,sub)=>`<div class="sr"><span>${label}${sub?`<br><span class="meta">${sub}</span>`:''}</span><button class="px${SET[k]?' on':''}" type="button" data-act="stog" data-v="${k}">${SET[k]?'开':'关'}</button></div>`;
   let body='';
   if(setSec==='av')body=`<div class="setrows">
@@ -65478,7 +65478,7 @@ function onSheetClick(e){
   else if(a==='redeem'){const el=$('#codeIn'),r=redeemCode(el?el.value:'');if(typeof r==='string'){toast(r);if(el)el.focus()}else{sfx('pick');toast(r.ok);showSettings()}}   // v0.5.1 兑换码
   else if(a==='resetask'){resetAsk=true;showSettings()}
   else if(a==='nancopy')copyText(nanText(),()=>{toast('已复制');sfx('pick')},()=>textBox({title:'生命异常记录',text:nanText()}));else if(a==='nanclr'){META.nanLog=[];saveMeta();showSettings()}
-  else if(a==='dbgcopy')dbgCopy();else if(a==='dbgfile')dbgFile();else if(a==='dbgclr'){dbgClear();showSettings()}   // 调试信息（ui/dbginfo）
+  else if(a==='dbgcopy'){dbgCopy();if(!SET.devOn&&!devShow){const t=Date.now();devTaps=devTaps.filter(x=>t-x<10000);devTaps.push(t);if(devTaps.length>=10){devShow=true;devTaps=[];toast('已显示「调试」分区');showSettings()}}}else if(a==='dbgfile')dbgFile();else if(a==='dbgclr'){dbgClear();showSettings()}   // 调试信息（ui/dbginfo）
   else if(a==='repcopy')repCopy();else if(a==='repclr'){REP.best=null;repSave();showSettings()}   // v0.6.8 问题报告
   else if(a==='sprof'){const p=+v;if(running){toast('切换存档位要回到主界面再操作');return}if(p!==PROFILE)switchProfile(p)}
   else if(a==='resetno'){resetAsk=false;showSettings()}
