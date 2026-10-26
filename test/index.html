@@ -64335,7 +64335,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2d',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="6dc3086",GAME_BUILT=1793011691497,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2e',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="a50c90a",GAME_BUILT=1793012283905,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -64852,6 +64852,11 @@ function rangeFill(el){const lo=+el.min||0,hi=el.max===''?100:+el.max,v=+el.valu
 document.addEventListener('input',e=>{const t=e.target;if(t&&t.type==='range')rangeFill(t)},true);
 try{new MutationObserver(L=>{for(const m of L)for(const n of m.addedNodes){if(n.nodeType!==1)continue;if(n.type==='range')rangeFill(n);else if(n.querySelectorAll)n.querySelectorAll('input[type=range]').forEach(rangeFill)}}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
 try{document.querySelectorAll('input[type=range]').forEach(rangeFill)}catch(e){}
+// 0.12.2 修（玩家反馈：电脑上开拓地建造栏装不下、拖不动）：横向滑动的条在电脑上用滚轮也能左右滚（竖着滚轮 → 横向），并显示细滚动条（只对鼠标设备）
+const HSCROLL_SEL='#bbItems,.ptabs,.mpager,.hstrip,.elhs,.elbqrow,.elskr';
+document.addEventListener('wheel',e=>{if(e.ctrlKey||!e.target||!e.target.closest)return;const el=e.target.closest(HSCROLL_SEL);if(!el||el.scrollWidth<=el.clientWidth+1)return;
+  const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;if(!d)return;const L0=el.scrollLeft;el.scrollLeft+=d*(e.deltaMode===1?16:1);if(el.scrollLeft!==L0)e.preventDefault()},{passive:false});
+try{const st=document.createElement('style');st.textContent='@media (hover:hover) and (pointer:fine){#bbItems,.ptabs,.mpager{scrollbar-width:thin!important}#bbItems::-webkit-scrollbar,.ptabs::-webkit-scrollbar,.mpager::-webkit-scrollbar{display:block!important;height:6px}}';document.head.appendChild(st)}catch(e){}
 // 0.12.1（用户定）拉条防误触：建筑使用等级、开拓地税率、英雄使用等级默认收起，点一下展开；展开的记在 RL_OPEN 里，界面重画后保持
 const RL_OPEN=new Set();
 const rlFold=(key,head,inner)=>`<details class="rlf" data-rk="${key}"${RL_OPEN.has(key)?' open':''}><summary class="px sm">${head}</summary>${inner}</details>`;
