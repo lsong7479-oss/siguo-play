@@ -10255,6 +10255,9 @@ CFG.settlement.autoExpand={hard:1, nightmare:2, inferno:3, abyss:4};
 // 0.12.2（用户定）高产量折算：每个开拓地每小时的银币、建材，超过门槛的部分打折 —— 门槛 = base × 地区阶倍率（prodTierK）；
 //   1～2 倍门槛之间的部分算 80%，2～3 倍 65%，3～4 倍 50%，4～5 倍 35%，5 倍以上 20%（门槛 3000 Claude 定）；科研点、设计点、物资不折（逻辑 game/settle_0100.stOverflow）
 CFG.settlement.overflow={keys:['建材','银币'], base:3000, bands:[[1,0.8],[2,0.65],[3,0.5],[4,0.35],[5,0.2]]};
+// 0.12.2（用户定）税收为主：每人每小时的税额 = per 3，衣物、肉类的满足度拉满再 +3（两项各占一半），宗教、文化、娱乐、贸易拉满再 +3（四项各占四分之一）——最高 9；
+//   按满足度比例加（满足 50% 加一半）；税收不算进高产量折算（stOverflow 只折税以外的银币）
+CFG.settlement.taxUp=[[['cloth','meat'],3],[['faith','culture','fun','trade'],3]];
 
 /* ---------- v0.6.3 剧情模式（用户 2026-10-06 的策划，原文见项目根目录《剧情模式策划.md》；对白、奖励和没写的数值 Claude 定）----------
    v0.6.5 对白重写（用户：文本量小、角色塑造少，梅林、夜鸦的设定不对）：梅林 = 法师塔里潜心修行的法师，看见开拓者被围攻才出塔相助，离开魔力充足的塔后迅速衰老；
@@ -13309,9 +13312,10 @@ Object.assign(CFG.settlement,{
     sAcademy:  {size:3, cost:{银币:150, 建材:400, 设计点:10}, give:{fun:80}, giveLv:{fun:20}, jobs:3, out:{设计点:3}, note:'提供 80 娱乐，每级 +20；每个岗位每小时产出 3 设计点'},
     sCircus:   {size:2, cost:{银币:100, 建材:150}, give:{fun:30}, giveLv:{fun:7.5}, note:'提供 30 娱乐，每级 +7.5'},
     sTheater:  {size:3, cost:{银币:150, 建材:400}, give:{fun:100}, giveLv:{fun:25}, note:'提供 100 娱乐，每级 +25'},
-    sStall:    {size:1, cost:{银币:10, 建材:50},  pros:10, prosLv:2.5, jobs:2, out:{银币:5}, note:'繁荣度和贸易 +10，每级 +2.5；每个岗位每小时产出 5 银币'},
-    sMarket:   {size:2, cost:{银币:50, 建材:150}, pros:20, prosLv:5, jobs:3, out:{银币:10}, note:'繁荣度和贸易 +20，每级 +5；每个岗位每小时产出 10 银币'},
-    sTradeHub: {size:3, cost:{银币:150, 建材:400}, pros:50, prosLv:12.5, jobs:4, out:{银币:15}, note:'繁荣度和贸易 +50，每级 +12.5；每个岗位每小时产出 15 银币'},
+    sStall:    {size:1, cost:{银币:10, 建材:50},  pros:10, prosLv:2.5, jobs:2, out:{银币:1.25}, note:'繁荣度和贸易 +10，每级 +2.5；每个岗位每小时产出 1.25 银币'},
+    sMarket:   {size:2, cost:{银币:50, 建材:150}, pros:20, prosLv:5, jobs:3, out:{银币:2.5}, note:'繁荣度和贸易 +20，每级 +5；每个岗位每小时产出 2.5 银币'},
+    // 0.12.2（用户定：银币改成税收为主）摊位、市场、贸易中心的银币产出降到原来的 25%（5 / 10 / 15 → 1.25 / 2.5 / 3.75）
+    sTradeHub: {size:3, cost:{银币:150, 建材:400}, pros:50, prosLv:12.5, jobs:4, out:{银币:3.75}, note:'繁荣度和贸易 +50，每级 +12.5；每个岗位每小时产出 3.75 银币'},
     sGather:   {size:3, cost:{银币:150, 建材:400}, max:1, jobs:2, out:{core:0.2}, note:'每个岗位每小时产出 0.2 个这个地区的核心特产；每个开拓地只能建一座'},
   },
   // 生命：2 × 2 / 3 × 3 / 1 × 1 沿用原来的（建材厂 700、科研所 1000、民居 300），水井、摊位同民居（Claude 定）
@@ -62559,7 +62563,7 @@ const S=CFG.settlement,TK={},tk=k=>TK[k]!==undefined?TK[k]:(TK[k]=stTech(k));L=L
   o.eff=stEffOf(o.sat);o.sk=stSoldK(o.sat);
   // 物资乘生产效率
   for(const[e,P]of o.per)for(const k in P.out){if(ST_NEEDOUT[k])continue;P.out[k]*=o.eff;o.rate[k]=(o.rate[k]||0)+P.out[k]}
-  o.tax=o.pop*CFG.settlement.tax.per*o.taxR*rk;if(o.tax>0)o.rate.银币=(o.rate.银币||0)+o.tax;   // v0.10.1 税收：人口 × per（v0.12 起 3）× 税率 × 地区阶倍率
+  o.taxPer=stTaxPer(o);o.tax=o.pop*o.taxPer*o.taxR*rk;if(o.tax>0)o.rate.银币=(o.rate.银币||0)+o.tax;   // v0.10.1 税收：人口 × per（v0.12 起 3）× 税率 × 地区阶倍率
   for(const k in ST_NEEDOUT)o.sur[k]=k==='grain'&&o.gFill>0?0:Math.max(0,o.sup[k]-o.dem[k]);   // 粮仓没满：多出来的谷物先进粮仓
   o.pros=Math.floor(o.pop*(0.5+o.sat/200)+o.tp+1e-9);o.keep=stKeepOf(o.pros);
   zlEconPost(id,o,MT);
@@ -62681,8 +62685,10 @@ const stIsOuter=id=>stOuter().includes(id);
 // 0.12.2（用户定）高产量折算：o.rate 里的银币、建材超过门槛的部分分段打折；o.ovf = {资源:[折算前, 折算后, 门槛]}（生产页、主堡面板显示）
 function stOvfVal(v,T){const B=CFG.settlement.overflow.bands;if(!(v>T))return v;let out=T;for(let i=0;i<B.length;i++){const lo=B[i][0]*T,hi=i+1<B.length?B[i+1][0]*T:Infinity;if(v<=lo)break;out+=(Math.min(v,hi)-lo)*B[i][1]}return out}
 function stOverflow(id,o){const C=CFG.settlement.overflow;if(!C)return;const T=C.base*stTierK(id);o.ovf=null;
-  for(const k of C.keys){const v=o.rate[k];if(!(v>T))continue;const w=stOvfVal(v,T);o.rate[k]=w;if(k==='银币'&&o.tax>0)o.tax*=w/v;(o.ovf||(o.ovf={}))[k]=[v,w,T]}}
-const stOvfTxt=E=>E&&E.ovf?Object.entries(E.ovf).map(([k,[v,w,T]])=>`${k} ${stNum(v)} → ${stNum(w)}`).join('、'):'';
+  for(const k of C.keys){const tx=k==='银币'?Math.max(0,o.tax||0):0,v=(o.rate[k]||0)-tx;if(!(v>T))continue;const w=stOvfVal(v,T);o.rate[k]=w+tx;(o.ovf||(o.ovf={}))[k]=[v,w,T]}}   // 银币：税收不折（0.12.2 用户定）
+// 每人税额（0.12.2 用户定）：基础 + 各组需求的平均满足度 × 加成
+function stTaxPer(o){let v=CFG.settlement.tax.per;for(const[ks,add]of CFG.settlement.taxUp||[]){let c=0;for(const k of ks)c+=Math.min(1,(o.cov&&o.cov[k])||0);v+=add*c/ks.length}return v}
+const stOvfTxt=E=>E&&E.ovf?Object.entries(E.ovf).map(([k,[v,w,T]])=>`${k==='银币'?'银币(税收以外)':k} ${stNum(v)} → ${stNum(w)}`).join('、'):'';
 
 // ---------- v0.10.1 开拓地：建筑耐久、木匠铺、灾害 / 好事 / 政务、效果合成（数据 data/settle_0101.js；累积在 game/settle_0100.stAccrue）----------
 // 耐久存在布局记录的 e.st.du（0～100，没写 = 100）；场景里的建筑和记录共用同一个 st 对象（settlePut、layoutSnap），所以改记录、场景都看得到
@@ -64399,7 +64405,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2h',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="b5eee34",GAME_BUILT=1793015109336,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2i',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="844f752",GAME_BUILT=1793017940615,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -66339,7 +66345,7 @@ Object.assign(HELP,{
     `满意度 ≥ ${P.mid[1]}：每小时 +上限的 ${Math.round(P.up*100)}%，至少 ${P.min} 人`,`满意度 ${P.mid[0]}～${P.mid[1]}：涨得按比例变慢`,`满意度低于 ${P.mid[0]}：每小时流失上限的 ${Math.round(P.down*100)}%，最少留 ${Math.round(P.floor*100)}%`,
     '谷物或水不够时不增长；税率每比 100% 高 10%，增长 −10%','拆了民居、上限变低，多出来的人马上搬走',
     '人手不够时，先在不产谷物的建筑里从右下往左上每座轮流少派 1 人，都少到 0 了才少派农田、大农庄'])+
-    hpP('<b>税收</b>')+hpL([`税率 ${T.min*100}%～${T.max*100}%，每小时收 人口 × ${T.per} × 税率 × 地区倍率 银币`,`高于 100% 每高 ${T.hi}% 满意度 −1，低于 100% 每低 ${T.lo}% 满意度 +1，和别的满意度加算`])}},
+    hpP('<b>税收</b>')+hpL([`税率 ${T.min*100}%～${T.max*100}%，每小时收 人口 × 每人税额 × 税率 × 地区倍率 银币；每人税额基础 ${T.per}，衣物、肉类满足度拉满再 +3，宗教、文化、娱乐、贸易满足度拉满再 +3(最高 9，按满足度比例加)；税收不算进高产量折算`,`高于 100% 每高 ${T.hi}% 满意度 −1，低于 100% 每低 ${T.lo}% 满意度 +1，和别的满意度加算`])}},
   'st-event':()=>{const V=CFG.settlement.ev,D=CFG.settlement.dur,cp=CFG.settlement.buildings.sCarp.carp,pc=v=>Math.round(v*100)+'%';return{t:'事件、政务、耐久',b:
     hpP('<b>灾害、好事</b>')+hpL([`每个开拓地每 ${V.slot} 小时判一次：灾害 ${pc(V.pDis)}、好事 ${pc(V.pGood)}，和季节对上的 ×${V.seasonK}；持续 ${V.dur[0]}～${V.dur[1]} 小时`,
       `灾害：${Object.values(V.dis).map(x=>x.name).join('、')}；按地区出，${Object.values(V.dis).filter(x=>x.any).map(x=>x.name).join('、')}哪里都可能出`,
@@ -67116,7 +67122,7 @@ function stPopLine(id,E){const v=stPopRate(id,E),C=CFG.settlement.popGrow;let wh
   if(E.popF>=E.popCap)why='已住满';else if(E.sat<C.mid[0])why=`满意度低于 ${C.mid[0]}，居民在搬走`;else if(Math.min(E.cov.grain,E.cov.water)<1)why='谷物或水不够，人口不增长';else if(v<=0)why='税太高，人口不增长';
   return`人口 <b>${E.pop}</b> / ${E.popCap}${v>0?`，每小时 +${stNum(v)}`:v<0?`<span class="warn">，每小时 ${stNum(v)}</span>`:''}${why?` · ${why}`:''}`}
 function stTaxHTML(id,E){const r=stTaxOf(id),C=CFG.settlement.tax,v=Math.round(r*100);
-  return`<div class="stal"><span class="meta"><b>税率 ${v}%</b></span>${rlFold('tax:'+id,'调整税率',`<input type="range" min="${C.min*100}" max="${C.max*100}" step="${C.step*100}" value="${v}" data-chg="sttax" data-v="${id}" aria-label="税率">`)}<span class="meta">每小时 ${stNum(E.tax)} 银币 · 满意度 ${E.taxSat>0?'+':''}${E.taxSat}</span></div>`}
+  return`<div class="stal"><span class="meta"><b>税率 ${v}%</b></span>${rlFold('tax:'+id,'调整税率',`<input type="range" min="${C.min*100}" max="${C.max*100}" step="${C.step*100}" value="${v}" data-chg="sttax" data-v="${id}" aria-label="税率">`)}<span class="meta">每小时 ${stNum(E.tax)} 银币(每人 ${stNum(E.taxPer||CFG.settlement.tax.per)}，衣物、肉类满足各 +1.5，宗教、文化、娱乐、贸易满足各 +0.75，最高 9；不算进高产量折算) · 满意度 ${E.taxSat>0?'+':''}${E.taxSat}</span></div>`}
 function stDetBody(id){const R=stRegion(id);if(!R)return'';const E=stEcon(id),sec=(h,L,hk)=>L.filter(Boolean).length?`<h4 class="sh">${h}${hk?helpBtn(hk):''}</h4>${L.filter(Boolean).map(x=>x.startsWith('<p')||x.startsWith('<div')?x:`<p class="meta">${x}</p>`).join('')}`:'';
   return`<div class="stdet">${sec('人口、税收',[stPopLine(id,E),stTaxHTML(id,E)],'st-pop')+sec('季节、粮仓',[stSeaLine(id),stGrTxt(E)],'st-season')+sec('事件、政务、耐久',stEvLines(id,true),'st-event')+sec('调配',[stSurLine(id,E),stAlLine(id)],'st-alloc')+sec('驻扎、入侵',[stGarLine(id),invLine(id)],'st-gar')+sec('神像、政令',zlDetLines(id),'zl-ed')+sec('建造',[ktDetLine(id)])+sec('开拓',[expansionLine(id)])}</div>`}   // 神像、政令：代理 ZL 加（ui/zl_settle）   // ktDetLine：代理 KT，还在造的建筑
 function stDetPopHTML(){const id=ST_DET;if(!stRegion(id)){ST_DET=null;return''}
