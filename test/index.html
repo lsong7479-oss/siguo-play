@@ -20085,7 +20085,7 @@ haFgN haTpG gwK gwT
 smK smE smPI smRv smW0 smN smLit smLD smLt smBx smBy smBT
 stCapK
 e2Q
-blWm blBack blWat blRegen hhS hhT elites elMem elPill`.trim().split(/\s+/);
+blWm blBack blWat blRegen hhS hhT elites elMem elPill hwTk`.trim().split(/\s+/);
 const G_NUM='time tick wave prepId kills legionSeq corpses waveT flowT flowVer structVer navVer flowCool sdistVer visT night shake dayIdx flashT tA wA tunnelN tombN lowT oAsk oBupo mcP'.split(' ');
 const GState=shapeCtor(G_KEYS,G_NUM);
 
@@ -36581,7 +36581,7 @@ function eSpawn(ti,x,y,st){
   E.tile[i]=-1;E.nxt[i]=-1;E.fv[i]=-1;E.ft[i]=null;E.st[i]=null;E.hdv[i]=0;E.cv[i]=0;E.stT[i]=-9;E.bTk[i]=0;E.iceK[i]=0;E.alt[i]=0;E.bnT[i]=0;E.pA[i]=0;E.pB[i]=0;E.pC[i]=0;E.pD[i]=0;E.sld[i]=0;E.rvN[i]=0;E.rvM[i]=1;E.gdN[i]=0;
   E.gr[i]=0;E.pa[i]=0;E.pab[i]=0;E.ab3[i]=c.parry?c.parry.cd*0.6:0;E.psn[i]=0;E.psnT[i]=0;E.psnD[i]=0;E.bld[i]=0;E.bldT[i]=0;E.bldD[i]=0;E.exd[i]=0;
   E.aslT[i]=0;E.aslF[i]=0;E.ddT[i]=0;E.ddv[i]=0;E.vol[i]=0;E.volT[i]=0;E.rcd[i]=c.rider?c.rider.int:0;E.ug[i]=0;E.dgS[i]=0;E.tl[i]=0;E.tlI[i]=-1;E.tcd[i]=0;E.tgo[i]=-1;
-  E.tsU[i]=0;E.nu[i]=0;E.nrv[i]=0;E.clk[i]=0;E.mrv[i]=0;E.nrU[i]=0;E.cbf[i]=0;E.yI[i]=0;E.yJ[i]=-1;E.yA[i]=0;E.yB[i]=0;E.yC[i]=0;E.yD[i]=0;E.rvU[i]=0;E.yT[i]=0;E.yN[i]=0;E.hwT[i]=0;E.hwF[i]=0;EHW[i]=null;E.tbk[i]=0;E.rvT[i]=0;E.hrT[i]=0;E.bw[i]=0;E.bwT[i]=0;E.wtgt[i]=null;E.wu[i]=0;E.wuO[i]=null;E.rtr[i]=0;E.flk[i]=0;E.gd[i]=0;E.bcd[i]=c.burrow?1.5:0;E.stn[i]=0;E.stnT[i]=0;E.stnN[i]=0;E.wlT[i]=0;E.wlK[i]=0;E.ugT[i]=0;E.ich[i]=0;E.lpT[i]=0;E.lz[i]=0;E.own[i]=0;E.hsT[i]=0;E.hst[i]=-1;E.hstId[i]=0;E.hvN[i]=0;E.hvL[i]=0;E.ptg[i]=null;E.pyN[i]=0;E.dgT[i]=0;E.spT[i]=0;E.spK[i]=0;E.stun[i]=0;E.adv[i]=0;E.shootT[i]=0;E.frz[i]=0;E.slowT[i]=0;E.slowF[i]=0;E.root[i]=0;E.burnT[i]=0;E.burnD[i]=0;E.buffS[i]=0;E.buffL[i]=0;E.chg[i]=0;
+  E.tsU[i]=0;E.nu[i]=0;E.nrv[i]=0;E.clk[i]=0;E.mrv[i]=0;E.nrU[i]=0;E.cbf[i]=0;E.yI[i]=0;E.yJ[i]=-1;E.yA[i]=0;E.yB[i]=0;E.yC[i]=0;E.yD[i]=0;E.rvU[i]=0;E.yT[i]=0;E.yN[i]=0;E.hwT[i]=0;E.hwF[i]=0;EHM[i]=0;E.tbk[i]=0;E.rvT[i]=0;E.hrT[i]=0;E.bw[i]=0;E.bwT[i]=0;E.wtgt[i]=null;E.wu[i]=0;E.wuO[i]=null;E.rtr[i]=0;E.flk[i]=0;E.gd[i]=0;E.bcd[i]=c.burrow?1.5:0;E.stn[i]=0;E.stnT[i]=0;E.stnN[i]=0;E.wlT[i]=0;E.wlK[i]=0;E.ugT[i]=0;E.ich[i]=0;E.lpT[i]=0;E.lz[i]=0;E.own[i]=0;E.hsT[i]=0;E.hst[i]=-1;E.hstId[i]=0;E.hvN[i]=0;E.hvL[i]=0;E.ptg[i]=null;E.pyN[i]=0;E.dgT[i]=0;E.spT[i]=0;E.spK[i]=0;E.stun[i]=0;E.adv[i]=0;E.shootT[i]=0;E.frz[i]=0;E.slowT[i]=0;E.slowF[i]=0;E.root[i]=0;E.burnT[i]=0;E.burnD[i]=0;E.buffS[i]=0;E.buffL[i]=0;E.chg[i]=0;
   E.ab1[i]=c.summon?c.summon.cd*0.5:c.blade?c.blade.cd*0.5:0;E.ab2[i]=c.nova?c.nova.cd*0.6:c.pulse?c.pulse.cd*0.5:c.dash?c.dash.cd*0.7:c.heal?c.heal.cd*0.5:(c.rain||c.spikes)?(c.rain||c.spikes).cd*0.5:0;E.rev[i]=0;E.kbT[i]=0;E.cap[i]=0;E.vuln[i]=0;E.count++;ccReset(i);
   E.wkU[i]=0;E.wkF[i]=0;E.glT[i]=0;E.sjU[i]=0;E.sjF[i]=0;E.sup[i]=0;   // v0.8.0
   BPW.U[i]=0;E.pdU[i]=0;E.drmU[i]=0;   // pd / drm：v0.10.3 统一的破防（物理防御 −X%）、移除减伤（engine/enemy.drKOf；积木 st.defDn / st.rmDR）
@@ -41124,15 +41124,19 @@ function facLoad(L){if(!Array.isArray(L))return;
    亡灵的攻击、攻速、移速、防御直接乘 / 加进 E.dmg、E.ai、E.sp、E.def（已经乘进去的记在 E.bfK，每只 6 个，去掉时除回来）；英雄、士兵、建筑在出手、受伤时读 bfV。
    死了、换阵营了就全部清掉（不跟过去） */
 const BF_KEYS=['atk','atkI','aspd','mspd','dr','imm','vuln','def','regen','cdSpd','rld','weak','weakP','weakM'],BF_TK=14,BF_EFF=new WeakMap();
-// 禁疗（0.12.1 用户定）：亡灵身上按来源记 {来源: [比例, 到期时刻]}，不同来源相乘 —— 受到的治疗 ×(1 − a)(1 − b)…；同一来源取大、时间取长
+// 禁疗（0.12.1 用户定）：每种来源独立算、互相相乘 —— 受到的治疗 ×(1 − a)(1 − b)…；同一来源不叠加（取大、时间取长）
+//   矩阵：亡灵 × 来源（HW_N 列；来源名第一次出现时登记一列），EHM = 这只亡灵身上有哪些列；全图每 0.1 秒（hwTick）统一算一次，写回 E.hwF / E.hwT（eHK 照旧读）
 //   地图打折（CFG.hwMap[地图] = {k 每个来源的比例 ×k, max 合计至多}）：不老之泉 (1 − 50%a)(1 − 50%b)…，至多禁疗 70%
-//   合计写回 E.hwF / E.hwT（eHK 照旧读它们）；比例 ≥ 1 的完全禁疗照旧走 E.hcT（地图打折时也按来源算进来）
-const EHW=new Array(ECAP).fill(null);
+//   比例 ≥ 1 的完全禁疗照旧走 E.hcT（地图打折时按来源算进矩阵）
+const HW_N=32,HW_SRC=new Map(),EHF=new Float32Array(ECAP*HW_N),EHU=new Float32Array(ECAP*HW_N),EHM=new Uint32Array(ECAP);
+const hwIdx=k=>{let i=HW_SRC.get(k);if(i===undefined){i=HW_SRC.size<HW_N?HW_SRC.size:HW_N-1;HW_SRC.set(k,i)}return i};   // 超过 32 种的并进最后一列
 function eHwPut(j,f,t,k){if(!(f>0)||!(t>0)||!E.alive[j])return;const H=CFG.hwMap&&G&&CFG.hwMap[G.map];if(f>=1&&!H){E.hcT[j]=Math.max(E.hcT[j],t);return}
-  const o=EHW[j]||(EHW[j]={}),now=G.time,c=o[k];if(!c)o[k]=[f,now+t];else if(c[1]>now){if(f>c[0])c[0]=f;if(now+t>c[1])c[1]=now+t}else{c[0]=f;c[1]=now+t}eHwSum(j)}   // 原地改，不每下都新建数组
-function eHwSum(j){const o=EHW[j];if(!o)return;const H=CFG.hwMap&&CFG.hwMap[G.map],K=H?H.k:1,now=G.time;let r=1,u=0;
-  for(const k in o){const c=o[k];if(c[1]>now){r*=1-Math.min(1,c[0])*K;if(c[1]>u)u=c[1]}else delete o[k]}
-  E.hwF[j]=Math.min(H?H.max:1,1-r);E.hwT[j]=Math.max(0,u-now)}
+  const c=hwIdx(k||'bk'),b=j*HW_N+c,now=G.time,u=now+t;if(EHM[j]&(1<<c)&&EHU[b]>now){if(f>EHF[b])EHF[b]=f;if(u>EHU[b])EHU[b]=u}else{EHF[b]=f;EHU[b]=u;EHM[j]|=1<<c}
+  if(!(E.hwT[j]>0)){E.hwF[j]=Math.min(H?H.max:1,f*(H?H.k:1));E.hwT[j]=0.1}}   // 原来没禁疗的当下先生效，0.1 秒内的全图结算再算准
+function hwTick(dt){G.hwTk=(G.hwTk||0)+dt;if(G.hwTk<0.1-1e-4)return;G.hwTk=0;const H=CFG.hwMap&&CFG.hwMap[G.map],K=H?H.k:1,mx=H?H.max:1,now=G.time;
+  for(let j=0;j<E.n;j++){let m=EHM[j];if(!m)continue;if(!E.alive[j]){EHM[j]=0;continue}let r=1,u=0;
+    for(let c=0;m;c++,m>>>=1){if(!(m&1))continue;const b=j*HW_N+c;if(EHU[b]>now){r*=1-Math.min(1,EHF[b])*K;if(EHU[b]>u)u=EHU[b]}else EHM[j]&=~(1<<c)}
+    if(u>0){E.hwF[j]=Math.min(mx,1-r);E.hwT[j]=u-now}else{E.hwF[j]=0;E.hwT[j]=0}}}
 const EBL=new Array(ECAP).fill(null);   // 亡灵身上的 buff：{i, id, L: [{id, v, u}], V}；eSpawn 清掉
 function bfEff(eff){let v=BF_EFF.get(eff);if(v)return v;v=BF_KEYS.map(k=>+eff[k]||0);BF_EFF.set(eff,v);return v}
 function bfSum(L,V){let a=0,ai=1,as=0,ms=0,dr=0,im=1,vu=0,df=0,rg=0,cs=0,rl=0,wk=0,wp=0,wm=0;
@@ -46270,7 +46274,7 @@ function foScan(){let dh=0,su=0,jo=0,wi=0,bu=0,zn=0;
     const R=T.R;for(let q=0;q<G.friends.length;q++){const u=G.friends[q];if(u.dead||Math.abs(u.x-T.x)>R||Math.abs(u.y-T.y)>R||Math.hypot(u.x-T.x,u.y-T.y)>R)continue;FO_SUP.set(u,T);bkFRoot(u,0.35)}
     for(let q=0;q<G.structs.length;q++){const s=G.structs[q];if(s.dead||Math.hypot(s.x-T.x,s.y-8-T.y)>R)continue;FO_SUP.set(s,T)}}}
 // 众生渡厄：5 秒内每帧清掉亡灵身上的异常状态（控制、持续伤害、削弱、统一 buff 里的减益）
-function foCleanse(j){E.stun[j]=0;E.frz[j]=0;E.root[j]=0;E.slowT[j]=0;E.slowF[j]=0;E.burnT[j]=0;E.burnD[j]=0;E.psn[j]=0;E.psnT[j]=0;E.bld[j]=0;E.bldT[j]=0;E.blT[j]=0;E.fearT[j]=0;E.silT[j]=0;E.disT[j]=0;E.hcT[j]=0;E.hwT[j]=0;E.hwF[j]=0;
+function foCleanse(j){E.stun[j]=0;E.frz[j]=0;E.root[j]=0;E.slowT[j]=0;E.slowF[j]=0;E.burnT[j]=0;E.burnD[j]=0;E.psn[j]=0;E.psnT[j]=0;E.bld[j]=0;E.bldT[j]=0;E.blT[j]=0;E.fearT[j]=0;E.silT[j]=0;E.disT[j]=0;E.hcT[j]=0;E.hwT[j]=0;E.hwF[j]=0;EHM[j]=0;
   E.xvU[j]=0;E.wkU[j]=0;E.sjU[j]=0;E.dmU[j]=0;E.mdU[j]=0;E.vn[j]=0;E.vnT[j]=0;const B=EBL[j];if(B&&B.id===E.id[j]&&B.L.length){let ch=false;for(let k=B.L.length-1;k>=0;k--)if(B.L[k].neg){B.L.splice(k,1);ch=true}if(ch)bfApplyE(B)}}
 // ================= 选点 =================
 // 10 格内：先挑它正在打的守军，再挑最近的守军；st = 也可以挑塔楼（主堡除外）
@@ -47355,7 +47359,7 @@ const K_SDR=C('#c8202a'),K_SDR2=C('#ff8a6a'),K_SDK=C('#1a0a0c'),K_SDG=C('#e8c060
 // 不受中毒以外的异常状态：控制、减速、攻速降低在数据 unstop（无前）里清；这里每帧清掉其余的（灼烧、流血、风蚀、沉默、缴械、禁疗、致盲）
 function sdImmTick(){for(let q=SD_I.length-1;q>=0;q--){const i=SD_I[q];if(!E.alive[i]||E.t[i]!==SD_T){SD_I.splice(q,1);continue}sdClean(i,false)}}
 function sdClean(i,psn){E.stun[i]=0;E.frz[i]=0;E.root[i]=0;E.fearT[i]=0;E.kbT[i]=0;E.slowT[i]=0;E.slowF[i]=0;E.aslT[i]=0;
-  E.burnT[i]=0;E.burnD[i]=0;E.dAB[i]=0;E.bld[i]=0;E.bldT[i]=0;E.bldD[i]=0;E.erT[i]=0;E.dAL[i]=0;E.silT[i]=0;E.disT[i]=0;E.hcT[i]=0;E.hwT[i]=0;E.hwF[i]=0;E.blT[i]=0;
+  E.burnT[i]=0;E.burnD[i]=0;E.dAB[i]=0;E.bld[i]=0;E.bldT[i]=0;E.bldD[i]=0;E.erT[i]=0;E.dAL[i]=0;E.silT[i]=0;E.disT[i]=0;E.hcT[i]=0;E.hwT[i]=0;E.hwF[i]=0;EHM[i]=0;E.blT[i]=0;
   if(psn){E.psn[i]=0;E.psnT[i]=0;E.vn[i]=0;E.vnT[i]=0;E.vnD[i]=0;E.dAP[i]=0}}
 // 中毒伤害 ×3（这一下里中毒那一部分）；状态类的其它持续伤害（灼烧、流血、解冻）清零
 function sdDmgBase(i,d,o){if(E.t[i]!==SD_T)return d;if(o===BURN_HIT||o===BLEED_HIT||o===FBURN_HIT||o===THAW_HIT)return 0;const m=o.mix;if(!m||!m.poison)return d;
@@ -47935,7 +47939,7 @@ function blRevive(i,c,no){const t=E.t[i];if(EBL_SKIP[t]||E.exd[i])return false;i
 // 每帧：禁疗减半、每秒回血、不朽的回复；窃泉者光环（每秒一次）
 function blTick(dt){if(G.phase!=='wave')return;const H=BLC.hw,RG=BLC.regen;
   for(let i=0;i<E.n;i++){if(!E.alive[i]||E.fac[i]!==FAC_U)continue;const t=E.t[i];
-    if(E.hcT[i]>0){eHwPut(i,1,E.hcT[i],'hc');E.hcT[i]=0}else if(EHW[i]&&E.hwT[i]>0)eHwSum(i);   // 有来源到期就重算   // 0.12.1 禁疗按来源打折（engine/buff.eHwPut、CFG.hwMap）：完全禁疗也算一个来源
+    if(E.hcT[i]>0){eHwPut(i,1,E.hcT[i],'hc');E.hcT[i]=0}   // 0.12.1 禁疗按来源打折（engine/buff.eHwPut、CFG.hwMap）：完全禁疗也算一个来源
     if(E.hp[i]<E.mhp[i]&&!E.stn[i]&&E.hp[i]>0){let a=E.mhp[i]*(EBL_BOSS[t]?RG.boss:RG.n)*dt;
       if(BL_IT[i]>0&&BL_ID[i]===E.id[i]){const s=Math.min(dt,BL_IT[i]);a+=BL_IR[i]*s;BL_IT[i]-=s}
       E.hp[i]=Math.min(E.mhp[i],E.hp[i]+a*eHK(i))}
@@ -48971,7 +48975,7 @@ function bkHitE(j,P,C,k){const f=P.fall!==undefined?1-(1-P.fall)*(k||0):1;let d=
     if(S.stun)eStun(j,S.stun*g);if(S.frz)eFrz(j,S.frz*g);if(S.root)eRoot(j,S.root*g);if(S.fear)fearE(j,C.x,C.y,S.fear*g);
     if(S.sil)E.silT[j]=Math.max(E.silT[j],S.sil*g);if(S.blind)E.blT[j]=Math.max(E.blT[j],S.blind*g);
     if(S.slow)frostE(j,S.slow,S.aslow);if(S.burn){const b=S.burn,v=b.p!==undefined?d*b.p:b.dps||C.atk*b.k;if(v>0)burnE(j,v,b.t)}if(S.bleed){const b=S.bleed,v=b.p!==undefined?d*b.p:b.dps||C.atk*b.k;if(v>0)bleedE(j,v,b.t)}
-    if(S.defDn)bkEDefDn(j,S.defDn.f,S.defDn.t);if(S.rmDR)bkERmDR(j,S.rmDR.f,S.rmDR.t);if(S.vuln)bkEVuln(j,S.vuln.f,S.vuln.t,S.vuln.id);if(S.hw)bkEHw(j,S.hw.f,S.hw.t);if(S.psn)poisonE(j,S.psn.dps||C.atk*S.psn.k,S.psn.t);
+    if(S.defDn)bkEDefDn(j,S.defDn.f,S.defDn.t);if(S.rmDR)bkERmDR(j,S.rmDR.f,S.rmDR.t);if(S.vuln)bkEVuln(j,S.vuln.f,S.vuln.t,S.vuln.id);if(S.hw)bkEHw(j,S.hw.f,S.hw.t,S.hw.id||(C.h&&C.h.id)||'bk');if(S.psn)poisonE(j,S.psn.dps||C.atk*S.psn.k,S.psn.t);
     if(S.kb||S.pull){const dx=E.x[j]-C.x,dy=E.y[j]-C.y,m=Math.hypot(dx,dy)||1;if(S.kb)knockback(j,dx/m,dy/m,S.kb*16*g,0.25);else knockback(j,-dx/m,-dy/m,Math.min(m-6,S.pull*16*g),0.25)}}
   if(P.on)P.on(j,C,k,d);return d}
 // @bk 亡灵减益 | bkEDefDn(j,f,t) | 物理防御 −f（比例，同类取大、时间取长；和魏德曼「无坚不摧」的破防相乘） | bkEDefDn(j,0.4,3)
@@ -48982,7 +48986,7 @@ function bkERmDR(j,f,t){if(!(f>0)||!E.alive[j])return;const on=E.drmU[j]>G.time;
 const BK_VE=new Map();
 function bkEVuln(j,f,t,id){if(!(f>0)||!E.alive[j])return;let e=BK_VE.get(f);if(!e){e={vuln:f};BK_VE.set(f,e)}bfAddE(j,id||'bkVuln',e,t,{debuff:true,keepMax:true})}
 // @bk 亡灵减益 | bkEHw(j,f,t) | 禁疗 f：受到的治疗 −f（1 = 完全不能回血；同重伤 E.hwF） | bkEHw(j,0.6,3)
-function bkEHw(j,f,t,k){eHwPut(j,f,t,k||'bk')}   // 0.12.1 按来源相乘（engine/buff.eHwPut）；k 来源，不写 = 'bk'
+function bkEHw(j,f,t,k){eHwPut(j,f,t,k||'bk')}   // 0.12.1 每种来源独立算、相乘（engine/buff.eHwPut）；k 来源名
 
 // ================= 立刻结算一个形状 =================
 // @bk 时序 | bkCast(sh,P,C) | 立刻：形状 sh 放在 (C.x,C.y)、朝 C.a，按 P.who 打守军 F / 建筑 S / 亡灵 E；返回打中几个 | bkCast({k:'c',r:3},{who:'FS',dmg:1.5,mix:{blunt:1},st:{stun:1}},C)
@@ -51981,7 +51985,7 @@ feat('s1Evo3',{on:()=>!!(btEvo3('campI')||btEvo3('church')),hooks:{
   dmgRedF:(u,dmg,o)=>{if(dmg>0&&!o.dot&&!o.tru&&u.ct&&s1Holy(u)){const e=s1E3(u);if(e&&e.s1Bless)return Math.max(0,dmg-e.s1Bless.flat*s1LvK(u.camp)*(o.mk>1?o.mk:1))}return dmg},
   afterHitE:(i,dmg,o)=>{if(!(dmg>0)||!(E.hp[i]>0)||o.dot)return;if(o.s1Lf){s1LeafHit(i,o.s1Lf);return}
     const u=o.fu||o.su;if(!u||!u.ct)return;
-    if(s1Holy(u)){const e=s1E3(u);if(e&&e.s1Wound)bkEHw(i,e.s1Wound.f,e.s1Wound.t)}   // 重创之刃
+    if(s1Holy(u)){const e=s1E3(u);if(e&&e.s1Wound)bkEHw(i,e.s1Wound.f,e.s1Wound.t,'s1Wound')}   // 重创之刃
     else if(u.type==='spearman'&&o.melee&&ETC[E.t[i]].cavalry){const e=s1E3(u);if(e&&e.s1Pike)s1PikeOn(i,e.s1Pike)}},   // 反骑枪刃
 }});
 
@@ -58004,7 +58008,7 @@ function t2Deb(j,D,sc){if(T2_G!==G){T2_G=G;T2_PDR=false;for(let k=0;k<T2A.length
 function t2Hit(j,w,o){if(!E.alive[j])return;const H=w.t2h;
   if(H.d)t2Deb(j,H.d,(o&&o.dotMul)||1);
   if(H.psn)toxPsn(j,((o&&o.hd)||w.dmg)*H.psn.p,H.psn.t,1);   // 层数上限 1 = 不叠层，只刷新
-  if(H.hw)bkEHw(j,H.hw.f,H.hw.t)}
+  if(H.hw)bkEHw(j,H.hw.f,H.hw.t,'t2Blood')}
 // structs/structs.updateTowers 出手时调（o 每一发新建）：暴击伤害、暴击值、对飞行 / 重型器械（EHVY）直接命中的倍率（engine/combat 的 o.vsH）
 function t2Fire(o,F){o.critMul=(o.critMul||CFG.combat.critMul)+F.cm;o.critPt=(o.critPt||0)+F.cp;o.vsH=F.vs}
 feat('t2deb',{on:()=>!!G&&(!G.loadout||G.loadout.includes('heavyBallista')),hooks:{
@@ -59451,7 +59455,7 @@ function update(dt){
   st=segOn();updateTowers(dt);DS_CUR=null;if(G.wtS)wtSearchTick(dt);segAdd('建筑·塔楼',st);st=segOn();updateUtil(dt);DS_CUR=null;updateTraps(dt);DS_CUR=null;segAdd('建筑·辅助和陷阱',st);
   st=segOn();updateLegions(dt);segAdd('亡灵·军团',st);st=segOn();updateEnemies(dt);segAdd('亡灵·个体',st);
   st=segOn();updateProj(dt);DS_CUR=null;segAdd('弹道·我方',st);st=segOn();updateEProj(dt);segAdd('弹道·敌方',st);st=segOn();updateZones(dt);segAdd('弹道·区域技能',st);
-  bfTick(dt);facTick(dt);   // v0.8.6 统一 buff 到期、回复（engine/buff）；阵营统计、临时换阵营到期（engine/faction）
+  bfTick(dt);hwTick(dt);facTick(dt);   // hwTick：0.12.1 禁疗全图每 0.1 秒结算（engine/buff）   // v0.8.6 统一 buff 到期、回复（engine/buff）；阵营统计、临时换阵营到期（engine/faction）
   st=segOn();{const L=HK.tick;for(let k=0;k<L.length;k++)L[k](dt)}updateJavs(dt);segAdd('地图',st);st=segOn();updateFx(dt);segAdd('特效·特效',st);st=segOn();updateParts(dt);segAdd('特效·粒子',st);
   compact(G.soldiers,pfLive);
   for(let i_27=0,a_27=G.structs;i_27<a_27.length;i_27++){const s=a_27[i_27];if(s.flash>0)s.flash-=dt;}
@@ -63990,7 +63994,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.1b',GAME_TAG='测试版',GAME_CODE=163,GAME_BUILD="e438e68",GAME_BUILT=1792973665221,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.1b',GAME_TAG='测试版',GAME_CODE=163,GAME_BUILD="34d2fa9",GAME_BUILT=1792974835320,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
