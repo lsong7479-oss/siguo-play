@@ -10252,6 +10252,9 @@ CFG.settlement.invade={every:6, chance:0.5, waves:20, sweep:0.5,
 CFG.settlement.dayHours={morning:5, noon:11, dusk:16, night:19, midnight:23};   // 开拓地、入侵战的时段按本机时间：几点开始（Claude 定）
 // v0.9.51（用户定）常规模式在某张地图通关困难 / 噩梦 / 炼狱 / 深渊，那个地区的开拓地自动开拓到 1 / 2 / 3 / 4 次（原来的开拓战照样保留：打不过深渊的玩家还能一次次打上去）
 CFG.settlement.autoExpand={hard:1, nightmare:2, inferno:3, abyss:4};
+// 0.12.2（用户定）高产量折算：每个开拓地每小时的银币、建材，超过门槛的部分打折 —— 门槛 = base × 地区阶倍率（prodTierK）；
+//   1～2 倍门槛之间的部分算 80%，2～3 倍 65%，3～4 倍 50%，4～5 倍 35%，5 倍以上 20%（门槛 3000 Claude 定）；科研点、设计点、物资不折（逻辑 game/settle_0100.stOverflow）
+CFG.settlement.overflow={keys:['建材','银币'], base:3000, bands:[[1,0.8],[2,0.65],[3,0.5],[4,0.35],[5,0.2]]};
 
 /* ---------- v0.6.3 剧情模式（用户 2026-10-06 的策划，原文见项目根目录《剧情模式策划.md》；对白、奖励和没写的数值 Claude 定）----------
    v0.6.5 对白重写（用户：文本量小、角色塑造少，梅林、夜鸦的设定不对）：梅林 = 法师塔里潜心修行的法师，看见开拓者被围攻才出塔相助，离开魔力充足的塔后迅速衰老；
@@ -62559,7 +62562,8 @@ const S=CFG.settlement,TK={},tk=k=>TK[k]!==undefined?TK[k]:(TK[k]=stTech(k));L=L
   o.tax=o.pop*CFG.settlement.tax.per*o.taxR*rk;if(o.tax>0)o.rate.银币=(o.rate.银币||0)+o.tax;   // v0.10.1 税收：人口 × per（v0.12 起 3）× 税率 × 地区阶倍率
   for(const k in ST_NEEDOUT)o.sur[k]=k==='grain'&&o.gFill>0?0:Math.max(0,o.sup[k]-o.dem[k]);   // 粮仓没满：多出来的谷物先进粮仓
   o.pros=Math.floor(o.pop*(0.5+o.sat/200)+o.tp+1e-9);o.keep=stKeepOf(o.pros);
-  zlEconPost(id,o,MT);   // 代理 ZL 加：神像、政令的税收倍率、士兵倍率、物产折银（game/zl_settle）
+  zlEconPost(id,o,MT);
+  stOverflow(id,o);   // 0.12.2 高产量折算（银币、建材）   // 代理 ZL 加：神像、政令的税收倍率、士兵倍率、物产折银（game/zl_settle）
   return o}
 // 开拓地场景里用场景的建筑现算（存回 META 有 0.4 秒的合并）；按建筑版本、等级、工人分配缓存
 let ST_EC=null;
@@ -62674,6 +62678,11 @@ function stOuter(){const L=stRegions().filter(r=>stRegionOpen(r.id)).slice(),W=C
   for(const r of L){if(out.length>=N)break;if(!out.includes(r.id))out.push(r.id)}
   return out}
 const stIsOuter=id=>stOuter().includes(id);
+// 0.12.2（用户定）高产量折算：o.rate 里的银币、建材超过门槛的部分分段打折；o.ovf = {资源:[折算前, 折算后, 门槛]}（生产页、主堡面板显示）
+function stOvfVal(v,T){const B=CFG.settlement.overflow.bands;if(!(v>T))return v;let out=T;for(let i=0;i<B.length;i++){const lo=B[i][0]*T,hi=i+1<B.length?B[i+1][0]*T:Infinity;if(v<=lo)break;out+=(Math.min(v,hi)-lo)*B[i][1]}return out}
+function stOverflow(id,o){const C=CFG.settlement.overflow;if(!C)return;const T=C.base*stTierK(id);o.ovf=null;
+  for(const k of C.keys){const v=o.rate[k];if(!(v>T))continue;const w=stOvfVal(v,T);o.rate[k]=w;if(k==='银币'&&o.tax>0)o.tax*=w/v;(o.ovf||(o.ovf={}))[k]=[v,w,T]}}
+const stOvfTxt=E=>E&&E.ovf?Object.entries(E.ovf).map(([k,[v,w,T]])=>`${k} ${stNum(v)} → ${stNum(w)}`).join('、'):'';
 
 // ---------- v0.10.1 开拓地：建筑耐久、木匠铺、灾害 / 好事 / 政务、效果合成（数据 data/settle_0101.js；累积在 game/settle_0100.stAccrue）----------
 // 耐久存在布局记录的 e.st.du（0～100，没写 = 100）；场景里的建筑和记录共用同一个 st 对象（settlePut、layoutSnap），所以改记录、场景都看得到
@@ -64390,7 +64399,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="c540c30",GAME_BUILT=1793014391431,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2h',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="b5eee34",GAME_BUILT=1793015109336,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -67183,7 +67192,7 @@ function tlSettleHTML(){const E=stEconHere(),S=CFG.settlement,pg=['概况','需�
   else if(TLI_PG===1)body=stNeedsHTML(E);
   else{const R=Object.entries(E.rate).filter(([,v])=>v>0).map(([k,v])=>{const I=stItemOf(G.settleId,k);return`${I?I[0]:k} +${stNum(v)}`}),got=stStoredOf(G.settleId,{}),gl=Object.entries(got).map(([k,n])=>`${k} ${n}`).join('、');
     const own=Object.keys(ST_NEEDOUT).filter(k=>E.sup[k]>0).map(k=>`${S.needs[k]} ${E.sup[k]}`).join('、'),imp=stImpTxt(E);
-    body=[`每小时：${R.length?R.join('、'):'没有物资产出'}`,own?`需求类(不乘效率)：${own}`:'',imp,`攒着的：${gl||'没有'}(选中主堡领取，最多存 ${S.storeHours} 小时)`].filter(Boolean).map(x=>`<p class="meta">${x}</p>`).join('')}
+    body=[`每小时：${R.length?R.join('、'):'没有物资产出'}`,own?`需求类(不乘效率)：${own}`:'',E.ovf?`产量太高，超出门槛的部分打折：${stOvfTxt(E)}(门槛每小时 ${stNum(E.ovf[Object.keys(E.ovf)[0]][2])}，超出 1～5 倍分别按 80% / 65% / 50% / 35% / 20% 算)`:'',imp,`攒着的：${gl||'没有'}(选中主堡领取，最多存 ${S.storeHours} 小时)`].filter(Boolean).map(x=>`<p class="meta">${x}</p>`).join('')}
   return`<div class="tlih"><b>${CFG.maps[G.map].name}开拓地</b><button class="px sm" type="button" data-tlx="1">收起</button></div><div class="tlpg">${pg.map((n,i)=>`<button class="px sm${i===TLI_PG?' on':''}" type="button" data-tlp="${i}">${n}</button>`).join('')}</div><div class="tlbody">${body}</div>`}
 // 每次 updateHud 调：开着才算；内容没变不重写（setH 按字符串比较）
 function tlInfoTick(){const el=tlInfoEl();if(!el)return;if(!TLI_OPEN||!G||!G.base){if(!el.hidden)el.hidden=true;return}el.hidden=false;setH(el,'tli',settleOn()?tlSettleHTML():tlBattleHTML())}
@@ -67621,7 +67630,7 @@ function kt2Use(id,E){const G0={},add=(g,k,v)=>{if(v>0)(G0[g]||(G0[g]={}))[k]=(G
 const kt2UseSec=(id,E)=>{const u=kt2Use(id,E);return u?`<div class="kt2use"><b class="meta">消耗 · 每小时</b>${u}</div>`:''};
 function kt2Prod(id){stAccrue(id);const E=stEcon(id),N=CFG.settlement.outName,R=stRegion(id),got=stStoredOf(id,{}),has=Object.keys(got).length>0;
   const rt=Object.entries(E.rate).filter(([,v])=>v>0).map(([k,v])=>`<span class="kprd" title="${N[k]||k}">${kt2OutIco(id,k)||`<b>${N[k]||k}</b>`}<em>×${stNum(v)}</em></span>`).join('');
-  return kt2Sec('产出 <span class="meta">每小时</span>',[rt?`<div class="kprds">${rt}</div>`:'没有产出',kt2UseSec(id,E),kt2Acts([kt2Btn('kt2col',id,'领取这里',{on:has,dis:!has}),kt2Btn('scolall','','一键收取所有地区')])],'st-prod')+
+  return kt2Sec('产出 <span class="meta">每小时</span>',[rt?`<div class="kprds">${rt}</div>`:'没有产出',E.ovf?`<p class="meta warn">产量太高，超出门槛的部分打折：${stOvfTxt(E)}(门槛每小时 ${stNum(E.ovf[Object.keys(E.ovf)[0]][2])}，超出 1～5 倍分别按 80% / 65% / 50% / 35% / 20% 算)</p>`:'',kt2UseSec(id,E),kt2Acts([kt2Btn('kt2col',id,'领取这里',{on:has,dis:!has}),kt2Btn('scolall','','一键收取所有地区')])],'st-prod')+
     kt2Sec('建造中',[ktDetLine(id)||'没有在造的建筑'])+kt2Sec('粮仓',[stGrTxt(E),E.gcap?`粮仓里的肉：${Math.floor(R.ms||0)} / ${E.gcap}(多出来的肉类存进粮仓，精英办婚宴用)`:''],'st-season')+kt2Sec('调配',[stSurLine(id,E),stAlLine(id)],'st-alloc')}
 // 神像政令
 function kt2Zl(id){const E=stEcon(id),S=zlStatOf(id),e=kt2StatE(id);
