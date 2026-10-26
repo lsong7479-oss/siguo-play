@@ -19196,6 +19196,7 @@ for(const reg in CFG.elite.bloodMore){const S=CFG.elite.bloodSrc[reg];if(S)S.f=[
 //   打这个地区的地图：每过一波给这个地区随机一个家族 wave 点（× 结算银币的难度倍率、这一波的银币倍率）；相亲 blind 点给这个地区随机一个家族；宴会给请的家族 feast[档]
 CFG.elite.rep={lv:[['仇恨',-1500],['厌恶',-500],['冷淡',0],['接纳',500],['信任',1500],['尊敬',4000],['忠诚',9000],['狂热',18000]], wave:10, blind:20, feast:[100,250,500]};
 // 声望到了之后招募多出家族成员（用户定）：[每格出现概率, 家族血脉下限, 上限]，至多 2 格，各自判
+CFG.elite.repCol=['#8a3a4a','#9a8a8a','#e8e4dc','#6ac86a','#5aa0e8','#e8c84a','#f09a3a','#e84a3a'];   // 0.12.1（用户定）声望等级的颜色：冷淡白、接纳绿、信任蓝、尊敬黄、忠诚橙、狂热红；仇恨、厌恶 Claude 定（暗红、灰）
 CFG.elite.repRec={接纳:[0.2,0,0.2], 信任:[0.4,0,0.3], 尊敬:[0.6,0.2,0.5], 忠诚:[0.8,0.4,0.75], 狂热:[1,0.6,1]};
 // 婚配（用户定规则；花费 Claude 定）：25 岁还没成家的自己相亲（配偶的家族血脉在「自己的 −25%～自己」之间，其余这个地区的平民）
 //   相亲：花银币，出 3～5 名平民血脉的人选；宴会三档（要这个家族的声望 接纳 / 信任 / 尊敬）：人选 1～3 / 2～4 / 3～5 名，
@@ -64332,7 +64333,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.1',GAME_TAG='稳定版',GAME_CODE=164,GAME_BUILD="2a890e8",GAME_BUILT=1792983942323,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2a',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="35addf5",GAME_BUILT=1792984848893,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -68452,11 +68453,11 @@ function elRecAllHTML(){const m=elSt(),L=elOpenRegs(),ins=EL_RECT==='i';
 // —— 婚配（0.12.0 用户定）：配偶、配偶的血脉、子辈孙辈；相亲 / 宴会；各家族的声望 ——
 // 声望页签（0.12.0 用户定）：竖排所有家族，左边徽记、中间进度条、右边关系
 function elRepHTML(){const B=elBlood(),L=EL().rep.lv,lo=L[0][1];
-  const row=fid=>{const F=B[fid],al=elAllied(fid),p=elRepOf(fid),i=elRepLv(p),a=L[i][1],nx=L[i+1],w=nx?Math.max(0,Math.min(1,(p-a)/(nx[1]-a))):1,col=i<2?'#c0392b':i===2?'#8a8070':'#c99a3a';
-    return`<div class="elrep${al?'':' lock'}"><img alt="" src="${elCrestURL(fid)}"><div class="elrepm"><b>${F.name}</b> <span class="meta">${CFG.maps[F.reg]?CFG.maps[F.reg].name:''}${al?` · ${p}${nx?` / ${nx[1]}`:''}`:` · ${elAllyTxt}`}</span><div class="elrepb"><i style="width:${Math.round(w*100)}%;background:${col}"></i></div></div><span class="elrepl">${al?L[i][0]:'未结盟'}</span></div>`};
+  const row=fid=>{const F=B[fid],al=elAllied(fid),p=elRepOf(fid),i=elRepLv(p),a=L[i][1],nx=L[i+1],w=nx?Math.max(0,Math.min(1,(p-a)/(nx[1]-a))):1,col=EL().repCol[i]||'#c99a3a';
+    return`<div class="elrep${al?'':' lock'}"><img alt="" src="${elCrestURL(fid)}"><div class="elrepm"><b>${F.name}</b> <span class="meta">${CFG.maps[F.reg]?CFG.maps[F.reg].name:''}${al?` · ${p}${nx?` / ${nx[1]}`:''}`:` · ${elAllyTxt}`}</span><div class="elrepb"><i style="width:${Math.round(w*100)}%;background:${col}"></i></div></div><span class="elrepl"${al?` style="color:${col}"`:''}>${al?L[i][0]:'未结盟'}</span></div>`};
   return`<p class="meta">打这个地区的地图，每过一波给那里随机一个家族声望(难度越高、波数越后越多)；相亲、宴会、婚宴也会加减声望。声望到「接纳」以上，那个地区的招募会多出这个家族的人；宴会要「接纳 / 信任 / 尊敬」。关系从低到高：${L.map(x=>x[0]).join(' → ')}。</p>
     ${CFG.mapPages.map(P=>{const ids=P.maps.flatMap(r=>elRegFamsAll(r));return ids.length?`<h5>${P.name}</h5>${ids.map(row).join('')}`:''}).join('')}`}
-const elRepTxt=fid=>{const p=elRepOf(fid),L=EL().rep.lv,i=elRepLv(p),nx=L[i+1];return`${L[i][0]}${nx?`(${p}/${nx[1]})`:`(${p})`}`};
+const elRepTxt=fid=>{const p=elRepOf(fid),L=EL().rep.lv,i=elRepLv(p),nx=L[i+1];return`<b style="color:${EL().repCol[i]||'inherit'}">${L[i][0]}</b>${nx?`(${p}/${nx[1]})`:`(${p})`}`};   // 0.12.1 等级名按声望等级上色
 function elMarHTML(){const m=elSt(),B=elBlood(),regs=elOpenRegs();
   return`<p class="meta">精英 ${EM().age} 岁还没成家会自己相亲；各家族的声望在「声望」页签。</p>
     <div class="elrow"><span class="meta">筛选：</span>${elBtn('elxmarf','','全部',{on:!EL_MARF})}${elBtn('elxmarf','y','已婚',{on:EL_MARF==='y'})}${elBtn('elxmarf','n','未婚',{on:EL_MARF==='n'})}</div>
