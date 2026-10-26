@@ -64390,7 +64390,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2f',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="7715cbb",GAME_BUILT=1793013843179,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=165,GAME_BUILD="50fff80",GAME_BUILT=1793014327282,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -65520,6 +65520,7 @@ function onSheetChange(e){const el=e.target;if(zlChange(el))return;   // 代理 
 function onSheetClick(e){
   const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const a=b.dataset.act,v=b.dataset.v;
   if(zlAct(a,v))return;   // 代理 ZL 加：开拓地政令（ui/zl_settle）
+  if(a.startsWith('sttpl')&&stTplAct(a,v))return;   // 0.12.2 开拓地套用布局（ui/st_tpl）
   if(kt2Act(a,v))return;   // 代理 KT 第二轮：神像供奉、地区面板的领取（ui/kt2_settle）
   if(a==='contlist'){showSaveList();return}
   if(a==='contopen'||a==='contclose'){contPop=a==='contopen';showHub('go');return}
@@ -67041,7 +67042,7 @@ function settleSelEl(){if(selSettle)return selSettle;selSettle=document.createEl
   selSettle.addEventListener('click',e=>{const b=e.target.closest('[data-sa]');if(!b||!selected||!settleOn())return;const s=selected,id=G.settleId,a=b.dataset.sa;
     if(a==='w-'||a==='w+'){const e2=stEntryOf(s);if(e2){const P=stPerOf(s);stSetWorkers(id,e2,(P?P.want:0)+(a==='w+'?1:-1));s.st=e2.st;stKeepSync()}sfx('click')}
     else if(a==='wmax'){settleAllMax()}
-    else if(a==='pgall'||a==='pgadj'){pgUpMany(s,a==='pgadj')}else if(a==='pgevery')pgUpAll();   // v0.11.4 一键升级同类 / 相邻同类建筑
+    else if(a==='pgall'||a==='pgadj'){pgUpMany(s,a==='pgadj')}else if(a==='pgevery')pgUpAll();else if(a==='sttpl'){stTplOpen();return}   // v0.11.4 一键升级同类 / 相邻同类建筑
     else if(a==='rep'||a==='repall'){settleSave(true);const R=stRegion(id),L=a==='rep'?[stEntryOf(s)].filter(Boolean):R.b,r=stRepair(id,L);if(r.err)toast(r.err);else{toast(`修好了 ${r.c} 座建筑，花了 ${r.n} 建材`);sfx('pick')}}   // v0.10.1 修理（花建材）
     else if(a==='col'){settleSave(true);const got=stCollectR(id),t=Object.entries(got).map(([k,n])=>`${k} ${n}`).join('、');saveMeta();toast(t?'领取：'+t:'暂时没有可领取的产出');if(t)sfx('pick')}
     else if(a.startsWith('zl'))zlSelAct(s,a,b);   // 代理 ZL 加：神像选神、政令（ui/zl_settle）
@@ -67670,11 +67671,52 @@ function kt2Act(a,v){if(!/^kt2/.test(a))return false;
 function kt2KeepHTML(id,E,gl,rc){const tab=(k,n)=>`<button class="px${KT2_KP===k?' on':''}" type="button" data-sa="kt2kp" data-v="${k}">${n}</button>`;
   const body=KT2_KP==='pop'?`<p class="meta">${stPopLine(id,E)}</p>${stTaxHTML(id,E)}`:KT2_KP==='zl'?zlKeepHTML(id):stNeedsHTML(E);
   return`<div class="kt2mini">${tab('need','需求')}${tab('pop','人口税收')}${tab('zl','神像政令')}</div>${body}<p class="meta" style="width:100%">${gl?'可以领取：'+gl:'暂时没有可领取的产出'}</p>
-    <div class="kt2acts"><button class="px${gl?' on':''}" type="button" data-sa="col" ${gl?'':'disabled'}>领取产出</button>${rc?`<button class="px" type="button" data-sa="repall">全部修理<em>${rc} 建材</em></button>`:''}<button class="px" type="button" data-sa="pgevery">一键升级</button><button class="px" type="button" data-sa="kt2god">供奉</button><button class="px" type="button" data-sa="zled">政令</button></div>`}
+    <div class="kt2acts"><button class="px${gl?' on':''}" type="button" data-sa="col" ${gl?'':'disabled'}>领取产出</button>${rc?`<button class="px" type="button" data-sa="repall">全部修理<em>${rc} 建材</em></button>`:''}<button class="px" type="button" data-sa="pgevery">一键升级</button><button class="px" type="button" data-sa="sttpl">套用布局</button><button class="px" type="button" data-sa="kt2god">供奉</button><button class="px" type="button" data-sa="zled">政令</button></div>`}
 function kt2StatRow(s,el,rb){const g=s.st&&s.st.god,k=`kt2s|${g||''}|${s.level}|${rb}`;el.hidden=false;if(cache.ssv===k)return;cache.ssv=k;
   el.innerHTML=`<div class="kt2acts"><button class="px on" type="button" data-sa="kt2god">${g?`供奉：${CFG.zl.gods[g].name}`:'供奉(选一位神)'}</button>${rb}</div>`}
 // 选中面板的按钮（ui/settle.settleSelEl 的点击转过来）
 function kt2SelAct(s,a,b){if(a==='kt2kp'){KT2_KP=b.dataset.v;sfx('click')}else if(a==='kt2god'){KT2_GSEL=null;sfx('click');kt2GodOpen(G.settleId)}}
+
+// ---------- 0.12.2 开拓地「套用布局」（玩家要、用户定：选一个别的开拓地或存好的模板，自动清障，能放的直接开始造 1 级，撞位置 / 放不下的跳过）----------
+// 各开拓地的可建区域都以地图中心（主堡）为中心，坐标通用；模板 META.stTpl = [{n 名字, b:[{k,x,y}]}]（至多 TPL_MAX 套，存当前开拓地的布局）
+// 防御建筑、陷阱照 tryBuild 花银币、立刻建好；开拓地建筑花建材等、照常排进建造（kt_build）；障碍按清障价花银币清掉
+const TPL_MAX=4;
+const stTplList=()=>META.stTpl||(META.stTpl=[]);
+// 能拿来套用的：别的开拓地（有建筑的）+ 存好的模板
+function stTplSrcs(){const o=[],cur=G&&G.settleId;for(const id in((META.settle&&META.settle.R)||{})){const R=stRegion(id);if(id===cur||!R||!R.b||!R.b.length||!stRegionOpen(id)||!CFG.maps[id])continue;o.push({key:'r:'+id,name:CFG.maps[id].name+'开拓地',b:R.b})}
+  stTplList().forEach((t,i)=>o.push({key:'t:'+i,name:t.n,b:t.b}));return o}
+const stTplSrc=key=>stTplSrcs().find(s=>s.key===key)||null;
+// 预览：有几座会撞到现有建筑 / 超出范围（一定跳过），其余尝试建造
+function stTplPeek(b){let hit=0,out=0;const R=settleRect();for(const e of b){if(!BDEF[e.k])continue;const n=bSize(e.k);if(e.x<R.x0||e.y<R.y0||e.x+n-1>R.x1||e.y+n-1>R.y1){out++;continue}
+    let h=false;for(let dy=0;dy<n&&!h;dy++)for(let dx=0;dx<n;dx++){const i=(e.y+dy)*MAP_W+e.x+dx;if(G.structAt[i]||G.trapAt[i]){h=true;break}}if(h)hit++}return{n:b.filter(e=>BDEF[e.k]).length,hit,out}}
+// 套用：开拓地建筑先排（产出要紧），再防御建筑、陷阱；每座先查位置和能不能造，再清障、建造
+function stTplApply(b){const R=settleRect(),why={},bump=k=>{why[k]=(why[k]||0)+1};let ok=0,clr=0;
+  const L=b.filter(e=>BDEF[e.k]).slice().sort((p,q)=>(BDEF[q.k].cat==='settle')-(BDEF[p.k].cat==='settle'));
+  for(const e of L){const n=bSize(e.k);if(e.x<R.x0||e.y<R.y0||e.x+n-1>R.x1||e.y+n-1>R.y1){bump('超出范围');continue}
+    let hit=false;const blk=[];for(let dy=0;dy<n;dy++)for(let dx=0;dx<n;dx++){const i=(e.y+dy)*MAP_W+e.x+dx;if(G.structAt[i]||G.trapAt[i])hit=true;else if(!buildableT(G.terrain[i]))blk.push(i)}
+    if(hit){bump('位置已有建筑');continue}
+    if(!carried(e.k)){bump('还没解锁');continue}
+    if(BDEF[e.k].cat==='settle'){const T=stTypeOf(e.k);if(T&&T.max&&G.structs.filter(s=>s.type===e.k&&!s.dead).length>=T.max){bump('数量到上限');continue}if(stLack(stBuildCost(e.k))){bump('资源不够');continue}}
+    else if(G.gold<bcost(e.k)){bump('银币不够');continue}
+    let cleared=true;for(const i of blk){if(!clearAt(i%MAP_W,(i/MAP_W)|0,true)){cleared=false;break}clr++}
+    if(!cleared){bump('障碍清不掉');continue}
+    const err=tryBuild(e.k,e.x,e.y,true);if(err){bump(err.length>12?'不能建造':err);continue}ok++}
+  settleSave(true);return{ok,clr,why}}
+function stTplSave(){const L=stTplList(),b=layoutSnap().b.map(e=>({k:e.k,x:e.x,y:e.y}));if(!b.length)return{err:'这个开拓地还没有建筑'};
+  if(L.length>=TPL_MAX)return{err:`模板最多存 ${TPL_MAX} 套，先删掉一套`};L.push({n:`${CFG.maps[G.settleId].name}布局 ${L.length+1}`,b});saveMeta();return{}}
+// 弹窗（开拓地场景里，主堡面板的「套用布局」打开）
+function stTplHTML(){const S=stTplSrcs(),rows=S.map(s=>{const P=stTplPeek(s.b);return`<div class="sr"><span><b>${s.name}</b><br><span class="meta">${P.n} 座建筑${P.hit?`，${P.hit} 座和现有建筑撞位置(跳过)`:''}${P.out?`，${P.out} 座超出这里的范围(跳过)`:''}</span></span>
+    <span class="row2">${s.key.startsWith('t:')?`<button class="px" type="button" data-act="sttpldel" data-v="${s.key.slice(2)}">删除</button>`:''}<button class="px on" type="button" data-act="sttplgo" data-v="${s.key}">套用</button></span></div>`}).join('');
+  return`<div class="kt2"><h2 class="hd">${CFG.maps[G.settleId].name}开拓地 · 套用布局</h2>
+    <p class="meta">把别的开拓地(或存好的模板)的布局照搬过来：挡路的障碍自动清掉(花银币)，能放的直接开始造 1 级；和现有建筑撞位置、超出范围、资源不够的跳过。已有的建筑不动。</p>
+    <div class="setrows">${rows||'<p class="meta">还没有别的开拓地建了建筑，也没有存过模板。</p>'}</div>
+    <div class="actions"><button class="px" type="button" data-act="sttplsave">把这里的布局存成模板(${stTplList().length}/${TPL_MAX})</button><button class="px" type="button" data-act="sttplx">返回开拓地</button></div></div>`}
+function stTplOpen(){if(!settleOn())return;openModal('sttpl',stTplHTML(),null,true,'sttpl')}
+function stTplAct(a,v){if(a==='sttplx'){hideModal();cache.ssv=null;if(selected)refreshSel(true);return true}
+  if(a==='sttplgo'){const s=stTplSrc(v);if(!s){toast('没有这个布局');return true}const r=stTplApply(s.b),w=Object.entries(r.why).map(([k,n])=>`${k} ${n}`).join('、');
+    toast(`开始建造 ${r.ok} 座${r.clr?`，清掉 ${r.clr} 格障碍`:''}${w?`；跳过：${w}`:''}`);if(r.ok)sfx('build');hideModal();cache.ssv=null;if(selected)refreshSel(true);return true}
+  if(a==='sttplsave'){const r=stTplSave();toast(r.err||'存好了');stTplOpen();return true}
+  if(a==='sttpldel'){const L=stTplList(),i=+v;if(L[i]){L.splice(i,1);saveMeta()}stTplOpen();return true}return false}
 
 // ---------- v0.9.5 地区物资图标、打造面板（用户要：物资画图标，右下角罗马数字标阶；打造界面列出要的东西）----------
 // 图标 tools/worldmap/gen_wares.py 画（art/wares/icons.png，32 × 32 横排），build.py 内嵌成 WARE_IMG；序号 CFG.wareIcon（data/wareicons）
