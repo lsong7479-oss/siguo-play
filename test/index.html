@@ -9328,7 +9328,7 @@ CFG.drops.items=Object.assign(CFG.drops.items||{},{ssXiangliu:[{w:'xlFang', p:0.
            生命 = 最大生命 × (1 − 干涸百分比 × hpLoss)，在泉里随机一处站起来（stand 秒内不动），身上的持续伤害、控制清掉；掘墓、镇压这类「无法复活」挡不住（用户定）
      干涸：每一波从 0% 开始，每过 dry.every 秒干涸 dry.step（1%），复活生命跟着少 0.5%；过了 dry.end 秒（300 秒）干涸失效，之后不再复活（大首领「不死不灭」除外）
      回血：所有亡灵每秒回复最大生命的 regen.n（3%；小首领、大首领 regen.boss = 1%），吃禁疗
-     禁疗减半：亡灵受到的禁疗 / 重伤效果按一半算，最多 hw.max（50%）——完全禁疗（100%）= 50%（同血族城堡的写法：hcT 先换成 100% 的重伤再打折）
+     禁疗减半（0.12.1 改）：每个禁疗来源按一半算、几个来源相乘，合计最多 70%（engine/buff.eHwPut）——完全禁疗（100%）= 50%（同血族城堡的写法：hcT 先换成 100% 的重伤再打折）
      不朽（亡灵字段 blImm = X）：受到伤害的 X 在 imm.t 秒（3 秒）内慢慢转成生命恢复（吃禁疗）；几下叠在一起时剩下没回的合在一起、重新按 3 秒回（Claude 定）
      亡灵能力字段（maps/bl_spring 读）：blRev 不老泉次数（默认 1）；blPsn {k, t} 命中让守军中毒（每秒 k × 这一下伤害，t 秒）；blHc t 命中禁疗 100% t 秒；
        blMh p 造成伤害的 p 本波削减守军的生命上限（英雄、士兵；最多削到原来的 1 − mhCap，波次结束恢复；建筑不削）；
@@ -9342,7 +9342,7 @@ CFG.blSpring={
   riverW:1.4,                                // 河的半宽（格；主流 + 1）
   dry:{every:3, step:0.01, end:300, hpLoss:0.5},   // 每 3 秒干涸 1%；复活生命 −0.5% / 1%；300 秒后失效
   regen:{n:0.03, boss:0.01},
-  hw:{k:0.5, max:0.5},
+  hw:{k:0.5, max:0.7},   // 0.12.1 起实际用 data/bl_hw 的 CFG.hwMap（每个来源 ×0.5、相乘，至多 70%）
   imm:{t:3},
   stand:0.8,                                 // 复活后站起来的时间（秒，不动不打）
   mhCap:0.9,                                 // 削减生命上限：最多削掉 90%（同真田武，Claude 定）
@@ -9390,7 +9390,7 @@ Object.assign(CFG.enemies,{
 CFG.maps.blSpring={name:'不老之泉', req:CFG.mapPages[7].maps.slice(), theme:'blSpring', size:96, trees:'blTrees',   // trees：开花的桃树（art/bl_art）
     // 开放：通关任意一张八阶地图（Claude 定；fin 里按八阶那一页重算一次，后来加的八阶图也算）
   desc:'泰原雪山脚下的长生泉：碧绿的泉水从北边的白玉泉台里涌出来，往南分成四条河流过主堡两边；喝过泉水的亡灵怎么也打不死，倒下了又从泉里站起来',
-  resNote:'所有亡灵(含首领)倒下后会在北边的不老泉里复活一次(不受无法复活影响)；所有亡灵每秒回复 3% 最大生命(首领、小首领 1%)，受到的禁疗效果减半、最多 50%；'+
+  resNote:'所有亡灵(含首领)倒下后会在北边的不老泉里复活一次(不受无法复活影响)；所有亡灵每秒回复 3% 最大生命(首领、小首领 1%)，受到的每个禁疗效果减半，几个禁疗相乘，最多禁疗 70%；'+
           '每一波不老泉每过 3 秒干涸 1%，复活时的生命跟着少 0.5%，300 秒后干涸失效；不老泉和河水是浅水，都能走；河上能建造，不老泉上不能。「不朽」：受到伤害的 X% 在 3 秒内转化为生命恢复',
   eStatK:{hp:1.3, dmg:1.3},   // 0.12.0（用户定）亡灵生命、伤害比八阶多 30% 左右（原来和八阶差不多）
   round:25, elites:[], boss:[], swap:{}, endless:{unlock:{}, weight:{}},
@@ -19669,10 +19669,12 @@ CFG.elite.look={
   for(const c in A){const T=N[c]||(N[c]={m:[],f:[]});for(const s of['m','f'])T[s]=[...new Set((T[s]||[]).concat(A[c][s]))]}})();
 
 // ---------- 0.12.1 不老之泉的禁疗（用户定：史诗、传说卡和商人独特商品；名字 Claude 定；效果在 maps/bl_spring 的 afterHitE）----------
-// 我方所有单位造成伤害后，给亡灵禁疗（受到的治疗 −X%，同 engine/blk.bkEHw，几处取最高）；传说「断泉」顶替史诗「蚀泉」（拿了传说，史诗不再出、不再算）
+// 我方所有单位造成伤害后，给亡灵禁疗（受到的治疗 −X%）；卡和坏血弹药是两个来源，按 engine/buff.eHwPut 相乘；传说「断泉」顶替史诗「蚀泉」（拿了传说，史诗不再出、不再算）
 CFG.blHw={t:3, mc:0.3};
+// 禁疗的地图打折（0.12.1 用户定）：不老之泉每个来源只生效 50%，合计至多禁疗 70%（受到的治疗不低于原来的 30%；原来是 50%）
+CFG.hwMap={blSpring:{k:0.5, max:0.7}};
 CFG.cards.push({id:'blHwE', name:'蚀泉', q:'epic', map:'blSpring', unique:true, flat:true, eff:{blHwE:0.2}, avail:()=>!(pm&&pm.blHwL>0),
-  desc:'所有单位造成伤害后，目标禁疗 20%(受到的治疗 −20%)，持续 3 秒', help:'只在不老之泉出现；拿了传说「断泉」后不再出现。'});
+  desc:'所有单位造成伤害后，目标禁疗 20%(受到的治疗 −20%)，持续 3 秒；和别的禁疗相乘', help:'只在不老之泉出现；拿了传说「断泉」后不再出现。'});
 CFG.cards.push({id:'blHwL', name:'断泉', q:'legend', map:'blSpring', unique:true, flat:true, eff:{blHwL:0.5},
   desc:'所有单位造成伤害后，目标禁疗 50%(受到的治疗 −50%)，持续 3 秒；顶替「蚀泉」', help:'只在不老之泉出现。'});
 CFG.merchant.items.blHw={name:'坏血弹药', map:'blSpring', base:1000, per:100, desc:'所有单位造成伤害后，目标禁疗 30%(受到的治疗 −30%)，持续 3 秒(不老之泉的商人独有)'};
@@ -36579,7 +36581,7 @@ function eSpawn(ti,x,y,st){
   E.tile[i]=-1;E.nxt[i]=-1;E.fv[i]=-1;E.ft[i]=null;E.st[i]=null;E.hdv[i]=0;E.cv[i]=0;E.stT[i]=-9;E.bTk[i]=0;E.iceK[i]=0;E.alt[i]=0;E.bnT[i]=0;E.pA[i]=0;E.pB[i]=0;E.pC[i]=0;E.pD[i]=0;E.sld[i]=0;E.rvN[i]=0;E.rvM[i]=1;E.gdN[i]=0;
   E.gr[i]=0;E.pa[i]=0;E.pab[i]=0;E.ab3[i]=c.parry?c.parry.cd*0.6:0;E.psn[i]=0;E.psnT[i]=0;E.psnD[i]=0;E.bld[i]=0;E.bldT[i]=0;E.bldD[i]=0;E.exd[i]=0;
   E.aslT[i]=0;E.aslF[i]=0;E.ddT[i]=0;E.ddv[i]=0;E.vol[i]=0;E.volT[i]=0;E.rcd[i]=c.rider?c.rider.int:0;E.ug[i]=0;E.dgS[i]=0;E.tl[i]=0;E.tlI[i]=-1;E.tcd[i]=0;E.tgo[i]=-1;
-  E.tsU[i]=0;E.nu[i]=0;E.nrv[i]=0;E.clk[i]=0;E.mrv[i]=0;E.nrU[i]=0;E.cbf[i]=0;E.yI[i]=0;E.yJ[i]=-1;E.yA[i]=0;E.yB[i]=0;E.yC[i]=0;E.yD[i]=0;E.rvU[i]=0;E.yT[i]=0;E.yN[i]=0;E.hwT[i]=0;E.hwF[i]=0;E.tbk[i]=0;E.rvT[i]=0;E.hrT[i]=0;E.bw[i]=0;E.bwT[i]=0;E.wtgt[i]=null;E.wu[i]=0;E.wuO[i]=null;E.rtr[i]=0;E.flk[i]=0;E.gd[i]=0;E.bcd[i]=c.burrow?1.5:0;E.stn[i]=0;E.stnT[i]=0;E.stnN[i]=0;E.wlT[i]=0;E.wlK[i]=0;E.ugT[i]=0;E.ich[i]=0;E.lpT[i]=0;E.lz[i]=0;E.own[i]=0;E.hsT[i]=0;E.hst[i]=-1;E.hstId[i]=0;E.hvN[i]=0;E.hvL[i]=0;E.ptg[i]=null;E.pyN[i]=0;E.dgT[i]=0;E.spT[i]=0;E.spK[i]=0;E.stun[i]=0;E.adv[i]=0;E.shootT[i]=0;E.frz[i]=0;E.slowT[i]=0;E.slowF[i]=0;E.root[i]=0;E.burnT[i]=0;E.burnD[i]=0;E.buffS[i]=0;E.buffL[i]=0;E.chg[i]=0;
+  E.tsU[i]=0;E.nu[i]=0;E.nrv[i]=0;E.clk[i]=0;E.mrv[i]=0;E.nrU[i]=0;E.cbf[i]=0;E.yI[i]=0;E.yJ[i]=-1;E.yA[i]=0;E.yB[i]=0;E.yC[i]=0;E.yD[i]=0;E.rvU[i]=0;E.yT[i]=0;E.yN[i]=0;E.hwT[i]=0;E.hwF[i]=0;EHW[i]=null;E.tbk[i]=0;E.rvT[i]=0;E.hrT[i]=0;E.bw[i]=0;E.bwT[i]=0;E.wtgt[i]=null;E.wu[i]=0;E.wuO[i]=null;E.rtr[i]=0;E.flk[i]=0;E.gd[i]=0;E.bcd[i]=c.burrow?1.5:0;E.stn[i]=0;E.stnT[i]=0;E.stnN[i]=0;E.wlT[i]=0;E.wlK[i]=0;E.ugT[i]=0;E.ich[i]=0;E.lpT[i]=0;E.lz[i]=0;E.own[i]=0;E.hsT[i]=0;E.hst[i]=-1;E.hstId[i]=0;E.hvN[i]=0;E.hvL[i]=0;E.ptg[i]=null;E.pyN[i]=0;E.dgT[i]=0;E.spT[i]=0;E.spK[i]=0;E.stun[i]=0;E.adv[i]=0;E.shootT[i]=0;E.frz[i]=0;E.slowT[i]=0;E.slowF[i]=0;E.root[i]=0;E.burnT[i]=0;E.burnD[i]=0;E.buffS[i]=0;E.buffL[i]=0;E.chg[i]=0;
   E.ab1[i]=c.summon?c.summon.cd*0.5:c.blade?c.blade.cd*0.5:0;E.ab2[i]=c.nova?c.nova.cd*0.6:c.pulse?c.pulse.cd*0.5:c.dash?c.dash.cd*0.7:c.heal?c.heal.cd*0.5:(c.rain||c.spikes)?(c.rain||c.spikes).cd*0.5:0;E.rev[i]=0;E.kbT[i]=0;E.cap[i]=0;E.vuln[i]=0;E.count++;ccReset(i);
   E.wkU[i]=0;E.wkF[i]=0;E.glT[i]=0;E.sjU[i]=0;E.sjF[i]=0;E.sup[i]=0;   // v0.8.0
   BPW.U[i]=0;E.pdU[i]=0;E.drmU[i]=0;   // pd / drm：v0.10.3 统一的破防（物理防御 −X%）、移除减伤（engine/enemy.drKOf；积木 st.defDn / st.rmDR）
@@ -41122,6 +41124,15 @@ function facLoad(L){if(!Array.isArray(L))return;
    亡灵的攻击、攻速、移速、防御直接乘 / 加进 E.dmg、E.ai、E.sp、E.def（已经乘进去的记在 E.bfK，每只 6 个，去掉时除回来）；英雄、士兵、建筑在出手、受伤时读 bfV。
    死了、换阵营了就全部清掉（不跟过去） */
 const BF_KEYS=['atk','atkI','aspd','mspd','dr','imm','vuln','def','regen','cdSpd','rld','weak','weakP','weakM'],BF_TK=14,BF_EFF=new WeakMap();
+// 禁疗（0.12.1 用户定）：亡灵身上按来源记 {来源: [比例, 到期时刻]}，不同来源相乘 —— 受到的治疗 ×(1 − a)(1 − b)…；同一来源取大、时间取长
+//   地图打折（CFG.hwMap[地图] = {k 每个来源的比例 ×k, max 合计至多}）：不老之泉 (1 − 50%a)(1 − 50%b)…，至多禁疗 70%
+//   合计写回 E.hwF / E.hwT（eHK 照旧读它们）；比例 ≥ 1 的完全禁疗照旧走 E.hcT（地图打折时也按来源算进来）
+const EHW=new Array(ECAP).fill(null);
+function eHwPut(j,f,t,k){if(!(f>0)||!(t>0)||!E.alive[j])return;const H=CFG.hwMap&&G&&CFG.hwMap[G.map];if(f>=1&&!H){E.hcT[j]=Math.max(E.hcT[j],t);return}
+  const o=EHW[j]||(EHW[j]={}),now=G.time,c=o[k];if(!c)o[k]=[f,now+t];else if(c[1]>now){if(f>c[0])c[0]=f;if(now+t>c[1])c[1]=now+t}else{c[0]=f;c[1]=now+t}eHwSum(j)}   // 原地改，不每下都新建数组
+function eHwSum(j){const o=EHW[j];if(!o)return;const H=CFG.hwMap&&CFG.hwMap[G.map],K=H?H.k:1,now=G.time;let r=1,u=0;
+  for(const k in o){const c=o[k];if(c[1]>now){r*=1-Math.min(1,c[0])*K;if(c[1]>u)u=c[1]}else delete o[k]}
+  E.hwF[j]=Math.min(H?H.max:1,1-r);E.hwT[j]=Math.max(0,u-now)}
 const EBL=new Array(ECAP).fill(null);   // 亡灵身上的 buff：{i, id, L: [{id, v, u}], V}；eSpawn 清掉
 function bfEff(eff){let v=BF_EFF.get(eff);if(v)return v;v=BF_KEYS.map(k=>+eff[k]||0);BF_EFF.set(eff,v);return v}
 function bfSum(L,V){let a=0,ai=1,as=0,ms=0,dr=0,im=1,vu=0,df=0,rg=0,cs=0,rl=0,wk=0,wp=0,wm=0;
@@ -47924,8 +47935,7 @@ function blRevive(i,c,no){const t=E.t[i];if(EBL_SKIP[t]||E.exd[i])return false;i
 // 每帧：禁疗减半、每秒回血、不朽的回复；窃泉者光环（每秒一次）
 function blTick(dt){if(G.phase!=='wave')return;const H=BLC.hw,RG=BLC.regen;
   for(let i=0;i<E.n;i++){if(!E.alive[i]||E.fac[i]!==FAC_U)continue;const t=E.t[i];
-    if(E.hcT[i]>0){E.hwT[i]=Math.max(E.hwT[i],E.hcT[i]);E.hwF[i]=1;E.hcT[i]=0;BL_HWV[i]=-1}   // 禁疗减半：完全禁疗先换成 100% 的重伤，再打折（最多 50%）
-    if(E.hwT[i]>0&&BL_HWV[i]!==E.hwF[i]){E.hwF[i]=Math.min(H.max,E.hwF[i]*H.k);BL_HWV[i]=E.hwF[i]}
+    if(E.hcT[i]>0){eHwPut(i,1,E.hcT[i],'hc');E.hcT[i]=0}else if(EHW[i]&&E.hwT[i]>0)eHwSum(i);   // 有来源到期就重算   // 0.12.1 禁疗按来源打折（engine/buff.eHwPut、CFG.hwMap）：完全禁疗也算一个来源
     if(E.hp[i]<E.mhp[i]&&!E.stn[i]&&E.hp[i]>0){let a=E.mhp[i]*(EBL_BOSS[t]?RG.boss:RG.n)*dt;
       if(BL_IT[i]>0&&BL_ID[i]===E.id[i]){const s=Math.min(dt,BL_IT[i]);a+=BL_IR[i]*s;BL_IT[i]-=s}
       E.hp[i]=Math.min(E.mhp[i],E.hp[i]+a*eHK(i))}
@@ -47977,9 +47987,8 @@ function blDrawWorld(cx0,cy0,cx1,cy1){if(G.phase!=='wave')return;const on=blAliv
     if(!on&&ETC[E.t[i]].key!=='blKing')continue;const hy=y-E.r[i]*2-10-(E.air[i]?20:0);rectW(x-1,hy,2,2,K_BLW,0.85);if(BL_USE[i]>1)rectW(x+2,hy,2,2,K_BLW,0.85)}}
 function blHud(){if(G.phase!=='wave')return'不老泉：亡灵倒下会在泉里复活一次 · 每秒回血 3%';if(!blAlive())return'<span style="color:#c8b080">不老泉已干涸</span>(只有大首领还能复活)';
   const d=blDry(),left=Math.max(0,BLC.dry.end-blRun());return`<span style="color:#7af0d0">不老泉</span> 干涸 ${Math.round(d*100)}% · 复活生命 ${Math.round((1-d*BLC.dry.hpLoss)*100)}% · ${Math.ceil(left)} 秒后干涸`}
-// 0.12.1 禁疗（data/bl_hw）：卡「蚀泉」20% / 「断泉」50%（顶替）、商人的坏血弹药 30%，取最高
-const blHwF=()=>Math.max(pm.blHwL>0?pm.blHwL:pm.blHwE||0,G.mcOwn&&G.mcOwn.includes('blHw')?CFG.blHw.mc:0);
-function blAfterHit(i,d,o){if(d>0&&!o.dot&&E.alive[i]){const f=blHwF();if(f>0)bkEHw(i,f,CFG.blHw.t)}}
+// 0.12.1 禁疗（data/bl_hw）：卡「蚀泉」20% / 「断泉」50%（顶替）、商人的坏血弹药 30%；卡和弹药两个来源相乘
+function blAfterHit(i,d,o){if(d>0&&!o.dot&&E.alive[i]){const c=pm.blHwL>0?pm.blHwL:pm.blHwE||0;if(c>0)eHwPut(i,c,CFG.blHw.t,'blC');if(G.mcOwn&&G.mcOwn.includes('blHw'))eHwPut(i,CFG.blHw.mc,CFG.blHw.t,'blM')}}   // 卡、坏血弹药是两个来源，相乘
 MAP_FX.blSpring={gen:genBl,afterHitE:blAfterHit,pixW:blPix,start:blStart,tick:blTick,waveStart:blWaveStart,waveEnd:blWaveEnd,eSpawn:blESpawn,eRevive:blRevive,afterHpE:blAfterHp,
   afterHurtF:blAfterHurtF,afterHurtS:blAfterHurtS,towerOff:s=>typeof vcTowerOff==='function'&&vcTowerOff(s),buildBlock:blBuildBlock,hud:blHud,drawUnder:blDrawUnder,drawWorld:blDrawWorld};
 
@@ -48973,7 +48982,7 @@ function bkERmDR(j,f,t){if(!(f>0)||!E.alive[j])return;const on=E.drmU[j]>G.time;
 const BK_VE=new Map();
 function bkEVuln(j,f,t,id){if(!(f>0)||!E.alive[j])return;let e=BK_VE.get(f);if(!e){e={vuln:f};BK_VE.set(f,e)}bfAddE(j,id||'bkVuln',e,t,{debuff:true,keepMax:true})}
 // @bk 亡灵减益 | bkEHw(j,f,t) | 禁疗 f：受到的治疗 −f（1 = 完全不能回血；同重伤 E.hwF） | bkEHw(j,0.6,3)
-function bkEHw(j,f,t){if(!(f>0)||!E.alive[j])return;if(f>=1){E.hcT[j]=Math.max(E.hcT[j],t);return}E.hwF[j]=Math.max(E.hwT[j]>0?E.hwF[j]:0,f);E.hwT[j]=Math.max(E.hwT[j],t)}
+function bkEHw(j,f,t,k){eHwPut(j,f,t,k||'bk')}   // 0.12.1 按来源相乘（engine/buff.eHwPut）；k 来源，不写 = 'bk'
 
 // ================= 立刻结算一个形状 =================
 // @bk 时序 | bkCast(sh,P,C) | 立刻：形状 sh 放在 (C.x,C.y)、朝 C.a，按 P.who 打守军 F / 建筑 S / 亡灵 E；返回打中几个 | bkCast({k:'c',r:3},{who:'FS',dmg:1.5,mix:{blunt:1},st:{stun:1}},C)
@@ -52625,12 +52634,12 @@ Object.assign(GEAR_FX,{
       const u=makeSoldier({level:1,x:g.x,y:g.y+2,slots:0},'necroAlly'),k=physMul(h);u.camp=null;u.owner=h;u.summon=true;u.statMul=k;u.baseHp=u.c.hp*k;u.maxHp=u.baseHp*(1+pm.unitHp+TM.uHp);u.hp=u.maxHp;G.soldiers.push(u);
       if(inViewPt(g.x,g.y)){for(let q=0;q<10;q++)pp(g.x+vr(-6,6),g.y,0,vr(-10,10),vr(-6,6),vr(8,20),0,vr(0.5,1),vpick(['#5a7a5a','#2a3a2e','#9ad8a0']),2,3,1);sfx('summon')}}}},
   // 死灵长枪 / 长剑：命中后重伤（受到的治疗 −cut）、t 秒内不能复活
-  necroHit:{hit(h,i,dmg,o,v){if(o.dot)return;E.hwF[i]=Math.max(E.hwT[i]>0?E.hwF[i]:0,v.cut);E.hwT[i]=Math.max(E.hwT[i],v.t);E.nrU[i]=Math.max(E.nrU[i],G.time+v.t)}},
+  necroHit:{hit(h,i,dmg,o,v){if(o.dot)return;eHwPut(i,v.cut,v.t,'necro');E.nrU[i]=Math.max(E.nrU[i],G.time+v.t)}},
   // 死灵大盾：受到攻击时，攻击者重伤、不能复活
-  necroGuard:{hurt(h,dmg,o,v){const j=o.src;if(o.dot||!(j>=0)||!E.alive[j]||(o.sid!==undefined&&E.id[j]!==o.sid))return dmg;E.hwF[j]=Math.max(E.hwT[j]>0?E.hwF[j]:0,v.cut);E.hwT[j]=Math.max(E.hwT[j],v.t);E.nrU[j]=Math.max(E.nrU[j],G.time+v.t);return dmg}},
+  necroGuard:{hurt(h,dmg,o,v){const j=o.src;if(o.dot||!(j>=0)||!E.alive[j]||(o.sid!==undefined&&E.id[j]!==o.sid))return dmg;eHwPut(j,v.cut,v.t,'necro');E.nrU[j]=Math.max(E.nrU[j],G.time+v.t);return dmg}},
   // 死灵战铠：受到攻击时，攻击者攻速 −atk、重伤
   necroArmor:{hurt(h,dmg,o,v){const j=o.src;if(o.dot||!(j>=0)||!E.alive[j]||(o.sid!==undefined&&E.id[j]!==o.sid))return dmg;E.aslF[j]=Math.max(E.aslT[j]>0?E.aslF[j]:0,v.atk);E.aslT[j]=Math.max(E.aslT[j],v.t);
-      E.hwF[j]=Math.max(E.hwT[j]>0?E.hwF[j]:0,v.cut);E.hwT[j]=Math.max(E.hwT[j],v.t);return dmg}},
+      eHwPut(j,v.cut,v.t,'necro');return dmg}},
   // 盗墓皮甲：夜晚每 every 秒进入一次隐身（装备隐身：出手、挨打就现身）
   nightStealth:{tick(h,dt,v){if(G.phase!=='wave'||h.dead)return;const P=DAYP[G.dayIdx];if(!P||(P.id!=='night'&&P.id!=='midnight'))return;h.nsT=(h.nsT||0)-dt;if(h.nsT>0)return;h.nsT=v.every;
       if(h.stealthed)return;h.stealthed=true;h.gst=1;if(inViewPt(h.x,h.y))for(let k=0;k<8;k++)pp(h.x+vr(-5,5),h.y-vr(0,14),0,0,0,vr(2,8),0,0.5,'#2a2430',2,1,1)}},
@@ -54067,7 +54076,7 @@ feat('xgGear',{on:()=>!!G&&!!G.heroes&&G.heroes.some(h=>h.xgSDmP||h.xgHpDmg>0||h
   afterHitE:(i,dmg,o)=>{if(XG_VN_G!==G){XG_VN.clear();XG_VN_G=G}const h=o.hk;if(!h||!(dmg>0)||o.xgEx)return;const c=ETC[E.t[i]],boss=c.mini||c.tier>=5;
     if(h.xgSDmP){const P=h.xgSDmP;if(h.xgSDmW!==G.wave){h.xgSDmW=G.wave;h.xgSDm=0}h.xgSDm=Math.min(P.cap,(h.xgSDm||0)+P.per)}
     if(h.xgCcP){const P=h.xgCcP,id=E.id[i],v=Math.min(P.cap,(XG_VN.get(id)||0)+P.per);XG_VN.set(id,v);if(XG_VN.size>2000)xgVnPrune();bfAddE(i,'xgCc',xgVe(v),null,{debuff:true})}
-    if(h.xgHc&&!o.dot){const f=boss?h.xgHc.boss:h.xgHc.f;E.hwF[i]=Math.max(E.hwT[i]>0?E.hwF[i]:0,f);E.hwT[i]=Math.max(E.hwT[i],h.xgHc.t)}
+    if(h.xgHc&&!o.dot){const f=boss?h.xgHc.boss:h.xgHc.f;eHwPut(i,f,h.xgHc.t,'xgHc')}
     if(h.xgExe>0&&!boss&&E.hp[i]>0&&E.hp[i]<E.mhp[i]*h.xgExe){dealE(i,E.hp[i]*10+1,{tru:true,sure:true,noFx:true,hk:h,xgEx:1});if(inViewPt(E.x[i],E.y[i]))addFx({k:'ring',x:Math.round(E.x[i]),y:Math.round(E.y[i]-8),r:10,life:0.35,c:'#e0503a'})}},
   waveEnd:()=>{XG_VN.clear();for(let j=0;j<E.n;j++)if(E.alive[j]&&EBL[j])bfDelE(j,'xgCc')}}});
 const XG_VE=new Map();function xgVe(v){v=Math.round(v*1e4)/1e4;let e=XG_VE.get(v);if(!e){e={vuln:v};XG_VE.set(v,e)}return e}   // 统一 buff 的 eff 当常量用：同一个数值同一个对象
@@ -57646,7 +57655,7 @@ function spikeEvo(j,ev,dmg){
   if(ev.sPsn){const P=ev.sPsn;if(E.psn[j]<1)E.psn[j]=1;E.psnT[j]=Math.max(E.psnT[j],P.t);E.psnD[j]=Math.max(E.psnD[j],P.dps)}
   if(ev.glow){E.rvT[j]=Math.max(E.rvT[j],ev.glow);E.gr[j]=1}
   if(ev.sBleed)pctBleed(j,ev.sBleed,dmg);
-  if(ev.wound){E.hwF[j]=Math.max(E.hwT[j]>0?E.hwF[j]:0,ev.wound.f);E.hwT[j]=Math.max(E.hwT[j],ev.wound.t)}}
+  if(ev.wound)eHwPut(j,ev.wound.f,ev.wound.t,'wound')}
 // v0.10.0 建筑受到的治疗倍率：旱魃「赤地千里」（hbU）、禁疗（shcU 到期时刻、shcF 比例；玄钢山城摧城炮手）
 const sHealK=s=>(1+(TM.sHealT||0))*(s.hbU>G.time?zsSHeal(s):1)*(s.shcU>G.time?1-s.shcF:1);   // sHealT：v0.11.0 科技「维修技术」
 // 神圣墙自愈、维修塔每秒修理范围内受损最重的几座建筑（战斗中与「推进 20 秒」时生效：准备阶段是时停）
@@ -63981,7 +63990,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.1b',GAME_TAG='测试版',GAME_CODE=163,GAME_BUILD="97f31b4",GAME_BUILT=1792961602591,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.1b',GAME_TAG='测试版',GAME_CODE=163,GAME_BUILD="e438e68",GAME_BUILT=1792973665221,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
