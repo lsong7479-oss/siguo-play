@@ -19752,6 +19752,38 @@ CFG.elite.skMax=9;CFG.elite.insFree=4;   // insFree：教官的技能超过这�
 CFG.elite.learnH=[2,4,8,16,24,32,40,48,60];   // 学到第几级要几小时（Ⅴ 级起 Claude 定）
 {const T=CFG.techs.elTrainT,R=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ'];if(T){delete T.maxT3;delete T.maxT5;delete T.maxT7;for(let k=2;k<=9;k++)T['maxT'+k]=k;
   T.dl=(v,L)=>`技能最高 ${R[Math.max(0,L-1)]} 级；解锁 ${R[Math.max(0,Math.min(4,L)-1)]} 级及以下的训练特性(Ⅰ～Ⅸ 级分别要通关一～九阶地区)`}}
+// 0.12.1（用户定）转职页按职业类型分页签；原来的职业是一阶（转职只花银币），圣骑士、德鲁伊、吟游诗人、炼金术士是二阶（更多银币 + 地区特产）
+//   t2：二阶转职的花费 —— silver 银币、map 这张地图的核心特产 n 个（哪张图、多少 Claude 定：德鲁伊元素森林、炼金术士腐化之地、圣骑士圣堂墓园、吟游诗人冰原）
+CFG.elite.jobCat=[['light','轻步系',['assassin','berserker']],['heavy','重步系',['spearman','shieldGuard','paladin']],['ranged','远程系',['marksman','cannoneer','musketeer','engineer']],
+  ['cav','骑兵系',['lightCav','heavyCav','horseArcher','gunCav']],['magic','法术系',['mage','priest','druid','bard','alchemist']]];
+{const J=CFG.elite.jobs,T={druid:'elemForest',alchemist:'corrupt',paladin:'sanctum',bard:'tundra'};for(const k in T)if(J[k])J[k].t2={silver:20000, map:T[k], n:30}}
+CFG.elite.learnBase=6;   // 学一级技能的基础时间（小时，0.12.1 用户定：恒定 6 小时）
+// 0.12.1 新职业的第二批技能（用户从 Claude 的提案里挑定：安眠曲、战歌、余音；燃烧瓶、强化药剂、腐蚀药剂、药剂学；荆棘缠绕、回春术、自然亲和。数值除用户给的外 Claude 定）
+Object.assign(CFG.elite.skills,{
+  el_lullaby: {name:'安眠曲', fam:['bard'], sk:'elLullaby', sc:[], ico:'caDawn'},
+  el_warsong: {name:'战歌', fam:['bard'], sk:'elWarsong', sc:[], ico:'caVow'},
+  el_echo:    {name:'余音', pas:true, fam:['bard'], ico:'caHorn', st1:{echo:[2,0.5]}, desc:'歌曲(赞颂之歌、战歌)结束后，效果减半再持续 2 秒'},
+  el_molotov: {name:'燃烧瓶', fam:['alch'], sk:'elMolotov', dot:['ad'], ico:'acidPool'},
+  el_elixir:  {name:'强化药剂', fam:['alch'], sk:'elElixir', sc:[], ico:'massHeal', lvT:{atk:[0.15,0.16,0.17,0.18,0.19,0.2,0.21,0.22,0.23,0.25]}},   // 用户定：攻击 +15%～25%
+  el_corrode: {name:'腐蚀药剂', fam:['alch'], sk:'elCorrode', ico:'toxicBurst'},
+  el_alchemy: {name:'药剂学', pas:true, fam:['alch'], ico:'toxicBurst', st1:{alchK:0.15}},
+  el_thorns:  {name:'荆棘缠绕', fam:['druid'], sk:'elThorns', dot:['ad'], ico:'natureWrath'},
+  el_rejuv:   {name:'回春术', fam:['druid'], sk:'elRejuv', sc:['pct'], ico:'rallyWind'},
+  el_natural: {name:'自然亲和', pas:true, fam:['druid'], ico:'wolfPack', st1:{natA:0.1}},
+});
+Object.assign(CFG.skills,{
+  elLullaby:{name:'安眠曲', cd:16, aim:'self', r:4, slow:0.4, t:3, desc:p=>`唱安眠曲：身边 ${p.r} 格内的亡灵减速 ${Math.round(p.slow*100)}%，持续 ${p.t} 秒(首领、精英、重型减半)`},
+  elWarsong:{name:'战歌', cd:20, aim:'self', r:6, dur:6, mspd:0.2, dr:0.1, desc:p=>`唱战歌：身边 ${p.r} 格内的士兵移速 +${Math.round(p.mspd*100)}%、受到的伤害 −${Math.round(p.dr*100)}%，持续 ${p.dur} 秒`},
+  elMolotov:{name:'燃烧瓶', cd:12, aim:'area', range:6, r:1.5, dur:4, tick:0.5, b:8, ad:0.25, mag:true, desc:p=>`往 ${p.range} 格内扔燃烧瓶，烧出 ${p.r} 格火海，持续 ${p.dur} 秒：每秒 ${sv_(p.b,p.ad,'AP')} 火焰伤害`},
+  elElixir: {name:'强化药剂', cd:14, aim:'self', r:5, dur:8, atk:0.15, desc:p=>`给 ${p.r} 格内攻击最高的友军喝药：${p.dur} 秒内攻击 +${Math.round(p.atk*100)}%`},
+  elCorrode:{name:'腐蚀药剂', cd:12, aim:'area', range:6, r:2, dur:5, b:6, ad:0.3, def:3, mag:true, desc:p=>`往 ${p.range} 格内扔腐蚀药剂：${p.r} 格内的亡灵受到 ${sv_(p.b,p.ad,'AP')} 酸蚀伤害，${p.dur} 秒内物防、法防 −${Math.round(p.def*10)/10}`},
+  elThorns: {name:'荆棘缠绕', cd:14, aim:'enemy', range:7, r:1.5, root:1.5, dur:3, b:4, ad:0.2, mag:true, desc:p=>`目标处 ${p.r} 格内的亡灵被荆棘定身 ${p.root} 秒，${p.dur} 秒内每秒受到 ${sv_(p.b,p.ad,'AP')} 自然伤害`},
+  elRejuv:  {name:'回春术', cd:16, aim:'self', r:5, dur:6, pct:0.015, desc:p=>`身边 ${p.r} 格内的友军 ${p.dur} 秒内每秒回复 ${Math.round(p.pct*1000)/10}% 最大生命`},
+});
+Object.assign(CFG.elite.skV,{
+  el_lullaby:{add:{t:1}, t:'减速多 1 秒'}, el_warsong:{add:{dur:2}, t:'持续 +2 秒'}, el_molotov:{add:{r:0.5}, t:'火海 +0.5 格'},
+  el_elixir:{add:{dur:4}, t:'持续 +4 秒'}, el_corrode:{add:{r:0.5}, t:'范围 +0.5 格'}, el_thorns:{add:{root:0.5}, t:'定身 +0.5 秒'}, el_rejuv:{add:{dur:2}, t:'多回 2 秒'},
+});
 
 // ---------- 0.12.1 不老之泉的禁疗（用户定：史诗、传说卡和商人独特商品；名字 Claude 定；效果在 maps/bl_spring 的 afterHitE）----------
 // 我方所有单位造成伤害后，给亡灵禁疗（受到的治疗 −X%）；卡和坏血弹药是两个来源，按 engine/buff.eHwPut 相乘；传说「断泉」顶替史诗「蚀泉」（拿了传说，史诗不再出、不再算）
@@ -20087,7 +20119,7 @@ ztZh ztKm
 kySs kySsM kyRb kyRbU
 xlFangV xlFangM xlArmV
 blGaleU blWRU blSpoutU blTideU blVerU blHellU blCycU blShU blUdV blUdN blUdT
-elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU elSongU elSongR elSongE`.trim().split(/\s+/);
+elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU elSongU elSongR elSongE elWarU elWarR elWarE elThz elRjU elRjN elRjR elRjP`.trim().split(/\s+/);
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -61483,14 +61515,19 @@ function elJobLock(e,job){const U=(EL().jobs[job]||{}).unl;if(!U||devOn())return
   if(U.hero){const H=META.heroes[U.hero];if(!H||!H.owned||(H.star||1)<U.star)o.push(`${CFG.heroes[U.hero].name} ${U.star} 星`)}
   if(U.tier&&clearTier()<U.tier)o.push(`通关${(CFG.mapPages[U.tier-1]||{name:U.tier+' 阶地区'}).name}的任意一张地图`);
   if(U.lv&&elLv(e)<U.lv)o.push(`精英 ${U.lv} 级`);return o.length?'要 '+o.join('、'):''}
-function elJobSet(e,job){if(!EL().jobs[job]||job==='recruit'||job===e.job)return'选一个别的职业';{const lk=elJobLock(e,job);if(lk)return lk}const c=e.job==='recruit'?EL().jobSilver:EL().jobChange;if((META.wallet.银币||0)<c)return`银币不够(需要 ${c})`;
+// 转职花费（0.12.1）：一阶职业只花银币（新兵第一次 jobSilver，之后 jobChange）；二阶职业 t2 = 银币 + 那张地图的核心特产
+function elJobCost(e,job){const J=EL().jobs[job]||{},s=e.job==='recruit'?EL().jobSilver:EL().jobChange;if(!J.t2)return{silver:s};const T=J.t2,tr=CFG.wares.tiers[Math.min(CFG.wares.tiers.length-1,mapTierOf(T.map))],M=tr&&tr.maps&&tr.maps[T.map];
+  return{silver:T.silver,ware:M&&M.core||null,n:T.n}}
+function elJobSet(e,job){if(!EL().jobs[job]||job==='recruit'||job===e.job)return'选一个别的职业';{const lk=elJobLock(e,job);if(lk)return lk}const C=elJobCost(e,job),c=C.silver,W=META.wares||(META.wares={});if((META.wallet.银币||0)<c)return`银币不够(需要 ${c})`;
+  if(C.ware&&(W[C.ware]||0)<C.n)return`${CFG.wares.items[C.ware].name}不够(需要 ${C.n}，有 ${Math.floor(W[C.ware]||0)})`;if(C.ware)W[C.ware]-=C.n;
   META.wallet.银币-=c;e.job=job;e.ea=e.ea.filter(k=>elSkOk(e,k));e.ep=e.ep.filter(k=>elSkOk(e,k));elGearFix(e);elAutoSk(e,true);saveMeta();return null}
 // —— 技能 ——
 const elFamOk=(e,S)=>!S.fam||S.fam.some(f=>elJobD(e).fam.includes(f));
 const elNeedOk=S=>!S.need||!!(META.heroes[S.need]&&META.heroes[S.need].owned&&(META.heroes[S.need].star||1)>=5);
 const elSkOk=(e,k)=>{const S=EL().skills[k];return!!S&&elFamOk(e,S)&&elNeedOk(S)};
 const elSkAvail=e=>Object.keys(EL().skills).filter(k=>elSkOk(e,k));
-const elLearnHours=(e,lv,key)=>{const base=EL().learnH[lv-1]||24,W=key!=null?elInsWho(key):null,tc=W&&W.e?elStT(W.e,'teach'):0;return base/(1+(elTM().elTeach||0)+tc)*Math.max(0.3,1-elStT(e,'learnK'))};   // 0.12.0 好学 / 天才（learnK）、教官的教学法（teach）
+const elLearnTierK=(e,lv)=>1;   // 0.12.1 低等级学高级技能 / 高等级学低等级技能的倍率（规则待用户定）
+const elLearnHours=(e,lv,key)=>{const base=(EL().learnBase||6)*elLearnTierK(e,lv),W=key!=null?elInsWho(key):null,tc=W&&W.e?elStT(W.e,'teach'):0;return base/(1+(elTM().elTeach||0)+tc)*Math.max(0.3,1-elStT(e,'learnK'))};   // 0.12.0 好学 / 天才（learnK）、教官的教学法（teach）
 // 0.11.4（用户定）技能最高等级跟着科技「精英训练」的等级（至少 Ⅰ 级，最高 skMax）
 const EL_RN=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ'],elRoman=n=>EL_RN[n-1]||String(n),elSkMax=()=>clamp(elTM().elTrain||0,1,EL().skMax);
 // 学技能（0.12.0 用户定：要在教官那里学）：找正在教这个技能、有空位、等级够的教官；没有就找一位闲着（没学员）、会这个技能且等级够的，让他改教这个
@@ -61508,9 +61545,9 @@ function elLearnDone(e){const L=e.learn;if(!L)return;e.sk[L.k]=Math.max(e.sk[L.k
 const elTeachCap=ins=>ins>(EL().insFree||4)?Math.min(ins,EL().skLvK.length):Math.min(ins,elSkMax());
 function elClassCands(key){const m=elSt(),k=m.tch[String(key)];if(!k)return[];const ins=elInsSkills(key)[k]||0,cap=elTeachCap(ins);
   return m.list.filter(e=>!e.learn&&elSkOk(e,k)&&(e.sk[k]||0)+1<=cap)}
-function elClassStart(key,ids){const m=elSt(),k=m.tch[String(key)];if(!elInsHas(key))return'不是教官';if(!k)return'先选要教的技能';if(elStudents(key).length)return'这一批还没学完';if(m.irq[String(key)])return'这位教官要退休了，不再开课';
-  const C=elClassCands(key),L=(ids||[]).map(id=>C.find(e=>e.id===id)).filter(Boolean);if(!L.length)return'先挑学生';if(L.length>elSeats())return`一批至多 ${elSeats()} 名(科技「阶梯教室」增加)`;
-  const lv=Math.max(...L.map(e=>(e.sk[k]||0)+1)),now=metaNow();for(const e of L)e.learn={k,lv:(e.sk[k]||0)+1,end:now+elLearnHours(e,lv,key)*3600000,ins:key};saveMeta();return null}   // 0.12.0 每人按自己的学习速度（好学、天才）各自学完
+function elClassStart(key,ids){const m=elSt(),k=m.tch[String(key)];if(!elInsHas(key))return'不是教官';if(!k)return'先选要教的技能';if(m.irq[String(key)])return'这位教官要退休了，不再开课';
+  const C=elClassCands(key),L=(ids||[]).map(id=>C.find(e=>e.id===id)).filter(Boolean),n0=elStudents(key).length;if(!L.length)return'先挑学生';if(n0+L.length>elSeats())return`至多 ${elSeats()} 名学员(科技「阶梯教室」增加)，现在还剩 ${Math.max(0,elSeats()-n0)} 个空位`;
+  const now=metaNow();for(const e of L){const lv=(e.sk[k]||0)+1;e.learn={k,lv,end:now+elLearnHours(e,lv,key)*3600000,ins:key}}saveMeta();return null}   // 0.12.1（用户定）每人按自己要学的那一级算时间，学完就离开课堂；课上有空位随时能加人   // 0.12.0 每人按自己的学习速度（好学、天才）各自学完
 const elClassEnd=key=>Math.max(0,...elStudents(key).map(e=>e.learn.end));
 const elClassRushCost=key=>{const S=elStudents(key);return S.length?Math.max(1,Math.ceil((elClassEnd(key)-metaNow())/3600000))*EL().rushSilver:0};
 function elClassRush(key){const S=elStudents(key);if(!S.length)return'没有在上的课';const c=elClassRushCost(key);if((META.wallet.银币||0)<c)return`银币不够(需要 ${c})`;META.wallet.银币-=c;for(const e of S.slice())elLearnDone(e);saveMeta();return null}
@@ -61609,6 +61646,9 @@ function elStDesc(st){const pc=x=>Math.round(Math.abs(x)*1000)/10+'%',sg=x=>x<0?
     else if(k==='leadA')o.push(`${v[0]} 格内的士兵造成伤害 +${pc(v[1])}(同类光环只生效一个)`);
     else if(k==='songA')o.push(`${v[0]} 格内的友军攻速 +${pc(v[1])}、攻击 +${pc(v[2])}(同类光环只生效一个)`);
     else if(k==='hitSh')o.push(`受到攻击时获得 ${pc(v[1])} 最大生命的护盾，冷却 ${v[0]} 秒`);
+    else if(k==='echo')o.push(`歌曲结束后，效果减半再持续 ${v[0]} 秒`);
+    else if(k==='alchK')o.push(`治疗量、受到的治疗、自己的酸蚀 / 毒 / 火焰伤害 +${pc(v)}`);
+    else if(k==='natA')o.push(`召唤物的属性、移速 +${pc(v)}`);
     else if(k==='teach')o.push(`当教官时学生学得快 ${pc(v)}`);
     else if(k==='scatter')o.push(`射击额外打 ${v[0]} 个附近的亡灵，${pc(v[2])} 伤害`);
     else if(k==='fix')o.push(`${v[0]} 格内的建筑每秒回复 ${pc(v[1])} 生命上限`);
@@ -62042,6 +62082,8 @@ feat('elite',{on:()=>!!(G&&((G.elites&&G.elites.length)||elMemOn())),hooks:{
       if(S.xd){if(!(u.elXdU>G.time))u.elXdN=0;u.elXdN=Math.min(S.xd[2]/S.xd[0],(u.elXdN||0)+1);u.elXdU=G.time+S.xd[1];UF_DR+=u.elXdN*S.xd[0]}
       if(S.stk){if(!(u.elStkU>G.time))u.elStkN=0;u.elStkN=Math.min(S.stk[2],(u.elStkN||0)+1);u.elStkU=G.time+S.stk[1];UF_DR+=u.elStkN*S.stk[0]}UF_DR+=elDr2(u,S);if(S.hitSh&&dmg>0)elHitSh(u,S.hitSh)}}return dmg},   // stk：0.12.0 家族特性「每次受伤叠减伤」（不免控）
   ccInF:(u,t)=>u&&u.elite&&u.d.elS?(u.d.elS.xd?0:u.d.elS.ccR?t*Math.max(0,1-u.d.elS.ccR):t):t,   // ccR：0.12.0 训练「意志训练」
+  healInF:(u,amt,src)=>{const a=u&&u.elite&&u.d.elS&&u.d.elS.alchK,b=src&&src!==u&&src.elite&&src.d&&src.d.elS&&src.d.elS.alchK;return amt*(1+(a||0)+(b||0))},   // 药剂学（0.12.1）：受到的治疗、发出的治疗
+  dmgInE:(i,dmg,o)=>{const h=o&&o.hk,k=h&&h.elite&&h.d.elS&&h.d.elS.alchK;return k&&o.mix&&(o.mix.acid||o.mix.poison||o.mix.fire)?dmg*(1+k):dmg},   // 药剂学：自己的酸蚀、毒、火焰伤害
   afterHitE:(i,dmg,o)=>{const h=o&&o.hk;if(h&&h.elite&&!E.alive[i]&&h.d.elS&&h.d.elS.killHeal&&!h.dead)healF(h,h.maxHp*h.d.elS.killHeal)}}});   // killHeal：0.12.0 特性「嗜血」
 // 克劳德自己的增伤（heroRecalc 末尾，和精英一起）
 function elMemRecalc(h){if(h.id==='scribe')h.gDmg+=elMemK()}
@@ -62126,6 +62168,10 @@ function elFx2Tick(h,dt,S){
     bkCast({k:'rect',len:S.jav[1],w:0.8},{who:'E',maxN:3,crit:h.crit,pen:(h.ws.pen||0)+2,mix:{pierce:1},fx:null},bkCH(h,skV(h,0,S.jav[2]),h.x,h.y,ang));h.facing=Math.cos(ang)>=0?1:-1;h.thrust=0.15;sfx('swing',h.x,h.y)}}   // 标枪
   if(S.imm){if(h.immN>0)h.elImU=0;else if(!h.elImU)h.elImU=T+S.imm[0];else if(T>=h.elImU){h.immN=1;h.immT=1e9;h.elImU=0}}   // 圣光护盾：每隔一段时间免疫下一次伤害
   if(S.decoy&&T>=(h.elDcU||0)&&h.hp<h.maxHp*S.decoy[1]&&h.layer!==1&&SK.decoyBomb){h.elDcU=T+S.decoy[0];SK.decoyBomb.cast(h,elHeroSkP('decoyBomb'))}   // 金蝉脱壳
+  if(S.echo){const e0=S.echo[0],k=S.echo[1];if(h.elSongU>0&&T>=h.elSongU&&T<h.elSongU+e0&&h.elSongE)bfAuraF(h.x,h.y,h.elSongR*16,'elSongA',elEffOf(EL_SONG_E,'h|'+h.elSongE.aspd*k+'|'+h.elSongE.atk*k,()=>({aspd:h.elSongE.aspd*k,atk:h.elSongE.atk*k})));
+    if(h.elWarU>0&&T>=h.elWarU&&T<h.elWarU+e0&&h.elWarE)bfAuraF(h.x,h.y,h.elWarR*16,'elWarS',elEffOf(EL_SONG_E,'w|'+h.elWarE.mspd*k+'|'+h.elWarE.dr*k,()=>({mspd:h.elWarE.mspd*k,dr:h.elWarE.dr*k})),{heroes:false})}   // 余音：歌唱完后效果减半再持续
+  if(h.elThz&&T<h.elThz.u&&T>=h.elThz.n){const Z=h.elThz;Z.n+=1;bkCast({k:'c',r:Z.r},{who:'E',magic:1,mix:{earth:1},fx:null},bkCH(h,Z.d,Z.x,Z.y,0));if(inViewPt(Z.x,Z.y))addFx({k:'ring',x:Math.round(Z.x),y:Math.round(Z.y-4),r:Z.r*16,life:0.3,c:'#6aa84a'})}   // 荆棘缠绕：每秒一次
+  if(h.elRjU>T&&T>=h.elRjN){h.elRjN+=1;const R=h.elRjR*16;for(const u of G.friends)if(!u.dead&&Math.hypot(u.x-h.x,u.y-h.y)<=R&&u.hp<u.maxHp){healF(u,u.maxHp*h.elRjP);if(inViewPt(u.x,u.y))healFx(u.x,u.y-10,'#9ae07a')}}   // 回春术：每秒一次
   if(h.elSongU>T){bfAuraF(h.x,h.y,h.elSongR*16,'elSongA',h.elSongE);if(inViewPt(h.x,h.y)&&Math.random()<0.5)pp(h.x+vr(-6,6),h.y-14,0,vr(-6,6),-16,vr(5,9),0,vr(0.6,1),vpick(['#f3d47c','#e8a8d8','#a8d8f0']),2,0,1)}   // 赞颂之歌（0.12.1）：唱歌期间刷新光环（友军含英雄；同 id 不叠加）
   if(S.cmdA)bfAuraF(h.x,h.y,S.cmdA[0]*16,'elCmdA',elEffOf(EL_CMD_E,S.cmdA[1],()=>({aspd:S.cmdA[1]})),{heroes:false});   // 统御：同 id 不叠加
   if(S.wallA)bfAuraF(h.x,h.y,S.wallA[0]*16,'elWallA',elEffOf(EL_WALL_E,S.wallA[1],()=>({dr:S.wallA[1]})));
@@ -62186,9 +62232,9 @@ function elHitSh(u,v){if(G.time<(u.elHsU||0))return;u.elHsU=G.time+v[0];const a=
 function elDr2(u,S){let x=(u.elCrowdDR||0)+(u.elFormDR||0);if(S.lowDr&&u.hp<u.maxHp*S.lowDr[0])x+=S.lowDr[1];if(S.home&&G.invade)x+=S.home;return x}
 // 召唤狼群（0.12.1 用户定，限定德鲁伊）：召唤 p.n 只森林狼（同时最多 p.n 只），属性 × p.k（技能等级系数）；狼借英雄艾伦尼塔的 druidWolf
 const elWolfN=h=>{let n=0;for(let i=0;i<G.soldiers.length;i++){const s=G.soldiers[i];if(!s.dead&&s.summon&&s.owner===h&&s.type==='druidWolf')n++}return n};
-SK.elWolves={cast(h,p){const k=Math.min(p.n,p.n-elWolfN(h));if(k<=0)return false;const m=p.k||1;
+SK.elWolves={cast(h,p){const k=Math.min(p.n,p.n-elWolfN(h));if(k<=0)return false;const na=(h.d&&h.d.elS&&h.d.elS.natA)||0,m=(p.k||1)*(1+na);   // na：自然亲和（0.12.1）召唤物属性、移速
     for(let q=0;q<k;q++){const a=q/k*Math.PI*2+vr(0,1);let x=clamp(h.x+Math.cos(a)*14,8,MW-8),y=clamp(h.y+Math.sin(a)*10,8,MH-8);if(!friendPassPt(x,y)){x=h.x;y=h.y}
-      const u=makeSoldier({level:1,x,y,slots:0},p.unit||'druidWolf');u.camp=null;u.owner=h;u.summon=true;u.pet=true;u.x=x;u.y=y;u.statMul=m;u.baseHp=u.c.hp*m;u.maxHp=u.baseHp*(1+pm.unitHp+TM.uHp);u.hp=u.maxHp;G.soldiers.push(u);
+      const u=makeSoldier({level:1,x,y,slots:0},p.unit||'druidWolf');u.camp=null;u.owner=h;u.summon=true;u.pet=true;u.x=x;u.y=y;u.statMul=m;if(na)bfAdd(u,'elNat',elEffOf(EL_SONG_E,'N|'+na,()=>({mspd:na})),9999);u.baseHp=u.c.hp*m;u.maxHp=u.baseHp*(1+pm.unitHp+TM.uHp);u.hp=u.maxHp;G.soldiers.push(u);
       if(inViewPt(x,y))for(let i=0;i<8;i++)pp(x+vr(-6,6),y,0,vr(-10,10),vr(-6,6),vr(6,14),0,vr(0.4,0.8),vpick(LEAF_C),2,2,1)}
     sfx('summon');return true},
   ai(h,p){return G.phase==='wave'&&elWolfN(h)<p.n&&countNear(h.x,h.y,10*16)>=1?{}:null}};
@@ -62196,6 +62242,32 @@ SK.elWolves={cast(h,p){const k=Math.min(p.n,p.n-elWolfN(h));if(k<=0)return false
 SK.elSong={cast(h,p){h.elSongU=G.time+p.dur;h.elSongR=p.r;h.elSongE=elEffOf(EL_SONG_E,p.aspd+'|'+p.atk,()=>({aspd:p.aspd,atk:p.atk}));
     if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-4),r:p.r*16,life:0.6,c:'#f3d47c'});sfx('zap',h.x,h.y);return true},
   ai(h,p){if(G.phase!=='wave'||h.elSongU>G.time)return null;let n=0;const R=p.r*16;for(const u of G.friends)if(u!==h&&!u.dead&&Math.hypot(u.x-h.x,u.y-h.y)<=R)n++;return n>=2&&countNear(h.x,h.y,8*16)>=1?{}:null}};
+// —— 0.12.1 新职业的第二批技能（数据 data/el_jobs2）——
+const elAlchK=h=>1+((h.d&&h.d.elS&&h.d.elS.alchK)||0);
+const elHeavyE=j=>{const c=CFG.enemies[ETYPES[E.t[j]]]||{};return c.tier>=4||!!c.heavyM||!!c.siege};
+SK.elLullaby={cast(h,p){const R=p.r*16;for(let j=0;j<E.n;j++){if(!E.alive[j]||Math.hypot(E.x[j]-h.x,E.y[j]-h.y)>R)continue;frostE(j,{f:p.slow*(elHeavyE(j)?0.5:1),t:p.t})}
+    if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-4),r:R,life:0.7,c:'#a8c8f0'});sfx('zap',h.x,h.y);return true},
+  ai(h,p){return G.phase==='wave'&&countNear(h.x,h.y,p.r*16)>=3?{}:null}};
+SK.elWarsong={cast(h,p){h.elWarU=G.time+p.dur;h.elWarR=p.r;h.elWarE=elEffOf(EL_SONG_E,'W|'+p.mspd+'|'+p.dr,()=>({mspd:p.mspd,dr:p.dr}));bfAuraF(h.x,h.y,p.r*16,'elWarS',h.elWarE,{dur:p.dur,heroes:false});
+    if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-4),r:p.r*16,life:0.6,c:'#e0a050'});sfx('zap',h.x,h.y);return true},
+  ai(h,p){if(G.phase!=='wave')return null;let n=0;const R=p.r*16;for(const s of G.soldiers)if(!s.dead&&Math.hypot(s.x-h.x,s.y-h.y)<=R)n++;return n>=3&&countNear(h.x,h.y,8*16)>=2?{}:null}};
+SK.elMolotov={cast(h,p,a){const c=clampAim(h,a,p.range*16);addFirePit(c.x,c.y,{r:p.r,dur:p.dur,dps:skD(h,p)*elAlchK(h)},false);h.facing=c.x>=h.x?1:-1;sfx('boom',c.x,c.y);return true},
+  ai(h,p){const c=densest(h.x,h.y,p.range*16);return aiN(h,p,c,3)?{x:c.x,y:c.y}:null}};
+const elAtkOf=u=>u.isHero?((u.ws&&u.ws.dmg)||0)*(1+(u.atkB||0)):((u.c&&(u.c.atk||(u.c.melee&&u.c.melee.dmg)||0))||0)*(u.statMul||1);
+SK.elElixir={cast(h,p){const R=p.r*16;let b=null,bv=-1;for(const u of G.friends){if(u.dead||Math.hypot(u.x-h.x,u.y-h.y)>R)continue;const v=elAtkOf(u);if(v>bv){bv=v;b=u}}if(!b)return false;
+    bfAdd(b,'elElix',elEffOf(EL_SONG_E,'E|'+p.atk,()=>({atk:p.atk})),p.dur);healFx(b.x,b.y-10,'#e06ad0');sfx('pick',h.x,h.y);return true},
+  ai(h,p){return G.phase==='wave'&&countNear(h.x,h.y,9*16)>=2?{}:null}};
+SK.elCorrode={cast(h,p,a){const c=clampAim(h,a,p.range*16),R=p.r*16,eff=elEffOf(EL_SONG_E,'C|'+p.def,()=>({def:-p.def}));
+    bkCast({k:'c',r:p.r},{who:'E',magic:1,mix:{acid:1},fx:null},bkCH(h,skD(h,p),c.x,c.y,0));
+    for(let j=0;j<E.n;j++){if(!E.alive[j]||Math.hypot(E.x[j]-c.x,E.y[j]-c.y)>R)continue;bfAddE(j,'elCorr',eff,p.dur,{debuff:true});E.mdU[j]=Math.max(E.mdU[j],G.time+p.dur);E.mdP[j]=Math.max(E.mdP[j],p.mdP||0.2)}
+    if(inViewPt(c.x,c.y))addFx({k:'ring',x:Math.round(c.x),y:Math.round(c.y-4),r:R,life:0.5,c:'#9ad040'});sfx('zap',c.x,c.y);return true},
+  ai(h,p){const c=densest(h.x,h.y,p.range*16);return aiN(h,p,c,3)?{x:c.x,y:c.y}:null}};
+SK.elThorns={cast(h,p,a){const j=nearestEnemy(a?a.x:h.x,a?a.y:h.y,p.range*16*1.1,true),x=j>=0?E.x[j]:a.x,y=j>=0?E.y[j]:a.y;
+    bkCast({k:'c',r:p.r},{who:'E',magic:1,mix:{earth:1},fx:null,st:{root:p.root}},bkCH(h,skD(h,p),x,y,0));h.elThz={x,y,r:p.r,d:skD(h,p),n:G.time+1,u:G.time+p.dur+0.01};
+    if(inViewPt(x,y))addFx({k:'ring',x:Math.round(x),y:Math.round(y-4),r:p.r*16,life:0.5,c:'#4c8a3c'});sfx('boom',x,y);return true},
+  ai(h,p){const j=nearestEnemy(h.x,h.y,p.range*16,true);return j>=0?{x:E.x[j],y:E.y[j]}:null}};
+SK.elRejuv={cast(h,p){h.elRjU=G.time+p.dur;h.elRjN=G.time+1;h.elRjR=p.r;h.elRjP=p.pct;if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-4),r:p.r*16,life:0.6,c:'#9ae07a'});sfx('zap',h.x,h.y);return true},
+  ai(h,p){if(G.phase!=='wave')return null;let n=0;const R=p.r*16;for(const u of G.friends)if(!u.dead&&u.hp<u.maxHp*0.8&&Math.hypot(u.x-h.x,u.y-h.y)<=R)n+=u.isHero?2:1;return n>=3?{}:null}};
 
 // ---------- 0.12.0 精英的样貌（数据 data/el_look.js）：生成、遗传、合成小人 ----------
 // x.lk = {sk, hr, ey, ear, b}（下标）。没有的（老存档、配偶）第一次用到时补：有父母的按父母遗传，没有的按地区文化圈 + 家族出
@@ -64258,7 +64330,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.1f',GAME_TAG='测试版',GAME_CODE=163,GAME_BUILD="77da171",GAME_BUILT=1792981985204,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.1g',GAME_TAG='测试版',GAME_CODE=163,GAME_BUILD="7e2362c",GAME_BUILT=1792982982389,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -68263,10 +68335,15 @@ function elSkHTML(e){const sl=elSlots(e),N=elRankNeed(e),av=elSkAvail(e);
     <div class="elrow">${elBtn('elxauto1',e.id,'一键搭配技能',{ti:'只给这个人按技能等级装配(锁定了也能用)'})}${elBtn('elxlock',e.id,e.lock?'已锁定配置':'锁定配置',{on:e.lock,ti:'锁定后，精英页的一键装备、一键搭配技能不再改这个人的装备和技能'})}</div>${L}
     <h5>已学会 · 主动 ${e.ea.length}/${sl[0]} · 被动 ${e.ep.length}/${sl[1]}</h5><div class="elsk">${grp(got,false)+grp(got,true)||'<p class="meta">还没学会技能。</p>'}</div>
     <h5>没学会</h5><div class="elsk">${grp(no,false)+grp(no,true)||'<p class="meta">能学的都学会了。</p>'}</div>`}
-function elJobHTML(e){const J=EL().jobs,c=e.job==='recruit'?EL().jobSilver:EL().jobChange;
-  return`<p class="meta">现在：<b>${elJobD(e).name}</b>。转职花 ${c} 银币(新兵第一次转职 ${EL().jobSilver}，之后换职业 ${EL().jobChange})；换职业后，新职业用不了的技能、装备会卸下(技能等级保留)。</p>
-    <div class="elgrid">${Object.keys(J).filter(k=>k!=='recruit').map(k=>{const j=J[k];   // 0.11.4（用户定）平铺：名字在上、小人在中、转职按钮在下
-      return`<div class="hst${k===e.job?' on':''}" title="生命 ${j.hp} · 物攻 ${j.atk} · 法攻 ${j.ap} · 物防 ${j.def} · 移速 ${j.speed}"><b>${j.name}</b><img class="gp" alt="" src="${heroIcon(elSprLk({job:k,sex:e.sex,lk:elLook(e)}),2)}"><span class="meta">${j.fam.map(f=>EL().famName[f]).join(' / ')}<br>${j.weapon.map(t=>CFG.weaponTypes[t].name).join('、')}${j.pasX?`<br>被动技能位 +${j.pasX}`:''}${j.st?'<br>'+elStDesc(j.st):''}</span>${k===e.job?elBtn('elxjob',e.id+':'+k,'当前',{dis:true}):elJobLock(e,k)?`<span class="meta warn">${elJobLock(e,k)}</span>`+elBtn('elxjob',e.id+':'+k,'转职',{dis:true}):EL_JOBASK===k?elBtn('elxjobok',e.id+':'+k,`确认(${c} 银币)`,{on:true})+elBtn('elxjob',e.id+':','取消'):elBtn('elxjob',e.id+':'+k,'转职')}</div>`}).join('')}</div>`}   // 0.12.0（用户定）转职要确认
+// 转职（0.12.1 用户定：按职业类型分页签；一阶职业只花银币，二阶职业要更多银币 + 地区特产）
+let EL_JOBCAT='';
+function elJobCostHTML(e,k){const C=elJobCost(e,k),W=META.wares||{},s=(META.wallet.银币||0)>=C.silver,cls=b=>b?'elok':'elng';
+  return`<span class="elcosts"><span class="elcost">${typeof priceTag==='function'?priceTag(C.silver):C.silver+' 银币'}</span>${C.ware?`<span class="elcost" title="${CFG.wares.items[C.ware].name}">${wareIco(C.ware)}<b class="${cls((W[C.ware]||0)>=C.n)}">${Math.floor(W[C.ware]||0)} / ${C.n}</b></span>`:''}</span>`}
+function elJobHTML(e){const J=EL().jobs,CAT=EL().jobCat,cur=CAT.find(c=>c[2].includes(e.job));if(!EL_JOBCAT||!CAT.some(c=>c[0]===EL_JOBCAT))EL_JOBCAT=(cur||CAT[0])[0];const L=CAT.find(c=>c[0]===EL_JOBCAT)[2].filter(k=>J[k]);
+  const tabs=`<div class="elrow">${CAT.map(([k,n])=>elBtn('elxjcat',e.id+':'+k,n,{on:k===EL_JOBCAT})).join('')}</div>`;
+  return`<p class="meta">现在：<b>${elJobD(e).name}</b>。一阶职业转职花银币(新兵第一次 ${EL().jobSilver}，之后换职业 ${EL().jobChange})；二阶职业要更多银币和地区特产。换职业后，新职业用不了的技能、装备会卸下(技能等级保留)。</p>${tabs}
+    <div class="elgrid">${L.map(k=>{const j=J[k],lk=elJobLock(e,k);   // 0.11.4（用户定）平铺：名字在上、小人在中、转职按钮在下
+      return`<div class="hst${k===e.job?' on':''}" title="生命 ${j.hp} · 物攻 ${j.atk} · 法攻 ${j.ap} · 物防 ${j.def} · 移速 ${j.speed}"><b>${j.name}${j.t2?' <span class="optag">二阶</span>':''}</b><img class="gp" alt="" src="${heroIcon(elSprLk({job:k,sex:e.sex,lk:elLook(e)}),2)}"><span class="meta">${j.fam.map(f=>EL().famName[f]).join(' / ')}<br>${j.weapon.map(t=>CFG.weaponTypes[t].name).join('、')}${j.pasX?`<br>被动技能位 +${j.pasX}`:''}${j.st?'<br>'+elStDesc(j.st):''}</span>${k===e.job?'':elJobCostHTML(e,k)}${k===e.job?elBtn('elxjob',e.id+':'+k,'当前',{dis:true}):lk?`<span class="meta warn">${lk}</span>`+elBtn('elxjob',e.id+':'+k,'转职',{dis:true}):EL_JOBASK===k?elBtn('elxjobok',e.id+':'+k,'确认转职',{on:true})+elBtn('elxjob',e.id+':','取消'):elBtn('elxjob',e.id+':'+k,'转职')}</div>`}).join('')}</div>`}   // 0.12.0（用户定）转职要确认
 function elLogHTML(e){const g=e.log;
   return`${e.st?`<p class="meta">${e.st==='dead'?'已故':'已退休'} · ${elAgeTxt(e)} ${elBtn('elxpop','tree:'+e.id,'族谱')}</p>`:''}<p>出战 <b>${g.n}</b> 次 · 击杀 <b>${g.k}</b> · 输出 <b>${numK(g.d)}</b> · 承伤 <b>${numK(g.t)}</b> · 治疗 <b>${numK(g.h)}</b> · 控制 <b>${f1g(g.c)}</b> 秒</p>
     <table class="ellog"><tr><th>时间</th><th>地图</th><th>波</th><th>击杀</th><th>输出</th><th>承伤</th><th>治疗</th><th>控制</th><th>功勋</th></tr>${g.L.map(L=>L.birth?`<tr><td>${new Date(L.at).toLocaleString()}</td><td colspan="8">生下了 <b>${(elById(L.birth)&&elName(elById(L.birth)))||L.bn||''}</b></td></tr>`:`<tr><td>${new Date(L.at).toLocaleString()}${L.dead?' (倒下)':''}</td><td>${CFG.maps[L.map]?CFG.maps[L.map].name:''}</td><td>${L.w}</td><td>${L.k}</td><td>${numK(L.d)}</td><td>${numK(L.t)}</td><td>${numK(L.h)}</td><td>${L.c}</td><td>+${L.m}</td></tr>`).join('')}</table>`}
@@ -68315,21 +68392,21 @@ const elSkIco=k=>{const S=EL().skills[k];return S?skIcon(k)||(S.ico?skIcon(S.ico
 const elSkI=(k,cls)=>{const S=EL().skills[k];return S?`<img class="${cls||'eli'}" alt="" src="${elSkIco(k)}">`:''};
 function elInsCard(key){const W=elInsWho(key),m=elSt(),cur=m.tch[String(key)],stu=elStudents(key),S=elInsSkills(key),K=String(key);if(!W)return'';
   const img=W.hero?heroIcon(W.hero,1):elIcon(W.e),sub=W.hero?`${CFG.heroes[W.hero].title||''} · ${Math.max(1,META.heroes[W.hero].star||1)} 星`:`${Math.floor(W.e.age)} 岁 · ${elJobD(W.e).name}`;
-  const run=stu.length>0,C=run?[]:elClassCands(key),pk=(EL_PK[K]||[]).filter(id=>C.some(e=>e.id===id));EL_PK[K]=pk;
+  const run=stu.length>0,free=Math.max(0,elSeats()-stu.length),C=elClassCands(key),pk=(EL_PK[K]||[]).filter(id=>C.some(e=>e.id===id)).slice(0,free);EL_PK[K]=pk;   // 0.12.1（用户定）学完就离开课堂，空位随时能加人
   const seat=x=>x?`<div class="elseat"><img alt="" src="${elIcon(x)}"><span>${elName(x)}</span>${x.learn?`<i>${elRoman(x.learn.lv)}</i>`:`<i>${elRoman((x.sk[cur]||0)+1)}</i>`}</div>`:'<div class="elseat emp">空位</div>';
-  const who=run?stu:pk.map(id=>elById(id)),seats=[];for(let i=0;i<elSeats();i++)seats.push(seat(who[i]));
+  const who=stu.concat(pk.map(id=>elById(id))),seats=[];for(let i=0;i<elSeats();i++)seats.push(seat(who[i]));
   const left=run?Math.max(0,Math.ceil((elClassEnd(key)-metaNow())/60000)):0;
   return`<div class="elinsc"><div class="elinsl"><div class="eltop2"><img alt="" src="${img}"><div><b>${W.name}</b>${W.e?elSexI(W.e):''}<br><span class="meta">${elInsKind(key)} · ${sub}</span></div></div>
       ${m.irq[K]?'<span class="warn">教完这一批就退休</span>':''}<span class="meta">能教(点了换教的技能${run?'；上课时不能换':''})：</span>
       <div class="elrow">${Object.keys(S).map(k=>`<button class="px sm elski${cur===k?' on':''}" type="button" data-act="elxitch" data-v="${key}|${k}" title="${EL().skills[k].name} ${elRoman(S[k])} 级：${elSkDesc(k,S[k])}"${run&&cur!==k?' disabled':''}>${elSkI(k)}<i>${elRoman(S[k])}</i></button>`).join('')||'<span class="meta">没有能教的技能</span>'}</div>
       <div class="elrow">${elBtn('elxpop','ins:'+key,'详情')}<span class="elbr">${elBtn('elxioff',key,'撤换',{dis:run,ti:run?'正在上课，下课后才能撤换':'撤下这位教官(不退休)，空出位子'})}</span></div></div>
-    <div class="elinsr"><div class="elrow">${cur?`${elSkI(cur,'elski2')}<b>${EL().skills[cur].name}</b>`:'<span class="meta">还没选要教的技能</span>'}<span class="meta">${run?`上课中，还要 ${left} 分钟`:`学生 ${pk.length}/${elSeats()}`}</span></div>
+    <div class="elinsr"><div class="elrow">${cur?`${elSkI(cur,'elski2')}<b>${EL().skills[cur].name}</b>`:'<span class="meta">还没选要教的技能</span>'}<span class="meta">${run?`上课中 ${stu.length} 人，最晚的还要 ${left} 分钟 · `:''}${pk.length?`新加 ${pk.length} 人 · `:''}空位 ${free-pk.length}/${elSeats()}</span></div>
       <div class="elseats">${seats.join('')}</div>
-      <div class="elrow">${run?elBtn('elxcrush',key,`银币加速(${elClassRushCost(key)})`):cur?elBtn('elxpop','ipick:'+key,`挑学生(能来 ${C.length} 人)`)+elBtn('elxcls',key,`开课(${pk.length?f1g(elLearnHours(elById(pk[0]),Math.max(...pk.map(id=>{const x=elById(id);return(x.sk[cur]||0)+1})))):'—'} 小时)`,{on:pk.length>0,dis:!pk.length}):''}</div></div></div>`}
+      <div class="elrow">${run?elBtn('elxcrush',key,`银币加速(${elClassRushCost(key)})`):''}${cur&&free>0?elBtn('elxpop','ipick:'+key,`挑学生(能来 ${C.length} 人)`)+elBtn('elxcls',key,`${run?'加入':'开课'}(${pk.length?f1g(Math.max(...pk.map(id=>{const x=elById(id);return elLearnHours(x,(x.sk[cur]||0)+1,key)}))):'—'} 小时)`,{on:pk.length>0,dis:!pk.length}):''}</div></div></div>`}
 // 挑学生的弹窗
 function elPickHTML(key){const m=elSt(),K=String(key),cur=m.tch[K],C=elClassCands(key),pk=EL_PK[K]||[];if(!cur)return'<p class="meta">先选要教的技能。</p>';
-  return`<p class="meta">教 <b>${EL().skills[cur].name}</b>(教官 ${elRoman(elInsSkills(key)[cur]||0)} 级)：点人加入 / 移出这一批(至多 ${elSeats()} 名)；没学过的学 Ⅰ 级，学过的升一级。</p>
-    <div class="elroll">${C.map(e=>{const on=pk.includes(e.id);return`<div><img class="elpor2" alt="" src="${elIcon(e)}"><b>${elName(e)}</b>${elSexI(e)}<span class="meta">${elJobD(e).name} · ${(e.sk[cur]||0)?`${elRoman(e.sk[cur])} → ${elRoman(e.sk[cur]+1)} 级`:'学 Ⅰ 级'}</span><span class="elbr">${elBtn('elxpk',key+'|'+e.id,on?'已选':'选',{on,dis:!on&&pk.length>=elSeats()})}</span></div>`}).join('')||'<p class="meta">现在没有能来上这门课的精英(都学满了、在学别的，或者职业学不了)。</p>'}</div>
+  return`<p class="meta">教 <b>${EL().skills[cur].name}</b>(教官 ${elRoman(elInsSkills(key)[cur]||0)} 级)：点人加入 / 移出(还剩 ${Math.max(0,elSeats()-elStudents(key).length)} 个空位)；学完的人自己离开课堂；没学过的学 Ⅰ 级，学过的升一级。</p>
+    <div class="elroll">${C.map(e=>{const on=pk.includes(e.id);return`<div><img class="elpor2" alt="" src="${elIcon(e)}"><b>${elName(e)}</b>${elSexI(e)}<span class="meta">${elJobD(e).name} · ${(e.sk[cur]||0)?`${elRoman(e.sk[cur])} → ${elRoman(e.sk[cur]+1)} 级`:'学 Ⅰ 级'}</span><span class="elbr">${elBtn('elxpk',key+'|'+e.id,on?'已选':'选',{on,dis:!on&&pk.length>=elSeats()-elStudents(key).length})}</span></div>`}).join('')||'<p class="meta">现在没有能来上这门课的精英(都学满了、在学别的，或者职业学不了)。</p>'}</div>
     <div class="elrow"><span class="elbr">${elBtn('elxpx','','好了',{on:true})}</span></div>`}
 function elKidsHTML(){const m=elSt(),F=EL().family,n=m.ins.length,mx=elInsMax(),kidT=m.ins.some(key=>!String(key).startsWith('h:'));
   const free=mx-n,bench=m.staff.filter(x=>!elInsHas(x.id)),empt=free>0?`<div class="emp"><span>空位 ×${free}</span><div class="elrow">${elBtn('elxsub','roll','从名册任命')}${elBtn('elxpop','hpick:0','任命英雄')}${elBtn('elxsub','rec','招募教官')}</div>${bench.length?`<div class="elrow"><span class="meta">撤下的教官：</span>${bench.map(x=>elBtn('elxion',String(x.id),'任命 '+elName(x))).join('')}</div>`:''}</div>`:'';
@@ -68506,7 +68583,7 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
   else if(a==='elxcv')EL_CARDV=EL_CARDV==='eq'?'sk':'eq';else if(a==='elxeqt')EL_EQT=v;else if(a==='elxeqs'){EL_EQS=EL_EQS===y?'':y;EL_EQT='bag'}
   else if(a==='elxjump'){const t=elById(+v),m=elSt();if(t)EL_POP=(m.list.includes(t)?'eq:':m.roll.includes(t)?'log:':'info:')+t.id;EL_EQT='st'}   // 0.12.0 族谱里点人：在役的看属性 / 装备，孩子看属性，退休、去世的看日志
   else if(a==='elxitch'){const i=v.lastIndexOf('|');err=elInsTeach(v.slice(0,i),v.slice(i+1));if(!err)EL_PK[v.slice(0,i)]=[]}
-  else if(a==='elxpk'){const i=v.lastIndexOf('|'),K=v.slice(0,i),id=+v.slice(i+1),L=EL_PK[K]||(EL_PK[K]=[]);const j=L.indexOf(id);if(j>=0)L.splice(j,1);else if(L.length<elSeats())L.push(id)}
+  else if(a==='elxpk'){const i=v.lastIndexOf('|'),K=v.slice(0,i),id=+v.slice(i+1),L=EL_PK[K]||(EL_PK[K]=[]);const j=L.indexOf(id);if(j>=0)L.splice(j,1);else if(L.length<elSeats()-elStudents(K).length)L.push(id)}
   else if(a==='elxcls'){err=elClassStart(v,EL_PK[String(v)]||[]);if(!err){EL_PK[String(v)]=[];toast('开课了')}}else if(a==='elxcrush'){err=elClassRush(v);if(!err)toast('这一批学完了')}
   else if(a==='elxihero')err=elInsHero(v,true);
   else if(a==='elxihire'){const[r,n]=v.split('|');err=elInsHire(r,+n);if(!err){toast('招募成功：在「训练所」');if(EL_POP&&EL_POP.startsWith('iof:'))EL_POP=null}}
@@ -68526,7 +68603,7 @@ function elAct(a,v){const[x,y]=String(v||'').split(':'),e=elById(+x);let err=nul
   else if(a==='elxlearn'&&e){err=elLearn(e,y);if(!err)toast('开始学习')}
   else if(a==='elxrush'&&e)err=elRush(e);else if(a==='elxrank'&&e){err=elRankUp(e);if(!err)toast(`升到功勋 ${e.rank} 阶`)}
   else if(a==='elxauto1'&&e){elAutoSk(e);saveMeta();toast('已搭配技能')}else if(a==='elxautog1'&&e){elAutoGear(e);saveMeta();toast('已换上能穿的最好装备')}else if(a==='elxlock'&&e){e.lock=!e.lock;saveMeta()}
-  else if(a==='elxjob'&&e)EL_JOBASK=y||'';
+  else if(a==='elxjob'&&e)EL_JOBASK=y||'';else if(a==='elxjcat'&&e){EL_JOBCAT=y;EL_JOBASK=''}
   else if(a==='elxjobok'&&e){err=elJobSet(e,y);EL_JOBASK='';if(!err)toast(`转职为${elJobD(e).name}`)}
   else if(a==='elxheal'&&e)err=elHeal(e,y);
   else if(a==='elxret'&&e){const el=document.getElementById('elRetOk');if(!el||el.value.trim().toLowerCase()!=='ok')err='请输入 ok 确认退休';else{const h=elRetire(e);EL_POP=null;toast(`${elName(e)}退休了${e.noRoll?`(入队不到 ${EL().rollYears} 年或出战不超过 ${EL().rollBattles} 次，没记进名册)`:'，已登记进名册'}${h?`，推荐${elName(h)}接替(去精英日志的「接替」决定)`:''}`)}}
