@@ -19605,7 +19605,7 @@ CFG.elite.famFx={
   zhang:      [['符箓',0.2,{apF:27}],['五雷正法',0.4,{dmgS:0.115}],['天师道统',0.8,{apX:0.06}],['张天师',1,{waveSh:0.15}]],
   ge:         [['抱朴',0.4,{resPoison:0.17}],['丹方',0.6,{hps:0.0025}],['金丹',1,{und:[2,25]}]],
   drake:      [['私掠许可',0.4,{dmgR:0.115}],['金鹿号',0.8,{aspdX:0.04}],['劫掠',1,{killHeal:0.03}]],
-  watt:       [['蒸汽之力',0.2,{defF:4}],['飞轮',0.6,{aspd:0.07}],['工业之心',1,{stk:[0.04,3,8]}]],
+  watt:       [['蒸汽之力',0.2,{defF:4}],['飞轮',0.6,{aspd:0.07}],['工业之心',1,{mechA:[5,0.2]}]],
   yue:        [['关墙守望',0.2,{defF:4}],['重步方阵',0.4,{kbA:0.185}],['寸土不让',0.8,{defX:0.08}],['守关之誓',1,{share:[3,80]}]],
   yang:       [['长枪传承',0.2,{atkF:22}],['满门骑士',0.6,{hp:0.12}],['狮吼',1,{awe:[4,0.12]}]],
   derais:     [['血祭坛',0.2,{apF:33}],['诅咒',0.6,{weak:[0.14,3]}],['蓝胡子',1,{ls:0.1}]],
@@ -20321,7 +20321,7 @@ ztZh ztKm
 kySs kySsM kyRb kyRbU
 xlFangV xlFangM xlArmV
 blGaleU blWRU blSpoutU blTideU blVerU blHellU blCycU blShU blUdV blUdN blUdT
-elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elKsN elKsU elFsI elFsN elCapT elCapD elWsW elStT elStX elStY elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU elSongU elSongR elSongE elWarU elWarR elWarE elThz elRjU elRjN elRjR elRjP`.trim().split(/\s+/);
+elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elKsN elKsU elFsI elFsN elCapT elCapD elWsW elStT elStX elStY elMaT elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU elSongU elSongR elSongE elWarU elWarR elWarE elThz elRjU elRjN elRjR elRjP`.trim().split(/\s+/);
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -61910,7 +61910,7 @@ const EL_STD3={dist:(v,pc)=>`目标每远 1 格，造成的伤害 +${pc(v[0])}�
   share:(v,pc)=>`${v[0]} 格内的友军受到伤害时，替其承受至多 ${v[1]} 点(自己不会因此倒下)`,thorn:(v,pc)=>`受到近战攻击时，对攻击者造成这次伤害 ${pc(v)} 的反伤`,ls:(v,pc)=>`普攻造成伤害的 ${pc(v)} 转为自己的生命`,
   kStk:(v,pc)=>`击杀亡灵后造成伤害 +${pc(v[0])}，持续 ${v[1]} 秒，至多 ${v[2]} 层`,fStk:(v,pc)=>`连续攻击同一个目标时，每次造成伤害 +${pc(v[0])}，至多 ${v[1]} 层(换目标清零)`,
   waveSh:(v,pc)=>`每波开始时获得 ${pc(v)} 生命上限的护盾，持续 30 秒`,still:(v,pc)=>`站定 ${v[0]} 秒后减伤 +${pc(v[1])}(移动后重新计时)`,dbl:(v,pc)=>`普攻有 ${pc(v[0])} 概率追加一次 ${pc(v[1])} 伤害的攻击`,
-  fullE:(v,pc)=>`对生命全满的亡灵造成伤害 +${pc(v)}`,lowE:(v,pc)=>`对生命低于 ${pc(v[0])} 的亡灵造成伤害 +${pc(v[1])}`};
+  fullE:(v,pc)=>`对生命全满的亡灵造成伤害 +${pc(v)}`,mechA:(v,pc)=>`${v[0]} 格内的机械单位攻击速度 +${pc(v[1])}(同类光环只生效一个)`,lowE:(v,pc)=>`对生命低于 ${pc(v[0])} 的亡灵造成伤害 +${pc(v[1])}`};
 const EL_STDF={hpF:'生命',atkF:'物理攻击',apF:'法术攻击',defF:'物理防御',mdefF:'法术防御'};
 function elStDesc(st){const pc=x=>Math.round(Math.abs(x)*1000)/10+'%',sg=x=>x<0?'−':'+',o=[];
   for(const k in st||{}){const v=st[k];
@@ -62215,17 +62215,17 @@ function elPillDrop(){if(!G||G.story||G.invade||MODE!=='regular'||!META.el)retur
 // META.el.trib = {d 日期, n:{家族: 今天索贡了几次}, last:{物资: 数量} 今天上贡的合计}
 const elTribV=fid=>{const L=EL().rep.lv,T=EL().tribute;return T.lv[L[elRepLv(elRepOf(fid))][0]]||null};
 function elTribWares(fid){const B=elBlood()[fid],reg=B.reg,W=CFG.wares.tiers[Math.min(CFG.wares.tiers.length-1,elRegTier(reg))],M=(W.maps&&W.maps[reg])||{};
-  return{mat:(M.basic&&M.basic[0])||W.basic.wood,g:W.goods&&W.goods[EL().bloodGoods[reg]||'pgWood']}}
+  return{mat:(M.basic&&M.basic[0])||W.basic.wood,g:W.goods&&W.goods[EL().bloodGoods[reg]||'pgWood'],core:M.core||null}}
 // 这个家族上贡一次：返回 {物资: 数量}（不够格返回 null）
-function elTribOne(fid){const v=elTribV(fid);if(!v||!elAllied(fid))return null;const T=EL().tribute,{mat,g}=elTribWares(fid),o={};
-  if(v[0]>0&&mat)o[mat]=v[0]*T.x;if(v[1]>0&&g)o[g]=v[1]*T.y;for(const w in o)trAdd(w,o[w]);return o}
+function elTribOne(fid,ask){const v=elTribV(fid);if(!v||!elAllied(fid))return null;const T=EL().tribute,{mat,g,core}=elTribWares(fid),o={};   // ask：索贡另给地区特产（倍率同加工品，用户定）
+  if(v[0]>0&&mat)o[mat]=v[0]*T.x;if(v[1]>0&&g)o[g]=v[1]*T.y;if(ask&&v[1]>0&&core)o[core]=(o[core]||0)+v[1]*T.y;for(const w in o)trAdd(w,o[w]);return o}
 const elTribFams=()=>{const B=elBlood();return Object.keys(B).filter(id=>B[id].kind==='f'&&!B[id].custom&&elAllied(id))};
 function elTribTick(){const m=elSt(),d=dayKey();if(m.trib&&m.trib.d===d)return null;const first=!m.trib;m.trib={d,n:{},last:{}};if(first)return null;   // 第一次（刚更新到这一版）只记日期，第二天起上贡
   const tot=m.trib.last;for(const fid of elTribFams()){const o=elTribOne(fid);if(o)for(const w in o)tot[w]=(tot[w]||0)+o[w]}saveMeta();return Object.keys(tot).length?tot:null}
 const elTribTxt=o=>Object.keys(o).map(w=>`${(CFG.wares.items[w]||{name:w}).name} ${o[w]}`).join('、');
 function elTribAsk(fid){const m=elSt(),T=EL().tribute;elTribTick();if(!elTribV(fid))return{err:'声望到「信任」才会上贡'};if(!elAllied(fid))return{err:'还没结盟'};
   const n=(m.trib.n[fid]||0);if(n>=T.askN)return{err:`今天已经索贡 ${T.askN} 次了`};if(elRepOf(fid)<T.askRep)return{err:`声望不够 ${T.askRep}`};
-  elRepAdd(fid,-T.askRep);m.trib.n[fid]=n+1;const o=elTribOne(fid)||{};saveMeta();return{o}}
+  elRepAdd(fid,-T.askRep);m.trib.n[fid]=n+1;const o=elTribOne(fid,true)||{};saveMeta();return{o}}
 
 // ---------- 0.12.0 自建家族（用户定；数据 data/el_blood.js 末尾 CFG.elite.cfam）----------
 // META.el.cf = [{id, name 姓, tier 阶（1 起）, alloc {属性: 上限}, sp [特别属性键（每个 spStep）], tr {门槛: 特性选项}, trH [用过的特性键], crest {shape, bg, pat, fg}, at 建立时间}]
@@ -62609,7 +62609,9 @@ function elFx3Hit(h,i,dmg,o,S){
 // 每帧（EL_FX.tick）：每波开始的护盾、站定计时
 function elFx3Tick(h,S){
   if(S.waveSh&&G.phase==='wave'&&h.elWsW!==G.wave&&!h.dead){h.elWsW=G.wave;const a=h.maxHp*S.waveSh;if(!(h.shieldHp>a)){h.shieldHp=a;h.shieldMax=a}h.shieldT=Math.max(h.shieldT||0,30);healFx(h.x,h.y-10,'#f3d47c')}
+  if(S.mechA&&G.phase==='wave'&&!h.dead){h.elMaT=(h.elMaT||0)-1;if(h.elMaT<=0){h.elMaT=15;bfAuraF(h.x,h.y,S.mechA[0]*16,'elMechA',elEffOf(EL_SONG_E,'M|'+S.mechA[1],()=>({aspd:S.mechA[1]})),{heroes:false,only:elMechU})}}   // 0.12.2 瓦特家「工业之心」（用户定）：周围的机械单位攻速提高，每 15 帧刷新
   if(S.still){if(Math.abs(h.x-h.elStX)>0.5||Math.abs(h.y-h.elStY)>0.5||!(h.elStT>0)){h.elStX=h.x;h.elStY=h.y;h.elStT=G.time}}}
+const elMechU=u=>!!(u.c&&u.c.mech)||!!(typeof AF_EMU!=='undefined'&&AF_EMU[u.type]);   // 机械单位（同 maps/steam.swMechU）
 const elStillDr=(u,S)=>S.still&&u.elStT>0&&G.time-u.elStT>=S.still[0]?S.still[1]:0;
 // 受伤：每秒受到的伤害封顶（cap）、替身边的友军分担（share）、近战反伤（thorn）；击杀叠增伤（kStk）
 feat('elite3',{on:()=>!!(G&&G.elites&&G.elites.length),hooks:{
@@ -64721,7 +64723,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2d',GAME_TAG='测试版',GAME_CODE=169,GAME_BUILD="25a53a9",GAME_BUILT=1793075757471,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2d',GAME_TAG='测试版',GAME_CODE=169,GAME_BUILD="eeabbdb",GAME_BUILT=1793076886343,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -68665,7 +68667,9 @@ let EL_EVX=new Set(),EL_EVT='',EL_TOP='hero',EL_SUB='list',EL_POP=null,EL_SORT='
 .elchip[role=button]{cursor:pointer}.eltip{width:min(calc(360px * var(--fk,1)),calc(100% - 30px))}.elcftr{padding:4px 0;border-bottom:1px solid #2a2433}.elopt.pk{box-shadow:0 0 0 2px var(--brass-hi)}.elpk{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#120f17;padding:6px 8px;margin:2px 0 4px}.elpk .elbr{margin-left:auto}
 .elins>div.elinsc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:8px}@media (max-width:620px){.elins>div.elinsc{grid-template-columns:1fr}}.elins:has(.elinsc){grid-template-columns:repeat(auto-fill,minmax(min(30em,100%),1fr))}.elinsl,.elinsr{display:flex;flex-direction:column;gap:4px}.elinsr{background:#120f17;padding:6px;box-shadow:inset 0 0 0 1px var(--iron)}
 .elski{position:relative;padding:2px 4px!important}.elski .eli{width:26px;height:26px}.elski i{position:absolute;right:1px;top:-2px;font-style:normal;font-size:.7rem;color:#fff;text-shadow:1px 1px 0 #000}.elski2{width:28px;height:28px;image-rendering:pixelated}
-.elseats{display:grid;grid-template-columns:repeat(auto-fill,minmax(4.6em,1fr));gap:4px}.elseat{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:3px;background:#1a1622;box-shadow:inset 0 0 0 1px var(--iron);font-size:.72rem;text-align:center}.elseat img{width:36px;height:36px;image-rendering:pixelated;object-fit:contain}.elseat i{position:absolute;right:2px;top:1px;font-style:normal;color:var(--brass-hi)}.elseat.emp{color:var(--ash);justify-content:center;min-height:56px}
+
+.elseats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}.elseat{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:3px;background:#1a1622;box-shadow:inset 0 0 0 1px var(--iron);font-size:.72rem;text-align:center}.elseat img{width:36px;height:36px;image-rendering:pixelated;object-fit:contain}.elseat i{position:absolute;right:2px;top:1px;font-style:normal;color:var(--brass-hi)}.elseat.emp{color:var(--ash);justify-content:center;min-height:56px}
+.elseats .elseat{min-width:0;overflow:hidden}.elseats .elseat span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.64rem}.elseats .elseat img{width:26px;height:26px}.elins .eltop2 .elinst img.eli{width:14px;height:14px}.elinst{margin-left:auto;display:flex;flex-wrap:wrap;gap:3px;justify-content:flex-end;max-width:55%}   /* 0.12.2 用户定：一排六个空位；教官右边列能传授的特性 */
 .elfam{background:#1a1622;padding:4px 8px;margin:4px 0;box-shadow:inset 0 0 0 1px var(--iron)}.elfam p{margin:2px 0}
 .eltree{overflow-x:auto;padding:4px 0 10px;touch-action:pan-x pan-y}.eltree ul{display:flex;justify-content:center;position:relative;margin:0;padding:14px 0 0}.eltree>ul{padding-top:0;min-width:max-content}
 .eltree li{list-style:none;display:flex;flex-direction:column;align-items:center;position:relative;padding:14px 4px 0}
@@ -68863,7 +68867,7 @@ function elInsCard(key){const W=elInsWho(key),m=elSt(),cur=m.tch[String(key)],st
   const seat=x=>x?`<div class="elseat"><img alt="" src="${elIcon(x)}"><span>${elName(x)}</span>${x.learn?`<i>${elRoman(x.learn.lv)}</i>`:`<i>${elRoman((x.sk[cur]||0)+1)}</i>`}</div>`:'<div class="elseat emp">空位</div>';
   const who=stu.concat(pk.map(id=>elById(id))),seats=[];for(let i=0;i<elSeats();i++)seats.push(seat(who[i]));
   const left=run?Math.max(0,Math.ceil((elClassEnd(key)-metaNow())/60000)):0;
-  return`<div class="elinsc"><div class="elinsl"><div class="eltop2"><img alt="" src="${img}"><div><b>${W.name}</b>${W.e?elSexI(W.e):''}<br><span class="meta">${elInsKind(key)} · ${sub}</span></div></div>
+  return`<div class="elinsc"><div class="elinsl"><div class="eltop2"><img alt="" src="${img}"><div><b>${W.name}</b>${W.e?elSexI(W.e):''}<br><span class="meta">${elInsKind(key)} · ${sub}</span></div><div class="elinst">${elInsTraits(key).map(([kd,k])=>elTrChip(kd,k)).join('')||(W.hero?'':'<span class="meta">没有能传授的特性</span>')}</div></div>
       ${m.irq[K]?'<span class="warn">教完这一批就退休</span>':''}<span class="meta">能教(点了换教的技能${run?'；上课时不能换':''})：</span>
       <div class="elrow">${Object.keys(S).map(k=>`<button class="px sm elski${cur===k?' on':''}" type="button" data-act="elxitch" data-v="${key}|${k}" title="${EL().skills[k].name} ${elRoman(S[k])} 级：${elSkDesc(k,S[k])}"${run&&cur!==k?' disabled':''}>${elSkI(k)}<i>${elRoman(S[k])}</i></button>`).join('')||'<span class="meta">没有能教的技能</span>'}</div>
       <div class="elrow">${elBtn('elxpop','ins:'+key,'详情')}<span class="elbr">${elBtn('elxioff',key,'撤换',{dis:run,ti:run?'正在上课，下课后才能撤换':'撤下这位教官(不退休)，空出位子'})}</span></div></div>
@@ -68917,9 +68921,9 @@ function elRecAllHTML(){const m=elSt(),L=elOpenRegs(),ins=EL_RECT==='i';
 // 声望页签（0.12.0 用户定）：竖排所有家族，左边徽记、中间进度条、右边关系
 function elRepHTML(){const B=elBlood(),L=EL().rep.lv,lo=L[0][1];
   const row=fid=>{const F=B[fid],al=elAllied(fid),p=elRepOf(fid),i=elRepLv(p),a=L[i][1],nx=L[i+1],w=nx?Math.max(0,Math.min(1,(p-a)/(nx[1]-a))):1,col=EL().repCol[i]||'#c99a3a';
-    return`<div class="elrep${al?'':' lock'}"><img alt="" src="${elCrestURL(fid)}"><div class="elrepm"><b>${F.name}</b> <span class="meta">${CFG.maps[F.reg]?CFG.maps[F.reg].name:''}${al?` · ${p}${nx?` / ${nx[1]}`:''}`:` · ${elAllyTxt}`}</span><div class="elrepb"><i style="width:${Math.round(w*100)}%;background:${col}"></i></div></div><span class="elrepl"${al?` style="color:${col}"`:''}>${al?L[i][0]:'未结盟'}</span>${al&&elTribV(fid)?elBtn('elxtrib',fid,`索贡 ${(elSt().trib&&elSt().trib.n[fid])||0}/${EL().tribute.askN}`,{dis:((elSt().trib&&elSt().trib.n[fid])||0)>=EL().tribute.askN||p<EL().tribute.askRep,ti:`立刻上贡一次，扣 ${EL().tribute.askRep} 声望；每天至多 ${EL().tribute.askN} 次`}):''}</div>`};
+    return`<div class="elrep${al?'':' lock'}"><img alt="" src="${elCrestURL(fid)}"><div class="elrepm"><b>${F.name}</b> <span class="meta">${CFG.maps[F.reg]?CFG.maps[F.reg].name:''}${al?` · ${p}${nx?` / ${nx[1]}`:''}`:` · ${elAllyTxt}`}</span><div class="elrepb"><i style="width:${Math.round(w*100)}%;background:${col}"></i></div></div><span class="elrepl"${al?` style="color:${col}"`:''}>${al?L[i][0]:'未结盟'}</span>${elBtn('elxtrib',fid,'索贡',{dis:!al||!elTribV(fid)||((elSt().trib&&elSt().trib.n[fid])||0)>=EL().tribute.askN||p<EL().tribute.askRep,ti:`立刻上贡一次(另给地区特产)，扣 ${EL().tribute.askRep} 声望；声望到「信任」才能索贡，每天至多 ${EL().tribute.askN} 次`})}</div>`};
   const T=EL().tribute,tl=Object.keys(T.lv),last=elSt().trib&&elSt().trib.last;
-  return`<p class="meta">上贡：家族声望到「${tl.join(' / ')}」后，每天向联盟上贡这个地区的材料${tl.map(k=>` ×${T.lv[k][0]*T.x}`).join('、')}，「${tl[1]}」起还有地区加工品${tl.slice(1).map(k=>` ×${T.lv[k][1]*T.y}`).join('、')}；「索贡」立刻再要一次(扣 ${T.askRep} 声望，每天至多 ${T.askN} 次)。声望过了「${tl[tl.length-1]}」还会一直积累。${last&&Object.keys(last).length?`<br>今天的上贡：${elTribTxt(last)}`:''}</p>
+  return`<p class="meta">上贡：家族声望到「${tl.join(' / ')}」后，每天向联盟上贡这个地区的材料${tl.map(k=>` ×${T.lv[k][0]*T.x}`).join('、')}，「${tl[1]}」起还有地区加工品${tl.slice(1).map(k=>` ×${T.lv[k][1]*T.y}`).join('、')}；「索贡」立刻再要一次，还另给地区特产(数量同加工品；扣 ${T.askRep} 声望，每天至多 ${T.askN} 次)。声望过了「${tl[tl.length-1]}」还会一直积累。${last&&Object.keys(last).length?`<br>今天的上贡：${elTribTxt(last)}`:''}</p>
     <p class="meta">打这个地区的地图，每过一波给那里随机一个家族声望(难度越高、波数越后越多)；相亲、宴会、婚宴也会加减声望。声望到「接纳」以上，那个地区的招募会多出这个家族的人；宴会要「接纳 / 信任 / 尊敬」。关系从低到高：${L.map(x=>x[0]).join(' → ')}。</p>
     ${CFG.mapPages.map(P=>{const ids=P.maps.flatMap(r=>elRegFamsAll(r));return ids.length?`<h5>${P.name}</h5>${ids.map(row).join('')}`:''}).join('')}`}
 const elRepTxt=fid=>{const p=elRepOf(fid),L=EL().rep.lv,i=elRepLv(p),nx=L[i+1];return`<b style="color:${EL().repCol[i]||'inherit'}">${L[i][0]}</b>${nx?`(${p}/${nx[1]})`:`(${p})`}`};   // 0.12.1 等级名按声望等级上色
@@ -68980,9 +68984,14 @@ const elBlCount=id=>{const m=elSt();let n=0;for(const L of[m.list,m.kids])for(co
 function elCfNewHTML(){const C=CFG.elite.cfam,m=elSt();
   return`<p class="meta">花 ${C.silver} 银币，在王都建立(至多 ${C.max} 个，现在 ${m.cf.length} 个)；得一名 50% 自家血脉 + 50% 王都平民的精英，默认关注。</p>
     <div class="elrow">${elCrestImg(EL_CFC,48)}<input type="text" id="elCfName" maxlength="6" placeholder="家族的姓" style="width:8em" value="${EL_CFN.replace(/[<>"&]/g,'')}">${elBtn('elxcfnew','','确认建立',{on:true})}</div>${elCrestPick(EL_CFC,'elxcfc0','')}`}
+// 0.12.2 关注家族（用户定）：每个关注的家族一行，左边家族名和族长（代际最小、年龄最大的、还在世的人），右边族谱
+function elFolHTML(){const m=elSt(),B=elBlood(),idx=new Map();for(const L of[m.list,m.kids,m.fam,m.roll,m.staff])for(const x of L)idx.set(x.id,x);
+  const row=fid=>{const P=[...elFamReach([fid])].map(id=>idx.get(id)).filter(x=>x&&!x.dead&&x.st!=='dead');if(!P.length)return'';P.sort((a,b)=>(a.gen||1)-(b.gen||1)||b.age-a.age);const h=P[0],bf=elFamOf(h);
+    return`<div class="elrep"><img class="elpor2" alt="" src="${elIcon(h)}"><div class="elrepm"><b>${bf&&B[bf]?B[bf].name:h.fam+'家'}</b><br><span class="meta">族长 ${elName(h)}${elSexI(h)} · ${Math.floor(h.age)} 岁 · 第 ${h.gen||1} 代 · 共 ${P.length} 人</span></div>${elBtn('elxpop','tree:'+h.id,'族谱')}</div>`};
+  return`<p class="meta">关注的家族(${m.follow.length}/${elFollowMax()})：族人不在队里也一直留着记录。在精英的「婚配详情」里点「关注这个家族」。</p>${m.follow.map(row).join('')||'<p class="meta">还没有关注的家族。</p>'}`}
 function elCfHTML(){const m=elSt(),C=CFG.elite.cfam;
-  const top=`<div class="tabs sub">${[['mine','自建家族'],['all','各地家族']].map(([k,n])=>elBtn('elxcfv',k,n,{on:EL_CFVW===k})).join('')}</div>`;
-  if(EL_CFVW==='all')return top+elFamAllHTML();
+  const top=`<div class="tabs sub">${[['mine','自建家族'],['all','各地家族'],['fol','关注家族']].map(([k,n])=>elBtn('elxcfv',k,n,{on:EL_CFVW===k})).join('')}</div>`;
+  if(EL_CFVW==='all')return top+elFamAllHTML();if(EL_CFVW==='fol')return top+elFolHTML();
   const head=`<div class="elhead"><span class="meta">自建家族 <b>${m.cf.length}</b> / ${C.max}(在王都)</span>${m.cf.length<C.max?elBtn('elxpop','cfnew:0','建立家族',{on:true}):''}</div>`;
   if(!m.cf.length)return top+head+'<p class="meta">还没有自建家族。</p>';
   if(!m.cf.some(c=>c.id===EL_CFI))EL_CFI=m.cf[0].id;
