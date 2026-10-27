@@ -20055,8 +20055,9 @@ function setMapSize(w,h){MAP_W=w;MAP_H=h;MW=w*TILE;MH=h*TILE;NT=w*h;BASE_TX=(w>>
 //   node 里 500 万组随机数逐位比对相同（含 ±0、NaN、Infinity、字符串 / null / undefined 参数），能被内联、不新建对象。
 //   3、4 个参数照旧交给内置的；只传 1 个参数的写法（Math.hypot(x)）这里不认，别用（现在源码里没有）
 const HYPOT0=Math.hypot;
-Math.hypot=function hypot(a,b,c,d){if(c!==undefined||d!==undefined)return d!==undefined?HYPOT0(a,b,c,d):HYPOT0(a,b,c);
-  a=Math.abs(a);b=Math.abs(b);if(a===Infinity||b===Infinity)return Infinity;if(a!==a||b!==b)return NaN;if(a>=b){if(a===0)return 0;const y=b/a;return Math.sqrt(1+y*y)*a}const x=a/b;return Math.sqrt(x*x+1)*b};   // P2 改（0.12.2d 性能）：大的那边除自己恒等于 1，省一次除法一次乘法；1+y*y 和原来的 x*x+y*y（x*x = 1）逐位相同，结果不变
+function hypotN(a,b,c,d){return d!==undefined?HYPOT0(a,b,c,d):HYPOT0(a,b,c)}   // 3、4 个参数的照旧交给内置的（拆出去让两参数的主体更小）
+Math.hypot=function hypot(a,b,c,d){if(c!==undefined||d!==undefined)return hypotN(a,b,c,d);a=a<0?-a:a;b=b<0?-b:b;
+  if(a>=b){if(a===0)return 0;if(a===Infinity)return Infinity;const y=b/a;return Math.sqrt(1+y*y)*a}if(b===Infinity||a===Infinity)return Infinity;const x=a/b;return Math.sqrt(x*x+1)*b};   // P2 改（0.12.2d 性能）：大的那边除自己恒等于 1，省一次除法一次乘法；写法尽量短——字节码 216 → 183 字节（--trace-turbo-inlining：每个优化后的函数只有 920 字节的内联预算，hypot 越大、能内联进 updateSoldiers / stepEnemy 的次数越少，没内联的调用返回值都要装箱）。NaN、Infinity、±0 的结果和原来一样，1200 万组随机数逐位相同
 const $=s=>document.querySelector(s);
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 // v0.8.24（用户定）防御公式：伤害 = max(0, 攻击 − 防御 × K) × 攻击 ÷ (攻击 + 防御)，K = CFG.combat.defK（0.5）；防御 = 2 倍攻击才完全不破防，防御低时接近原来的减法
@@ -37060,9 +37061,11 @@ function cellRange(x,y,r){return[Math.max(0,((x-r)/GC)|0),Math.min(GW-1,((x+r)/G
 // v0.10.10 性能：回调只写了一个参数（j=>…，大多数）就不传 d——传进去的小数要在堆上新建一个数（回调不会被内联，每命中一只就新建一个）
 function eQuery(x,y,r,fn,vis){const two=fn.length>1,R=r+12,c0=Math.max(0,((x-R)/GC)|0),c1=Math.min(GW-1,((x+R)/GC)|0),r0=Math.max(0,((y-R)/GC)|0),r1=Math.min(GH-1,((y+R)/GC)|0);   // 0.5.9：不再每次调用 cellRange 新建数组
   for(let cy=r0;cy<=r1;cy++)for(let cx=c0;cx<=c1;cx++)for(let j=gHead[cy*GW+cx];j!==-1;j=gNext[j]){if(!E.alive[j]||E.ug[j]>0)continue;if(EQF>=0&&FAC_HOS[EQF<<4|E.fac[j]]===1)continue;if(vis&&!eVis(j))continue;const d=Math.hypot(E.x[j]-x,E.y[j]-y)-E.r[j];if(d<=r){if(two)fn(j,d);else fn(j)}}}   // EQF：v0.8.6 第三方阵营——亡灵行动时只查和它不敌对的（engine/faction）
+let PF_NEB=-1,PF_NED=1e9,PF_NEX=0,PF_NEY=0;   // P2 加（0.12.2d 性能）：nearestEnemy 的回调改成固定函数 + 模块变量（原来每次新建闭包，而且 eQuery 传过来的距离 d 是小数，没内联时每只亡灵装箱一次）；距离按 eQuery 里同一个式子重算，结果一样
+const pfNearest=j=>{const d=Math.hypot(E.x[j]-PF_NEX,E.y[j]-PF_NEY)-E.r[j];if(d<PF_NED){PF_NED=d;PF_NEB=j}};
 function nearestEnemy(x,y,maxR,vis){let best=-1,bd=maxR;
   if(maxR>MW){for(let j=0;j<E.n;j++){if(!E.alive[j]||E.ug[j]>0||(vis&&!eVis(j)))continue;const d=Math.hypot(E.x[j]-x,E.y[j]-y)-E.r[j];if(d<bd){bd=d;best=j}}return best}
-  eQuery(x,y,maxR,(j,d)=>{if(d<bd){bd=d;best=j}},vis);return best}
+  PF_NEB=-1;PF_NED=maxR;PF_NEX=x;PF_NEY=y;eQuery(x,y,maxR,pfNearest,vis);return PF_NEB}
 // 0.5.7 E.x / E.y 是 Float32：先按 Float32 取整再查建筑（不然 687.9999 查的时候在墙外，存进去变成 688 就进了墙）
 const FR32=Math.fround;
 // 0.5.7 亡灵冲刺 / 冲撞的路线：每 3 像素查一次建筑和树（原来分 12 段、一段 10 像素左右，斜着能擦过城墙的角穿过去），返回走得通的比例 0～1
@@ -49171,23 +49174,25 @@ function updateTornado(z,dt){
 const PCN=PERF.pcap;
 const PT={x:new Float32Array(PCN),y:new Float32Array(PCN),z:new Float32Array(PCN),vx:new Float32Array(PCN),vy:new Float32Array(PCN),vz:new Float32Array(PCN),
   g:new Float32Array(PCN),t:new Float32Array(PCN),life:new Float32Array(PCN),s:new Float32Array(PCN),gr:new Float32Array(PCN),c:new Uint16Array(PCN),k:new Uint8Array(PCN)};
-let pHead=0;const PCOL=[],PCI=new Map();
+let pHead=0,pTail=0,pFull=false;const PCOL=[],PCI=new Map();   // P2 加（0.12.2d 性能）：活着的粒子只可能在环上 [pTail, pHead) 这一段（pTail = 上次更新时最老的活粒子；pFull = 整环都可能有）；更新、画、数都只扫这一段，不再每帧扫满 4096 个槽（三次）
+const ptSpan=()=>pFull?PCN:(pHead-pTail+PCN)%PCN;   // 从 pTail 起要扫多少个槽
 function pci(h){let i=PCI.get(h);if(i===undefined){i=PCOL.length;PCOL.push(C(h));PCI.set(h,i)}return i}
-function ptClear(){PT.life.fill(0);pHead=0}
+function ptClear(){PT.life.fill(0);pHead=0;pTail=0;pFull=false}
 // 特效丰度（设置 0%～200%）：< 100% 按比例少冒粒子，> 100% 额外多冒一些（爆炸圈、刀光等 addFx 不受影响）
 let FXK=1;
 function pp(x,y,z,vx,vy,vz,g,life,col,s,grow,kind){if(FX_TINT)col=fxTintCol(col);SFXP.x=x;SFXP.y=y;SFXP.t=G.time;
   if(FXK!==1){if(FXK<=0)return;if(FXK<1){if(Math.random()>FXK)return}else if(Math.random()<FXK-1)ppRaw(x+vr(-2,2),y+vr(-1,1),z,vx*vr(0.8,1.2),vy*vr(0.8,1.2),vz,g,life,col,s,grow,kind)}
   ppRaw(x,y,z,vx,vy,vz,g,life,col,s,grow,kind)}
 function ppRaw(x,y,z,vx,vy,vz,g,life,col,s,grow,kind){
-  const i=pHead;pHead=(pHead+1)%PCN;
+  const i=pHead;pHead=(pHead+1)%PCN;if(pHead===pTail)pFull=true;
   PT.x[i]=x;PT.y[i]=y;PT.z[i]=z;PT.vx[i]=vx;PT.vy[i]=vy;PT.vz[i]=vz;PT.g[i]=g;PT.t[i]=0;PT.life[i]=life;PT.c[i]=pci(col);PT.s[i]=s;PT.gr[i]=grow;PT.k[i]=kind;
 }
-function updateParts(dt){
-  for(let i=0;i<PCN;i++){if(PT.life[i]<=0)continue;const t=PT.t[i]+=dt;if(t>=PT.life[i]){PT.life[i]=0;continue}
+function updateParts(dt){const n=ptSpan();let i=pTail,first=-1;
+  for(let k=0;k<n;k++,i=i+1===PCN?0:i+1){if(PT.life[i]<=0)continue;const t=PT.t[i]+=dt;if(t>=PT.life[i]){PT.life[i]=0;continue}if(first<0)first=i;
     PT.x[i]+=PT.vx[i]*dt;PT.y[i]+=PT.vy[i]*dt;
     if(PT.k[i]===1||PT.k[i]===2){PT.z[i]+=PT.vz[i]*dt;PT.vx[i]*=0.97;PT.vy[i]*=0.97}   // kind 2 / 3：v0.7.2 发光粒子（加色，engine/vfx.drawGlowParts），2 漂浮、3 有重力
     else{PT.vz[i]-=PT.g[i]*dt;PT.z[i]+=PT.vz[i]*dt;if(PT.z[i]<=0){PT.z[i]=0;PT.vz[i]=0;PT.vx[i]*=0.5;PT.vy[i]*=0.5}}}
+  if(first<0){pTail=pHead;pFull=false}else{pTail=first;pFull=first===pHead}   // 最老的活粒子之前的槽都死了，下次从它开始扫；它正好在 pHead 上 = 整环都是活的
 }
 function addFx(f){f.t=0;if(FX_TINT)fxTintO(f);G.fx.push(f);if(f.x!=null){SFXP.x=f.x;SFXP.y=f.y;SFXP.t=G.time}}   // SFXP：v0.9.51 紧跟着的音效按这里的位置算距离衰减（ui/audio）
 // v0.5.2 治疗特效（用户定）：不画治疗者到受治疗者的连线，改成受治疗者头上冒一个小十字；特效丰度 0% 时不画
@@ -49301,7 +49306,7 @@ function vSparks(x,y,z,n,sp,cols,life,s){for(let k=0;k<n;k++){const t=fxr()*6.28
 function vRise(x,y,r,n,cols,life,sp,s){for(let k=0;k<n;k++){const t=fxr()*6.2832,rr=Math.sqrt(fxr())*r;pp(x+Math.cos(t)*rr,y+Math.sin(t)*rr*VSQ,fxr()*4,(fxr()-0.5)*6,(fxr()-0.5)*4,(sp||20)*(0.5+fxr()*0.8),0,life*(0.6+fxr()*0.6),cols[(fxr()*cols.length)|0],s||1,0,2)}}
 // 往中心收的光点（蓄力）
 function vSuck(x,y,r,n,cols,life,s){for(let k=0;k<n;k++){const t=fxr()*6.2832,rr=r*(0.7+fxr()*0.3),L=life*(0.7+fxr()*0.3);pp(x+Math.cos(t)*rr,y+Math.sin(t)*rr*VSQ,4+fxr()*8,-Math.cos(t)*rr/L,-Math.sin(t)*rr*VSQ/L,0,0,L,cols[(fxr()*cols.length)|0],s||1,0,2)}}
-function drawGlowParts(){for(let i=0;i<PCN;i++){if(PT.k[i]<2||PT.life[i]<=0)continue;const u=PT.t[i]/PT.life[i],s=Math.max(1,Math.round(PT.s[i]+PT.gr[i]*u)),a=1-u*u,c=PCOL[PT.c[i]],
+function drawGlowParts(){const n=ptSpan();let i=pTail;for(let q=0;q<n;q++,i=i+1===PCN?0:i+1){if(PT.k[i]<2||PT.life[i]<=0)continue;const u=PT.t[i]/PT.life[i],s=Math.max(1,Math.round(PT.s[i]+PT.gr[i]*u)),a=1-u*u,c=PCOL[PT.c[i]],
     x=Math.round(PT.x[i]-s/2),y=Math.round(PT.y[i]-PT.z[i]-s/2);rectW(x-1,y-1,s+2,s+2,c,a*0.28);rectW(x,y,s,s,c,a*0.95)}}
 // —— 三层的分发（ui/draw.drawWorld 调）——
 const inBox=(x,y,r,x0,y0,x1,y1)=>x+r>x0&&x-r<x1&&y+r>y0&&y-r<y1;
@@ -49864,6 +49869,7 @@ function dropDown(s,stun){s.layer=0;s.elev=0;s.nav=null;if(stun)bkFStun(s,CFG.ga
   if(!friendPassPt(s.x,s.y)){const t=tidx(s.x,s.y);evictFriendsOne(s,t%MAP_W,(t/MAP_W)|0)}}
 function evictFriendsOne(u,tx,ty){let best=null,bd=1e9;for(let r=1;r<=3&&!best;r++)for(let oy=-r;oy<=r;oy++)for(let ox=-r;ox<=r;ox++){const x=tx+ox,y=ty+oy;if(x<0||y<0||x>=MAP_W||y>=MAP_H||!friendPassT(y*MAP_W+x))continue;const d=Math.hypot(x*16+8-u.x,y*16+8-u.y);if(d<bd){bd=d;best=[x*16+8,y*16+8]}}if(best){u.x=best[0];u.y=best[1]}}
 // 去驻防点 / 下塔下墙：返回移动向量；到达时直接定位
+const PM_ZERO=[0,0];   // P2 加（0.12.2d 性能）：postMove / leaveWall 的「不动」返回这一份（调用方只读 [0]、[1]；原来每次新建一个数组）
 function postMove(s){
   const P=s.post;
   if(P){
@@ -49872,18 +49878,18 @@ function postMove(s){
       if(s.layer===1)return leaveWall(s);
       const gx=P.s.x,gy=P.s.y-8;if(Math.hypot(gx-s.x,gy-s.y)<7){s.layer=2;s.x=P.x;s.y=P.y;s.elev=P.mg?7:27;s.nav=null;return null}
       return navVec(s,gx,gy)}
-    if(s.layer===2){dropDown(s,false);return[0,0]}
-    if(s.layer===0){const g=nearestGate(s,P.gates);if(g<0)return[0,0];const gx=(g%MAP_W)*16+8,gy=((g/MAP_W)|0)*16+8;
-      if(Math.hypot(gx-s.x,gy-s.y)<5){s.layer=1;s.elev=4;s.nav=null;return[0,0]}return navVec(s,gx,gy)}
+    if(s.layer===2){dropDown(s,false);return PM_ZERO}
+    if(s.layer===0){const g=nearestGate(s,P.gates);if(g<0)return PM_ZERO;const gx=(g%MAP_W)*16+8,gy=((g/MAP_W)|0)*16+8;
+      if(Math.hypot(gx-s.x,gy-s.y)<5){s.layer=1;s.elev=4;s.nav=null;return PM_ZERO}return navVec(s,gx,gy)}
     if(POSTC&&wallCompAt(s.x,s.y)!==P.comp)return leaveWall(s);   // v0.5.8 修复：驻防点换到了另一段城墙（原来那段的城门被拆、墙被打断）——先从城门下来再过去，原来会在墙上原地卡住
     if(Math.hypot(P.x-s.x,P.y-s.y)<2.5){s.x=P.x;s.y=P.y;s.elev=4;return null}
     return navVec(s,P.x,P.y)}
-  if(s.layer===2){dropDown(s,false);return[0,0]}
+  if(s.layer===2){dropDown(s,false);return PM_ZERO}
   if(s.layer===1)return leaveWall(s);
-  return[0,0]}
+  return PM_ZERO}
 function leaveWall(s){const t=tidx(s.x,s.y),st=G.structAt[t];
-  if(st&&isGateT(st.type)&&Math.hypot(st.x-s.x,st.y-8-s.y)<5){s.layer=0;s.elev=0;s.nav=null;return[0,0]}
-  const gates=wallGatesOf(t);const g=nearestGate(s,gates);if(g<0){dropDown(s,false);return[0,0]}
+  if(st&&isGateT(st.type)&&Math.hypot(st.x-s.x,st.y-8-s.y)<5){s.layer=0;s.elev=0;s.nav=null;return PM_ZERO}
+  const gates=wallGatesOf(t);const g=nearestGate(s,gates);if(g<0){dropDown(s,false);return PM_ZERO}
   return navVec(s,(g%MAP_W)*16+8,((g/MAP_W)|0)*16+8)}
 // 士兵移速（v0.6.1 抽出来；mvK：嗜血屠戮；cavSpd：v0.8.1 科技「战马训练」）
 const uSpd=s=>s.c.speed*16*ENV.ourSpd*Math.max(0.05,1+pmNC(s,pm.moveSpd)+TM.uMove+(s.c.cavalry?TM.cavSpd||0:0)+mvT(s))*(s.layer?1:terrMul(s))*ENV.fslow*friendMv(s)*chillMul(s)*(s.mvK||1);
@@ -63645,7 +63651,7 @@ const K_SAND=[C('#e6cf98'),C('#c8a46a'),C('#8a6a3e')],K_DDARK=C('#3b2412'),K_DST
 const SHC=C('#08060e');
 // v0.10.0（用户要）设置「影子」关掉后不画单位、建筑、树的影子（大量单位时省一点渲染）
 let SHDW=true;
-// v0.10.0（用户定）缩小地图时精简特效：ZFX = (当前缩放 ÷ 默认缩放)²，最少 1/4（缩到一半时粒子、散点只画 1/4，虚线圈的点按边长减半）；设置「缩小地图时精简特效」关掉 = 1（全画质）。只影响画面，不影响逻辑和随机数
+// v0.10.0（用户定）缩小地图时精简特效：ZFX = (当前缩放 ÷ 默认缩放)²，最少 1/16（0.12.2d 用户定，原来 1/4：缩到一半时粒子、散点只画 1/4、缩到 1/4 时只画 1/16，虚线圈的点按边长减半、最少 1/4）；设置「缩小地图时精简特效」关掉 = 1（全画质）。只影响画面，不影响逻辑和随机数
 let ZFX=1,ZFL=1;
 // v0.10.1 2.5D：大单位脚下的椭圆影子（一行一个矩形）
 function shadowE(cx,cy,rx,ry,a){if(!SHDW)return;const n=Math.max(1,Math.round(ry));for(let k=-n;k<=n;k++){const hw=rx*Math.sqrt(1-(k/(n+0.5))**2);rectW(Math.round(cx-hw),Math.round(cy+k),Math.round(hw*2),1,SHC,a)}}
@@ -63936,7 +63942,11 @@ function fillEll(x,y,r,c,a){const ry=Math.max(1,Math.round(r*0.6));for(let dy=-r
 function fillCirc(x,y,r,c,a){r=Math.round(r);for(let dy=-r;dy<=r;dy++){const w=Math.round(Math.sqrt(Math.max(0,r*r-dy*dy)));if(w>0)rectW(Math.round(x)-w,Math.round(y)+dy,w*2,1,c,a)}}   // 实心圆（范围技能按真实的圆形范围画）
 function ring2(x,y,r,cd,cl,a){dotRing(x,y,r+1,cd,a*0.8,0,0.6);dotRing(x,y,r,cl,a,0,0.6)}
 // n：点数（小的正整数）；很多地方在这里传了 G.time × k 想让圈转起来——负数、小数或大于 64 的按「转角（弧度）」算，点数用默认（v0.10.2 修：原来当点数用，波次越往后点越多、越来越卡）
-function dotRing(x,y,r,col,a,n,sq){let ph=0;if(n&&(n<0||n>64||n%1)){ph=n;n=0}n=n||Math.max(16,Math.round(r*1.4));if(ZFL<1)n=Math.max(6,Math.round(n*ZFL));for(let k=0;k<n;k++){const aa=k/n*Math.PI*2+ph;rectW(Math.round(x+Math.cos(aa)*r),Math.round(y+Math.sin(aa)*r*(sq||1)),1,1,col,a)}}
+const RING_T=[];   // P2 加（0.12.2d 画面性能）：按点数 n 缓存一圈的 cos / sin（值和逐点算的完全一样）；火坑、范围圈每帧每圈几十个点，原来每个点两次三角函数
+function ringT(n){let T=RING_T[n];if(!T){T=RING_T[n]=new Float64Array(n*2);for(let k=0;k<n;k++){const aa=k/n*Math.PI*2;T[k*2]=Math.cos(aa);T[k*2+1]=Math.sin(aa)}}return T}
+function dotRing(x,y,r,col,a,n,sq){let ph=0;if(n&&(n<0||n>64||n%1)){ph=n;n=0}n=n||Math.max(16,Math.round(r*1.4));if(ZFL<1)n=Math.max(6,Math.round(n*ZFL));const q=sq||1;
+  if(ph||n>1024){for(let k=0;k<n;k++){const aa=k/n*Math.PI*2+ph;rectW(Math.round(x+Math.cos(aa)*r),Math.round(y+Math.sin(aa)*r*q),1,1,col,a)}return}
+  const T=ringT(n);for(let k=0;k<n;k++)rectW(Math.round(x+T[k*2]*r),Math.round(y+T[k*2+1]*r*q),1,1,col,a)}
 function drawZone(z){const F=ZONE_FX[z.k];if(F&&F.draw){if(z.skd){FX_DT=z.skd;try{F.draw(z)}finally{FX_DT=null}}else F.draw(z)}}   // v0.8.10 区域效果的画法全部登记在 ZONE_FX[种类].draw（老的在下面）
 // —— v0.8.10 原来写在 drawZone 一长串 if 里的画法 ——
 function zoneDraw_spike(z){if(z.lg&&z.done){drawSpikeLinger(z);return}}   // v0.6.1 土刺留在原地
@@ -63997,10 +64007,14 @@ zoneDef('tpool',{draw:zoneDraw_acid});   // v0.10.0 炼毒塔的毒液池（stru
 function zoneDraw_tfog(z){const u=Math.min(1,(z.dur-z.t)/0.8,z.t/0.3),n=FXK>0?6:3;fillEll(z.x,z.y,z.r,K.psn,0.10*u);
   for(let k=0;k<n;k++){const a=k/n*Math.PI*2+G.time*0.6,rr=z.r*0.45;fillEll(z.x+Math.cos(a)*rr,z.y+Math.sin(a)*rr*0.6-4,z.r*0.45,K.psn,0.09*u)}ring2(z.x,z.y,z.r,K.ink,K.psn,0.35*u)}
 zoneDef('tfog',{draw:zoneDraw_tfog});
-function zoneDraw_fire(z){const u=Math.min(1,(z.dur-z.t)/0.8),n=Math.round(Math.max(8,Math.round(z.r*0.9))*FXK*ZFX),fr=Math.floor(G.time*10);ring2(z.x,z.y,z.r,K.ink,K.boomD,0.5*u);
+const COS_T=new Float32Array(1024),SIN_T=new Float32Array(1024);for(let i=0;i<1024;i++){COS_T[i]=Math.cos(i/1024*Math.PI*2);SIN_T[i]=Math.sin(i/1024*Math.PI*2)}   // P2 加（0.12.2d）：火星这类按随机角度撒的点查表用
+let FIRE_N=0,FIRE_NL=0;   // P2 加（0.12.2d 画面性能，用户：特效 100% 后期火坑多一帧 10 毫秒）：这一帧 / 上一帧画了几个火坑；超过 FIRE_CAP 个时火星按比例减少、只画一圈（画面稀一点，逻辑不受影响）
+const FIRE_CAP=16;
+function zoneDraw_fire(z){const u=Math.min(1,(z.dur-z.t)/0.8),crowd=FIRE_NL>FIRE_CAP?FIRE_CAP/FIRE_NL:1,n=Math.max(4,Math.round(Math.max(8,Math.round(z.r*0.9))*FXK*ZFX*crowd)),fr=Math.floor(G.time*10);FIRE_N++;
+    if(crowd<1)dotRing(z.x,z.y,z.r,K.boomD,0.5*u,0,0.6);else ring2(z.x,z.y,z.r,K.ink,K.boomD,0.5*u);
     for(let dy=-2;dy<=2;dy++){const w=Math.round(Math.sqrt(Math.max(0,1-dy*dy/6.25))*z.r);rectW(Math.round(z.x)-w,Math.round(z.y+dy*z.r*0.12),w*2,1,K.scorch,0.35*u)}
-    for(let k=0;k<n;k++){const h=hash2(k,fr,z.x|0),a=h*6.283,r=Math.sqrt(hash2(k,fr+1,z.y|0))*z.r,x=Math.round(z.x+Math.cos(a)*r),y=Math.round(z.y+Math.sin(a)*r*0.6),hh=1+((h*7)|0)%3;
-      rectW(x,y-hh,1,hh,h<0.4?K.flY:h<0.8?K.boomC:K.boomD,0.85*u)}}
+    for(let k=0;k<n;k++){const h=hash2(k,fr,z.x|0),ai=(h*1024)|0,r=Math.sqrt(hash2(k,fr+1,z.y|0))*z.r,x=Math.round(z.x+COS_T[ai]*r),y=Math.round(z.y+SIN_T[ai]*r*0.6),hh=1+((h*7)|0)%3;
+      rectW(x,y-hh,1,hh,h<0.4?K.flY:h<0.8?K.boomC:K.boomD,0.85*u)}}   // COS_T / SIN_T：P2 改（0.12.2d）查 1024 格的表，角度差不到 0.35°（原来每个火星两次三角函数）
 zoneDef('fire',{draw:zoneDraw_fire});
 function zoneDraw_hmine(z){const x=Math.round(z.x),y=Math.round(z.y),on=z.t>=z.arm;rectW(x-2,y-1,5,3,K.ink);rectW(x-1,y-1,3,1,K.steelD);rectW(x,y-2,1,1,on&&Math.floor(G.time*3)%2?K.hpE:K.steelD)}
 zoneDef('hmine',{draw:zoneDraw_hmine});
@@ -64075,7 +64089,7 @@ function drawFx(f){
   }
 }
 function drawParticles(){
-  for(let i=0;i<PCN;i++){if(PT.life[i]<=0||PT.k[i]>=2)continue;if(ZFX<1&&(Math.imul(i,2654435761)>>>0)/4294967296>=ZFX)continue;const u=PT.t[i]/PT.life[i],s=Math.max(1,Math.round(PT.s[i]+PT.gr[i]*u));
+  const n=ptSpan();let i=pTail;for(let q=0;q<n;q++,i=i+1===PCN?0:i+1){if(PT.life[i]<=0||PT.k[i]>=2)continue;if(ZFX<1&&(Math.imul(i,2654435761)>>>0)/4294967296>=ZFX)continue;const u=PT.t[i]/PT.life[i],s=Math.max(1,Math.round(PT.s[i]+PT.gr[i]*u));   // P2 改（0.12.2d）：只扫 [pTail, pHead)（engine/combat.ptSpan）
     const a=PT.k[i]===1?0.6*(1-u):(u>0.7?(1-u)/0.3:1);rectW(Math.round(PT.x[i]-s/2),Math.round(PT.y[i]-PT.z[i]-s/2),s,s,PCOL[PT.c[i]],a)}
 }
 function bar(x,y,w,frac,c){x=Math.round(x-w/2);y=Math.round(y);rectW(x-1,y-1,w+2,3,K.bar,0.85);rectW(x,y,Math.max(0,Math.round(w*frac)),1,c)}
@@ -64266,7 +64280,7 @@ function followTo(c,h,dt){const tx=h.dead?G.base.x:h.x,ty=(h.dead?G.base.y:h.y)+
 function useView(k){const V=VIEWS[k];CX=V.CX;CY=V.CY;OX=V.OX;OY=V.OY}
 function setView(k,x,y,w,h,c,sx,sy){const V=VIEWS[k];clampCamTo(c,w,h);Object.assign(V,{x,y,w,h,OX:x+(w>>1),OY:y+(h>>1),CX:Math.round(c.x)+sx,CY:Math.round(c.y)+sy});useView(k)}
 function render(dt){const d0=IN_DRAW;IN_DRAW=1;try{render_(dt)}finally{IN_DRAW=d0}}   // v0.8.10 画面期间的 vr / chance / vpick 用特效随机数（core/core.IN_DRAW）
-function render_(dt){SHDW=SET.shadows!==false;ZFX=SET.zoomFx===false||!(zoomBase>0)?1:clamp((zoom/zoomBase)**2,0.25,1);ZFL=Math.sqrt(ZFX);
+function render_(dt){FIRE_NL=FIRE_N;FIRE_N=0;SHDW=SET.shadows!==false;ZFX=SET.zoomFx===false||!(zoomBase>0)?1:clamp((zoom/zoomBase)**2,1/16,1);ZFL=Math.sqrt(ZFX);
   const t0=performance.now(),h=G.hero;applyZoom();WP_BUD=WP_MAX;
   if(G.bgDirty){G.bgDirty=false;if(R.updateBG)R.updateBG(BGC)}
   const split=splitOn(),h2=split?G.heroes.find(x=>x.ctl==='p2'):null;
@@ -64649,7 +64663,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2c',GAME_TAG='测试版',GAME_CODE=168,GAME_BUILD="76c1eea+",GAME_BUILT=1793057972466,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2c',GAME_TAG='测试版',GAME_CODE=168,GAME_BUILD="485c9d8+",GAME_BUILT=1793059751908,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -68222,7 +68236,7 @@ function repFrame(st,seg,lt,n,ff,fp,vn,vs){if(REP.warm<CFG.perfRep.warm*60){REP.
   const rmax=REP.best?REP.best.rmax:0;REP.best=repSnap(st,seg,lt,n,ff,fp,vn,vs);REP.best.rmax=rmax;REP.dirty=true}
 function repRender(rt){if(REP.warm<CFG.perfRep.warm*60)return;if(REP.best===undefined)repLoad();if(!REP.best||rt<=REP.best.rmax)return;REP.best.rmax=+rt.toFixed(1);REP.dirty=true}
 function repSnap(st,seg,lt,n,ff,fp,vn,vs){let tw=0,wl=0,pa=0;for(let i_1=0,a_1=G.structs;i_1<a_1.length;i_1++){const s=a_1[i_1];if(s.dead)continue;if(s.cfg.weapon)tw++;else if(isWallT(s.type))wl++}
-  for(let i=0;i<PCN;i++)if(PT.life[i]>0&&PT.t[i]<PT.life[i])pa++;
+  {const n=ptSpan();let i=pTail;for(let q=0;q<n;q++,i=i+1===PCN?0:i+1)if(PT.life[i]>0&&PT.t[i]<PT.life[i])pa++}
   const sg={};let sum=0;for(const k in seg){sg[k]=+seg[k].toFixed(2);sum+=seg[k]}sg['其它']=+Math.max(0,st-sum).toFixed(2);
   return{v:GAME_VER,b:GAME_BUILD,at:Date.now(),dev:isTouchUI()?'触屏':'电脑',scr:`${innerWidth}×${innerHeight}`,dpr:+(window.devicePixelRatio||1).toFixed(2),rm:R.mode,fx:SET.fx??1,fps:SET.fps||60,
     map:mapDef().name,mode:G.story?'剧情':G.invade?'入侵战':settleOn()?'开拓地':MODE==='endless'?'无尽':'常规',diff:DIFF.name,wave:G.wave,gt:Math.round(G.time),spd:speedMul,
