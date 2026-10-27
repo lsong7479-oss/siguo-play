@@ -20409,7 +20409,8 @@ haFgN haTpG gwK gwT
 smK smE smPI smRv smW0 smN smLit smLD smLt smBx smBy smBT
 stCapK
 e2Q
-blWm blBack blWat blRegen hhS hhT elites elMem elPill hwTk`.trim().split(/\s+/);
+blWm blBack blWat blRegen hhS hhT elites elMem elPill hwTk
+stDrF`.trim().split(/\s+/);   // stDrF：0.12.2 德拉贡传（game/story），tools/perfcheck.py 查出来漏登记的
 const G_NUM='time tick wave prepId kills legionSeq corpses waveT flowT flowVer structVer navVer flowCool sdistVer visT night shake dayIdx flashT tA wA tunnelN tombN lowT oAsk oBupo mcP gold gdT sqT frT drumT bfT'.split(' ');   // P2 加（0.12.2d）gold gdT sqT frT drumT bfT：每帧 / 每次击杀都写的数字（原来先装 undefined，每写一次小数都新建一个数字对象）
 const GState=shapeCtor(G_KEYS,G_NUM);
 shapeWarm(GState,G_KEYS,G_NUM);   // P2 加（0.12.2d 性能）：预先写宽，见 core/shape.js 的 shapeWarm / shapeWarmAll
@@ -64698,7 +64699,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2c',GAME_TAG='测试版',GAME_CODE=168,GAME_BUILD="f38f307",GAME_BUILT=1793069644978,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2c',GAME_TAG='测试版',GAME_CODE=168,GAME_BUILD="8d5fe9b",GAME_BUILT=1793071610916,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
