@@ -10254,7 +10254,7 @@ CFG.settlement.dayHours={morning:5, noon:11, dusk:16, night:19, midnight:23};   
 CFG.settlement.autoExpand={hard:1, nightmare:2, inferno:3, abyss:4};
 // 0.12.2（用户定）高产量折算：每个开拓地每小时的银币、建材，超过门槛的部分打折 —— 门槛 = base × 地区阶倍率（prodTierK）；
 //   1～2 倍门槛之间的部分算 80%，2～3 倍 65%，3～4 倍 50%，4～5 倍 35%，5 倍以上 20%（门槛 3000 Claude 定）；科研点、设计点、物资不折（逻辑 game/settle_0100.stOverflow）
-CFG.settlement.overflow={keys:['建材','银币'], base:3000, bands:[[1,0.8],[2,0.65],[3,0.5],[4,0.35],[5,0.2]]};
+CFG.settlement.overflow={keys:['建材','银币'], base:3000, bands:[[1,0.8],[2,0.65],[4,0.5],[7,0.35],[10,0.2]]};   // 0.12.2 用户定：档次门槛 1 / 2 / 4 / 7 / 10 倍（原来 1～5 倍，太早掉到 20%）
 // 0.12.2（用户定）税收为主：每人每小时的税额按需求满足度累加（2-5-8）—— 谷物、水 +2（两项各占一半），衣物、肉类 +3，宗教、文化、娱乐、贸易 +3（四项各占四分之一）——最高 8；
 //   按满足度比例加（满足 50% 加一半）；基础 tax.per 改成 0；税收不算进高产量折算（stOverflow 只折税以外的银币）
 CFG.settlement.taxUp=[[['grain','water'],2],[['cloth','meat'],3],[['faith','culture','fun','trade'],3]];
@@ -19975,9 +19975,10 @@ CFG.cards.push({id:'blHwL', name:'断泉', q:'legend', map:'blSpring', unique:tr
 CFG.merchant.items.blHw={name:'坏血弹药', map:'blSpring', base:1000, per:100, desc:'所有单位造成伤害后，目标禁疗 30%(受到的治疗 −30%)，持续 3 秒(不老之泉的商人独有)'};
 
 // ---------- 0.11.5 官方渠道（用户定：防止别人改了游戏重新发；有新版本提示去官网或 QQ 群）；逻辑 ui/official.js，安卓签名自检 app/android/…/SiguoGuard.java ----------
+// hostSfx：0.12.2 用户在 itch.io 上也放了网页版，itch 的游戏页域名按后缀认（html-classic.itch.zone 等）
 // site 官网；ver 官网上的版本清单（tools/site_ver.py 写）；qq 游戏交流群（官网打不开的玩家从群里拿安装包）；hosts 网页版只认这些域名（空串 = 本地文件 / 电脑版）
 CFG.official={site:'https://lsong7479-oss.github.io/siguo-play/', ver:'https://lsong7479-oss.github.io/siguo-play/version.json', qq:'1126694396',
-  hosts:['lsong7479-oss.github.io','localhost','127.0.0.1',''], checkDelay:4, timeout:10, guard:0.5};   // checkDelay 进游戏几秒后才在后台查（不挡进游戏）；guard 弹窗出来后几秒内点击无效（防误触，用户定 0.5 秒）
+  hosts:['lsong7479-oss.github.io','localhost','127.0.0.1',''], hostSfx:['.itch.zone','.itch.io','.hwcdn.net'], checkDelay:4, timeout:10, guard:0.5};   // checkDelay 进游戏几秒后才在后台查（不挡进游戏）；guard 弹窗出来后几秒内点击无效（防误触，用户定 0.5 秒）
 Object.assign(CFG.settingsDefault,{offAuto:true});   // 设置「自动检查更新」
 
 // ---------- 0.11.4 开拓地加工坊、铁匠铺（用户 2026-10-24：通关三阶地区后解锁；产量、造价 Claude 定）----------
@@ -62982,6 +62983,8 @@ function stOverflow(id,o){const C=CFG.settlement.overflow;if(!C)return;const T=C
   for(const k of C.keys){const tx=k==='银币'?Math.max(0,o.tax||0):0,v=(o.rate[k]||0)-tx;if(!(v>T))continue;const w=stOvfVal(v,T);o.rate[k]=w+tx;(o.ovf||(o.ovf={}))[k]=[v,w,T]}}   // 银币：税收不折（0.12.2 用户定）
 // 每人税额（0.12.2 用户定）：基础 + 各组需求的平均满足度 × 加成
 function stTaxPer(o){let v=CFG.settlement.tax.per;for(const[ks,add]of CFG.settlement.taxUp||[]){let c=0;for(const k of ks)c+=Math.min(1,(o.cov&&o.cov[k])||0);v+=add*c/ks.length}return v}
+// 档次说明（按 CFG.settlement.overflow.bands 生成）
+const stOvfBands=()=>CFG.settlement.overflow.bands.map(([x,k],i,B)=>`${x}${i+1<B.length?'～'+B[i+1][0]:''} 倍 ${Math.round(k*100)}%`).join(' / ');
 const stOvfTxt=E=>E&&E.ovf?Object.entries(E.ovf).map(([k,[v,w,T]])=>`${k==='银币'?'银币(税收以外)':k} ${stNum(v)} → ${stNum(w)}`).join('、'):'';
 
 // ---------- v0.10.1 开拓地：建筑耐久、木匠铺、灾害 / 好事 / 政务、效果合成（数据 data/settle_0101.js；累积在 game/settle_0100.stAccrue）----------
@@ -64727,7 +64730,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2e',GAME_TAG='测试版',GAME_CODE=170,GAME_BUILD="7dd5c90",GAME_BUILT=1793078298060,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2e',GAME_TAG='测试版',GAME_CODE=170,GAME_BUILD="93c04ab",GAME_BUILT=1793121826013,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -67518,9 +67521,11 @@ function tlSettleHTML(){const E=stEconHere(),S=CFG.settlement,pg=['概况','需�
     body=[stPopLine(G.settleId,E)+` · 税率 ${Math.round(E.taxR*100)}%，每小时 ${stNum(E.tax)} 银币`,`在岗 <b>${E.on}</b> / ${E.jobs}${E.want>E.on?`<span class="warn">(缺 ${E.want-E.on} 人)</span>`:''}`,`满意度 <b>${E.sat}</b> · 生产效率 <b>${stPct(E.eff)}</b> · 士兵生命、攻击 ×${stPct(E.sk)}`,
       `繁荣 <b>${E.pros}</b>(主堡 Lv${E.keep}${nx!=null?`，${nx} 升 Lv${E.keep+1}`:'，已满级'})`,`建材 <b>${f(W.建材)}</b> · 科研点 <b>${f(W.科研点)}</b> · 设计点 <b>${f(W.设计点)}</b>`,stSeaLine(G.settleId),stGrTxt(E)].concat(stEvLines(G.settleId,false)).filter(Boolean).map(x=>`<p class="meta">${x}</p>`).join('')}
   else if(TLI_PG===1)body=stNeedsHTML(E);
-  else{const R=Object.entries(E.rate).filter(([,v])=>v>0).map(([k,v])=>{const I=stItemOf(G.settleId,k);return`${I?I[0]:k} +${stNum(v)}`}),got=stStoredOf(G.settleId,{}),gl=Object.entries(got).map(([k,n])=>`${k} ${n}`).join('、');
-    const own=Object.keys(ST_NEEDOUT).filter(k=>E.sup[k]>0).map(k=>`${S.needs[k]} ${E.sup[k]}`).join('、'),imp=stImpTxt(E);
-    body=[`每小时：${R.length?R.join('、'):'没有物资产出'}`,own?`需求类(不乘效率)：${own}`:'',E.ovf?`产量太高，超出门槛的部分打折：${stOvfTxt(E)}(门槛每小时 ${stNum(E.ovf[Object.keys(E.ovf)[0]][2])}，超出 1～5 倍分别按 80% / 65% / 50% / 35% / 20% 算)`:'',imp,`攒着的：${gl||'没有'}(选中主堡领取，最多存 ${S.storeHours} 小时)`].filter(Boolean).map(x=>`<p class="meta">${x}</p>`).join('')}
+  else{const id=G.settleId,N=S.outName,tile=(ico,nm,t)=>`<span class="kprd" title="${nm}">${ico||`<b>${nm}</b>`}<em>${t}</em></span>`,grid=L=>L.length?`<div class="kprds">${L.join('')}</div>`:'<p class="meta">没有</p>';   // 0.12.2（用户定）图标 + 数字平铺，去掉多余的说明
+    const R=Object.entries(E.rate).filter(([,v])=>v>0).map(([k,v])=>tile(kt2OutIco(id,k),N[k]||k,'×'+stNum(v))),got=stStoredOf(id,{});
+    const own=Object.keys(ST_NEEDOUT).filter(k=>E.sup[k]>0).map(k=>tile(kt2OutIco(id,k),S.needs[k],'×'+stNum(E.sup[k]))),imp=stImpTxt(E);
+    body=`<p class="meta">每小时</p>${grid(R)}${own.length?`<p class="meta">需求类(不乘效率)</p>${grid(own)}`:''}${E.ovf?`<p class="meta warn">产量太高，超出部分打折：${stOvfTxt(E)}</p>`:''}${imp?`<p class="meta">${imp}</p>`:''}
+      <p class="meta">攒着的(选中主堡领取)</p>${grid(Object.entries(got).map(([k,n])=>tile(rwIco(k,''),k,'×'+n)))}`}
   return`<div class="tlih"><b>${CFG.maps[G.map].name}开拓地</b><button class="px sm" type="button" data-tlx="1">收起</button></div><div class="tlpg">${pg.map((n,i)=>`<button class="px sm${i===TLI_PG?' on':''}" type="button" data-tlp="${i}">${n}</button>`).join('')}</div><div class="tlbody">${body}</div>`}
 // 每次 updateHud 调：开着才算；内容没变不重写（setH 按字符串比较）
 function tlInfoTick(){const el=tlInfoEl();if(!el)return;if(!TLI_OPEN||!G||!G.base){if(!el.hidden)el.hidden=true;return}el.hidden=false;setH(el,'tli',settleOn()?tlSettleHTML():tlBattleHTML())}
@@ -67958,7 +67963,7 @@ function kt2Use(id,E){const G0={},add=(g,k,v)=>{if(v>0)(G0[g]||(G0[g]={}))[k]=(G
 const kt2UseSec=(id,E)=>{const u=kt2Use(id,E);return u?`<div class="kt2use"><b class="meta">消耗 · 每小时</b>${u}</div>`:''};
 function kt2Prod(id){stAccrue(id);const E=stEcon(id),N=CFG.settlement.outName,R=stRegion(id),got=stStoredOf(id,{}),has=Object.keys(got).length>0;
   const rt=Object.entries(E.rate).filter(([,v])=>v>0).map(([k,v])=>`<span class="kprd" title="${N[k]||k}">${kt2OutIco(id,k)||`<b>${N[k]||k}</b>`}<em>×${stNum(v)}</em></span>`).join('');
-  return kt2Sec('产出 <span class="meta">每小时</span>',[rt?`<div class="kprds">${rt}</div>`:'没有产出',E.ovf?`<p class="meta warn">产量太高，超出门槛的部分打折：${stOvfTxt(E)}(门槛每小时 ${stNum(E.ovf[Object.keys(E.ovf)[0]][2])}，超出 1～5 倍分别按 80% / 65% / 50% / 35% / 20% 算)</p>`:'',kt2UseSec(id,E),kt2Acts([kt2Btn('kt2col',id,'领取这里',{on:has,dis:!has}),kt2Btn('scolall','','一键收取所有地区')])],'st-prod')+
+  return kt2Sec('产出 <span class="meta">每小时</span>',[rt?`<div class="kprds">${rt}</div>`:'没有产出',E.ovf?`<p class="meta warn">产量太高，超出门槛的部分打折：${stOvfTxt(E)}(门槛每小时 ${stNum(E.ovf[Object.keys(E.ovf)[0]][2])}，超出部分按门槛的 ${stOvfBands()} 算)</p>`:'',kt2UseSec(id,E),kt2Acts([kt2Btn('kt2col',id,'领取这里',{on:has,dis:!has}),kt2Btn('scolall','','一键收取所有地区')])],'st-prod')+
     kt2Sec('建造中',[ktDetLine(id)||'没有在造的建筑'])+kt2Sec('粮仓',[stGrTxt(E),E.gcap?`粮仓里的肉：${Math.floor(R.ms||0)} / ${E.gcap}(多出来的肉类存进粮仓，精英办婚宴用)`:''],'st-season')+kt2Sec('调配',[stSurLine(id,E),stAlLine(id)],'st-alloc')}
 // 神像政令
 function kt2Zl(id){const E=stEcon(id),S=zlStatOf(id),e=kt2StatE(id);
@@ -69232,7 +69237,11 @@ function elAttrAct(a,v){
 let RW_NM=null;   // 物资名字 → 编号（第一次用时建）
 const RW_RES=['银币','金币','建材','科研点','设计点'];
 function rwId(k){if(CFG.wares.items[k]||RW_RES.includes(k))return k;if(!RW_NM){RW_NM=new Map();for(const w in CFG.wares.items)if(!RW_NM.has(CFG.wares.items[w].name))RW_NM.set(CFG.wares.items[w].name,w)}return RW_NM.get(k)||null}
-function rwIco(k){const w=rwId(k);if(!w)return'<i class="wic"></i>';return RW_RES.includes(w)?`<img class="wic rc" alt="" src="${resIcon(w)}">`:wareIco(w)}
+// 强化石、洗练石这类开拓地产的材料：名字是「1阶强化石」
+const RW_MAT={强化石:'enh',洗练石:'wash',护刃钳:'guard',幸运符:'luck'};
+function rwSrc(k){const w=rwId(k);if(w&&RW_RES.includes(w))return resIcon(w);const m=/^(\d+)阶(.+)$/.exec(k);return m&&RW_MAT[m[2]]&&typeof matIconURL==='function'?matIconURL(RW_MAT[m[2]],+m[1]):null}
+// 图标：cls 给图片加的 class（收获弹窗用 wic rc，开拓地面板用默认）
+function rwIco(k,cls){const u=rwSrc(k);if(u)return`<img class="${cls==null?'wic rc':cls}" alt="" src="${u}">`;const w=rwId(k);return w?wareIco(w):'<i class="wic"></i>'}
 const rwName=k=>{const w=rwId(k);return w&&CFG.wares.items[w]?CFG.wares.items[w].name:k};
 function rwClose(){const el=document.getElementById('rwpop');if(el)el.remove()}
 function rwShow(title,got,note){const ks=Object.keys(got||{}).filter(k=>got[k]>0);if(!ks.length)return false;rwClose();
@@ -69288,7 +69297,7 @@ function elTutReplay(){const S=elTutSt();S.steps={};S.off=0;S.seen=1;EL_GUIDE=0;
 // 0.11.5（用户定）：弹窗出来 0.5 秒内点击无效、对局中自动暂停（关掉恢复）；新版本弹窗可勾「不再自动提醒」，设置 →「版本更新」里手动检查
 const offGuard=()=>{try{return window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.SiguoGuard||null}catch(e){return null}};
 const offApp=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
-const offHostOk=()=>location.protocol==='file:'||CFG.official.hosts.includes(location.hostname);
+const offHostOk=()=>location.protocol==='file:'||CFG.official.hosts.includes(location.hostname)||(CFG.official.hostSfx||[]).some(s=>location.hostname.endsWith(s));   // hostSfx：0.12.2 itch.io
 function offOpen(u){const P=offGuard();if(P&&P.open){P.open({url:u}).catch(()=>{});return}const a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove()}
 function offCopy(t){const ok=()=>toast(`已复制 QQ 群号 ${t}`);try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,()=>toast(`QQ 群号：${t}`));return}}catch(e){}toast(`QQ 群号：${t}`)}
 let OFF_EL=null,OFF_T=0,OFF_PZ=null;
