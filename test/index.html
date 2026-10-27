@@ -1123,6 +1123,9 @@ img.mici{width:32px;height:32px;image-rendering:pixelated;flex:none;vertical-ali
 .wmpop{width:min(calc(560px * var(--fk,1)),calc(100% - 24px));top:10px;transform:translateX(-50%);max-height:calc(100% - 20px)}   /* v0.9.51 面板固定在上面、往下展开（居中时按钮位置会跟着内容变） */
 .wmbody{overflow-y:auto;min-height:0;display:flex;flex-direction:column;gap:8px}.wmbody .minfo,.wmbody .regc{margin:0}
 .trlist{display:flex;flex-direction:column;gap:6px}
+.trpop .opb{display:grid;gap:10px}.trn{display:flex;gap:8px;align-items:center}.trn input[type=range]{flex:1 1 auto;min-width:0;accent-color:var(--brass-hi)}.trn input[type=number]{width:5.5em;font:inherit;background:#0f0c13;color:var(--bone);border:1px solid var(--iron-hi);padding:4px 6px}
+.trtot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;padding:8px;background:var(--rivet);box-shadow:inset 0 0 0 1px var(--iron)}.trq{display:flex;align-items:center;gap:6px}.trq .trv{font-style:normal;color:var(--brass-hi)}.trpop .opf{display:flex;justify-content:flex-end;margin-top:10px}
+.ftbar{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin;flex:none}.ftb{flex:none;display:flex;align-items:center;gap:4px}.ftb img{width:20px;height:20px;image-rendering:pixelated}.ftb em{font-style:normal;font-size:.7rem}
 .trrow{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:4px 8px;padding:6px 8px;background:var(--rivet);box-shadow:inset 0 0 0 1px var(--iron)}
 .trrow>.meta{grid-column:1/-1;font-size:.72rem}
 .trg{display:flex;flex-direction:column;min-width:0}.trg b{font-weight:400;color:var(--brass-hi)}.trg .meta{font-size:.72rem}
@@ -2545,7 +2548,7 @@ Object.assign(CFG,{
   zoomSteps:[[1,'100%'],[1.25,'125%'],[1.5,'150%'],[1.75,'175%'],[2,'200%'],[2.5,'250%']],
   zoomMin:[640,300],   // v0.10.10 界面缩放后至少留出 640 × 300 的界面空间（Claude 定：常见手机横屏 125% 左右为止；ui/help.zoomFit）
   // 设置默认值
-  settingsDefault:{spdMax:3, kinMar:false, helpQ:true, oathOn:true, prepEvOn:true, music:0.45, sfx:0.8, uiZoom:1, uiFont:1, sfxFlat:false, fx:1, fps:60, popText:true, bossBars:true, shadows:true, unitBars:true, zoomFx:true, autoNext:false, autoAttack:true, unlockAll:false, devOn:false, shake:true, cardConfirm:true, autoECard:false, autoRepair:false, miniScale:1, miniHide:false, twoP:false,
+  settingsDefault:{spdMax:3, kinMar:false, helpQ:true, oathOn:false, prepEvOn:true, music:0.45, sfx:0.8, uiZoom:1, uiFont:1, sfxFlat:false, fx:1, fps:60, popText:true, bossBars:true, shadows:true, unitBars:true, zoomFx:true, autoNext:false, autoAttack:true, unlockAll:false, devOn:false, shake:true, cardConfirm:true, autoECard:false, autoRepair:false, miniScale:1, miniHide:false, twoP:false,
     // v0.3.1 触屏操控：摇杆 跟手（按下位置）/ 固定；摇杆、技能按钮的大小（倍率）和离屏幕边缘的距离（像素）
     joyMode:'follow', joyS:1.15, joyM:16, btnS:1.15, btnM:10, heroBarHide:false,   // v0.4.0 heroBarHide：局内英雄头像栏收起
     keys:{up:'w', down:'s', left:'a', right:'d', attack:'j', skill1:'q', skill2:'e', skill3:'r', swap:'tab',
@@ -9538,12 +9541,13 @@ Object.assign(CFG,{
 // v0.8.25（用户定）一抽的价格 10 / 20 / 30 / 50 / 80（原来 10 / 20 / 40 / 80 / 160）；mul 跟着价格比改（Claude 定）
 // v0.8.18（用户定）五档奖池：q 品质范围、w 概率（%）、pity 保底（这么多抽内必出这个品质及以上）、cost 每抽金币；mul 是 UP 池换一个 / 自己选的价格倍率（Claude 定：按价格比）
 //   英雄、装备共用，装备价格 × gearCost（用户定：便宜 50%）；单抽 / 十连 / 二十连
+// 0.12.2（用户定）req：通关到第几阶地区才开放这一档（青铜 1 阶、白银 2 阶、黄金 4 阶、钻石 6 阶；黑铁一直开）
 CFG.shop.pools=[
   {id:'iron',    name:'黑铁', q:['white','green','blue'],          w:[60,30,10],    pity:{blue:20},          cost:10,  mul:1},
-  {id:'bronze',  name:'青铜', q:['green','blue','purple'],         w:[60,30,10],    pity:{purple:20},        cost:20,  mul:2},
-  {id:'silver',  name:'白银', q:['green','blue','purple','gold'],  w:[30,50,15,5],  pity:{gold:40},          cost:30,  mul:3},
-  {id:'gold',    name:'黄金', q:['blue','purple','gold'],          w:[60,30,10],    pity:{gold:20},          cost:50,  mul:5},
-  {id:'diamond', name:'钻石', q:['blue','purple','gold','red'],    w:[30,50,15,5],  pity:{gold:20,red:40},   cost:80,  mul:8},
+  {id:'bronze',  name:'青铜', q:['green','blue','purple'],         w:[60,30,10],    pity:{purple:20},        cost:20,  mul:2, req:1},
+  {id:'silver',  name:'白银', q:['green','blue','purple','gold'],  w:[30,50,15,5],  pity:{gold:40},          cost:30,  mul:3, req:2},
+  {id:'gold',    name:'黄金', q:['blue','purple','gold'],          w:[60,30,10],    pity:{gold:20},          cost:50,  mul:5, req:4},
+  {id:'diamond', name:'钻石', q:['blue','purple','gold','red'],    w:[30,50,15,5],  pity:{gold:20,red:40},   cost:80,  mul:8, req:6},
 ];
 CFG.shop.gearCost=0.5;CFG.shop.pulls=[1,10,20];
 // —— 商人：被动技能（不用释放；数值随星级）——
@@ -10258,7 +10262,12 @@ Object.assign(CFG.buildings,{
   sDesign:  {cat:'settle', st:'design',   name:'设计所', size:3, cost:0, hp:1000, def:4, vision:3},
   sHouse:   {cat:'settle', st:'house',    name:'民居',   size:1, cost:0, hp:300, def:2, vision:2},
 });
-CFG.buildCats.push({id:'settle', name:'开拓', short:'拓'});
+// 0.12.2（用户定）开拓地的建造栏分成四个页签：民生、粮食、工业、文化（建筑本身的 cat 还是 'settle'，按 CFG.settleCat 分到页签；没写的归民生）
+CFG.buildCats.push({id:'sLife', name:'民生', short:'民'},{id:'sFood', name:'粮食', short:'粮'},{id:'sInd', name:'工业', short:'工'},{id:'sCul', name:'文化', short:'文'});
+CFG.settleCat={sHouse:'sLife', sWell:'sLife', sReservoir:'sLife', sStall:'sLife', sMarket:'sLife', sTradeHub:'sLife', sStatue:'sLife', sCarp:'sLife',
+  sFarm:'sFood', sGranary:'sFood', sHunt:'sFood', sBigFarm:'sFood', sRanch:'sFood',
+  sLumber:'sInd', sWeave:'sInd', sMine:'sInd', sGather:'sInd', sDyer:'sInd', sJeweler:'sInd', sTanner:'sInd', sJoiner:'sInd', sForge:'sInd',
+  sChapel:'sCul', sCathedral:'sCul', sLibrary:'sCul', sMuseum:'sCul', sGallery:'sCul', sAcademy:'sCul', sCircus:'sCul', sTheater:'sCul'};
 CFG.settlement.priceK=0.1;   // 用户定：开拓地里造防御建筑花银币，价格是局内铜币价的 10%
 // —— 入侵（用户定：每 6 小时有 50% 概率来一次；没打就一直挂着，不会叠加，也没有损失；打赢拿金币，不计入每日金币上限）——
 //   难度按权重随机（普通 30、困难 30、噩梦 25、炼狱 10、深渊 5）；只打一轮 20 波：普通、困难打第 1 轮（第 1–20 波），噩梦、炼狱第 2 轮（21–40），深渊第 3 轮（41–60）
@@ -19399,6 +19408,12 @@ CFG.elite.rep={lv:[['仇恨',-1500],['厌恶',-500],['冷淡',0],['接纳',500],
 //   声望可以超出狂热一直积累（本来就不封顶）
 CFG.elite.tribute={lv:{'信任':{sp:10, mat:5, core:0, gs:0, go:0}, '尊敬':{sp:20, mat:10, core:1, gs:2, go:1}, '忠诚':{sp:40, mat:20, core:4, gs:8, go:4}, '狂热':{sp:80, mat:40, core:8, gs:16, go:8}},
   matK:[1, 1.1, 1.25, 1.45, 1.7, 2, 2.35, 2.75, 3.2], askN:3, askRep:{'信任':500, '尊敬':750, '忠诚':1000, '狂热':1500}};
+// 0.12.2 家族贸易（用户定：王都里和结盟的家族做买卖，家族卖出 / 收购自己地区这一阶的材料；笔数、每笔次数看关系，关系越好买得越便宜、卖得越贵；数 Claude 定）
+//   每个家族每小时一批报价（和地区贸易一样整点刷新）；buy = 玩家买的单价 × 标准价，sell = 玩家卖的单价 × 标准价；sellP 一笔是「家族收购」的概率；
+//   货：coreP 这个地区的特产（一组 core 个）、goodsP 这一阶的加工品（一组 goods 个），其余这一阶的基础材料（一组 lots 里随机，本地产的 localP 优先）
+CFG.elite.famTrade={lv:{'接纳':{rows:2, times:2, buy:1.00, sell:0.80}, '信任':{rows:3, times:3, buy:0.95, sell:0.85}, '尊敬':{rows:4, times:4, buy:0.90, sell:0.90},
+    '忠诚':{rows:5, times:5, buy:0.85, sell:0.95}, '狂热':{rows:6, times:6, buy:0.80, sell:1.00}},
+  sellP:0.5, coreP:0.2, goodsP:0.25, localP:0.6, lots:[5,10,20], core:[1,3], goods:[2,5]};
 // 声望到了之后招募多出家族成员（用户定）：[每格出现概率, 家族血脉下限, 上限]，至多 2 格，各自判
 CFG.elite.repCol=['#8a3a4a','#9a8a8a','#e8e4dc','#6ac86a','#5aa0e8','#e8c84a','#f09a3a','#e84a3a'];   // 0.12.1（用户定）声望等级的颜色：冷淡白、接纳绿、信任蓝、尊敬黄、忠诚橙、狂热红；仇恨、厌恶 Claude 定（暗红、灰）
 CFG.elite.repRec={接纳:[0.2,0,0.2], 信任:[0.4,0,0.3], 尊敬:[0.6,0.2,0.5], 忠诚:[0.8,0.4,0.75], 狂热:[1,0.6,1]};
@@ -20158,7 +20173,8 @@ const UDEF=(()=>{const keys=[],seen=new Set();for(const k of UTYPES)for(const f 
 const BDEF=(()=>{const raw=Object.assign({},CFG.buildings,Object.fromEntries(Object.keys(CFG.camps).map(k=>[k,Object.assign({cat:'camp',kind:'camp'},CFG.camps[k])])));
   const keys=[],seen=new Set();for(const t in raw)for(const f in raw[t])if(!seen.has(f)){seen.add(f);keys.push(f)}
   return fastObj(Object.fromEntries(Object.keys(raw).map(t=>{const c=raw[t];return[t,Object.fromEntries(keys.map(f=>[f,c[f]]))]})))})();
-const CATS={};for(const c of CFG.buildCats)CATS[c.id]=Object.keys(BDEF).filter(k=>BDEF[k].cat===c.id);
+const bCatOf=k=>BDEF[k].cat==='settle'?((CFG.settleCat||{})[k]||'sLife'):BDEF[k].cat;   // 0.12.2 开拓地建筑按 CFG.settleCat 分到民生 / 粮食 / 工业 / 文化页签
+const CATS={};for(const c of CFG.buildCats)CATS[c.id]=Object.keys(BDEF).filter(k=>bCatOf(k)===c.id);
 const WALL_T=new Set(Object.keys(BDEF).filter(k=>BDEF[k].cat==='wall')),GATE_T=new Set(Object.keys(BDEF).filter(k=>BDEF[k].gate));   // v0.5.2 各种墙体自带城门
 const isWallT=t=>WALL_T.has(t),isGateT=t=>GATE_T.has(t);
 const CAMP_SET=new Set(Object.keys(CFG.camps));   // P2 加（0.12.2d 性能）：兵营类型集合（CFG.camps 在 core 之前就定好了，data/bw_camp 是最后一个）
@@ -60154,7 +60170,7 @@ let OATH_OPTS=null;
 function oathAsk(){if(!oathDue()||!UI.ready)return false;const C=CFG.oath,ids=Object.keys(C.list).filter(k=>k!=='bupo'||G.wave>0),n=Math.min(ids.length,cardOptN()-CFG.cardRules.options+C.opts);   // 可选数：3 + 抉择之机 + 科技「多重选择」（同选卡）
   if(!OATH_OPTS||OATH_OPTS.w!==G.wave)OATH_OPTS={w:G.wave,ids:shuffle(ids.slice()).slice(0,n)};
   const cards=OATH_OPTS.ids.map((k,q)=>{const L=C.list[k];return`<button class="card q4" type="button" data-act="oath" data-v="${k}"><kbd>${q+1}</kbd><span class="tier">誓约</span><b>${L.name}</b><span class="desc">代价：${L.pen}<br><br>回报：${L.rew}</span></button>`}).join('');
-  openModal('oath',`<h2 class="hd">誓约 · 第 ${G.wave/oRound()+1} 轮</h2><p class="meta">立下一个誓约：这一轮(${oRound()} 波)承受代价，下一轮拿回报；也可以不立</p><div class="cards" style="--n:${OATH_OPTS.ids.length}">${cards}</div><div class="actions"><button class="px" type="button" data-act="oath" data-v="">不立誓</button></div>`,null);return true}
+  openModal('oath',`<h2 class="hd">誓约 · 第 ${G.wave/oRound()+1} 轮</h2><p class="meta">立下一个誓约：这一轮(${oRound()} 波)承受代价，下一轮拿回报；也可以不立</p><div class="cards" style="--n:${OATH_OPTS.ids.length}">${cards}</div><div class="actions"><button class="px big oathno" type="button" data-act="oath" data-v="" style="min-width:12em;min-height:48px;font-size:1.1rem">不立誓</button></div>`,null);return true}
 function oathPick(k){if(!G||modalState!=='oath')return;const C=CFG.oath;G.oAsk=G.wave;OATH_OPTS=null;hideModal();
   if(k&&C.list[k]){G.oaths=(G.oaths||[]).filter(O=>O.id==='bupo'||G.wave-O.w<2*oRound());G.oaths.push({id:k,w:G.wave});sfx('pick');if(k==='bupo')oathBupo();else toast(`立誓：${C.list[k].name}`);if(k==='hunt')G.nextPlan=planWave(G.wave+1)}   // 猎魔：下一波已经排好了，重排
   else sfx('click');
@@ -60574,6 +60590,7 @@ function metaFix(m){
 // loadMeta / saveMeta：见 game/save（版本迁移、备份恢复）
 function loadSettings(){let s=null;try{s=JSON.parse(localStorage.getItem(SET_KEY))}catch(e){}
   SET=Object.assign({},CFG.settingsDefault,s||{});SET.keys=Object.assign({},CFG.settingsDefault.keys,(s&&s.keys)||{});
+  if(!SET.oath12){SET.oathOn=false;SET.oath12=1}   // 0.12.2（用户定）誓约默认关：老设置里存的「开」也关一次，之后按玩家自己选的
   FXK=SET.fx??1;if(typeof helpApply==='function')helpApply();if(typeof fontApply==='function')fontApply();if(typeof zoomApply==='function')zoomApply()}   // helpApply：v0.10.1 说明问号的开关   // v0.8.13（用户定）调试功能、测试模式的开关跟着设置保存，下次启动不用重开
 // 调试功能（v10）：测试模式与各种「测试：…」按钮默认隐藏，在设置里输入密码后才出现
 const DEV_HASH='0f791fffeafd8506b275bb2933c7';   // v0.8.13 调试密码只存哈希（rdHash，和兑换码同一套；用户 2026-10-09 换了新密码）
@@ -61348,7 +61365,8 @@ function heroShopBuy(i,slot){const L=shopRoll('hero');if(slot!==undefined&&L.slo
   META.wallet.金币-=o.price;META.souls[o.id]=(META.souls[o.id]||0)+o.q;o.done=true;saveMeta();return null}
 // —— v0.8.18 奖池改版（用户定）：五档奖池（CFG.shop.pools：黑铁 / 青铜 / 白银 / 黄金 / 钻石），各有品质范围、概率、保底、价格；英雄、装备各一套（装备价格 × gearCost），UP 池同样五档 ——
 //   保底：每档、每种奖池各自计（META.shop.pity['gachaHero.iron'] 这样的键）；出了某品质，它和更低品质的保底计数清零
-const GPOOL=id=>CFG.shop.pools.find(P=>P.id===id)||CFG.shop.pools[0];
+const gPoolOpen=P=>!P.req||clearTier()>=P.req||devOn();   // 0.12.2 奖池按通关的地区阶开放（CFG.shop.pools[].req）
+const GPOOL=id=>{const P=CFG.shop.pools.find(P=>P.id===id);return P&&gPoolOpen(P)?P:CFG.shop.pools.filter(gPoolOpen).pop()||CFG.shop.pools[0]};   // 没开放的档退回已开放的最高一档
 const gPoolCost=(P,gear)=>Math.round(P.cost*(gear?CFG.shop.gearCost:1));
 // gachaPity：刚才这一抽是不是保底出的（英雄奖池保底出的英雄之魄更多，gachaHeroOne 用）
 let gachaPity=false;
@@ -61890,6 +61908,10 @@ function elEquipSk(e,k,on){const S=EL().skills[k];if(!S||!(e.sk[k]>0))return'还
   if(!on){const i=L.indexOf(k);if(i>=0)L.splice(i,1);saveMeta();return null}if(L.includes(k))return null;if(!elSkOk(e,k))return'这个职业用不了';if(L.length>=max)return`${S.pas?'被动':'主动'}技能位已满(${max} 个；功勋升阶多给)`;L.push(k);saveMeta();return null}
 function elAutoSk(e,keep){if(e.lock&&keep)return;const sl=elSlots(e),w=elWType(e),pick=pas=>Object.keys(e.sk).filter(k=>EL().skills[k]&&!!EL().skills[k].pas===pas&&elSkOk(e,k)).sort((a,b)=>(elSkWOk(b,w)-elSkWOk(a,w))||(e.sk[b]-e.sk[a]));   // 0.12.0 拿对武器的先装
   e.ea=pick(false).slice(0,sl[0]);e.ep=pick(true).slice(0,sl[1])}
+// 0.12.2（用户定）「一键技能」只填空的技能位：已经装上的不动，空位按 elAutoSk 的顺序补
+function elFillSk(e){if(e.lock)return;const sl=elSlots(e),w=elWType(e),S=EL().skills,fill=(cur,n,pas)=>{const L=(cur||[]).filter(k=>k&&S[k]&&elSkOk(e,k)).slice(0,n);
+    const add=Object.keys(e.sk).filter(k=>S[k]&&!!S[k].pas===pas&&elSkOk(e,k)&&!L.includes(k)).sort((a,b)=>(elSkWOk(b,w)-elSkWOk(a,w))||(e.sk[b]-e.sk[a]));return L.concat(add).slice(0,n)};
+  e.ea=fill(e.ea,sl[0],false);e.ep=fill(e.ep,sl[1],true)}
 // —— 装备（用户定：只能穿常规商店卖的普通装备；主武器、副手、头、身、脚）——
 const EL_SLOTS=[['w','主武器'],['o','副手'],['head','头盔'],['body','胸甲'],['feet','靴子']];
 const elItemOk=b=>!!bookDef(b)&&regOkQ(b)&&!bookDef(b).special&&!(CFG.trinkets&&CFG.trinkets[b]);
@@ -62263,6 +62285,20 @@ const elTribTxt=o=>Object.keys(o).map(w=>`${(CFG.wares.items[w]||{name:w}).name}
 function elTribAsk(fid){const m=elSt(),T=EL().tribute;elTribTick();if(!elTribV(fid))return{err:'声望到「信任」才会上贡'};if(!elAllied(fid))return{err:'还没结盟'};
   const n=(m.trib.n[fid]||0),c=elTribAskRep(fid);if(n>=T.askN)return{err:`今天已经索贡 ${T.askN} 次了`};if(elRepOf(fid)<c)return{err:`声望不够 ${c}`};
   const o=elTribOne(fid)||{};elRepAdd(fid,-c);m.trib.n[fid]=n+1;saveMeta();return{o}}
+// —— 0.12.2 家族贸易（用户定，数据 CFG.elite.famTrade；界面在王都的贸易页签 ui/worldmap）：结盟、声望到「接纳」以上的家族 ——
+// 报价按「家族 + 整点 + 第几笔」做种子随机；做过几次记在 META.trade.u['f:家族']（和地区贸易一起，换整点清空）
+const elFtLv=fid=>EL().famTrade.lv[elTribLvN(fid)]||null;
+const elFtFams=()=>{const B=elBlood();return Object.keys(B).filter(id=>B[id].kind==='f'&&!B[id].custom&&elAllied(id)&&elFtLv(id)&&CFG.wares.tiers[Math.min(CFG.wares.tiers.length-1,elRegTier(B[id].reg))])};
+function elFtOffer(fid,h,i,L){const C=EL().famTrade,r=trRng('f|'+fid+'|'+h+'|'+i),reg=elBlood()[fid].reg,W=CFG.wares.tiers[Math.min(CFG.wares.tiers.length-1,elRegTier(reg))],M=(W.maps&&W.maps[reg])||{},I=CFG.wares.items;
+  const pk=a=>a[Math.floor(r()*a.length)],rn=a=>a[0]+Math.floor(r()*(a[1]-a[0]+1)),sell=r()<C.sellP,x=r(),gs=Object.values(W.goods||{}).filter(w=>I[w]),bs=Object.values(W.basic||{}).filter(w=>I[w]),loc=(M.basic||[]).filter(w=>I[w]);
+  let w,n;if(M.core&&I[M.core]&&x<C.coreP){w=M.core;n=rn(C.core)}else if(gs.length&&x<C.coreP+C.goodsP){w=pk(gs);n=rn(C.goods)}else{w=loc.length&&r()<C.localP?pk(loc):pk(bs.length?bs:loc);n=pk(C.lots)}
+  if(!w)return null;const v=trRound(I[w].price*n*(sell?L.sell:L.buy));
+  return sell?{type:'sell',give:{w,n},get:{w:'银币',n:v},times:L.times}:{type:'buy',give:{w:'银币',n:v},get:{w,n},times:L.times}}
+function elFtOffers(fid){const L=elFtLv(fid);if(!L)return[];const S=trState(),U=S.u['f:'+fid]||{},o=[];for(let i=0;i<L.rows;i++){const x=elFtOffer(fid,S.h,i,L);if(x){x.i=i;x.left=Math.max(0,x.times-(U[i]||0));o.push(x)}}return o}
+// 成交 n 次：返回 {err} 或 {o, n}
+function elFtDo(fid,i,n){if(!elFtLv(fid))return{err:'声望到「接纳」才能和这个家族贸易'};const o=elFtOffers(fid).find(x=>x.i===i);if(!o)return{err:'这笔报价已经刷新了'};
+  n=Math.min(Math.max(1,n|0),o.left,Math.floor(trHave(o.give.w)/o.give.n));if(o.left<=0)return{err:'这笔这个小时已经做满了，下个整点刷新'};if(n<=0)return{err:`${trWName(o.give.w)}不够(需要 ${o.give.n}，现有 ${trHave(o.give.w)})`};
+  const S=trState(),k='f:'+fid;trAdd(o.give.w,-o.give.n*n);trAdd(o.get.w,o.get.n*n);if(!S.u[k])S.u[k]={};S.u[k][i]=(S.u[k][i]||0)+n;saveMeta();return{o,n}}
 
 // ---------- 0.12.0 自建家族（用户定；数据 data/el_blood.js 末尾 CFG.elite.cfam）----------
 // META.el.cf = [{id, name 姓, tier 阶（1 起）, alloc {属性: 上限}, sp [特别属性键（每个 spStep）], tr {门槛: 特性选项}, trH [用过的特性键], crest {shape, bg, pat, fg}, at 建立时间}]
@@ -62745,6 +62781,8 @@ function trDo(id,i){if(!trOpen(id))return{err:'这个地区还没开放'};if(!tr
   const o=trOffers(id).find(x=>x.i===i);if(!o)return{err:'这笔报价已经刷新了'};if(o.left<=0)return{err:'这笔这个小时已经做满了，下个整点刷新'};
   if(trHave(o.give.w)<o.give.n)return{err:`${trWName(o.give.w)}不够(需要 ${o.give.n}，现有 ${trHave(o.give.w)})`};
   const S=trState();trAdd(o.give.w,-o.give.n);trAdd(o.get.w,o.get.n);if(!S.u[id])S.u[id]={};S.u[id][i]=(S.u[id][i]||0)+1;saveMeta();return{o}}
+// 0.12.2（用户定）批量成交：一次做 n 次（不超过还能做的次数、付得起的次数）；返回 {err} 或 {o, n}
+function trDoN(id,i,n){const o=trOffers(id).find(x=>x.i===i);if(o)n=Math.min(Math.max(1,n|0),o.left,Math.floor(trHave(o.give.w)/o.give.n)||1);let k=0,r=null;for(;k<n;k++){r=trDo(id,i);if(r.err)break}return k?{o:r.o||o,n:k}:r}
 // 前往：每小时只能出发一次（Claude 定：不花钱、瞬间到）；已开拓的地区、王都不用前往
 function trGo(id){if(!trOpen(id))return{err:'这个地区还没开放'};if(trSettled(id))return{err:'已开拓的地区可以直接交易，不用前往'};const S=trState();if(S.loc===id)return{err:'商队已经在这里了'};
   if(S.go===S.h){const m=60-new Date(metaNow()).getMinutes();return{err:`这个小时已经出发过了，${m} 分钟后(下个整点)才能再出发`}}S.loc=id;S.go=S.h;saveMeta();return{ok:true}}
@@ -64764,7 +64802,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2f',GAME_TAG='测试版',GAME_CODE=171,GAME_BUILD="7bd8b44",GAME_BUILT=1793140590255,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2f',GAME_TAG='测试版',GAME_CODE=171,GAME_BUILD="acd18d4",GAME_BUILT=1793142071152,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -65565,7 +65603,7 @@ function showDiff(){
       <h4 class="sh">难度</h4><div class="diffs">${CFG.difficulties.map(d=>{const lock=ex?d.id!==ex.diff:!diffOpen(d),mp=ex?menuExpandR:menuMap,b=best[(mp!=='wild'?mp+'.':'')+menuMode+'.'+d.id];
         return`<button class="dc${d.id===menuDiff?' on':''}${lock?' dlock':''}" type="button" ${lock?'aria-disabled="true"':`data-act="diff" data-v="${d.id}"`}><b>${d.name}</b>${helpBtn('diff-'+d.id)}
         <span class="sm">${lock?(ex?'':'未开放'):b!==undefined&&!ex?`最佳：${b} 波`:''}</span></button>`}).join('')}</div>
-      ${ex?'':`<div class="shrow"><h4 class="sh">誓约</h4><button class="px sm${SET.oathOn!==false?' on':''}" type="button" data-act="oathTog">${SET.oathOn!==false?'开':'关'}</button><span class="meta">每一轮开头可以立一个誓约：这一轮承受代价，下一轮拿回报(常规模式要剩两轮以上才有，主要给无尽)；不想玩可以关掉</span></div>${menuMode==='endless'?chDiffRow():''}<div class="shrow"><h4 class="sh">准备阶段事件</h4><button class="px sm${SET.prepEvOn!==false?' on':''}" type="button" data-act="pevTog">${SET.prepEvOn!==false?'开':'关'}</button><span class="meta">准备阶段有时会来流浪商人，卖药水、道具、地区物资；不想玩可以关掉</span></div>`}
+      ${ex?'':`<div class="dfopt"><div class="shrow"><h4 class="sh">誓约${helpBtn('oath')}</h4><button class="px sm${SET.oathOn!==false?' on':''}" type="button" data-act="oathTog">${SET.oathOn!==false?'开':'关'}</button></div><div class="shrow"><h4 class="sh">流浪商人${helpBtn('pmerch')}</h4><button class="px sm${SET.prepEvOn!==false?' on':''}" type="button" data-act="pevTog">${SET.prepEvOn!==false?'开':'关'}</button></div></div>${menuMode==='endless'?chDiffRow():''}`}
       ${mapInfo(ex?menuExpandR:menuMap)}</div>
     <aside class="col side" data-sk="df-r">
       <h4 class="sh">出战阵容 <span class="meta">${[...Array(lineupSize()).keys()].map(k=>(k+1)+' 号'+slotJoin(k)).join('，')}</span></h4><div class="lrs">${lineupRows()}</div>
@@ -66336,7 +66374,7 @@ function worldRect(x,y,r){if(NVIEW>1)return null;const sx=((x-CX)*zoom+OX)/DPR,s
 const keepRect=()=>G&&G.base?worldRect(G.base.x,G.base.y-4,26):null;
 const kn=a=>`<kbd>${keyName(SET.keys[a])}</kbd>`;
 // 造某种建筑：根据当前操作到哪一步，提示下一下点哪里
-function buildHint(t){const B=BDEF[t],cat=CFG.buildCats.find(c=>c.id===B.cat);
+function buildHint(t){const B=BDEF[t],cat=CFG.buildCats.find(c=>c.id===bCatOf(t));
   if(pend.length&&pend.every(q=>q.type===t))return{tx:'点「确认建造」',el:$('#cfOk')};
   if(buildSel===t)return{tx:`点主堡旁边的空地放下${B.name}(绿色 = 能建，红色 = 不能建)`,el:keepRect()};
   if(cat&&curCat!==cat.id)return{tx:`先点底部建造栏的「${cat.name}」分类`,el:catEls[cat.id]};
@@ -66490,7 +66528,7 @@ function matShopHTML(){const W=META.wallet.银币||0;
   return`<p class="meta">银币 <b>${Math.floor(W)}</b></p>${Object.keys(CFG.matShop).map(sec).join('')}`}
 // —— 抽奖池（v0.8.18 五档：黑铁 / 青铜 / 白银 / 黄金 / 钻石；单抽 / 十连 / 二十连）——
 function gachaHTML(){const subs=`<div class="tabs sub dtabs">${GACHA_SUBS.map(([k,n])=>`<button class="px sm${k===gachaSub?' on':''}" type="button" data-act="shopgsub" data-v="${k}">${n}</button>`).join('')}</div>`;
-  const pools=`<div class="tabs sub dtabs">${CFG.shop.pools.map(P=>`<button class="px sm${P.id===gachaPool?' on':''}" type="button" data-act="shopgpool" data-v="${P.id}">${P.name}</button>`).join('')}</div>`;
+  const pools=`<div class="tabs sub dtabs">${CFG.shop.pools.map(P=>{const ok=gPoolOpen(P);return`<button class="px sm${P.id===GPOOL(gachaPool).id?' on':''}" type="button" data-act="shopgpool" data-v="${P.id}"${ok?'':` disabled title="通关${(CFG.mapPages[P.req-1]||{name:P.req+' 阶地区'}).name}的任意一张地图后开放"`}>${P.name}${ok?'':`<em>${P.req} 阶</em>`}</button>`}).join('')}</div>`;
   const HQ=CFG.heroQualities,O=CFG.qOrder,isGear=gachaSub==='gear'||gachaSub==='gearUp',up=gachaSub==='heroUp'||gachaSub==='gearUp',C=isGear?CFG.shop.gachaGear:CFG.shop.gachaHero,P=GPOOL(gachaPool),cost=gPoolCost(P,isGear);
   const pk=(isGear?(up?'gachaGearUp.':'gachaGear.'):(up?'gachaHeroUp.':'gachaHero.'))+P.id,PC=shopState().pity[pk]||{},QM=CFG.shop.qMap;
   const qn=q=>isGear?(QM[q]&&CFG.itemQ[QM[q]]?CFG.itemQ[QM[q]].name:HQ[q].name):HQ[q].name,qc=q=>HQ[q].color;
@@ -66766,6 +66804,10 @@ for(const d of CFG.difficulties)HELP['diff-'+d.id]=()=>{const ex=menuExpand!==nu
     T?`亡灵生命 ×${T.hp[t]}，伤害 ×${T.dmg[t]}`:`亡灵属性 ×${d.stat}`,`亡灵移速 ×${d.speed}，攻击频率 ×${d.atkFreq}`,`结算 ×${d.reward}，掉宝 ×${d.drop}`,
     d.enemyCards?`亡灵强化卡：${d.enemyCards==='player'?'由你替它选':d.enemyCards==='all'?'三项全拿':'由它自己选'}`:'',
     (d.rounds>1||mapRound(mp)!==CFG.run.regularWaves)&&menuMode==='regular'&&!ex?`常规模式守 ${regWavesOf(d,mp)} 波`:''])}};
+// 0.12.2（用户定）出征设置：誓约、流浪商人(原「准备阶段事件」)并排，说明放进「?」
+HELP.oath=()=>({t:'誓约',b:hpL(['每一轮开头可以立一个誓约：这一轮承受代价，下一轮拿回报','常规模式要剩两轮以上才有，主要给无尽模式','默认关闭；开拓、剧情、入侵战没有'])});
+HELP.pmerch=()=>({t:'流浪商人',b:hpL(['准备阶段有时会来流浪商人，卖药水、道具、地区物资','不想遇到可以关掉'])});
+{const st=document.createElement('style');st.textContent='.dfopt{display:flex;gap:18px;flex-wrap:wrap;align-items:center}.dfopt>.shrow{margin:0}';document.head.appendChild(st)}
 
 // ---------- v0.4.3 营地「英雄」页：英雄属性 / 装备 两个子页 ----------
 const skIcoH=k=>{const u=skIcon(k);return u?`<img class="ski" alt="" src="${u}">`:''};   // v0.11.3 英雄详情的技能图标（art/ski_*）
@@ -67680,9 +67722,32 @@ function wmTradeHTML(id){if(!trOpen(id))return`<p class="meta">这个地区还�
   const side=(g,mine)=>`<div class="trg">${tradeIco(g.w)}<div><b>${trWName(g.w)} ×${g.n}</b><span class="meta">${[tag(g.w),mine?`有 ${trHave(g.w)}`:''].filter(Boolean).join(' · ')}</span></div></div>`;
   const pct=o=>{if(o.type==='swap')return'';const w=o.type==='buy'?o.get.w:o.give.w,s=o.type==='buy'?o.give.n:o.get.n,u=s/(o.type==='buy'?o.get.n:o.give.n);const pc=Math.round(u/W[w].price*100),good=o.type==='buy'?pc<=100:pc>=100;return`<span class="meta">单价 ${Math.round(u*10)/10}(标准价 ${W[w].price}，<b class="${good?'pgood':'pbad'}">${pc}%</b>)</span>`};   // 用户定：卖价 100% 以上绿、以下红；买价反过来
   const rows=L.map(o=>{const can=here&&o.left>0&&trHave(o.give.w)>=o.give.n;
-    return`<div class="trrow">${side(o.give,true)}<span class="tra">→</span>${side(o.get,false)}<button class="px sm${can?'':' poor'}" type="button" data-act="wmtrade" data-v="${id}:${o.i}" ${here&&o.left>0?'':'disabled'}>${o.left>0?`成交 ${o.left}/${o.times}`:'已做满'}</button>${pct(o)}</div>`}).join('');
-  return`<p class="meta">繁荣度 <b>${p}</b>(${lv} 级)· 这个小时 ${L.length} 笔报价 · ${nx}:00 刷新 · 银币 <b>${Math.floor(META.wallet.银币||0)}</b></p><div class="row2">${acc}</div>
-    <div class="trlist">${rows||'<p class="meta">暂时没有报价</p>'}</div><p class="meta">左边付出、右边得到；繁荣度等级就是开拓地的主堡等级(王都算 ${CFG.trade.lv.royal} 级、没开拓的算 ${CFG.trade.lv.open} 级)，等级越高报价越多、每笔能做的次数越多、买价越低，英雄之魄和打造书越常出现；物资放在仓库</p>${wmGoldHTML(id,here)}`}
+    return`<div class="trrow">${side(o.give,true)}<span class="tra">→</span>${side(o.get,false)}<button class="px sm${can?'':' poor'}" type="button" data-act="wmtrp" data-v="r:${id}:${o.i}" ${here&&o.left>0?'':'disabled'}>${o.left>0?`成交 ${o.left}/${o.times}`:'已做满'}</button>${pct(o)}</div>`}).join('');   // 0.12.2 点「成交」开批量弹窗（滑条 + 数字）
+  return`<p class="meta">繁荣度 <b>${p}</b>(${lv} 级)· 这个小时 ${L.length} 笔报价 · ${nx}:00 刷新 · 银币 <b>${Math.floor(META.wallet.银币||0)}</b>${helpBtn('trade')}</p><div class="row2">${acc}</div>
+    <div class="trlist">${rows||'<p class="meta">暂时没有报价</p>'}</div>${id==='royal'?wmFamTradeHTML(side,pct):''}${wmGoldHTML(id,here)}`}
+HELP.trade=()=>({t:'贸易',b:hpL(['左边付出、右边得到；点「成交」可以一次做多次(滑条或输入次数)',`繁荣度等级就是开拓地的主堡等级(王都算 ${CFG.trade.lv.royal} 级、没开拓的算 ${CFG.trade.lv.open} 级)，等级越高报价越多、每笔能做的次数越多、买价越低，英雄之魄和打造书越常出现`,'报价每个整点刷新；物资放在仓库',
+  `王都的「家族贸易」：结盟、声望到「接纳」以上的家族卖出 / 收购自己地区这一阶的材料；关系越好，报价越多、每笔能做的次数越多、买价越低、卖价越高(${Object.entries(EL().famTrade.lv).map(([k,v])=>`${k} ${v.rows} 笔 × ${v.times} 次、买 ${Math.round(v.buy*100)}% / 卖 ${Math.round(v.sell*100)}%`).join('；')}，按标准价)`])});
+// 0.12.2（用户定）王都的家族贸易：上面一排选家族（徽记 + 名字 + 关系），下面是这个家族这个小时的报价
+let WM_FT=null;
+function wmFamTradeHTML(side,pct){const F=elFtFams();if(!F.length)return`<h4 class="sh">家族贸易</h4><p class="meta">和家族结盟、声望到「接纳」以后，可以在这里和他们买卖材料</p>`;
+  if(!F.includes(WM_FT))WM_FT=F[0];const B=elBlood(),col=fid=>CFG.elite.repCol[elRepLv(elRepOf(fid))]||'';
+  const tabs=F.map(fid=>`<button class="px sm ftb${WM_FT===fid?' on':''}" type="button" data-act="wmft" data-v="${fid}"><img alt="" src="${elCrestURL(fid)}"><span>${B[fid].name}</span><em style="color:${col(fid)}">${elTribLvN(fid)}</em></button>`).join('');
+  const L=elFtOffers(WM_FT),rows=L.map(o=>{const can=o.left>0&&trHave(o.give.w)>=o.give.n;return`<div class="trrow">${side(o.give,true)}<span class="tra">→</span>${side(o.get,false)}<button class="px sm${can?'':' poor'}" type="button" data-act="wmtrp" data-v="f:${WM_FT}:${o.i}" ${o.left>0?'':'disabled'}>${o.left>0?`成交 ${o.left}/${o.times}`:'已做满'}</button>${pct(o)}</div>`}).join('');
+  return`<h4 class="sh">家族贸易 <span class="meta">${CFG.maps[B[WM_FT].reg]?CFG.maps[B[WM_FT].reg].name+' · ':''}关系越好报价越多、价钱越好</span></h4><div class="ftbar">${tabs}</div><div class="trlist">${rows||'<p class="meta">这个小时没有报价</p>'}</div>`}
+// 批量成交弹窗：WM_TR = {s:'r' 地区 | 'f' 家族, id, i}；滑条和数字框联动，下面显示合计
+let WM_TR=null;
+function wmTrOffer(){const T=WM_TR;if(!T)return null;return(T.s==='f'?elFtOffers(T.id):trOffers(T.id)).find(x=>x.i===T.i)||null}
+function wmTrPopHTML(){const o=wmTrOffer();if(!o){WM_TR=null;return''}const mx=Math.max(0,Math.min(o.left,Math.floor(trHave(o.give.w)/o.give.n))),v=Math.max(mx?1:0,Math.min(mx,WM_TR.n||1));WM_TR.n=v;
+  const g=(x,n)=>`<span class="trq">${tradeIco(x.w)}<b>${trWName(x.w)} ×<em class="trv">${x.n*n}</em></b></span>`;
+  return`<div class="mpopbg" data-act="wmtrx" role="button" aria-label="关闭" style="z-index:70"></div><div class="mpop oppop trpop" role="dialog" style="z-index:71" data-g="${o.give.n}" data-t="${o.get.n}"><div class="oph"><b>${WM_TR.s==='f'?elBlood()[WM_TR.id].name+' · ':''}批量交易</b><button class="px sq" type="button" data-act="wmtrx" aria-label="关闭">×</button></div>
+    <div class="opb"><p class="meta">每次：付出 ${trWName(o.give.w)} ×${o.give.n}，得到 ${trWName(o.get.w)} ×${o.get.n} · 还能做 ${o.left} 次 · 现有 ${trWName(o.give.w)} ${trHave(o.give.w)}</p>
+    ${mx?`<div class="trn"><input id="trRange" type="range" min="1" max="${mx}" value="${v}" aria-label="次数"><input id="trNum" type="number" min="1" max="${mx}" value="${v}" inputmode="numeric" aria-label="次数"><button class="px sm" type="button" data-act="wmtrm">最多</button></div>
+    <div class="trtot">${g(o.give,v)}<span class="tra">→</span>${g(o.get,v)}</div>`:`<p class="warn">${trWName(o.give.w)}不够做一次</p>`}</div>
+    <div class="opf"><button class="px on" type="button" data-act="wmtrok" ${mx?'':'disabled'}>成交 ×<span class="trc">${v}</span></button></div></div>`}
+// 滑条 / 数字框联动（不重画）
+function wmTrSync(src){const P=sheet.querySelector('.trpop');if(!P)return;const R=P.querySelector('#trRange'),N=P.querySelector('#trNum');if(!R||!N)return;const mx=+R.max;let n=Math.round(+src.value||1);n=Math.max(1,Math.min(mx,n));
+  if(src===R)N.value=n;else if(String(n)!==N.value&&N.value!=='')N.value=n;R.value=n;if(WM_TR)WM_TR.n=n;const q=P.querySelectorAll('.trtot .trv');if(q[0])q[0].textContent=n*(+P.dataset.g);if(q[1])q[1].textContent=n*(+P.dataset.t);const c=P.querySelector('.trc');if(c)c.textContent=n}
+if(typeof sheet!=='undefined'&&sheet)sheet.addEventListener('input',e=>{const t=e.target;if(t&&(t.id==='trRange'||t.id==='trNum'))wmTrSync(t)});
 // v0.9.5 贸易页最下面：金币换当地的打造书、英雄之魄（每 6 小时刷新；v0.10.0 起概率按繁荣度等级，不一定有）
 function wmGoldHTML(id,here){if(id==='royal'||!CFG.maps[id])return'';const L=trGoldOffers(id),gold=Math.floor(META.wallet.金币||0);
   const rows=L.map(o=>{const ic=o.k==='book'?`<img class="ia gic" alt="" src="${itemIcon({base:o.base,book:true})}">`:`<img class="gic" alt="" src="${heroIcon(o.id,1)}">`,
@@ -67694,7 +67759,7 @@ function wmPopHTML(ctx){if(KT2_GOD)return kt2GodPopHTML();if(ZL_ED&&ctx!=='settl
   const tabs=T.map(([k,n])=>`<button type="button" class="px sm${WM_TAB===k?' on':''}" data-act="wmtab" data-v="${k}">${n}${k==='settle'&&wmInv(id)?'<b class="wmx in">!</b>':''}</button>`).join('');
   const body=kt2Body(id,ctx);   // 代理 KT 第二轮（ui/kt2_settle）
   return`<div class="btback" data-act="wmx" aria-hidden="true"></div><aside class="hpop wmpop kt2" role="dialog"><div class="hpop-h"><h4>${trName(id)}${id!=='royal'&&CFG.maps[id]?` <span class="meta">${WM_TN[mapTierOf(id)]}阶</span>`:''}</h4><button class="px" type="button" data-act="wmx">关闭</button></div>
-    <div class="tabs sub kt2tabs">${tabs}</div><div class="wmbody" data-sk="wmbody">${body}</div></aside>`}
+    <div class="tabs sub kt2tabs">${tabs}</div><div class="wmbody" data-sk="wmbody">${body}</div></aside>${WM_TAB==='trade'?wmTrPopHTML():''}`}
 // 整屏大地图（营地出征页的「大地图」按钮）
 function showWorld(){openModal('start',scrHTML({title:'大地图',back:['hub',WM_BACK,'营地'],sk:'world',body:`<p class="meta wmtip">点地区图标：出征、开拓地、贸易。灰色的还没开放；小旗 = 有开拓地；红色感叹号 = 亡灵入侵；「商」= 商队所在；双指或滑条缩放</p>${wmHTML('world')}`,over:wmPopHTML('world')}),null,true,'hub:world')}
 // 开拓地页默认用大地图（用户定），SET.stView='list' 时用原来的地区卡片
@@ -67714,6 +67779,11 @@ function wmAct(a,v){if(a==='wmcv'){caraAct(v);return}if(a==='wmkt'){ktPanel(v);r
   else if(a==='wmgo'){const[m,id]=v.split(':');if(!mapOpen(id))return;const c=wmCenterNow();menuMode=m;menuMap=id;menuExpand=null;WM_POP=null;SET.wmView=true;saveSettings();showDiff();wmScroll(id)}
   else if(a==='wmtgo'){const r=trGo(v);if(r.err)toast(r.err);else{sfx('pick');toast(`商队到了${trName(v)}`)}wmRefresh()}
   else if(a==='wmgold'){const k=v.lastIndexOf(':'),id=v.slice(0,k),r=trGoldDo(id,v.slice(k+1));if(r.err)toast(r.err);else{sfx('coin');toast(r.o.k==='book'?`买到《${bookDef(r.o.base).name}》打造书(在仓库)`:`买到${CFG.heroes[r.o.id].name}的英雄之魄 ×${r.o.n}`)}wmRefresh()}
+  else if(a==='wmtrp'){const[s,...r]=v.split(':'),i=+r.pop();WM_TR={s,id:r.join(':'),i,n:0};sfx('click');wmRefresh()}   // 0.12.2 批量交易弹窗
+  else if(a==='wmtrx'){WM_TR=null;wmRefresh()}else if(a==='wmft'){WM_FT=v;wmRefresh()}
+  else if(a==='wmtrm'){const R=sheet.querySelector('#trRange');if(R){R.value=R.max;wmTrSync(R)}}
+  else if(a==='wmtrok'){const T=WM_TR,N=sheet.querySelector('#trNum'),n=Math.max(1,parseInt(N&&N.value,10)||T.n||1),r=T.s==='f'?elFtDo(T.id,T.i,n):trDoN(T.id,T.i,n);
+    if(r.err)toast(r.err);else{sfx('coin');toast(`成交 ${r.n} 次：付出 ${trWName(r.o.give.w)} ×${r.o.give.n*r.n}，得到 ${trWName(r.o.get.w)} ×${r.o.get.n*r.n}`)}WM_TR=null;wmRefresh()}
   else if(a==='wmtrade'){const k=v.lastIndexOf(':'),id=v.slice(0,k),r=trDo(id,+v.slice(k+1));if(r.err)toast(r.err);else{sfx('coin');toast(`付出 ${trWName(r.o.give.w)} ×${r.o.give.n}，得到 ${trWName(r.o.get.w)} ×${r.o.get.n}`)}wmRefresh()}}
 
 // ---------- 开拓地商队的界面：大地图地区面板的「商队」页签（ui/worldmap 的 wmTabs / wmPopHTML 调 wmCvHTML；按钮 data-act="wmcv"，wmAct 转给 caraAct）----------
@@ -67757,11 +67827,13 @@ function wmCvHTML(id){const R=stRegion(id);if(!R||!stRegionOpen(id))return`<p cl
   const prod=CARA_KEYS.map(k=>{const w=caraWare(id,k);if(!w)return'';const I=CFG.wares.items[w],st=Math.floor((R.acc&&R.acc[k]||0)+1e-9);
     return`<div class="cvw">${tradeIco(w)}<div><b>${I.name}</b><span class="meta">${CV_KN[k]} · 每小时 ${stNum(E.rate[k]||0)} · 仓库 ${st}${L.length?` · 这一小时已产 ${Math.floor((K[k]||0)+1e-9)}(整点配给商队)`:''} · 标准价 ${I.price}</span></div></div>`}).join('');
   const tev=stEvActive(id,t).find(x=>x.c==='t'),nb=caraNbr(id).map(trName).join('、')||'没有开放的相邻地区';
-  return`<h4 class="sh">商会 <span class="meta">${trName(id)}开拓地每小时的产出</span></h4><div class="cvws">${prod}</div>
-    <p class="meta">战斗力需求 <b>${need}</b>${tide?`<b class="warn">(${C.tide.name}，×${C.tide.req}，还剩 ${stDurTxt(tev.t1-t)})</b>`:''} · 繁荣度等级 ${trLevel(id)}(= 商队最高等级)· 相邻：${nb}</p>
+  // 0.12.2（用户定）每小时的货物产出放到最下面；机制说明放进「?」
+  return`<p class="meta">战斗力需求 <b>${need}</b>${tide?`<b class="warn">(${C.tide.name}，×${C.tide.req}，还剩 ${stDurTxt(tev.t1-t)})</b>`:''} · 繁荣度等级 ${trLevel(id)}(= 商队最高等级)· 相邻：${nb}${helpBtn('cara')}</p>
     ${L.map(c=>cvCardHTML(id,c,E,H,need)).join('')}
     <div class="stbtns">${L.length<C.max?cvBtn('new',id,0,'',`新建商队<em>${caraNewCost(id)} 银币</em>`,'on',caraSilver()<caraNewCost(id)):`<span class="meta">每个开拓地最多 ${C.max} 支商队</span>`}<span class="meta">银币 ${caraSilver()}</span></div>
-    <p class="meta">有商队时，这个开拓地每小时产出的木、矿、布、皮、核心特产直接配给商队(不从仓库拿)，每个整点运到相邻地区卖成银币；商队装不下的才进仓库。路上有 ${Math.round(C.hit.p*100)}% 的可能被亡灵拦截，战斗力每达标 ${Math.round(C.hit.step*100)}% 少 ${Math.round(C.hit.per*100)}%；被袭丢 ${Math.round(C.loss*100)}% ×(1 − 达标比例)的货，这趟不成交。离线最多补算 ${C.offline} 小时。</p>`}
+    <h4 class="sh">商会 <span class="meta">${trName(id)}开拓地每小时的产出</span></h4><div class="cvws">${prod}</div>`}
+HELP.cara=()=>{const C=CFG.caravan;return{t:'商队',b:hpL(['有商队时，这个开拓地每小时产出的木、矿、布、皮、核心特产直接配给商队(不从仓库拿)，每个整点运到相邻地区卖成银币；商队装不下的才进仓库',
+  `路上有 ${Math.round(C.hit.p*100)}% 的可能被亡灵拦截，战斗力每达标 ${Math.round(C.hit.step*100)}% 少 ${Math.round(C.hit.per*100)}%；被袭丢 ${Math.round(C.loss*100)}% ×(1 − 达标比例)的货，这趟不成交`,`离线最多补算 ${C.offline} 小时`])}};
 // 按钮：data-v = 操作|地区|商队 id|参数
 function caraAct(v){const[op,id,cs,arg]=v.split('|'),cid=+cs;let r=null;
   if(op==='open'){CV_OPEN=CV_OPEN&&CV_OPEN.id===id&&CV_OPEN.c===cid&&CV_OPEN.w===arg?null:{id,c:cid,w:arg};CV_DEL=null}
@@ -68246,7 +68318,7 @@ const stPlanOn=()=>{const S=G.story;return!!(S&&S.plan&&G.phase==='prep'&&G.wave
 const stNear=L=>L.slice().sort((a,b)=>Math.hypot(a.x-TERR_CX,a.y-TERR_CY)-Math.hypot(b.x-TERR_CX,b.y-TERR_CY))[0];
 const tileRect=(x,y)=>worldRect(x*16+8,y*16+8,10);
 // 照图纸造某种建筑：下一步点哪里
-function planHint(t){const B=BDEF[t],cat=CFG.buildCats.find(c=>c.id===B.cat),left=stPlanLeft(t,1),p=stNear(left);
+function planHint(t){const B=BDEF[t],cat=CFG.buildCats.find(c=>c.id===bCatOf(t)),left=stPlanLeft(t,1),p=stNear(left);
   if(pend.length&&pend.every(q=>q.type===t))return{tx:'点「确认建造」',el:$('#cfOk')};
   if(buildSel===t)return{tx:`点图纸上${B.name}的位置(还差 ${left.length} 个)${t==='wall'?'。按住拖过去，可以一口气连着造':''}`,el:p?tileRect(p.x,p.y):null};
   if(cat&&curCat!==cat.id)return{tx:`先点建造栏的「${cat.name}」分类`,el:catEls[cat.id]};
@@ -68694,7 +68766,7 @@ let EL_EVX=new Set(),EL_EVT='',EL_TOP='hero',EL_SUB='list',EL_POP=null,EL_SORT='
 .elcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(25em,100%),1fr));gap:10px}
 .elcard{display:grid;grid-template-columns:76px 1fr;gap:10px;align-items:start;background:#1a1622;padding:10px;box-shadow:0 0 0 2px var(--rivet),inset 0 0 0 1px var(--iron)}
 .elcard.dep{box-shadow:0 0 0 2px var(--rivet),inset 0 0 0 2px var(--brass)}.elcard.hurt{background:#221416}
-.elcard .elpic{display:flex;flex-direction:column;align-items:center;gap:6px}.elcard .elpic img{width:64px;height:64px;image-rendering:pixelated;object-fit:contain;background:#120f17;box-shadow:inset 0 0 0 1px var(--iron)}
+.elssr.qk .elss{cursor:pointer}.elssr.qk .elss:hover{outline:1px solid var(--brass)}.elcard .elpic .px{width:100%}.elcard .elpic{display:flex;flex-direction:column;align-items:center;gap:6px}.elcard .elpic img{width:64px;height:64px;image-rendering:pixelated;object-fit:contain;background:#120f17;box-shadow:inset 0 0 0 1px var(--iron)}
 .elcard .elmain{display:flex;flex-direction:column;gap:4px;min-width:0}.elcard .elbtns{display:flex;flex-wrap:wrap;gap:4px}.elbtns .elbr{margin-left:auto}.elpic .px{width:100%;padding:2px 4px}.elcard .elbtns .px{min-height:30px;font-size:.82rem;padding:3px 10px}
 .elcard b.nm{font-family:var(--f-display);font-weight:400;font-size:1.1rem;color:var(--brass-hi)}.elcard .meta{line-height:1.55}
 .elchips{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.elchip{font-size:.74rem;padding:1px 6px;background:#120f17;box-shadow:inset 0 0 0 1px var(--iron);color:var(--bone)}
@@ -68704,7 +68776,7 @@ let EL_EVX=new Set(),EL_EVT='',EL_TOP='hero',EL_SUB='list',EL_POP=null,EL_SORT='
 .elpop{width:min(calc(620px * var(--fk,1)),calc(100% - 20px));max-height:calc(100% - 30px);overflow:auto}
 .elsk{display:grid;grid-template-columns:repeat(auto-fill,minmax(14em,1fr));gap:6px}.elsk>div{display:grid;grid-template-columns:32px 1fr;gap:6px;align-items:start;background:#120f17;padding:6px;box-shadow:inset 0 0 0 1px var(--iron)}
 .elsk>div.on{box-shadow:inset 0 0 0 2px var(--brass)}.elsk img{width:32px;height:32px;image-rendering:pixelated}.elsk .px{min-height:28px;font-size:.8rem;padding:2px 8px}
-.elrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0}.ellog td,.ellog th{padding:2px 6px;font-size:.8rem;text-align:right}.ellog td:first-child,.ellog th:first-child{text-align:left}
+.elrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0}.ellogw{max-height:50vh;overflow:auto;overscroll-behavior:contain;box-shadow:inset 0 0 0 1px var(--iron)}.ellog{border-collapse:collapse;white-space:nowrap}.ellog th{position:sticky;top:0;background:#16131b;z-index:1}.ellog td,.ellog th{padding:3px 8px;font-size:.8rem;text-align:right;border-left:1px solid var(--iron);border-bottom:1px solid rgba(255,255,255,.06)}.ellog td:first-child,.ellog th:first-child{border-left:0}.ellog td:first-child,.ellog th:first-child{text-align:left}
 .elroll{display:grid;gap:4px}.elroll>div{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#1a1622;padding:6px 8px;box-shadow:inset 0 0 0 1px var(--iron)}
 .elroll b{color:var(--bone);font-weight:400}
 .elgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(116px * var(--fk,1)),1fr));gap:8px}.elgrid .hst{width:auto}
@@ -68782,18 +68854,21 @@ function elHub(){elTick();elAllySync();const m=elSt();const tabs=`<div class="ta
 let EL_LSORT=null,EL_MARF='';   // 0.12.1 精英列表排序 [键, 倒序]；婚配页筛选（'' 全部 / 'y' 已婚 / 'n' 未婚）
 function elListHTML(){const m=elSt(),dep=m.list.filter(e=>e.dep).length;
   const head=`<div class="elhead"><span class="meta">在役 <b>${m.list.length}</b> / ${elCap()} 名(每个开拓地 +${EL().capPer}) · 上阵 <b>${dep}</b> / ${elDeployMax()} · 在「招募」页签招人</span>
-    ${elBtn('elxautoall','','全部自动',{on:true,ti:'一键装备、一键技能，再把没伤病的人排上阵(锁定配置的不改装备和技能)'})}${elBtn('elxautog','','一键装备',{ti:'没锁定配置的精英，从仓库里挑能穿的最好的商店普通装备'})}${elBtn('elxautos','','一键技能',{ti:'没锁定配置的精英按技能等级自动装配'})}${elBtn('elxinj','',`伤兵上阵：${m.opt.injOff?'关':'开'}`,{on:!m.opt.injOff,ti:'开：有伤病的精英照样上阵；关：有伤病的自动换下'})}${elBtn('elxcv','',`切换显示：${EL_CARDV==='eq'?'装备':'技能'}`,{ti:'卡片右侧显示装配的技能还是穿着的装备'})}</div>`;
+    ${elBtn('elxautoall','','全部自动',{on:true,ti:'一键装备、一键技能，再把没伤病的人排上阵(锁定配置的不改装备和技能)'})}${elBtn('elxautog','','一键装备',{ti:'没锁定配置的精英，从仓库里挑能穿的最好的商店普通装备'})}${elBtn('elxautos','','一键技能',{ti:'没锁定配置的精英：只给空的技能位补上技能，已经装上的不动'})}${elBtn('elxinj','',`伤兵上阵：${m.opt.injOff?'关':'开'}`,{on:!m.opt.injOff,ti:'开：有伤病的精英照样上阵；关：有伤病的自动换下'})}${elBtn('elxcv','',`切换显示：${EL_CARDV==='eq'?'装备':'技能'}`,{ti:'卡片右侧显示装配的技能还是穿着的装备'})}</div>`;
   if(!m.list.length)return head+'<p class="meta">还没有精英。在上面的「招募」页签(或大地图上开拓地的「招募」页签)用银币招募有名字的精英士兵。</p>';
   const sk=EL_LSORT,L=sk?m.list.slice().sort((a,b)=>(sk[0]==='lv'?elLv(a)-elLv(b):a.age-b.age)*(sk[1]?-1:1)):m.list,sb=(k,n)=>elBtn('elxlsort',k,`${n}${sk&&sk[0]===k?(sk[1]?' ↓':' ↑'):''}`,{on:!!(sk&&sk[0]===k)});   // 0.12.1（用户定）排序：再点一次倒序
   return head+`<div class="elrow"><span class="meta">排序：</span>${elBtn('elxlsort','','默认',{on:!sk})}${sb('lv','按等级')}${sb('age','按年龄')}</div><div class="elcards">${L.map(elCardHTML).join('')}</div>`}
 function elCardHTML(e){const J=elJobD(e),hurt=elHurt(e);
   const L=e.learn?` · 正在学${EL().skills[e.learn.k].name} ${elRoman(e.learn.lv)} 级`:'';
-  return`<div class="elcard${e.dep?' dep':''}${hurt?' hurt':''}"><div class="elpic"><img alt="" src="${elIcon(e)}">${elBtn('elxdep',e.id,e.dep?'上阵中':'待命',{on:e.dep})}</div><div class="elmain">
+  return`<div class="elcard${e.dep?' dep':''}${hurt?' hurt':''}"><div class="elpic"><img alt="" src="${elIcon(e)}">${elBtn('elxdep',e.id,e.dep?'上阵中':'待命',{on:e.dep})}${elRankBtn(e)}</div><div class="elmain">
     <div><b class="nm">${elName(e)}</b>${elSexI(e)} <span class="meta">${J.name} · Lv${elLv(e)} · ${elAgeTxt(e)} · 功勋 ${e.rank} 阶${e.lock?' · 已锁定配置':''}${L}</span></div>
-    <div class="elchips">${elTraitChips(e)}${elInjChips(e)}</div>${EL_CARDV==='eq'?elGearRow(e):elSlotsHTML(e)}
+    <div class="elchips">${elTraitChips(e)}${elInjChips(e)}</div>${EL_CARDV==='eq'?elGearRow(e,true):elSlotsHTML(e,false,true)}
     <div class="elbtns">${elBtn('elxpop','at:'+e.id,'属性',{on:true})}${elBtn('elxpop','job:'+e.id,'转职')}${elBtn('elxpop','log:'+e.id,'日志')}${hurt?elBtn('elxpop','inj:'+e.id,'伤病'):''}${elBtn('elxpop','tree:'+e.id,'族谱')}<span class="elbr">${elBtn('elxpop','ret:'+e.id,'退休')}</span></div></div></div>`}   // 0.12.0（用户定）「上阵」放头像下面、「退休」排到这一排最右；属性搬进「装备」；没有伤病时不出现「伤病」
+// 0.12.2（用户定）头像下面「上阵中」下方加「升阶」（功勋晋升）：平时灰的，功勋和银币都够时亮起
+function elRankBtn(e){const N=elRankNeed(e);if(!N)return elBtn('elxrank',e.id,'已满阶',{dis:true});const ok=e.merit>=N.merit&&(META.wallet.银币||0)>=N.silver;
+  return elBtn('elxrank',e.id,'升阶',{on:ok,dis:!ok,ti:`功勋 ${e.merit}/${N.merit} · 银币 ${N.silver}：升到 ${e.rank+1} 阶，技能位变多`})}
 // 卡片右侧显示装备（0.12.0 用户定「切换显示」）：五个部位的图标，空的暗色
-function elGearRow(e){return`<div class="elssr">${EL_SLOTS.map(([s,n])=>{const it=itemByUid(e.gear[s]);return it?`<span class="elss" style="background:#16131b;box-shadow:inset 0 0 0 2px ${CFG.itemQ[baseQ(it.base)].color}" title="${n}：${itemName(it)}"><img alt="" src="${itemIcon(it)}">${it.enh?`<i>+${it.enh}</i>`:''}</span>`:`<span class="elss emp" title="${n}：空"></span>`}).join('')}</div>`}
+function elGearRow(e,qk){const q=s=>qk?` role="button" data-act="elxqk" data-v="aeq:${e.id}|${s}"`:'';return`<div class="elssr${qk?' qk':''}">${EL_SLOTS.map(([s,n])=>{const it=itemByUid(e.gear[s]);return it?`<span class="elss"${q(s)} style="background:#16131b;box-shadow:inset 0 0 0 2px ${CFG.itemQ[baseQ(it.base)].color}" title="${n}：${itemName(it)}"><img alt="" src="${itemIcon(it)}">${it.enh?`<i>+${it.enh}</i>`:''}</span>`:`<span class="elss emp"${q(s)} title="${n}：空"></span>`}).join('')}</div>`}   // qk：0.12.2 卡片上点格子直接换装备
 // —— 弹窗 ——
 function elPopHTML(){if(EL_GUIDE!=null)return elGuideHTML();return elPopHTML0()+(EL_TIP?elTipHTML():'')}   // EL_GUIDE：0.12.2 精英玩法引导（ui/el_tut）
 function elPopHTML0(){try{return elPopHTML1()}catch(err){console.error('elPop',err);dbgErr('elPop '+EL_POP+': '+((err&&err.message)||err),'elPopHTML0',err&&err.stack);const t=EL_POP;EL_POP=null;return`<div class="mpopbg" data-act="elxpx" role="button" aria-label="关闭"></div><div class="mpop oppop elpop kt2" role="dialog"><div class="oph"><b>打不开</b><button class="px sq" type="button" data-act="elxpx" aria-label="关闭">×</button></div><div class="opb"><p class="warn">这个弹窗出错了(${t})：${(err&&err.message)||err}</p><p class="meta">请在 设置 → 问题报告 里发调试信息。</p></div></div>`}}   // 0.12.1 出错不再静默打不开
@@ -68861,11 +68936,11 @@ const elUseRank=(it,e)=>{const o=elOwnerOf(it.uid);return o===e?0:itemOwner(it.u
 function elItemCell(it,e){const Q=CFG.itemQ[baseQ(it.base)],ho=itemOwner(it.uid),eo=elOwnerOf(it.uid),mine=eo===e,who=ho?CFG.heroes[ho].name:eo&&!mine?elName(eo):'';
   return`<button class="it${mine?' worn mine':who?' worn':''}" type="button" data-act="elxeq" data-v="${e.id}:${it.uid}" style="--qc:${Q.color}" title="${itemName(it)}${it.enh?' +'+it.enh:''}${mine?'(穿着)':who?`(${who}在用)`:''}"><img alt="" src="${itemIcon(it)}">${it.enh?`<i class="en">+${it.enh}</i>`:''}${BOOK_N.get(it.uid)>1?`<i class="en">×${BOOK_N.get(it.uid)}</i>`:''}${mine?'<i class="ow">穿</i>':who?'<i class="ow">用</i>':''}${gearTier(it.base)>1?`<i class="tr">${TIER_RN[gearTier(it.base)]||gearTier(it.base)}</i>`:''}</button>`}
 // 技能位（0.11.4 用户定：显示装配了什么技能，图标 + 右上角等级；主动在前、被动(金底)在后、空位暗色）
-function elSlotsHTML(e,big){const sl=elSlots(e);
-  const t=(k,pas)=>{if(!k)return`<span class="elss emp${pas?' pas':''}" title="空的${pas?'被动':'主动'}技能位"></span>`;const S=EL().skills[k],u=elSkIco(k);
-    return`<span class="elss${pas?' pas':''}" title="${S.name} ${elRoman(e.sk[k]||1)} 级">${u?`<img alt="" src="${u}">`:`<b>${S.name.slice(0,1)}</b>`}<i>${elRoman(e.sk[k]||1)}</i></span>`};
-  const A=[],P=[];for(let i=0;i<sl[0];i++)A.push(t(e.ea[i],false));for(let i=0;i<sl[1];i++)P.push(t(e.ep[i],true));
-  return`<div class="elssr${big?' big':''}">${A.join('')}${P.length?'<b class="elsep"></b>':''}${P.join('')}</div>`}
+function elSlotsHTML(e,big,qk){const sl=elSlots(e),q=(pas,i)=>qk?` role="button" data-act="elxqk" data-v="ask:${e.id}|${pas?'p':'a'}|${i}"`:'';   // qk：0.12.2 卡片上点技能位直接换技能
+  const t=(k,pas,i)=>{if(!k)return`<span class="elss emp${pas?' pas':''}"${q(pas,i)} title="空的${pas?'被动':'主动'}技能位"></span>`;const S=EL().skills[k],u=elSkIco(k);
+    return`<span class="elss${pas?' pas':''}"${q(pas,i)} title="${S.name} ${elRoman(e.sk[k]||1)} 级">${u?`<img alt="" src="${u}">`:`<b>${S.name.slice(0,1)}</b>`}<i>${elRoman(e.sk[k]||1)}</i></span>`};
+  const A=[],P=[];for(let i=0;i<sl[0];i++)A.push(t(e.ea[i],false,i));for(let i=0;i<sl[1];i++)P.push(t(e.ep[i],true,i));
+  return`<div class="elssr${big?' big':''}${qk?' qk':''}">${A.join('')}${P.length?'<b class="elsep"></b>':''}${P.join('')}</div>`}
 // 技能：装配、学习（0.12.0：在教官那里学，要几小时，科技缩短，可花银币加速）、功勋升阶、锁定
 // 0.12.0（用户定）已学会的在上面，没学会的在下面、暗色
 function elSkHTML(e){const sl=elSlots(e),N=elRankNeed(e),av=elSkAvail(e);
@@ -68875,7 +68950,7 @@ function elSkHTML(e){const sl=elSlots(e),N=elRankNeed(e),av=elSkAvail(e);
   const L=e.learn?`<p>正在${e.learn.ins!=null&&elInsWho(e.learn.ins)?`跟${elInsWho(e.learn.ins).name}`:''}学：<b>${EL().skills[e.learn.k].name} ${elRoman(e.learn.lv)} 级</b>，还要 ${Math.max(0,Math.ceil((e.learn.end-metaNow())/60000))} 分钟(在「训练所」可以加速)</p>`:'';
   const got=av.filter(k=>e.sk[k]>0),no=av.filter(k=>!(e.sk[k]>0)),grp=(L2,pas)=>L2.filter(k=>!!EL().skills[k].pas===pas).map(card).join('');
   return`${elSlotsHTML(e,true)}<p class="meta">功勋 ${e.rank} 阶：主动 ${sl[0]} 个、被动 ${sl[1]} 个技能位；技能最高 ${elRoman(elSkMax())} 级(科技「精英训练」提高，最高 ${elRoman(EL().skMax)} 级)；技能在「训练所」学：教官挑一批学生一起上课，学完每人升一级，不超过教官的等级。功勋 ${Math.round(e.merit)}${N?`；升到 ${e.rank+1} 阶要 ${N.merit} 功勋 + ${N.silver} 银币 ${elBtn('elxrank',e.id,'升阶',{dis:e.merit<N.merit})}`:'(已满阶)'}</p>
-    <div class="elrow">${elBtn('elxauto1',e.id,'一键搭配技能',{ti:'只给这个人按技能等级装配(锁定了也能用)'})}${elBtn('elxlock',e.id,e.lock?'已锁定配置':'锁定配置',{on:e.lock,ti:'锁定后，精英页的一键装备、一键搭配技能不再改这个人的装备和技能'})}</div>${L}
+    <div class="elrow">${elBtn('elxauto1',e.id,'一键搭配技能',{ti:'只给这个人空的技能位补上技能(锁定了也能用)'})}${elBtn('elxlock',e.id,e.lock?'已锁定配置':'锁定配置',{on:e.lock,ti:'锁定后，精英页的一键装备、一键搭配技能不再改这个人的装备和技能'})}</div>${L}
     <h5>主动技能 · 已装 ${e.ea.length}/${sl[0]}</h5><div class="elskL">${grp(got,false)||'<p class="meta">还没学会主动技能。</p>'}</div>
     <h5>被动技能 · 已装 ${e.ep.length}/${sl[1]}</h5><div class="elskL">${grp(got,true)||'<p class="meta">还没学会被动技能。</p>'}</div>
     <h5>没学会 · 主动</h5><div class="elskL">${grp(no,false)||'<p class="meta">没有了。</p>'}</div>
@@ -68891,7 +68966,7 @@ function elJobHTML(e){const J=EL().jobs,CAT=EL().jobCat,cur=CAT.find(c=>c[2].inc
       return`<div class="hst${k===e.job?' on':''}" title="生命 ${j.hp} · 物攻 ${j.atk} · 法攻 ${j.ap} · 物防 ${j.def} · 移速 ${j.speed}"><b>${j.name}${j.t2?' <span class="optag">二阶</span>':''}</b><img class="gp" alt="" src="${heroIcon(elSprLk({job:k,sex:e.sex,lk:elLook(e)}),2)}"><span class="meta">${j.fam.map(f=>EL().famName[f]).join(' / ')}<br>${j.weapon.map(t=>CFG.weaponTypes[t].name).join('、')}${j.pasX?`<br>被动技能位 +${j.pasX}`:''}${j.st?'<br>'+elStDesc(j.st):''}</span>${k===e.job?'':elJobCostHTML(e,k)}${k===e.job?elBtn('elxjob',e.id+':'+k,'当前',{dis:true}):lk?`<span class="meta warn">${lk}</span>`+elBtn('elxjob',e.id+':'+k,'转职',{dis:true}):EL_JOBASK===k?elBtn('elxjobok',e.id+':'+k,'确认转职',{on:true})+elBtn('elxjob',e.id+':','取消'):elBtn('elxjob',e.id+':'+k,'转职')}</div>`}).join('')}</div>`}   // 0.12.0（用户定）转职要确认
 function elLogHTML(e){const g=e.log;
   return`${e.st?`<p class="meta">${e.st==='dead'?'已故':'已退休'} · ${elAgeTxt(e)} ${elBtn('elxpop','tree:'+e.id,'族谱')}</p>`:''}<p>出战 <b>${g.n}</b> 次 · 击杀 <b>${g.k}</b> · 输出 <b>${numK(g.d)}</b> · 承伤 <b>${numK(g.t)}</b> · 治疗 <b>${numK(g.h)}</b> · 控制 <b>${f1g(g.c)}</b> 秒</p>
-    <table class="ellog"><tr><th>时间</th><th>地图</th><th>波</th><th>击杀</th><th>输出</th><th>承伤</th><th>治疗</th><th>控制</th><th>功勋</th></tr>${g.L.map(L=>L.birth?`<tr><td>${new Date(L.at).toLocaleString()}</td><td colspan="8">生下了 <b>${(elById(L.birth)&&elName(elById(L.birth)))||L.bn||''}</b></td></tr>`:`<tr><td>${new Date(L.at).toLocaleString()}${L.dead?' (倒下)':''}</td><td>${CFG.maps[L.map]?CFG.maps[L.map].name:''}</td><td>${L.w}</td><td>${L.k}</td><td>${numK(L.d)}</td><td>${numK(L.t)}</td><td>${numK(L.h)}</td><td>${L.c}</td><td>+${L.m}</td></tr>`).join('')}</table>`}
+    <div class="ellogw" data-sk="ellog"><table class="ellog"><tr><th>时间</th><th>地图</th><th>波</th><th>击杀</th><th>输出</th><th>承伤</th><th>治疗</th><th>控制</th><th>功勋</th></tr>${g.L.map(L=>L.birth?`<tr><td>${new Date(L.at).toLocaleString()}</td><td colspan="8" style="text-align:left">生下了 <b>${(elById(L.birth)&&elName(elById(L.birth)))||L.bn||''}</b></td></tr>`:`<tr><td>${new Date(L.at).toLocaleString()}${L.dead?' (倒下)':''}</td><td>${CFG.maps[L.map]?CFG.maps[L.map].name:''}</td><td>${L.w}</td><td>${L.k}</td><td>${numK(L.d)}</td><td>${numK(L.t)}</td><td>${numK(L.h)}</td><td>${L.c}</td><td>+${L.m}</td></tr>`).join('')}</table></div>`}   // 0.12.2（用户定）日志框高度为屏幕一半，上下左右都能滑；地名不再竖排；列之间画竖线
 function elInjHTML(e){const I=EL().injury,ks=Object.keys(e.inj);
   return`<p class="meta">死亡时 ${pc_(I.p)} 留下伤残；已经伤残的再倒下 ${pc_(I.worseP)} 变成残疾(科技「紧急抢救」降低)。伤残 ${I.healH} 小时后自己恢复，也可以花 ${I.silver} 银币马上治好；残疾不会恢复，花 ${I.gold} 金币治好。</p>
     ${ks.length?`<div class="elroll">${ks.map(k=>{const J=e.inj[k],D=EL().injuries[k],st=D.st[J.lv-1];return`<div><b>${D.name[J.lv-1]}</b><span class="meta">${elStTxt(st)}</span>${elBtn('elxheal',e.id+':'+k,J.lv===1?`治疗(${I.silver} 银币)`:`治疗(${I.gold} 金币)`)}</div>`}).join('')}</div>`:'<p>没有伤病。</p>'}`}
@@ -69133,7 +69208,7 @@ function elAct(a,v){if(elTutAct(a,v)||elAttrAct(a,v)||elTribAct(a,v)){sfx('click
 const[x,y]=String(v||'').split(':'),e=elById(+x);let err=null;EL_SAY='';
   if(a==='elxtop'){EL_TOP=v;EL_POP=null}
   else if(a==='elxsub'){EL_SUB=v;EL_POP=null}
-  else if(a==='elxpop'){if(EL_POP!==v){EL_EQT='st';EL_EQS='';EL_JOBASK='';EL_BQF=null;EL_APG=0;if(String(v).startsWith('aeq:'))EL_EQF='n'}EL_POP=v}else if(a==='elxpx')EL_POP=null;
+  else if(a==='elxpop'){if(EL_POP!==v){EL_EQT='st';EL_EQS='';EL_JOBASK='';EL_BQF=null;EL_APG=0;if(String(v).startsWith('aeq:'))EL_EQF='n'}EL_POP=v}else if(a==='elxpx'){EL_POP=null;EL_QK=false}
   else if(a==='elxcv')EL_CARDV=EL_CARDV==='eq'?'sk':'eq';else if(a==='elxeqt')EL_EQT=v;else if(a==='elxeqs'){EL_EQS=EL_EQS===y?'':y;EL_EQT='bag'}
   else if(a==='elxjump'){const t=elById(+v),m=elSt();if(t)EL_POP=(m.list.includes(t)?'at:':m.roll.includes(t)?'log:':'info:')+t.id;EL_EQT='st'}   // 0.12.0 族谱里点人：在役的看属性 / 装备，孩子看属性，退休、去世的看日志
   else if(a==='elxitch'){const i=v.lastIndexOf('|');err=elInsTeach(v.slice(0,i),v.slice(i+1));if(!err)EL_PK[v.slice(0,i)]=[]}
@@ -69150,13 +69225,13 @@ const[x,y]=String(v||'').split(':'),e=elById(+x);let err=null;EL_SAY='';
   else if(a==='elxhire'){err=elHire(x,+y);if(!err)toast('招募成功：在开拓地页「精英」里')}
   else if(a==='elxdep'&&e)err=elDepToggle(e);
   else if(a==='elxautog'){elAutoGearAll();toast('已按仓库里能穿的最好装备换上(锁定配置的不变)')}
-  else if(a==='elxautos'){for(const q of elSt().list)elAutoSk(q,true);saveMeta();toast('已自动搭配(锁定配置的不变)')}
+  else if(a==='elxautos'){for(const q of elSt().list)elFillSk(q);saveMeta();toast('已补上空的技能位(已装的和锁定配置的不变)')}
   else if(a==='elxinj'){const o=elSt().opt;o.injOff=!o.injOff;saveMeta()}
   else if(a==='elxeq'&&e)err=elEquip(e,+y);else if(a==='elxuneq'&&e)elUnequip(e,y);
   else if(a==='elxske'&&e){const on=!(EL().skills[y].pas?e.ep:e.ea).includes(y);err=elEquipSk(e,y,on)}
   else if(a==='elxlearn'&&e){err=elLearn(e,y);if(!err)toast('开始学习')}
   else if(a==='elxrush'&&e)err=elRush(e);else if(a==='elxrank'&&e){err=elRankUp(e);if(!err)toast(`升到功勋 ${e.rank} 阶`)}
-  else if(a==='elxauto1'&&e){elAutoSk(e);saveMeta();toast('已搭配技能')}else if(a==='elxautog1'&&e){elAutoGear(e);saveMeta();toast('已换上能穿的最好装备')}else if(a==='elxlock'&&e){e.lock=!e.lock;saveMeta()}
+  else if(a==='elxauto1'&&e){const k=e.lock;e.lock=false;elFillSk(e);e.lock=k;saveMeta();toast('已补上空的技能位')}else if(a==='elxautog1'&&e){elAutoGear(e);saveMeta();toast('已换上能穿的最好装备')}else if(a==='elxlock'&&e){e.lock=!e.lock;saveMeta()}
   else if(a==='elxjob'&&e)EL_JOBASK=y||'';else if(a==='elxjcat'&&e){EL_JOBCAT=y;EL_JOBASK=''}
   else if(a==='elxjobok'&&e){err=elJobSet(e,y);EL_JOBASK='';if(!err)toast(`转职为${elJobD(e).name}`)}
   else if(a==='elxheal'&&e)err=elHeal(e,y);
@@ -69199,7 +69274,7 @@ const[x,y]=String(v||'').split(':'),e=elById(+x);let err=null;EL_SAY='';
 // 顶上：左边立绘，右边等级、年龄、性别、职业、功勋（升阶）；下面三个页签：装备技能 / 详情属性 / 婚配情况
 // 装备技能：五个装备格横排，点了弹「换装备」（只列这个部位能穿的，从好到坏，筛选未装备 / 已装备，翻页）；技能格点了弹「换技能」（主动格只列主动，竖排，翻页）
 // 弹窗编号（EL_POP）：at:<id> 属性；aeq:<id>|<部位> 换装备；ask:<id>|<a/p>|<第几格> 换技能（这两个的 × 回到属性弹窗）
-let EL_AT='gs',EL_EQF='n',EL_APG=0;
+let EL_AT='gs',EL_EQF='n',EL_APG=0,EL_QK=false;   // EL_QK：0.12.2 从卡片上的技能位 / 装备格直接打开的换技能、换装备弹窗，关掉或换好就直接关（不回属性弹窗）
 {const css=`
 .elah{display:flex;gap:12px;align-items:stretch;margin:0 0 8px}.elah .elahp{flex:none;width:112px;display:flex;align-items:center;justify-content:center;background:#120f17;box-shadow:inset 0 0 0 1px var(--iron)}
 .elah .elahp img{width:100px;height:100px;image-rendering:pixelated;object-fit:contain}.elah .elahm{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:2px}
@@ -69285,10 +69360,11 @@ function elAttrPop(k,rest){if(k==='at'){const e=elById(+rest);if(!e)return null;
 // 动作（elAct 开头转过来）：返回 true = 处理了
 function elAttrAct(a,v){
   if(a==='elxat'){EL_AT=v;return true}if(a==='elxapg'){EL_APG=Math.max(0,+v||0);return true}if(a==='elxeqf'){EL_EQF=v;EL_APG=0;return true}
-  if(a==='elxaback'){EL_POP=v||null;EL_APG=0;return true}
-  if(a==='elxaeq'){const[x,y]=String(v).split(':'),e=elById(+x);if(!e)return true;const err=elEquip(e,+y);if(err)toast(err);else{saveMeta();EL_POP='at:'+e.id;EL_APG=0}return true}
+  if(a==='elxqk'){EL_POP=v;EL_QK=true;EL_APG=0;EL_EQF='n';return true}   // 0.12.2（用户定）卡片上点技能位、装备格直接换
+  if(a==='elxaback'){EL_POP=EL_QK?null:v||null;EL_QK=false;EL_APG=0;return true}
+  if(a==='elxaeq'){const[x,y]=String(v).split(':'),e=elById(+x);if(!e)return true;const err=elEquip(e,+y);if(err)toast(err);else{saveMeta();EL_POP=EL_QK?null:'at:'+e.id;EL_QK=false;EL_APG=0}return true}
   if(a==='elxauneq'){const[x,y]=String(v).split(':'),e=elById(+x);if(e){elUnequip(e,y);saveMeta()}return true}
-  if(a==='elxsks'){const[x,t,i,k]=String(v).split('|'),e=elById(+x);if(!e)return true;const err=elSkSlotSet(e,t,+i,k||null);if(err)toast(err);else{saveMeta();EL_POP='at:'+e.id;EL_APG=0}return true}
+  if(a==='elxsks'){const[x,t,i,k]=String(v).split('|'),e=elById(+x);if(!e)return true;const err=elSkSlotSet(e,t,+i,k||null);if(err)toast(err);else{saveMeta();EL_POP=EL_QK?null:'at:'+e.id;EL_QK=false;EL_APG=0}return true}
   return false}
 
 // ---------- 0.12.2 收获弹窗（用户定：开拓地领取、家族上贡 / 索贡的东西从一行文字改成「图标 + 数字」平铺的弹窗，能上下滑）----------
@@ -69343,7 +69419,7 @@ function elGuideHTML(){const n=EL_GUIDE_P.length,i=Math.max(0,Math.min(n-1,EL_GU
   return`<div class="mpopbg" data-act="elxgdx" role="button" aria-label="关闭"></div><div class="mpop oppop elpop" role="dialog"><div class="oph"><b>精英玩法引导 · ${i+1} / ${n}</b><button class="px sq" type="button" data-act="elxgdx" aria-label="关闭">×</button></div>
     <div class="opb"><h4>${P.t}</h4><p>${P.b}</p><div class="elrow">${i>0?elBtn('elxgd',String(i-1),'上一页'):''}${P.go?elBtn('elxgdgo',P.go,P.gn):''}<span class="elbr">${i<n-1?elBtn('elxgd',String(i+1),'下一页',{on:true}):elBtn('elxgdx','','开始吧',{on:true})}</span></div></div></div>`}
 // 「全部自动」（0.12.2 用户同意）：没锁定配置的精英一键装备、搭配技能，再按顺序把没伤病的人排上阵（到上限为止）
-function elAutoAll(){elAutoGearAll();const m=elSt();for(const q of m.list)elAutoSk(q,true);let n=m.list.filter(x=>x.dep).length;
+function elAutoAll(){elAutoGearAll();const m=elSt();for(const q of m.list)elFillSk(q);let n=m.list.filter(x=>x.dep).length;
   for(const q of m.list){if(n>=elDeployMax())break;if(!q.dep&&!elHurt(q)){q.dep=true;n++}}saveMeta();return n}
 // 动作（elAct 开头转过来）：返回 true = 处理了
 function elTutAct(a,v){if(a==='elxgd'){EL_GUIDE=+v||0;return true}if(a==='elxgdx'){EL_GUIDE=null;return true}
