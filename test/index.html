@@ -1535,7 +1535,7 @@ function i18nMissCSV(){const code=I18N.lang==='zh'?'en':I18N.lang,rows=[['id','z
    距离单位：格（1 格 = 16 像素）；时间：秒；速度：格/秒；角度：度
    伤害类型 mix：{类型: 占比}，见 data/items.js
    ========================================================= */
-const CFG={
+let CFG={   // P3 改（0.12.2d 性能）：let——数据文件都拼完后 core/core.js 用 fastObj 重建一份（见那里）
   version:4,
   // ---------- 局内基础 ----------
   water:{fireCut:0.75},   // v0.10.0（用户定）水里受到的火焰伤害 −75%、普通灼烧熄灭（engine/env.wetF / wetE）
@@ -20097,6 +20097,9 @@ function C(h){let c=COLS.get(h);if(!c){const n=parseInt(h.slice(1),16);c={r:((n>
 // 0.5.9 性能：V8 对「属性很多的对象」会退化成字典模式（哈希表查属性，慢好几倍）——字面量 ≥ 128 个属性、或循环里逐个加属性都可能触发。
 //   E（亡灵的几百个类型化数组）、pm / em（局内加成）、TM（科技）每帧要读成千上万次，所以用 Object.fromEntries 重新建一份（实测这样建出来是快速模式）
 const fastObj=o=>Object.fromEntries(Object.entries(o));
+// P3 加（0.12.2d 性能）：CFG 本身也是字典模式——data/ 里几十个文件 Object.assign(CFG,{…}) / CFG.xxx=… 往上加了 200 多个属性（页面里 %HasFastProperties(CFG) 为 false），
+//   每帧成千上万次 CFG.combat、CFG.garrison… 都在查哈希表。data/faction.js 是最后一个数据文件（src/order.txt），到这里字段齐了，重建一份快速模式的；之后不再往 CFG 上加顶层字段
+CFG=fastObj(CFG);
 //   建好以后别再往这种对象上加新属性（加一个就又退回字典模式），要加的字段一开始就写进去
 // 数据索引
 const ETYPES=Object.keys(CFG.enemies);
@@ -20106,12 +20109,22 @@ const ETC=(()=>{const keys=['key'];const seen=new Set(keys);for(const k of ETYPE
   return ETYPES.map(k=>{const c=CFG.enemies[k];return Object.fromEntries(keys.map(f=>[f,f==='key'?k:c[f]]))})})();
 const EIDX={};ETYPES.forEach((k,i)=>EIDX[k]=i);
 const UTYPES=Object.keys(CFG.units);
-const BDEF=fastObj(Object.assign({},CFG.buildings,Object.fromEntries(Object.keys(CFG.camps).map(k=>[k,fastObj(Object.assign({cat:'camp',kind:'camp'},CFG.camps[k]))]))));   // 建筑 + 兵营；fastObj：0.5.9 性能
+// P3 加（0.12.2d 性能）：UDEF[兵种] = 这种士兵的数据（CFG.units 的一份拷贝），做法同上面的 ETC：所有兵种按同一份字段表、同样的顺序建（没有的字段 = undefined），
+//   士兵对象的 s.c 指向它（units/soldiers.makeSoldier、units/units080 的变更兵种）；updateSoldiers / solTick 里每名士兵每帧几十处 c.xxx 从「上百种形状的多态查表」变成直接取值。
+//   读数据照旧写 CFG.units[t] 也行（值一样，嵌套的 ranged / mix… 是同一份对象）；加载后要改兵种数据的地方两张表都改（ui/draw 给阵营兵补 weapon）
+const UDEF=(()=>{const keys=[],seen=new Set();for(const k of UTYPES)for(const f in CFG.units[k])if(!seen.has(f)){seen.add(f);keys.push(f)}
+  return fastObj(Object.fromEntries(UTYPES.map(k=>{const c=CFG.units[k];return[k,Object.fromEntries(keys.map(f=>[f,c[f]]))]})))})();
+// 建筑 + 兵营；fastObj：0.5.9 性能。P3 改（0.12.2d 性能）：每种建筑的数据也按同一份字段表建（同 ETC / UDEF；原来 BDEF[t] 就是 CFG.buildings[t] 本身，105 种各一个形状），
+//   每帧扫全部建筑的 s.cfg.weapon / s.cfg.shock / s.cfg.cat… 从多态查表变成直接取值。嵌套的 weapon / lvDef… 还是 CFG.buildings 里的那份对象；加载后别再往 CFG.buildings[t] 上加顶层字段（BDEF 看不到）
+const BDEF=(()=>{const raw=Object.assign({},CFG.buildings,Object.fromEntries(Object.keys(CFG.camps).map(k=>[k,Object.assign({cat:'camp',kind:'camp'},CFG.camps[k])])));
+  const keys=[],seen=new Set();for(const t in raw)for(const f in raw[t])if(!seen.has(f)){seen.add(f);keys.push(f)}
+  return fastObj(Object.fromEntries(Object.keys(raw).map(t=>{const c=raw[t];return[t,Object.fromEntries(keys.map(f=>[f,c[f]]))]})))})();
 const CATS={};for(const c of CFG.buildCats)CATS[c.id]=Object.keys(BDEF).filter(k=>BDEF[k].cat===c.id);
 const WALL_T=new Set(Object.keys(BDEF).filter(k=>BDEF[k].cat==='wall')),GATE_T=new Set(Object.keys(BDEF).filter(k=>BDEF[k].gate));   // v0.5.2 各种墙体自带城门
 const isWallT=t=>WALL_T.has(t),isGateT=t=>GATE_T.has(t);
 const CAMP_SET=new Set(Object.keys(CFG.camps));   // P2 加（0.12.2d 性能）：兵营类型集合（CFG.camps 在 core 之前就定好了，data/bw_camp 是最后一个）
 const isCampT=t=>CAMP_SET.has(t);   // P2 改：Set.has（页面里实测 335 座建筑 × 3000 次：原来 CFG.camps[t] 16 毫秒、Set 10 毫秒；先试的「全表」fastObj 反而 30 毫秒——105 个键的对象按变量名取值走的是慢路径，别用；updateCamps、campCap 每帧每座建筑都在问）
+const isCampS=s=>s.isCamp===true;   // P3 加（0.12.2d 性能）：按建筑对象问「是不是兵营」——G.structs 里的建筑都是 makeStruct 建的，建的时候记下 s.isCamp = isCampT(type)（type 不会变），和 isCampT(s.type) 一样；每帧扫全部建筑的地方（updateCamps 每帧两遍、每颗弹道的 blocksProj）用这个：读一个字段，比 Set 查找、比 cfg.cat（105 种 cfg 的形状都不同，查的是多态缓存）都快
 const isTrapT=t=>BDEF[t]&&BDEF[t].cat==='trap';
 // v0.5.1 转向上限（度 / 秒）、骑兵加速时间（秒）：兵种 turn / accel 优先，否则按 步兵 / 轻骑兵 / 重骑兵（hcav:true；亡灵的 heavy 是「不吃击退」，别混）查 CFG.combat
 const turnOf=c=>c.turn||(c.cavalry?CFG.combat.turn[c.hcav?'heavy':'light']:CFG.combat.turn.inf),accelOf=c=>c.accel||CFG.combat.accel[c.hcav?'heavy':'light'];
@@ -20147,7 +20160,7 @@ const EM_KEYS=['hp','dmg','speed','def','atkSpd','count','lifesteal','elites','r
   'defP','mdefP','eliteP','critRes','corpse','corrode','boneSh','sacri','sPenE','rangeE','split','ccUp','vcLs','vcPoolR'];   // vcLs / vcPoolR：v0.11.0 血族城堡专属亡灵卡「生命汲取」「血池扩张」（maps/vamp）   // v0.9.1（用户定）亡灵卡第二批：物理 / 法术防御 %、精英数量 %、暴击伤害减免、尸爆、腐蚀之刃、骸骨护盾、献祭狂热   // v0.8.25 新亡灵卡组（data/cards.enemyCards）   // v0.6.01 攻速拆成近战 / 远程物理 / 施法 / 远程装填（atkSpd 是老存档的「狂躁」，对所有亡灵）
 // v0.6.02 英雄当前朝向的角度：dx、dy 都是 0 才按左右朝向（原来 dx 为 0 就当成 1，纯上下移动时变成斜 45°）
 const heroAng=h=>(h.dx||h.dy)?Math.atan2(h.dy||0,h.dx||0):(h.facing<0?Math.PI:0);
-function zeroMods(keys){return fastObj(Object.fromEntries(keys.map(k=>[k,0])))}
+function zeroMods(keys){const o=fastObj(Object.fromEntries(keys.map(k=>[k,0])));for(let i=0;i<keys.length;i++){o[keys[i]]=0.5;o[keys[i]]=0}return o}   // P3 改（0.12.2d 性能）：每个字段先写一次小数再写回 0，让它从一开始就是「小数」表示——拿卡第一次把某项从 0 改成 0.12 时不再换形状（原来每换一次，读 pm.xxx 的几十个函数整批作废重编，见 索引-机制备忘「对象形状」）
 // 伤害类型：mix = {类型: 占比}，res = {类型: 抗性}
 function mixMul(res,mix){if(!res||!mix)return 1;let m=0;for(const k in mix)m+=mix[k]*(1-(res[k]||0));return m}
 // v0.6.1 无视部分抗性：抗性（正数）减 cut[k] 个百分点，最低到 0；弱点（负数）不变
@@ -20336,7 +20349,8 @@ m3Hp m3U m3Cd m3Sk m3W
 gt gtV
 chOcc
 haFg
-visR smXi smXd smXt`.trim().split(/\s+/);
+visR smXi smXd smXt
+isCamp`.trim().split(/\s+/);   // isCamp：P3 加（0.12.2d 性能），见 structs/structs.makeStruct
 const SOLDIER_NUM='x y hp maxHp baseHp chp def dodge block shield stagMul taunt vision facing dir anim flash stag atkCd shotCd ammo rel think ti tid recoil thrust swing calm chg patrolT px py slot statMul lastHit slA layer elev atkAdd atkMul rgMul critAdd critMulAdd pierceN mvSp kiteK gdTile gdSeen gdV mgA mgK mgU s2Dr s2Chg cv _sx _sy shieldHp shieldMax shieldT critPt cmdU'.split(' ');   // P2 加（0.12.2d）cv…cmdU：每帧 / 每次受击都写小数、读的地方都是 ||0 或比大小的字段，先填 0 让它一直是数字（原来先装 undefined，之后每写一次小数都新建一个数字对象）
 const HERO_NUM='star slot x y hp maxHp def dodge block shield facing dx dy dir aimA wi swapT atkCd swing swingA thrust recoil ammo rel shieldHp shieldMax shieldT reflect whirlT whirlTk whirlA dashT dvx dvy inv flash anim respawn aiT aiTi aiTid tgtI tgtId lastHit layer elev calm vision tvNx mdef speed crit regen aspd stnU lastAtk cv'.split(' ');   // P2 加（0.12.2d）mdef…lastAtk：同上
 const STRUCT_NUM='tx ty x y level flash cd ammo rel aim recoil mgA mgK mgU stEff shcU shcF xgVn xgRgT hp maxHp def rsh'.split(' ');   // P2 加（0.12.2d）hp maxHp def rsh：建筑每挨一下都写 hp，同上
@@ -20505,7 +20519,7 @@ function feat(k,d){FEAT[k]=d;return d}
 // 这一局有没有上过场（跟着某位英雄的全局特性用它当 on：上过场就一直算在内，和原来「这位英雄每帧设一个全局开关、离场后开关还留着」一样）
 const heroEver=id=>!!(G&&G.hjoin&&G.hjoin[id]);
 // 本局的钩子列表（hkBuild 填；开局前也都是空数组，随时可以遍历）
-const HK={};for(const p in HOOKS)HK[p]=[];
+const HK=Object.fromEntries(Object.keys(HOOKS).map(p=>[p,[]]));   // P3 改（0.12.2d 性能）：一次建好（原来 HK[p]=[] 逐个加 75 个键，V8 把它退化成了字典模式，每处 HK.xxx 都在查哈希表）
 let EVIS_F=null;   // SM 加：HK.eVisF 的第一个(没有 = null，eVis 只多判断一次 null)
 let HK_ON=[];   // 本局在场的特性（调试看：__wlwc 里没有，控制台直接读 HK_ON）
 function hkBuild(){
@@ -35609,9 +35623,14 @@ function stampConeB(px,py,r,b,hd){const tx=px>>4,ty=py>>4,d=coneOf(r,b,hd);   //
 // v0.10.10（用户：视野按需更新，只在单位明显移动后才算）④ 陷阱、英雄、士兵每个章先记成「种类、格、半径×2 取整、朝向」（盖章只看这些），
 //   和上一次逐个相同、建筑层也没变、没有会转的探照，这一次的结果就是上一次的 VIS，整张不动；不同才照旧盖章。结果和原来逐格相同。
 //   ⑤ 小地图迷雾按 4 格一组（Uint32）比，没变的整组跳过
-const VIS_S=new Uint8Array(NT_MAX),VIS_DUP=new Set(),VIS_STAT={n:0,s:0,k:0};let VIS_SK='',VIS_SG=null;   // VIS_STAT：v0.6.8 问题报告用（算了几次、建筑层重盖了几次）；k：v0.10.10 没变、跳过了几次
+const VIS_S=new Uint8Array(NT_MAX),VIS_STAT={n:0,s:0,k:0};let VIS_SK='',VIS_SG=null;   // VIS_STAT：v0.6.8 问题报告用（算了几次、建筑层重盖了几次）；k：v0.10.10 没变、跳过了几次
 let VIS_K=new Float64Array(1024),VIS_K0=new Float64Array(1024),VIS_KN=-1;   // 这一次 / 上一次的章（每个 5 个数）；VIS_KN = −1：上一次的结果不能用（开拓地全亮过）
 const VIS_W=new Uint32Array(VIS.buffer,0,NT_MAX>>2);
+// P3 加（0.12.2d 性能）：「同一格、同一朝向、同样半径的兵只盖一次」的去重表——原来是 Set，键超出了小整数范围，每个兵每次都新建一个数字对象（分配剖析里 add ← computeVision 约 1%）；
+//   改成两段整数键（格 × 32 + 朝向，半径对）的开放寻址表，按代号判断占没占，不用清。兵多到装不下（几乎不可能）就不去重：盖章只是把格子置 1，多盖一次结果一样
+const VD_N=8192,VD_K1=new Int32Array(VD_N),VD_K2=new Int32Array(VD_N),VD_G=new Int32Array(VD_N);let VD_GEN=0,VD_ON=true;
+function vdBegin(cnt){VD_GEN++;VD_ON=cnt*2<VD_N;if(VD_GEN>2e9){VD_G.fill(0);VD_GEN=1}}
+function vdSeen(k1,k2){if(!VD_ON)return false;let h=((k1*2654435761)^(k2*40503))&(VD_N-1);for(;;){if(VD_G[h]!==VD_GEN){VD_G[h]=VD_GEN;VD_K1[h]=k1;VD_K2[h]=k2;return false}if(VD_K1[h]===k1&&VD_K2[h]===k2)return true;h=(h+1)&(VD_N-1)}}
 function computeVision(){if(settleOn()){VIS.fill(1);VIS_KN=-1;return}   // v0.6.2 开拓地没有战争迷雾
   VIS_STAT.n++;
   const vm=visMul(),vb=visMulB();   // v10：昼夜、天气、卡「锐利之眼」（建筑只受一半惩罚）
@@ -35635,9 +35654,9 @@ function computeVision(){if(settleOn()){VIS.fill(1);VIS_KN=-1;return}   // v0.6.
   wtSearchStamp(vb,VCC);   // v0.7.0 瞭望塔「探照」的扇形视野（会转，不进建筑那一层的缓存）
   if(HK.visStamp.length)hkEach('visStamp',VCC);   // HB 加：另外的视野章（狄龙「明察秋毫」，heroes/dilong）
   // 按记下的章盖（格中心 ×16 再 >>4 还是同一格；半径按 ×2 取整后的值，和 discOf / coneOf 的键一样）；同一格、同一朝向、同样半径的兵只盖一次
-  const D=VIS_DUP;D.clear();
+  vdBegin(n/5);
   for(let q=0;q<n;q+=5){const tx=K[q+1],ty=K[q+2],R=K[q+3];if(K[q]===0){stamp(tx*16,ty*16,R/2);continue}
-    const R1=Math.floor(R/4096),R2=R-R1*4096,b=K[q+4],k=((((ty*MAP_W+tx)*32+b)*256+R1)*256)+R2;if(D.has(k))continue;D.add(k);stamp(tx*16,ty*16,R1/2);stampConeB(tx*16,ty*16,R2/2,b)}
+    const R1=Math.floor(R/4096),R2=R-R1*4096,b=K[q+4];if(vdSeen((ty*MAP_W+tx)*32+b,R1*256+R2))continue;stamp(tx*16,ty*16,R1/2);stampConeB(tx*16,ty*16,R2/2,b)}
   const t=VIS_K0;VIS_K0=K;VIS_K=t;VIS_KN=n;   // 这一次的章留着下次比
   visMini()}
 // 小地图迷雾（VIS_L：上次画到小地图上的视野，新建的图全透明 = 全看得见）；4 格一组比，没变的整组跳过
@@ -35690,7 +35709,7 @@ function keepHealTick(u,dt){if(u.dead||u.hp>=u.maxHp||G.stMia&&G.phase==='wave')
   if(Math.random()<dt*1.2&&inViewPt(u.x,u.y))pp(u.x+vr(-4,4),u.y-vr(6,14),0,0,0,vr(8,14),0,vr(0.5,0.8),'#8fdc6a',1,0,1)}
 const visAt=(x,y)=>x>=0&&y>=0&&x<MW&&y<MH&&VIS[tidx(x,y)]===1;
 // —— 守军通行：城墙（城门除外）与建筑（兵营、瞭望塔除外）不能通过；树木（v0.2.3）也不能；树丛、岩石可以（会减速） ——
-const friendPassS=s=>!s||!!s.cfg.pass||isCampT(s.type);
+const friendPassS=s=>!s||!!s.cfg.pass||s.isCamp===true;   // P3 改：同 isCampT(s.type)（见 core/core 的 isCampS）
 // v0.3.2：猎豹皮衣（treeWalk）能爬树 —— 移动 / 寻路这个单位时 FR_TW = true，树木不挡
 let FR_TW=false,FR_SW=false;   // FR_SW：v0.8.2 黄沙海岸，能下深海的英雄（潮汐套装三件，u.csSw）移动 / 寻路时为 true
 const terrPassF=i=>FR_TW?G.terrain[i]!==T_TWALL&&G.terrain[i]!==T_GEAR:!treeAt(i);   // 爬树（FR_TW）只能爬树木，神殿墙、齿轮照样挡
@@ -48886,7 +48905,7 @@ function wallComp(s){if(WCV!==G.structVer||WCG!==G||!WCM){WCV=G.structVer;WCG=G;
       while(st.length){const a=st.pop();comp.push(a);for(const[dx,dy]of DIRS){const tx=a.tx+dx,ty=a.ty+dy;if(tx<0||ty<0||tx>=MAP_W||ty>=MAP_H)continue;const b=G.structAt[ty*MAP_W+tx];if(b&&!b.dead&&isWallT(b.type)&&!WCM.has(b)){WCM.set(b,comp);st.push(b)}}}}}
   return WCM.get(s)}
 // 会挡住直射弹道的建筑：城墙、城门、塔、主堡（兵营、瞭望塔可通行，不挡）
-const blocksProj=s=>!s.dead&&!s.trap&&!(s.cfg&&s.cfg.pass&&!s.cfg.gate)&&!isCampT(s.type);
+const blocksProj=s=>!s.dead&&!s.trap&&!(s.cfg&&s.cfg.pass&&!s.cfg.gate)&&!isCampS(s);   // isCampS：P3 改，同 isCampT(s.type)
 // —— 友方弹道：按目标移动方向提前量瞄准，再加偏移角；飞行中逐帧检测碰撞（打偏了也可能误中旁边的亡灵）——
 function aimLead(x,y,j,speed){
   const ex=E.x[j],ey=E.y[j]-5,d=Math.hypot(ex-x,ey-y),t=d/speed;
@@ -48976,6 +48995,8 @@ function missileLand(p){const M=p.w.mblast,x=p.x1,y=p.y1;let j=p.hj>=0&&eOk(p.hj
   explode(x,y,M.r*16*(1+pm.aoe+(p.o.aoeAdd||0)),p.dmg*M.mul,p.o,w2,p.tid,j>=0?E.id[j]:undefined);
   const P=p.o.m2Pit||p.w.pit;if(P)addFirePit(x,y,{r:P.r*(1+pm.aoe),dur:P.dur,dps:(P.dps||0)+(P.dpsP?p.dmg*P.dpsP:0),bt:P.bt||0},friendlyFire())}
 function updateProj(dt){PROJ_HIT=true;try{updateProj_(dt)}finally{PROJ_HIT=false}}   // v0.5.4 弹道带来的伤害（亡灵卡「硬皮」认它）
+let PJ_P=null,PJ_X=0,PJ_Y=0,PJ_HJ=-1,PJ_HD=1e9;   // P3 加：updateProj_ 里弹道命中查询的回调状态（距离按 eQuery 里同一个式子重算，结果一样）
+const pfProjHit=j=>{const p=PJ_P;if(p.hit&&p.hit.has(E.id[j]))return;if(E.air[j]&&!p.o.hk&&E.id[j]!==p.tid)return;const d=Math.hypot(E.x[j]-PJ_X,E.y[j]-PJ_Y)-E.r[j];if(d<PJ_HD){PJ_HD=d;PJ_HJ=j}};   // E.air：飞行单位只认主目标（英雄除外）
 function updateProj_(dt){
   const mfp=HK.proj.length>0;   // v0.5.1 地图机制（机械工厂：蒸汽让箭矢转向、爆炸物提前爆炸；齿轮挡弹道）
   const tsz=G.tsZ&&G.tsZ.length;   // v0.7.0 时空封锁：范围里的弹道停住
@@ -48993,7 +49014,7 @@ function updateProj_(dt){
     // 建筑阻挡：建筑/登高单位发射的弹道前半程无视
     if(p.dist>=p.bf){const bs=G.structAt[tidx(p.x,clamp(p.y+5,0,MH-1))];
       if(bs&&blocksProj(bs)&&!bs.temp){if(p.aoe){explode(p.x,p.y+5,p.aoe,p.dmg,p.o,p.w,p.tid);if(p.w.frag)fragBurst(p.x,p.y+5,p)}else if(inViewPt(p.x,p.y))for(let k=0;k<3;k++)pp(p.x,p.y,0,vr(-14,14),vr(-10,4),vr(6,14),160,0.25,'#a49f93',1,0,0);p.dead=true;continue}}
-    let hj=-1,hd=1e9;eQuery(p.x,p.y+5,3,(j,d)=>{if(p.hit&&p.hit.has(E.id[j]))return;if(E.air[j]&&!p.o.hk&&E.id[j]!==p.tid)return;if(d<hd){hd=d;hj=j}});   // E.air：飞行单位只认主目标（英雄除外）
+    PJ_P=p;PJ_X=p.x;PJ_Y=p.y+5;PJ_HJ=-1;PJ_HD=1e9;eQuery(PJ_X,PJ_Y,3,pfProjHit);let hj=PJ_HJ;   // P3 改（0.12.2d 性能）：固定回调 + 模块变量（原来每颗弹道每帧新建一个闭包，命中候选的距离 d 还要装箱）
     let pbk=false;if(G.pbN>0){const b=yyPBlock(p);if(b>=0){hj=b;pbk=true}}   // v0.7.0 死灵战士挡飞行物：附近飞过的弹道打在它身上，穿透到此为止
     if(hj>=0){
       if(p.aoe){explode(p.x,p.y+5,p.aoe,p.dmg,p.o,p.w,p.tid);if(p.w.frag)fragBurst(p.x,p.y+5,p);if(p.o.frg)cardFrag(p.x,p.y+5,p);p.dead=true;continue}   // frag：v0.5.3 机械营「霰火炮弹」（直射的炮弹）
@@ -49707,7 +49728,7 @@ function terrMul(s){const b=TERR_SLOW[G.terrain[tidx(clamp(s.x,0,MW-1),clamp(s.y
 // v0.10.0（用户定）兵营被拆除 / 摧毁：它的士兵只留到当前波和下一波，再下一波开始时遣散（destroyStruct 记 u.orpW）
 function orphanClear(){let n=0;for(const u of G.soldiers)if(u.orpW&&!u.dead&&G.wave>=u.orpW){u.dead=true;n++}if(n)compact(G.soldiers,u=>!u.dead);return n}
 function makeSoldier(camp,type){
-  const c=CFG.units[type],lv=camp.level-1,ct=camp.type&&CFG.camps[camp.type]?camp.type:null,sm=(CFG.campLevels.unitStat[lv]+(camp.xlv||0)*CFG.campLevels.over.sm)*(G.stK||1),hk=ct?bbM(ct,'shp'):1,chp=0,mh=c.hp*sm*hk*uHpMul({c,camp},chp);   // {c}：v0.9.51 修——原来传 null，uHpWave 认不出近战，新训练的近战兵这一波按远程的 1% 成长（下一波 rescaleUnits 才改对）   // hk：v0.8.14 兵营基础加成「体魄」（士兵生命，× 等级倍率）   // ct：训练它的兵营（v0.3.4 兵营科技 / 进阶按它算）   // S5 加：传 camp（钢铁合金）
+  const c=UDEF[type],lv=camp.level-1,ct=camp.type&&CFG.camps[camp.type]?camp.type:null,sm=(CFG.campLevels.unitStat[lv]+(camp.xlv||0)*CFG.campLevels.over.sm)*(G.stK||1),hk=ct?bbM(ct,'shp'):1,chp=0,mh=c.hp*sm*hk*uHpMul({c,camp},chp);   // {c}：v0.9.51 修——原来传 null，uHpWave 认不出近战，新训练的近战兵这一波按远程的 1% 成长（下一波 rescaleUnits 才改对）   // hk：v0.8.14 兵营基础加成「体魄」（士兵生命，× 等级倍率）   // ct：训练它的兵营（v0.3.4 兵营科技 / 进阶按它算）   // S5 加：传 camp（钢铁合金）
   const u=Object.assign(new Soldier(),{type,c,camp,ct,x:camp.x+vr(-4,4),y:camp.y+6,hp:mh,maxHp:mh,baseHp:c.hp*sm*hk,chp,def:c.def,dodge:(c.dodge||0)+TM.uDodge*(c.agile?2.5:1),block:c.block||0,shield:(c.shield||0)*(1+TM.uShield),stagMul:c.stagMul||1,
     taunt:c.taunt||0,vision:soldierVision(c),facing:1,dir:vr(0,6.28),anim:0,walking:false,flash:0,stag:0,atkCd:0.3,shotCd:0,ammo:c.ranged?c.ranged.mag:0,rel:0,
     think:0,ti:-1,tid:0,aim:null,recoil:0,thrust:0,swing:0,calm:0,stealthed:false,chg:0,patrolT:0,px:camp.x,py:camp.y,slot:camp.slots++,statMul:sm*(ct?bbM(ct,'satk'):1),hitAdd:ct?bbA(ct,'hit'):0,critPt:ct?bbA(ct,'crit'):0,dead:false,lastHit:-9,slp:false,slA:0,
@@ -50171,12 +50192,12 @@ const campTrain=b=>CFG.camps[b.type].train/(1+CFG.campLevels.trainSpeed[b.level-
 // v0.6.6 提速：上限、训练时间只和兵营种类、等级有关（加成都是全局的），同一帧里同种同级的兵营只算一次（结果和原来一样）
 const CAMP_CC=new Map(),PF_CCT=new Map();let PF_CCF=0;   // PF_CCT / PF_CCF：PF 加，见 updateCamps
 function updateCamps(dt){
-  for(let i_9=0,a_9=G.structs;i_9<a_9.length;i_9++){const b=a_9[i_9];if(isCampT(b.type))b.count=0;}
+  for(let i_9=0,a_9=G.structs;i_9<a_9.length;i_9++){const b=a_9[i_9];if(isCampS(b))b.count=0;}   // isCampS：P3 改，同 isCampT(b.type)，见 core/core
   for(let i_10=0,a_10=G.soldiers;i_10<a_10.length;i_10++){const u=a_10[i_10];if(!u.dead&&u.camp&&!u.camp.dead)u.camp.count=(u.camp.count||0)+unitCapW(u);}
   if(G.fcvL&&G.fcvL.length)facCampHold();
   if(CH_DEATH)chCampHold();   // 代理 CH 无尽挑战「直面死亡」：阵亡的兵永久占着驻军名额（game/ch_chal）   // v0.8.6 临时换到亡灵那边的兵：兵营给它留着名额（engine/faction）
   const CC=CAMP_CC;CC.clear();PF_CCF++;
-  for(let i_11=0,a_11=G.structs;i_11<a_11.length;i_11++){const b=a_11[i_11];if(!isCampT(b.type))continue;
+  for(let i_11=0,a_11=G.structs;i_11<a_11.length;i_11++){const b=a_11[i_11];if(!isCampS(b))continue;
     const cnt=b.count;let cc;if(b.cvOcc){const ck=b.type+b.level+'/'+b.cvOcc;cc=CC.get(ck);if(!cc){cc=[campCap(b),0];CC.set(ck,cc)}}   // PF 改（v0.11.2 性能）：常见的（没配给商队）不再每帧拼字符串当键，改查 种类 → [等级] 的固定数组，按帧号判断这一帧算过没有（同一帧同种同级只算一次，和原来一样）
       else{let A=PF_CCT.get(b.type);if(!A)PF_CCT.set(b.type,A=[]);cc=A[b.level];if(!cc)cc=A[b.level]=[0,0,-1];if(cc[2]!==PF_CCF){cc[0]=campCap(b);cc[1]=0;cc[2]=PF_CCF}}
     if(cnt>=cc[0]||cnt+(CFG.units[campUnit(b)].capW||1)>cc[0]){b.trainT=0;continue}
@@ -51147,6 +51168,7 @@ function inputVec(who){const K=SET.keys;let ix=0,iy=0;
     if(keys.has(K.up)||ar&&keys.has('arrowup'))iy-=1;if(keys.has(K.down)||ar&&keys.has('arrowdown'))iy+=1}
   const l=Math.hypot(ix,iy);if(l>1){ix/=l;iy/=l}return[ix,iy]}
 function updateHeroes(dt){h60Frame();mkFrame(dt);wdFrame(dt);for(let i_17=0,a_17=G.heroes;i_17<a_17.length;i_17++){const h=a_17[i_17];DS_CUR=h;updateHero(h,dt)}DS_CUR=null}   // mkFrame：v0.8.2 瓦特、超频芯片、重工套装、电磁皮甲（heroes/heroes083）   // h60Flush：v0.6.0 艾琳普攻附带的法术伤害（heroes/heroes060）
+const MV_ZERO=[0,0];   // P3 加（0.12.2d 性能）：英雄「不动」的移动向量共用这一份（updateHero / heroAI / heroWallGoal / heroLeaveWall 的返回值；调用方只读 [0]、[1]，camelMove 也只读；原来每位托管英雄每帧新建一两个数组）
 function updateHero(h,dt){
   if(h.dead){if(h.chN>0||h.busyT>0)chanCut(h);h.respawn-=dt/(G.rvK||1);if(h.respawn<=0&&!CH_DEATH){const ra=h.reviveAt;h.reviveAt=null;h.dead=false;h.hp=h.maxHp;if(ra){h.x=ra.x;h.y=ra.y}else{h.x=G.base.x+([0,-18,18,36,-36][h.slot]||0);h.y=G.base.y+20}heroSetLayer(h,0);   // reviveAt：v0.4.1 神恩之赐在牧师身边复活   // CH_DEATH：无尽挑战「直面死亡」不复活（代理 FX）
 h.volQ=null;h.blinkQ=null;h.burstQ=null;h.xhitQ=null;h.barT=0;h.flash=0;h.retreat=false;h.moveTo=null;h.shieldHp=0;h.stealthT=0;h.stealthed=false;h.burnT=0;h.fpT=0;h.fpN=0;h.rootT=0;h.javN=h.javMax||0;h.javR=0;h.hbT=0;h.immN=0;h.hsT=0;h.jsHp=0;h.cv=0;h.jz=0;h.ctT=0;h.blT=0;h.fearT=0;h.gst=0;h.xq=null;h.frzT=0;h.fsN=0;h.iceK=0;h.stmT=0;h.dashNoStop=false;h.reviveT=CFG.heroBase.reviveGuard;toast(ra?`${h.d.name}被神恩之赐复活`:`${h.d.name}已在主堡复活`)}return}
@@ -51173,7 +51195,7 @@ h.volQ=null;h.blinkQ=null;h.burstQ=null;h.xhitQ=null;h.barT=0;h.flash=0;h.retrea
   if(TM.hShadow&&!(h.shadowCd>0)&&(G.tick&15)===0&&countNear(h.x,h.y,48)>5){h.shadowT=5;h.shadowCd=90;sayT(heroTag(h)+'无影之手：普攻速度 +100%')}
   heroWallCheck(h);
   if(ADVQ){if(h.chN>0||h.busyT>0)chanCut(h);h.walking=false;h.dashT=0;h.whirlT=0;h.cv=0;h.jz=0;h.dashNoStop=false;keepHealTick(h,dt);return}   // jz / dashNoStop：v0.5.8 修复——泰山压顶跳在半空时波次结束，原来会一直飘在空中、之后的冲撞也不会停在墙前   // v0.5.2 波次结束的快速推进：只走计时、回血，不走路、不索敌
-  const iv=h.ctl?inputVec(h.ctl):[0,0],il=Math.hypot(iv[0],iv[1]);
+  const iv=h.ctl?inputVec(h.ctl):MV_ZERO,il=Math.hypot(iv[0],iv[1]);
   if(il>0.15){if(h.ai){h.ai=false;refreshCtl();toast('已切回手动操控')}h.moveTo=null;if(h.ctl==='p1'&&(!cam.follow||selUnit)&&(G.phase==='wave'||G.stWalk))followHero()}   // v0.5.8：选中士兵时镜头跟着士兵，英雄一动就切回英雄
   if(h.chN>0)chanTickAll(h,dt);   // v0.7.0 按住持续释放（heroes/heroes070）
   if(h.dashT>0)updateDash(h,dt);
@@ -51233,10 +51255,10 @@ function heroAI(h,dt){if(!h.aiNx)h.aiNx=[0,0,0];
   if(G.phase==='wave'&&!(h.chN>0)&&heroAiCanCast(h)&&!oathPrideIdle(h)){const O=heroAiOrder(h);for(let ps=0,done=false;ps<2&&!done;ps++)for(let q=0;q<3;q++){const k=O[q];if(!h.unl[k]||h.cds[k]>0||h.aiNx[k]>G.time)continue;const p=skP(h,h.sp[k]);if(!!p.chan!==(ps===1)||!reqOk(h,p))continue;const a=SK[h.skills[k]].ai(h,p);if(a&&castSkill(k,p.aim==='self'?null:a,true,h)){if(!h.aiLc)h.aiLc=[-9,-9,-9];h.aiLc[k]=G.time;done=true;break}h.aiNx[k]=G.time+HAI_GAP}}   // aiNx：v0.10.0 性能（用户要）技能好了但这次没找到该放的时机，0.2 秒后再看（原来每帧都把范围里的亡灵数一遍）   // v0.7.0 先看不用按住的技能，再看按住释放的（按住时不放别的，heroes/heroes070）
   // v0.9.4 修（用户反馈：阿什娜托管不放银月箭雨）：① 原来想放的技能放不出来（瞄准 / 冲刺 / 换武器中）也算「这一帧放过了」，后面的技能这一帧都不看；现在放不出来就看下一个，而且这些时候整段跳过
   //   ② 原来总是按 1、2、3 号的顺序看，冷却短、冷却还能刷新的 1 号技能（破暗之矢 5★ 打中带标记的亡灵冷却 −1 秒）一直抢先，2 号永远轮不到；现在几个都好了时，最久没放的先放（heroAiOrder）
-  if(h.retreat)return h.layer===1?[0,0]:Math.hypot(bx-h.x,by-h.y)>8?aiNav(h,bx,by):[0,0];
+  if(h.retreat)return h.layer===1?MV_ZERO:Math.hypot(bx-h.x,by-h.y)>8?aiNav(h,bx,by):MV_ZERO;
   if(h.elHPon&&h.layer!==1){const P=h.elHP;if(Math.hypot(P.x-h.x,P.y-h.y)>P.r)return aiNav(h,P.x,P.y)}   // v0.11.4 睿智的精英：受伤时先走进治疗范围（game/el_battle）
   // v0.6.8 技能「去哪里放」（维修、超频、治疗、统御、埋雷、捡标枪）：按优先级选一个、去到底（heroes/heroai.heroGoal）；在城墙上要过去就先下墙
-  if(G.phase==='wave'){const g=heroGoal(h);if(g){if(!heroGoalAt(h,g))return h.layer===1?heroLeaveWall(h):aiNav(h,g.x,g.y);heroGoalWait(h);return[0,0]}}   // 到了就站住等技能好（普攻照打），不被索敌拉走又走回来；好了 1 秒还放不出来就算了（heroGoalWait）
+  if(G.phase==='wave'){const g=heroGoal(h);if(g){if(!heroGoalAt(h,g))return h.layer===1?heroLeaveWall(h):aiNav(h,g.x,g.y);heroGoalWait(h);return MV_ZERO}}   // 到了就站住等技能好（普攻照打），不被索敌拉走又走回来；好了 1 秒还放不出来就算了（heroGoalWait）
   h.aiT-=dt;
   const mel=h.ws.cls==='melee',near=mel?nearGround:nearestEnemy,HA=CFG.heroAI,cur=heroTgtOk(h,mel)?h.aiTi:-1;
   // v0.6.02：近战英雄的目标飞上天了（秃鹫俯冲完）马上换
@@ -51262,18 +51284,18 @@ function heroAI(h,dt){if(!h.aiNx)h.aiNx=[0,0,0];
   if(h.h60T&&h.layer!==1){const g=h60AI(h);if(g)return g}   // v0.6.0 疾风斩击：冲向还没斩过的亡灵（heroes/heroes060）   // v0.5.6 骆驼骑士托管：冲撞 / 压顶好了就骑向扎堆的亡灵（跑起来才放得出）
   if(h.layer===1&&(melee||!guard||gp))return heroLeaveWall(h);   // v0.5.2 近战 / 出击：先从最近的城门下墙
   if(eOk(j,h.aiTid)){const ex=E.x[j],ey=E.y[j],d=Math.hypot(ex-h.x,ey-h.y)||1,w=h.ws;
-    if(h.layer===1){if(d<=heroRange(h)*0.95){h.aiEng=G.time;return[0,0]}const P=heroWallGoal(h,ex,ey);return P?heroToPost(h,P):heroLeaveWall(h)}   // v0.5.2 在城墙上：够不着就沿城墙挪到离它最近的位置
-    if(w.cls==='melee'){if(d>w.reach*16*0.75)return aiNav(h,ex,ey);h.aiEng=G.time;return[0,0]}   // aiEng：v0.8.0 最近一次够得着目标的时间
+    if(h.layer===1){if(d<=heroRange(h)*0.95){h.aiEng=G.time;return MV_ZERO}const P=heroWallGoal(h,ex,ey);return P?heroToPost(h,P):heroLeaveWall(h)}   // v0.5.2 在城墙上：够不着就沿城墙挪到离它最近的位置
+    if(w.cls==='melee'){if(d>w.reach*16*0.75)return aiNav(h,ex,ey);h.aiEng=G.time;return MV_ZERO}   // aiEng：v0.8.0 最近一次够得着目标的时间
     const R=heroRange(h);
     if(guard&&!gp&&(d>R*0.85||!shotClear(h.x,h.y-4,ex,ey-4))){const P=heroWallGoal(h,ex,ey);if(P)return heroToPost(h,P)}   // v0.5.2 驻守的远程英雄：打不着就上城墙打
     if(d>R*0.85||!shotClear(h.x,h.y-4,ex,ey-4))return aiNav(h,ex,ey);
     h.aiEng=G.time;if(d<R*0.4){const ax=h.x-(ex-h.x)/d*24,ay=h.y-(ey-h.y)/d*24;if(friendPassPt(ax,ay))return[-(ex-h.x)/d,-(ey-h.y)/d]}
-    return[0,0]}
-  if(G.phase==='wave'&&G.time<(h.aiLg||0))return[0,0];   // v0.6.8 刚打完一只、附近暂时没有：原地等一会儿（多半还会来），不马上往回跑
-  {const A=heroAnchor(h);if(A)return Math.hypot(A.x-h.x,A.y-h.y)<=A.r?[0,0]:h.layer===1?heroLeaveWall(h):navVec(h,A.gx,A.gy)}   // v0.6.8 达·芬奇：守在开火最多的塔旁边（heroes/heroai）
+    return MV_ZERO}
+  if(G.phase==='wave'&&G.time<(h.aiLg||0))return MV_ZERO;   // v0.6.8 刚打完一只、附近暂时没有：原地等一会儿（多半还会来），不马上往回跑
+  {const A=heroAnchor(h);if(A)return Math.hypot(A.x-h.x,A.y-h.y)<=A.r?MV_ZERO:h.layer===1?heroLeaveWall(h):navVec(h,A.gx,A.gy)}   // v0.6.8 达·芬奇：守在开火最多的塔旁边（heroes/heroai）
   if(guard&&!gp&&!melee&&G.phase==='wave'){const P=h.wpost&&POSTK.get(h.wpost)||heroWallGoal(h,...heroWatchPt(h));if(P)return heroToPost(h,P)}   // v0.5.2 驻守的远程英雄没事干：在城墙上等
-  if(h.aiGo&&h.layer!==1){const g=h.aiGo;return Math.hypot(g.x-h.x,g.y-h.y)>12?aiNav(h,g.x,g.y):[0,0]}
-  return h.layer===1||Math.hypot(bx-h.x,by-h.y)<=10?[0,0]:aiNav(h,bx,by);
+  if(h.aiGo&&h.layer!==1){const g=h.aiGo;return Math.hypot(g.x-h.x,g.y-h.y)>12?aiNav(h,g.x,g.y):MV_ZERO}
+  return h.layer===1||Math.hypot(bx-h.x,by-h.y)<=10?MV_ZERO:aiNav(h,bx,by);
 }
 // —— v0.5.2 AI 英雄上下城墙（驻守 = 远程英雄登墙守城）——
 // 选城墙位置：可建造范围内、有城门的城墙（同士兵的驻防点 POSTS），离 (tx,ty) 最近、别的英雄没占的
@@ -51288,15 +51310,15 @@ function heroWallGoal(h,tx,ty){if(h.ws.cls==='melee'||h.d.camel||h.mnt||h.d.fly)
 function heroWatchPt(h){const q=G.queue&&G.queue[0],s=q&&G.spawns[q.side];return s?[s.x*16+8,s.y*16+8]:[h.x,h.y]}
 function heroToPost(h,P){h.wpost=P.key;
   if(h.layer===1){if(POSTC&&wallCompAt(h.x,h.y)!==P.comp)return heroLeaveWall(h);   // v0.5.8 修复：走到两段斜接城墙的交角时脚下不是墙格，原来会被当成「换了一段墙」直接跳下去
-   return Math.hypot(P.x-h.x,P.y-h.y)>3?navVec(h,P.x,P.y):[0,0]}
+   return Math.hypot(P.x-h.x,P.y-h.y)>3?navVec(h,P.x,P.y):MV_ZERO}
   const g=nearestGate(h,P.gates);if(g<0)return null;const gx=(g%MAP_W)*16+8,gy=((g/MAP_W)|0)*16+8;
-  if(Math.hypot(gx-h.x,gy-h.y)<6){heroSetLayer(h,1);h.x=gx;h.y=gy;return[0,0]}
+  if(Math.hypot(gx-h.x,gy-h.y)<6){heroSetLayer(h,1);h.x=gx;h.y=gy;return MV_ZERO}
   return navVec(h,gx,gy)}
 function heroLeaveWall(h){const t=tidx(h.x,h.y),st=G.structAt[t];h.wpost=null;
-  if(st&&!st.dead&&isGateT(st.type)){heroSetLayer(h,0);h.x=(t%MAP_W)*16+8;h.y=((t/MAP_W)|0)*16+8;return[0,0]}
+  if(st&&!st.dead&&isGateT(st.type)){heroSetLayer(h,0);h.x=(t%MAP_W)*16+8;h.y=((t/MAP_W)|0)*16+8;return MV_ZERO}
   if(postVer!==G.structVer){rebuildPosts();postVer=G.structVer}
   const ct=wallCompAt(h.x,h.y),gates=ct>=0?POSTG[ct]||[]:[],g=nearestGate(h,gates);
-  if(g<0){heroSetLayer(h,0);if(!friendPassPt(h.x,h.y))evictFriendsOne(h,t%MAP_W,(t/MAP_W)|0);return[0,0]}   // 这段城墙没有城门：直接跳下去
+  if(g<0){heroSetLayer(h,0);if(!friendPassPt(h.x,h.y))evictFriendsOne(h,t%MAP_W,(t/MAP_W)|0);return MV_ZERO}   // 这段城墙没有城门：直接跳下去
   return navVec(h,(g%MAP_W)*16+8,((g/MAP_W)|0)*16+8)}
 // v0.4.2 出击：这一波还在刷怪 → 去还有怪要出来的刷新点（几位 AI 英雄按编号分开走）；都刷完了 → 去找剩下的亡灵（heroFront，不限距离）
 function heroSortie(h){{const k=heroSortieSpawn(h);if(k!==null){h.srtS=k;const p=spawnPt(k);if(p)return p}}   // v0.8.18 指挥面板选的出击方向
@@ -53845,7 +53867,7 @@ function v8Dash(s,dt){const V=s.v8,D=V.dash,c=s.c,hx=Math.cos(D.dir),hy=Math.sin
   return true}
 // 奥薇尔在场：赤血铁骑 → 圣女铁骑；不在了换回来（生命按比例）
 function v8Saint(s){const on=G.heroes.some(h=>h.id==='saintKnight'&&!h.dead),c=s.c,to=on?c.saint:c.blood;if(!to||!CFG.units[to])return;
-  const r=s.hp/s.maxHp;s.type=to;s.c=CFG.units[to];s.baseHp=s.c.hp*s.statMul;s.maxHp=s.baseHp*uHpMul(s);s.hp=s.maxHp*r;s.def=s.c.def;s.mdef=s.c.mdef||0}
+  const r=s.hp/s.maxHp;s.type=to;s.c=UDEF[to];s.baseHp=s.c.hp*s.statMul;s.maxHp=s.baseHp*uHpMul(s);s.hp=s.maxHp*r;s.def=s.c.def;s.mdef=s.c.mdef||0}
 // —— 红衣主教：治疗（和攻击分开计时）——
 const v8HealAmt=s=>s.c.heal.amt*unitDmgMul(s.c,s.statMul,s,true)*s.atkMul;
 function v8HealOne(s,u,a,sh){if(u.dead)return;healF(u,a);if(s.s4)s4Bless(s,u);if(sh){const cur=u.shieldHp>0?u.shieldHp:0;if(a>cur){u.shieldHp=a;u.shieldMax=Math.max(u.shieldMax||0,a)}u.shieldT=Math.max(u.shieldT||0,5)}healFx(u.x,u.y-14-(u.elev||0))}   // S4 加：庇佑之力（units/s4_camps）
@@ -57730,7 +57752,14 @@ const btLvG=(t,k)=>{const s=G.btech&&G.btech[btT(t)];return(s&&s.lv&&s.lv[k])||0
 const btv=(t,k)=>btLvG(t,k)*CFG.btech.base[k].per;
 // v0.6.1 一阶 + 二阶进化合并成一个（二阶带「前置」的，要带着那个一阶才生效）；城墙的一阶存在「城墙」名下（evo1Of），城门跟着自己的城墙
 const BTW=CFG.btech.towers,evo1K=t=>(BTW[t]&&BTW[t].evo1Of)||t,EVO_M=new Map();
-function btEvo(t){const B=typeof G!=='undefined'&&G&&G.btech;if(!B)return null;t=btT(t);const k1=evo1K(t),s1=B[k1],s2=B[t],T1=BTW[k1],T2=BTW[t];
+// P3 加（0.12.2d 性能）：按种类记住结果。G.btech 是开局快照、一局里游戏自己不改（units/bw_camp 也这么依赖），但测试会直接换 G.btech[t]（t_bld4、t_steelcity、t_v0100……），
+//   所以记下算的时候用的两条记录（s1 = 一阶那条、s2 = 这一种自己那条）和它们的 sel / sel2，下次先核对还是不是同一个对象、选的还是不是那个，不是就重算；换了一局（G 换了对象）整表清掉。
+//   towerW、campCap、structMax、stoneWallTick… 每帧成百上千次调它，原来每次二十来次按名查表（剖析里 btEvo + btT + evo1K 约 2.8%），现在命中时 5 次
+let BTE_G=null;const BTE_C=new Map();   // 种类 → 记录（t2 = btT 后的种类、k1 = 一阶存在谁名下、s1、s2、sel、sel2、v = 结果）
+function btEvo(t){const B=typeof G!=='undefined'&&G&&G.btech;if(!B)return null;if(BTE_G!==G){BTE_G=G;BTE_C.clear()}
+  const c=BTE_C.get(t);if(c!==undefined){const s1=B[c.k1],s2=B[c.t2];if(s1===c.s1&&s2===c.s2&&(s1?s1.sel:undefined)===c.sel&&(s2?s2.sel2:undefined)===c.sel2)return c.v}
+  const t2=btT(t),k1=evo1K(t2),s1=B[k1],s2=B[t2],v=btEvo_(t2,k1,s1,s2);BTE_C.set(t,{t2,k1,s1,s2,sel:s1?s1.sel:undefined,sel2:s2?s2.sel2:undefined,v});return v}
+function btEvo_(t,k1,s1,s2){const T1=BTW[k1],T2=BTW[t];
   const e1=s1&&s1.sel&&s1.evo&&s1.evo[s1.sel]&&T1?T1.evo[s1.sel]||null:null,e2=s2&&s2.sel2&&s2.evo2&&s2.evo2[s2.sel2]&&T2&&T2.evo2?T2.evo2[s2.sel2]||null:null;
   if(!e2||(e2.req&&(!e1||s1.sel!==e2.req)))return e1;if(!e1)return e2;
   let m=EVO_M.get(e1);if(!m)EVO_M.set(e1,m=new Map());let r=m.get(e2);if(!r){r=evoMerge(e1,e2);m.set(e2,r)}return r}
@@ -57815,7 +57844,7 @@ function computeAuras(){const wts=G.structs.filter(s=>s.type==='watchtower');G.w
 function addSpend(s,c){if(G.phase==='prep'){if(!s.spent||s.spent.pid!==G.prepId)s.spent={pid:G.prepId,amt:0};s.spent.amt+=c}}
 function makeStruct(type,tx,ty){
   const d=BDEF[type];
-  const s=Object.assign(new Struct(),{type,cfg:d,tx,ty,x:tx*16+8,y:ty*16+16,level:1,flash:0,cd:0.4,ammo:0,rel:0,aim:-Math.PI/2,recoil:0,invested:d.cost,dead:false,aura:false,pid:G.prepId,spent:null});   // v0.6.4 new Struct()：全部字段一次建好（形状统一，见 core/shape）
+  const s=Object.assign(new Struct(),{type,cfg:d,tx,ty,x:tx*16+8,y:ty*16+16,level:1,flash:0,cd:0.4,ammo:0,rel:0,aim:-Math.PI/2,recoil:0,invested:d.cost,dead:false,aura:false,pid:G.prepId,spent:null,isCamp:isCampT(type)});   // isCamp：P3 加（0.12.2d 性能）：是不是兵营，建的时候定（type 不会变）；每帧扫全部建筑的地方读它（core/core.isCampS）   // v0.6.4 new Struct()：全部字段一次建好（形状统一，见 core/shape）
   if(isCampT(type)){s.unit=d.units[0];s.mode=G.globalMode;s.locked=false;s.uLock=false;s.trainT=0;s.slots=0;s.count=0}
   else if(d.weapon&&type!=='keep'){s.tgt=G.towerMode||'free';s.cont=false;s.locked=false;s.tgI=-1;s.tgId=0}   // v0.6.6 塔楼选目标
   {const n=bSize(type);if(n>1&&d.cat!=='settle'){s.fs=n;s.x=(tx+n/2)*16;s.y=(ty+n)*16}}   // v0.8.0 2×2 兵营：x = 占地中线，y = 占地底边（同开拓地建筑）
@@ -59722,7 +59751,7 @@ function applyCard(o){
   const cap0=c.cap&&c.cap[0] in pm?pm[c.cap[0]]:0;
   const R=G.pmRaw||(G.pmRaw={});for(const k in e)if(k in pm)dimAdd(pm,R,k,hhCardV(o,haPowV(k,cardEff(o,k))));   // v0.8.22 折算   // haPowV：HA 加，v0.12 安德鲁「神锻之力」伤害、生命类卡面数值 +X%（heroes/ha_andrew）   // hhCardV：0.11.4 代理hh 加，运筹帷幄卡牌数值 +X%
   if(c.kcap)for(const k in c.kcap)if(k in pm){if(R[k]>c.kcap[k])R[k]=c.kcap[k];pm[k]=Math.min(pm[k],c.kcap[k])}   // kcap：v0.8.22 这个系列给的这一项最多多少（精制火药的爆炸范围、弱点瞄准的暴击伤害各 30%）
-  if(c.cap&&c.cap[0] in pm)pm[c.cap[0]]=Math.min(pm[c.cap[0]],Math.max(c.cap[1],cap0));pm=fastObj(pm);   // pm=fastObj：0.5.9 每次拿卡重建一份（字段全是 PM_KEYS，只改数值，保持 V8 快速模式）；高品质卡不会把累计值顶过上限；v0.5.2 也不会把别的卡给的压回去（开拓领地 +4 封顶，开拓领袖 / 英雄 +8）
+  if(c.cap&&c.cap[0] in pm)pm[c.cap[0]]=Math.min(pm[c.cap[0]],Math.max(c.cap[1],cap0));   // P3 删 pm=fastObj(pm)：拿卡只改现有字段的数值，不会退出快速模式；重建反而换了对象（V8 把 let pm 当常量嵌进了优化代码，一换就整批作废）；高品质卡不会把累计值顶过上限；v0.5.2 也不会把别的卡给的压回去（开拓领地 +4 封顶，开拓领袖 / 英雄 +8）
   if(c.special==='loot')G.gold+=mshGain(lootGold(o));   // msh*：v0.11.1 马歇尔的铜币记账（heroes/marshall：花费 mshPay、进账 mshGain、拆除 / 回收 mshBack）
   if(c.special==='windfall')G.gold+=mshGain(Math.max(0,Math.round(G.gold)));   // v0.8.22 天降横财：现有铜币翻倍   // msh*：v0.11.1 马歇尔的铜币记账（heroes/marshall：花费 mshPay、进账 mshGain、拆除 / 回收 mshBack）
   if(c.special==='loan'){const g=loanGold();G.gold+=mshGain(g);pm.loanA=Math.round(g*CFG.cardFx.loan.cut);pm.loanN=CFG.cardFx.loan.n}   // v0.8.22 算缗告缗   // msh*：v0.11.1 马歇尔的铜币记账（heroes/marshall：花费 mshPay、进账 mshGain、拆除 / 回收 mshBack）
@@ -59765,7 +59794,7 @@ function afterPlayerCard(){
       const top=Math.max(...opts.map(o=>QRANK(o.q))),o=pick(opts.filter(x=>QRANK(x.q)===top));applyEnemyCard(o);G.eAuto={o,opts};showEnemyPicked();return}}
   toPrep();
 }
-function applyEnemyCard(o){const e=o.c.eff||{},R=G.emRaw||(G.emRaw={});for(const k in e){if(!(k in em))continue;const v=cardEff(o,k);if(o.c.set){em[k]=v;if(k in R)R[k]=v}else dimAdd(em,R,k,v)}if(o.c.cap)em[o.c.cap[0]]=Math.min(em[o.c.cap[0]],o.c.cap[1]);em=fastObj(em);G.epickN[o.c.id]=(G.epickN[o.c.id]||0)+1;G.epicked.push({n:cardName(o.c,o.q),q:o.q});   // v0.8.25 按品质取值（qv）、顶替卡（set）直接设值
+function applyEnemyCard(o){const e=o.c.eff||{},R=G.emRaw||(G.emRaw={});for(const k in e){if(!(k in em))continue;const v=cardEff(o,k);if(o.c.set){em[k]=v;if(k in R)R[k]=v}else dimAdd(em,R,k,v)}if(o.c.cap)em[o.c.cap[0]]=Math.min(em[o.c.cap[0]],o.c.cap[1]);G.epickN[o.c.id]=(G.epickN[o.c.id]||0)+1;G.epicked.push({n:cardName(o.c,o.q),q:o.q});   // v0.8.25 按品质取值（qv）、顶替卡（set）直接设值
   if(e.night||e.smog||e.bloodMoon||e.mist||e.cstorm)dayRefresh()}
 // v0.8.23（用户定）刷新卡牌：花 1 次刷新次数（卡「幸运机会 / 命运之掷」「以量胜质」），把这一批重抽；精英 / 首领波的保底照算
 function rerollCards(enemy){if(!(pm.reroll>=1))return;if(enemy){if(!G.ecardOpts)return;pm.reroll--;G.ecardOpts=drawEnemyCards(G.ecardOpts.length||3);sfx('click');showEnemyCards();return}
@@ -59859,7 +59888,7 @@ function loadRun(d){
   for(const i of d.cleared||[])if(clearCostOf(G.terrain[i])){clearTileRaw(i);G.cleared.push(i)}
   hkEach('loadAfter',d);   // v0.6.0 清障之后再恢复的地形（元素森林的土墙）
   RS=d.RS;if(!d.pv&&d.pm&&d.pm.waveCopper>0)d.pm.waveCopper/=20;   // v0.6.0 老存档：战时税原来每张存 20 × 品质倍率，改成存品质倍率
-  pm=fastObj(Object.assign(pm,d.pm));em=fastObj(Object.assign(em,d.em));G.seen=d.seen||{};G.seenF=d.seenF||{};if(d.ds&&typeof d.ds==='object'){DSK=Object.create(null);for(const k in d.ds){const r=d.ds[k];if(r&&r.k)DSK[k]=r}}   // seenF：v0.8.23 我方受到过的伤害种类（抗性药水卡）   // ds：v0.8.24 修——读档后「数据详情」清空了：存档带上这一局的数据详情（按键记的合计；DSM 是单位 → 记录的缓存，读档后按键重新挂上）
+  Object.assign(pm,d.pm);Object.assign(em,d.em);G.seen=d.seen||{};G.seenF=d.seenF||{};if(d.ds&&typeof d.ds==='object'){DSK=Object.create(null);for(const k in d.ds){const r=d.ds[k];if(r&&r.k)DSK[k]=r}}   // seenF：v0.8.23 我方受到过的伤害种类（抗性药水卡）   // ds：v0.8.24 修——读档后「数据详情」清空了：存档带上这一局的数据详情（按键记的合计；DSM 是单位 → 记录的缓存，读档后按键重新挂上）   // P3 改：读档填进 newGame 建好的 pm / em（原来 fastObj 重建一份，理由同 applyCard）
   if(d.pmRaw&&typeof d.pmRaw==='object'){G.pmRaw=d.pmRaw;G.emRaw=d.emRaw||{}}else{G.pmRaw=dimMigrate(pm);G.emRaw=dimMigrate(em)}   // v0.8.22 卡牌折算：老存档的合计当成卡面合计再折算
   G.weather=WX[d.weather]?d.weather:'sunny';G.dayIdx=dayIdxFor(d.wave+1);envApply();
   Object.assign(G,{heroCmd:d.heroCmd&&typeof d.heroCmd==='object'?d.heroCmd:{},wave:d.wave,gold:d.gold,kills:d.kills,kE:d.kE||0,kB:d.kB||0,picked:d.picked||[],epicked:d.epicked||[],globalMode:d.globalMode||'guard',towerMode:TWR_NAMES[d.towerMode]?d.towerMode:'free',heroMode:d.heroMode||(d.globalMode&&d.globalMode!=='guard'?'sortie':'guard'),heroModes:d.heroModes||{},autoNext:!!d.autoNext,meta:d.meta||G.meta,prepId:d.prepId||1,pickN:d.pickN||{},epickN:d.epickN||{},loot:d.loot||[],souls:d.souls||{},skinFrag:d.skinFrag||{},mats:d.mats||{}});
@@ -63786,7 +63815,7 @@ const EWEAP={tank:'club',giantTank:'club',skeleton:'rusty',skArcher:'bow',skSnip
   camelShooter:'bow',headless:'musket',headlessFoot:'musket',sandWraith:null,   // v0.5.0 沙漠神殿（骆驼统领的骑枪、朝圣者的法杖画在身上）
   polarArcher:'bow',polarHeavy:'club',polarGiant:'club',bearKnight:'lance',undyingBone:'rusty',arrowGod:'longbow',polarWarGod:'longsword',   // v0.5.1 寒冰极地
   corruptMusket:'musket',cannoneer:'handcannon',napoleonBoss:'handcannon',shieldGuard:'club'};Object.assign(EWEAP,CFG.eWeap||{});   // v0.6.0 之后的地图把亡灵的手持武器写在数据里（CFG.eWeap）   // v0.5.1 机械工厂   // v0.5.0 沙漠神殿（骆驼统领的骑枪、朝圣者的法杖画在身上）
-for(const k of UTYPES){const c=CFG.units[k];if(c.xe&&c.weapon===undefined)c.weapon=EWEAP[c.xe]||null}   // v0.8.6 阵营：亡灵变成我方的兵（data/faction 的 xe_）手上拿原来的武器
+for(const k of UTYPES){const c=CFG.units[k];if(c.xe&&c.weapon===undefined)c.weapon=UDEF[k].weapon=EWEAP[c.xe]||null}   // UDEF：P3 加，两张表都补（core/core）   // v0.8.6 阵营：亡灵变成我方的兵（data/faction 的 xe_）手上拿原来的武器
 const EWS={swing:0,thrust:0,recoil:0},TST={blT:0,fearT:0};
 let ESHW=null;   // 每种亡灵的影子半宽（0 = 原来的小影子；−1 = 不画）：size ≥ 14 的大单位按图宽的 0.42 画椭圆影子；船和潜艇（sea）不画
 function eShwInit(){ESHW=ETYPES.map(k=>{const c=CFG.enemies[k];if(c.sea||c.ship&&!c.hover&&!c.fly)return -1;if(!(c.size>=14))return 0;const f=SPR.enemies[k];return f&&f[0]?Math.round(f[0].w*0.42):c.size})}
@@ -64269,7 +64298,13 @@ const PS={fps:60,logic:0,render:0,drop:0,need:0,slow:0};   // drop / need：v0.6
 // v0.6.0 性能面板的「最卡一帧」：打开帧率显示时，逻辑按几块分别计时（PSEG.cur 累加这一帧的；ui/main.frame 每帧比一下，记下 2 秒内最卡的那帧）
 const PSEG={on:false,cur:{},worst:{},wl:0,wr:0,t:0,show:null};
 const segOn=()=>performance.now();   // v0.6.8 一直计时（问题报告要记「最卡的一次」；每次逻辑更新十几次 performance.now，开销可以忽略）
-function segAdd(k,t0){const t=performance.now();if(t0)PSEG.cur[k]=(PSEG.cur[k]||0)+t-t0;return t}   // P2 改（0.12.2d 性能）：返回这一刻，下一段直接接着记（game/game.update 里 st=segAdd(…)），一次更新少调一半 performance.now（剖析里 segOn/segAdd/now 合计约 3%）
+// P3 改（0.12.2d 性能）：各段的毫秒记在定长数组 SEG_T 里（键 → 下标见 SEG_K），不再每次更新新建一个对象、逐个加十几个键（剖析里 segAdd 占 1.5%，一次更新约 7 微秒，还有一串小对象）；
+//   要看的时候 segObj() 拼成 {键: 毫秒}（ui/main 只给这一帧里最慢的那次更新拼一份；bench 同）。不在表里的键（tools/perf/bench --trace 临时加的）照旧记进 PSEG.cur
+const SEG_K=['英雄','士兵·兵营','士兵·士兵','建筑·塔楼','建筑·辅助和陷阱','亡灵·军团','亡灵·个体','弹道·我方','弹道·敌方','弹道·区域技能','地图','特效·特效','特效·粒子','网格','视野','寻路'];
+const SEG_I=new Map(SEG_K.map((k,i)=>[k,i])),SEG_T=new Float64Array(SEG_K.length);
+function segAdd(k,t0){const t=performance.now();if(t0){const i=SEG_I.get(k);if(i===undefined)PSEG.cur[k]=(PSEG.cur[k]||0)+t-t0;else SEG_T[i]+=t-t0}return t}   // P2 改（0.12.2d 性能）：返回这一刻，下一段直接接着记（game/game.update 里 st=segAdd(…)），一次更新少调一半 performance.now
+function segClear(){SEG_T.fill(0);for(const k in PSEG.cur){PSEG.cur={};break}}   // 每次逻辑更新前清零（有临时键才换新对象）
+function segObj(){const o={};for(let i=0;i<SEG_K.length;i++)if(SEG_T[i]>0)o[SEG_K[i]]=SEG_T[i];for(const k in PSEG.cur)o[k]=PSEG.cur[k];return o}   // 这次更新各段的毫秒 {键: 毫秒}（只有记了时间的段）
 // —— 视图：平时 1 个；电脑双人在战斗阶段左右（竖屏上下）分屏，各跟各的英雄；准备阶段合成一个 ——
 const VIEWS=[{x:0,y:0,w:0,h:0,OX:0,OY:0,CX:0,CY:0},{x:0,y:0,w:0,h:0,OX:0,OY:0,CX:0,CY:0}];let NVIEW=1;
 const cam2={x:512,y:512,init:false};let splitCls='';
@@ -64663,7 +64698,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2c',GAME_TAG='测试版',GAME_CODE=168,GAME_BUILD="485c9d8+",GAME_BUILT=1793059751908,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2c',GAME_TAG='测试版',GAME_CODE=168,GAME_BUILD="f38f307",GAME_BUILT=1793069644978,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -69151,8 +69186,8 @@ function frame(now){
     const need=Math.floor(acc/STEP),skip=SET.lag!=="slow"&&need>=2&&need*Math.max(0.25,stepMs)+rMs>(SET.fps===30?1000/30:1000/60)&&now-lastR<SKIP_GAP;skipR=skip;   // skip：这一帧不画，逻辑多拿 rMs；v0.10.11 修（用户报：明明画得过来也跳帧）：原来落后 2 步就跳（2 倍速、高刷屏每帧本来就要补 2 步），现在要补的步数 × 每步耗时 + 画一帧的耗时超过一帧的时间（60 帧 16.7 毫秒、30 帧 33 毫秒）才跳
     const cap=Math.max(1,Math.min((skip?24:12)*Math.max(1,speedMul/3),Math.floor((LOGIC_BUDGET+(skip?rMs:0))/Math.max(0.25,stepMs))));   // speedMul / 3：代理 OP 加（4×、5× 倍速），每帧最多补的步数跟着倍速放大（5× 时 20 / 40 步；60 帧下 5× 每帧要 5 步、30 帧 10 步），仍受逻辑预算 LOGIC_BUDGET 限制；步长不变，同一种子结果不变
     let wst=0,wsg=null,wff=0,wfp=0,wvn=0,wvs=0;   // v0.6.8 这一帧里最慢的那次更新（性能面板、问题报告都看它）：分段、寻路整张 / 局部、视野算了几次
-    while(acc>=STEP&&n<cap){PSEG.cur={};const f0=FLOW_STAT.full,p0=FLOW_STAT.part,v0=VIS_STAT.n,vs0=VIS_STAT.s,s0=performance.now();update(STEP);const sd=performance.now()-s0;stepMs=stepMs*0.9+sd*0.1;
-      if(sd>wst){wst=sd;wsg=PSEG.cur;wff=FLOW_STAT.full-f0;wfp=FLOW_STAT.part-p0;wvn=VIS_STAT.n-v0;wvs=VIS_STAT.s-vs0}acc-=STEP;n++;if(paused){acc=0;break}}
+    while(acc>=STEP&&n<cap){segClear();const f0=FLOW_STAT.full,p0=FLOW_STAT.part,v0=VIS_STAT.n,vs0=VIS_STAT.s,s0=performance.now();update(STEP);const sd=performance.now()-s0;stepMs=stepMs*0.9+sd*0.1;
+      if(sd>wst){wst=sd;wsg=segObj();wff=FLOW_STAT.full-f0;wfp=FLOW_STAT.part-p0;wvn=VIS_STAT.n-v0;wvs=VIS_STAT.s-vs0}acc-=STEP;n++;if(paused){acc=0;break}}
     if(n>=cap&&acc>=STEP){PS.drop+=acc;acc=0}PS.need+=dt*speedMul;
     PS.logic=PS.logic*0.9+(performance.now()-t0)*0.1;PSEG.lt=performance.now()-t0;PSEG.st=wst;PSEG.sg=wsg||{};
     if(n&&G.phase==='wave')repFrame(wst,wsg,PSEG.lt,n,wff,wfp,wvn,wvs)}else{PSEG.lt=0;PSEG.st=0;PSEG.sg={}}
