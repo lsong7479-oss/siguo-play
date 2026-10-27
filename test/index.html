@@ -10275,7 +10275,7 @@ CFG.settlement.priceK=0.1;   // 用户定：开拓地里造防御建筑花银币
 //   战场就是开拓地本身（布置、主堡等级照搬，不能建造），天气在入侵出现时定好、整场不变；时段 = 本机时间（dayHours）
 // v0.6.34（用户定）开拓地里不能造的建筑：矿山只在每波结束给铜币，入侵战不能建造，铜币用不上
 CFG.settlement.banned=['goldMine'];
-CFG.settlement.invade={every:6, chance:0.5, waves:20, sweep:0.5,
+CFG.settlement.invade={every:24, chance:1, waves:20, sweep:0.5,   // 0.12.2（用户定）一天刷新一次（原来 6 小时一次、50%；Claude 定改成每天必来一次，免得一天一次再打对折太少）
   w:{normal:30, hard:30, nightmare:25, inferno:10, abyss:5},
   gold:{normal:10, hard:15, nightmare:20, inferno:30, abyss:50},
   from:{normal:1, hard:1, nightmare:21, inferno:21, abyss:41},
@@ -13531,7 +13531,7 @@ CFG.trade.lv={kinds:[3,3,4,4,5,5,6], times:[[1,2],[1,3],[2,3],[2,4],[3,4],[3,5],
 // —— 第三步：英雄驻扎、外圈入侵（用户定）——
 //   每个开拓地最多驻扎 max 名英雄；入侵战只有驻扎的英雄上场（v0.10.1 用户定：没驻扎就不带英雄，只靠建筑和士兵守，迎战前先提示）；一名英雄驻扎、撤下、换地方以后 lock 小时内不能再动
 //   只有外圈的 outer 个开拓地会被入侵：优先最高阶的地区，并且尽量各在王都的一个方向（东南西北）；其它是内圈，安全
-CFG.settlement.garrison={max:3, lock:6};
+CFG.settlement.garrison={max:3, lock:6, daily:true};   // daily：0.12.2（用户定）驻扎、调动一天一次：驻扎或撤下以后到第二天 0 点前不能再换（撤下随时可以）
 CFG.settlement.outer=4;
 
 // ---------- v0.10.1 开拓地：建筑耐久、木匠铺、灾害、好事、政务（用户 2026-10-17 的策划；机制在 game/settle_0101.js）----------
@@ -19057,7 +19057,7 @@ CFG.heroRoles={names:[['tank','坦克'],['warrior','战士'],['shooter','射手'
     paladin:'tank',priest:'sup',camelKnight:'warrior',versatile:'warrior',napoleon:'cmd',sniper:'shooter',elemArcher:'shooter',saintKnight:'cmd',judgeKnight:'tank',
     desertHermit:'warrior',ironMarshal:'cmd',archDruid:'mage',merchant:'sup',lilian:'mage',leng:'mage',fane:'mage',graveRaider:'warrior',dragonLord:'mage',
     taoMaster:'mage',kan:'shooter',watt:'cmd',weidemann:'cmd',commodore:'cmd',lola:'warrior',scribe:'sup',dreadKnight:'warrior',apocKnight:'mage',conqKnight:'cmd',
-    alibaba:'sup',wolfSon:'warrior',vanessa:'sup',anyang:'tank',liko:'shooter',ashna:'shooter',lethe:'mage',wayne:'shooter',caroline:'tank',jack:'shooter',
+    alibaba:'sup',wolfSon:'warrior',vanessa:'sup',anyang:'tank',liko:'shooter',ashna:'shooter',lethe:'mage',wayne:'shooter',caroline:'cmd',jack:'shooter',
     akagiJiro:'warrior',kazamiYuki:'mage',dracula:'warrior',xuanzang:'sup',dilong:'warrior',tamamo:'mage',andrew:'tank',gwen:'shooter',marshall:'sup',huanghu:'sup'}};
 
 // ---------- 0.11.4 精英士兵（用户 2026-10-24 策划：根目录《0.11.4策划-精英与家族（用户原文）.md》；实现说明《0.11.4精英系统-实现说明.md》）----------
@@ -19090,7 +19090,7 @@ CFG.elite={
   // 转职（用户定：入队后随时花银币转职；价格 Claude 定）
   jobSilver:3000, jobChange:6000,
   // 伤病（用户定：死亡 50% 伤残；已伤残再死 50% 变残疾；伤残 24 小时恢复；治疗：伤残银币、残疾金币 / 特殊材料；价格 Claude 定）
-  injury:{p:0.5, worseP:0.5, healH:24, silver:3000, gold:100},
+  injury:{p:0.5, worseP:0.5, healH:24, silver:500, gold:100},
   // 家族（用户定：25～40 岁每年有概率生子、至多 4 个、平均 2 个；5～15 岁在训练所；子辈接替 −16～24 岁、孙辈 −32～48 岁；概率 Claude 定）
   // 0.12.0（用户定）有配偶才生：15～25 岁 fertP，之后每岁 −fertDrop，双方相乘，每有一个孩子 −fertKid，至多 max 个
   family:{age:[15,50], p:0.125, fertP:0.5, fertAge:25, fertDrop:0.02, fertKid:0.05, max:5, school:[5,15], adult:15, inherit:0.3, heirP:0.6, grandP:0.2, childExp:0.3, childSk:0.3, grandExp:0.15, grandSk:0.15, childAge:[16,24], grandAge:[32,48]},
@@ -19468,6 +19468,24 @@ CFG.elite.cfam={max:3, silver:50000, upCore:[20,30,40,50,60,80,100,120], allocK:
   trG:{}};   // 五格各一组的家族特性：0.12.2 挪到 data/el_famfx.js，按五档规矩重排
 // 选项键 → 选项（新的五组 + 老的一组）
 CFG.elite.cfam.trAll=Object.assign({},CFG.elite.cfam.trOpts);for(const t in CFG.elite.cfam.trG)for(const o of CFG.elite.cfam.trG[t])CFG.elite.cfam.trAll[o.key]=Object.assign({thr:+t},o);
+
+// ---------- 0.12.2 精英派遣、精英驻军（用户定玩法；具体数值 Claude 暂定，用户说事件以后再补）----------
+// 派遣：没上阵、没驻军、没受伤的精英去大地图上任意开放的地区探索；随时召回，满 1 小时才有奖励（每个整小时结算一次事件）。
+//   槽位 = slots + 科技「特遣行动」等级；每小时 evP 概率遇到一次事件（events 里按 w 抽）
+//   阶段：精英每 10 级一个阶段（1～10 级第 1 阶段……），和地区阶比：地区每高出一个阶段，成功率 −0.1 × (n² − n)、失败率 +同样多；
+//     每低一个阶段反过来（n = 相差的阶段数 + stageOff；stageOff = 1 时差 1 阶就有 0.2，= 0 时差 1 阶不变——用户的公式里「阶数」待确认，先按 +1 算）
+//   先判成功：成功拿奖励；不成功再判失败：失败 = 受伤(一处轻伤)并自动撤回；都没中 = 有惊无险，什么也不发生
+//   装备、技能加成：成功率 × (1 + gsMax × 装备技能分)，装备技能分 0～1（装备按阶、品质，技能按装上的技能等级）
+//   奖励 × 地区倍率（同上贡的 matK，按地区阶）；经验 × 精英自己的经验加成
+CFG.elite.disp={slots:3, minH:1, maxH:24, evP:0.6, stageLv:10, stageK:0.1, stageOff:1, gsMax:0.5,
+  events:{
+    raid:{name:'亡灵袭击', w:1, ok:0.5, fail:0.5, okTxt:'击退了袭击的亡灵', failTxt:'被亡灵击伤，撤了回来', noTxt:'遭遇亡灵袭击，有惊无险',
+      got:{银币:300, 科研点:15, 设计点:15, mat:6, core:[0.3,1], exp:120}}},   // mat：这个地区这一阶的基础材料（本地产的随机一种）；core：[概率, 个数] 这个地区的特产
+  };
+// 精英驻军（用户定）：每个开拓地最多 max 名精英；每小时 exp 经验（按开拓地的阶，× 精英经验加成）；入侵战时驻军的精英上场（上阵的精英不带进入侵战）
+CFG.elite.gar={max:3, exp:[20,30,40,55,70,90,110,135,160]};
+// 科技：特遣行动（用户定：每级派遣槽位 +1；三级，价格 Claude 定）
+CFG.techs.elDispT={cat:'elite', name:'特遣行动', max:3, cost:[200,2000], key:'elDisp', per:1, first:0, fmt:'n', desc:'精英派遣的槽位'};
 
 // ---------- 0.12.0 五阶～九阶地区的精英：地区、平民血脉、家族（用户定「后期地图多，家族 1～2 个，有的可以不设」；名字、数、效果 Claude 定）----------
 // 结盟（用户定）：五阶及以上地区的家族要先结盟才开放招募、声望、婚配——通关这张地图的噩梦或以上难度，或者完成这张地图的传记剧情（elAllyStory(地图) 接口，game/el_mar）
@@ -58398,7 +58416,7 @@ function settleExit(){if(!settleOn())return;settleSave(true);running=false;hudEl
 
 // v0.10.1（用户定）入侵战没有驻扎英雄：不带英雄。对局底层要有一位「当前英雄」（镜头、操作、界面都读 G.hero），这里照常按出战阵容开局，
 //   开局后把英雄收起来：不在 G.heroes 里（所有战斗逻辑、亡灵索敌、光环都只看 G.heroes），倒下状态、永不复活，放在主堡位置不画；阵容清空，主堡升级也不会有英雄加入
-function heroPark(){const h=G.hero;if(!h)return;h.dead=true;h.respawn=1e9;h.gone=true;h.park=true;h.x=G.base.x;h.y=G.base.y;G.heroes.length=0;G.lineup=[];G.noHero=true;cam.follow=false;cam.x=G.base.x;cam.y=G.base.y;if(UI.ready){refreshHeroBar();refreshCtl()}}
+function heroPark(){const h=G.hero;if(!h)return;h.dead=true;h.respawn=1e9;h.gone=true;h.park=true;h.x=G.base.x;h.y=G.base.y;{const els=G.heroes.filter(x=>x.elite);G.heroes.length=0;for(const x of els)G.heroes.push(x)}G.lineup=[];G.noHero=true;cam.follow=false;cam.x=G.base.x;cam.y=G.base.y;if(UI.ready){refreshHeroBar();refreshCtl()}}   // 0.12.2 驻军的精英留在场上（入侵战没驻扎英雄时）
 
 // ---------- v0.6.1 城墙：铁血城墙的叠层减伤（伤害结算在 engine/combat.hurtS）、城墙科技（一阶、二阶，数据见 data/evo2.js）----------
 // 每波开始：铁血城墙的减伤层数清零；一阶「紧急加固」护盾、二阶「魔法屏障」魔法护盾补到上限；「不败铁血」冷却重置
@@ -61737,7 +61755,8 @@ function elRecLeft(){const ms=EL().recruit.hours*3600000-metaNow()%(EL().recruit
 function elHire(reg,i){const m=elSt(),R=elRecOf(reg),e=R.offers[i];if(!e)return'这名已经被招走了';if(m.list.length>=elCap())return`精英已满(${elCap()} 名；每多一个开拓地 +${EL().capPer})`;
   const p=elPrice(e);if((META.wallet.银币||0)<p)return`银币不够(需要 ${p})`;META.wallet.银币-=p;R.offers.splice(i,1);e.id=m.n++;e.ja=e.age;m.list.push(e);elAutoSk(e);saveMeta();return null}   // ja：0.12.0 入队时的年龄（主动退休时在部队不到 rollYears 年的不进名册）
 // —— 年龄、家族、学习：现实 24 小时 = 1 岁，一次最多算 24 小时（用户定）——
-function elTick(){if(!META)return;{const tb=elTribTick();if(tb&&typeof rwShow==='function')setTimeout(()=>rwShow('家族上贡',tb,'声望到「信任」以上的家族，今天向联盟上贡了这些'),400)}const m=elSt(),now=metaNow();let dt=now-m.t;if(!(dt>0))return;const t0=m.t;m.t=now;dt=Math.min(dt,EL().offlineCapMs);const yr=dt/EL().yearMs,F=EL().family;let ch=false;
+function elTick(){if(!META)return;try{elDispTick()}catch(err){console.error('elDispTick',err)}   // 0.12.2 派遣、驻军经验（game/el_disp）
+  {const tb=elTribTick();if(tb&&typeof rwShow==='function')setTimeout(()=>rwShow('家族上贡',tb,'声望到「信任」以上的家族，今天向联盟上贡了这些'),400)}const m=elSt(),now=metaNow();let dt=now-m.t;if(!(dt>0))return;const t0=m.t;m.t=now;dt=Math.min(dt,EL().offlineCapMs);const yr=dt/EL().yearMs,F=EL().family;let ch=false;
   EL_FOLLOW_SET=elFamReach(m.follow);
   const life=x=>{const a0=x.age;x.age+=yr;if(!elSpouse(x)&&x.age>=EM().age&&!x.dead&&elAutoSpouse(x)){if(m.list.includes(x))elEv('mar',{id:x.id,auto:1});ch=true}if(x.sp&&!x.sp.dead){x.sp.age+=yr;if(x.sp.age>=(x.sp.life||75))x.sp.dead=1}   // 队外配偶到寿命去世 → 丧偶   // 0.12.0（用户定）25 岁还没成家的自己相亲
     const pa=x.spId&&elById(x.spId);if(pa&&m.list.includes(pa)&&pa.id<x.id)return;   // 队内夫妻：编号小的那位判生育
@@ -61938,9 +61957,9 @@ const elHurt=e=>Object.keys(e.inj).length>0;
 function elHireKid(id){const m=elSt(),c=m.kids.find(k=>k.id===id)||m.fam.find(k=>k.id===id&&!k.dead);if(!c)return'没有这个人';if(c.age>=EL().life[0]-EL().retireBefore-5)return'年纪太大了';if(c.age<EL().family.adult)return`要 ${EL().family.adult} 岁才能入队`;if(m.list.length>=elCap())return'精英已满';
   c.kidBuy=1;const p=elPrice(c);delete c.kidBuy;if((META.wallet.银币||0)<p)return`银币不够(需要 ${p})`;META.wallet.银币-=p;m.kids=m.kids.filter(x=>x!==c);m.fam=m.fam.filter(x=>x!==c);delete c.kid;delete c.st;delete c.gcT;if(!c.log)c.log={n:0,k:0,d:0,t:0,h:0,c:0,L:[]};c.ja=c.age;m.list.push(c);elAutoSk(c);saveMeta();return null}
 // —— 上阵（用户定：每局最多 3 名 + 科技；伤病的可以设置自动不上阵）——
-function elDepToggle(e){if(e.dep){e.dep=false;saveMeta();return null}const n=elSt().list.filter(x=>x.dep).length;if(n>=elDeployMax())return`上阵已满(${elDeployMax()} 名；科技「精英编制」+1～3)`;e.dep=true;saveMeta();return null}
-function elDeployList(){const m=elSt(),L=m.list.filter(e=>e.dep);if(!m.opt.injOff)return L.slice(0,elDeployMax());
-  const ok=L.filter(e=>!elHurt(e)),sub=m.list.filter(e=>!e.dep&&!elHurt(e));while(ok.length<Math.min(L.length,elDeployMax())&&sub.length)ok.push(sub.shift());return ok.slice(0,elDeployMax())}   // 伤病的换成别的没伤病的
+function elDepToggle(e){if(e.dep){e.dep=false;saveMeta();return null}if(elDispOf(e.id))return'这名精英正在派遣，先召回';const n=elSt().list.filter(x=>x.dep).length;if(n>=elDeployMax())return`上阵已满(${elDeployMax()} 名；科技「精英编制」+1～3)`;e.dep=true;saveMeta();return null}
+function elDeployList(){const m=elSt(),L=m.list.filter(e=>e.dep&&!elDispOf(e.id));if(!m.opt.injOff)return L.slice(0,elDeployMax());
+  const ok=L.filter(e=>!elHurt(e)),sub=m.list.filter(e=>!e.dep&&!elHurt(e)&&!elDispOf(e.id));while(ok.length<Math.min(L.length,elDeployMax())&&sub.length)ok.push(sub.shift());return ok.slice(0,elDeployMax())}   // 伤病的换成别的没伤病的
 // 每分钟结算一次年龄（营地里）
 setInterval(()=>{try{if(META&&!(typeof running!=='undefined'&&running))elTick()}catch(err){console.warn('elTick',err)}},60000);
 // —— 0.12.0 调试（用户定，设置「调试功能」里的按钮）——
@@ -62275,7 +62294,7 @@ const elTribV=fid=>EL().tribute.lv[elTribLvN(fid)]||null;
 const elTribAskRep=fid=>EL().tribute.askRep[elTribLvN(fid)]||0;
 // 这个家族上贡一次：返回 {物资: 数量}（不够格返回 null）
 function elTribOne(fid){const v=elTribV(fid);if(!v||!elAllied(fid))return null;const T=EL().tribute,B=elBlood()[fid],reg=B.reg,t=Math.min(CFG.wares.tiers.length-1,elRegTier(reg)),W=CFG.wares.tiers[t],M=(W.maps&&W.maps[reg])||{},k=T.matK[Math.min(T.matK.length-1,elRegTier(reg))],o={},add=(w,n)=>{n=Math.round(n);if(w&&n>0)o[w]=(o[w]||0)+n};
-  for(const w of M.basic||[])add(w,v.sp*k);for(const kd in W.basic||{})add(W.basic[kd],v.mat*k);add(M.core,v.core);
+  for(const w of M.basic||[])add(w,v.sp*k);for(const kd in W.basic||{})if(!(M.basic||[]).includes(W.basic[kd]))add(W.basic[kd],v.mat*k);add(M.core,v.core);   // 0.12.2（用户定）本地特产材料只按「特产」算一次，不再和「地区材料各」叠加
   const gk=EL().bloodGoods[reg]||'pgWood';for(const kd in W.goods||{})add(W.goods[kd],kd===gk?v.gs:v.go);
   for(const w in o)trAdd(w,o[w]);return o}
 const elTribFams=()=>{const B=elBlood();return Object.keys(B).filter(id=>B[id].kind==='f'&&!B[id].custom&&elAllied(id))};
@@ -62299,6 +62318,66 @@ function elFtOffers(fid){const L=elFtLv(fid);if(!L)return[];const S=trState(),U=
 function elFtDo(fid,i,n){if(!elFtLv(fid))return{err:'声望到「接纳」才能和这个家族贸易'};const o=elFtOffers(fid).find(x=>x.i===i);if(!o)return{err:'这笔报价已经刷新了'};
   n=Math.min(Math.max(1,n|0),o.left,Math.floor(trHave(o.give.w)/o.give.n));if(o.left<=0)return{err:'这笔这个小时已经做满了，下个整点刷新'};if(n<=0)return{err:`${trWName(o.give.w)}不够(需要 ${o.give.n}，现有 ${trHave(o.give.w)})`};
   const S=trState(),k='f:'+fid;trAdd(o.give.w,-o.give.n*n);trAdd(o.get.w,o.get.n*n);if(!S.u[k])S.u[k]={};S.u[k][i]=(S.u[k][i]||0)+n;saveMeta();return{o,n}}
+
+// ---------- 0.12.2 精英派遣、精英驻军（用户定玩法，数据 data/el_disp 的 CFG.elite.disp / gar；界面 ui/el_disp、ui/settle 的驻扎弹窗）----------
+// 派遣：META.el.disp = [{id 精英, reg 地区, t 出发时间, h 已结算的小时数, got:{物资: 数量}, exp, log:[[第几小时, 文字, 'ok'|'fail'|'no']], end 受伤撤回}]
+// 驻军：开拓地 R.egar = [精英 id]；META.el.gl = {精英 id: 能再驻扎的时间}；META.el.gt = 驻军经验结算到的整点（小时序号）
+const ELD=()=>CFG.elite.disp;
+function elDispSt(){const m=elSt();if(!Array.isArray(m.disp))m.disp=[];if(!m.gl||typeof m.gl!=='object')m.gl={};return m.disp}
+const elDispSlots=()=>ELD().slots+(elTM().elDisp||0);
+const elDispOf=id=>elDispSt().find(r=>r.id===id)||null;
+const elGarOf=reg=>{const R=stRegion(reg);if(!R||!Array.isArray(R.egar))return[];const m=elSt();return R.egar.map(id=>m.list.find(e=>e.id===id)).filter(Boolean)};
+function elGarWhere(id){for(const reg in META.settle.R)if(elGarOf(reg).some(e=>e.id===id))return reg;return null}
+// 这名精英现在在忙什么：'disp' 派遣中 / 'gar' 驻军中 / null
+const elBusy=e=>elDispOf(e.id)?'disp':elGarWhere(e.id)?'gar':null;
+// 阶段：每 stageLv 级一个阶段（1～10 级 = 1）；地区阶 = mapTierOf + 1
+const elStage=e=>Math.max(1,Math.ceil(elLv(e)/ELD().stageLv));
+// 装备、技能分（0～1）：装备五格按「装备阶 ÷ 地区阶(至多 1) × 品质系数」平均；技能按装上的技能等级 ÷ (技能位 × 技能等级上限)
+function elDispGs(e,reg){const t=mapTierOf(reg)+1,QK={common:0.6,fine:0.8,rare:1};let g=0;
+  for(const[s]of EL_SLOTS){const it=itemByUid(e.gear[s]);if(it)g+=Math.min(1,gearTier(it.base)/t)*(QK[baseQ(it.base)]||1)}g/=EL_SLOTS.length;
+  const sl=elSlots(e),n=(sl[0]+sl[1])*elSkMax();let k=0;for(const x of(e.ea||[]).concat(e.ep||[]))if(x)k+=Math.min(elSkMax(),e.sk[x]||1);
+  return clamp(0.5*g+0.5*(n>0?k/n:0),0,1)}
+// 一种事件对这名精英、这个地区的成功率 / 失败率
+function elDispRate(e,reg,ev){const C=ELD(),E=C.events[ev||'raid'],d=mapTierOf(reg)+1-elStage(e),n=Math.abs(d)+(d?C.stageOff:0),x=C.stageK*(n*n-n)*Math.sign(d);
+  const ok=clamp((E.ok-x)*(1+C.gsMax*elDispGs(e,reg)),0,1),fail=clamp(E.fail+x,0,1);return{ok,fail}}
+// 能不能派：返回原因（能派返回 ''）
+function elDispWhyNot(e){if(!e||!elSt().list.includes(e))return'不在队里';if(e.dep)return'上阵中的精英不能派遣';if(elHurt(e))return'有伤病，先治好';const b=elBusy(e);if(b==='disp')return'已经在派遣';if(b==='gar')return'在开拓地驻军';return''}
+function elDispGo(eid,reg){const e=elById(eid),w=elDispWhyNot(e);if(w)return{err:w};if(!CFG.maps[reg]||!mapOpen(reg))return{err:'这个地区还没开放'};
+  if(elDispSt().length>=elDispSlots())return{err:`派遣位满了(${elDispSlots()} 个；科技「特遣行动」+1～3)`};
+  const r={id:eid,reg,t:metaNow(),h:0,got:{},exp:0,log:[]};elDispSt().push(r);saveMeta();return{r}}
+// 一次事件的奖励（× 地区倍率）
+function elDispGot(r,E){const reg=r.reg,tier=Math.min(CFG.wares.tiers.length-1,elRegTier(reg)),W=CFG.wares.tiers[tier],M=(W.maps&&W.maps[reg])||{},T=EL().tribute.matK,k=T[Math.min(T.length-1,elRegTier(reg))],G0=E.got,add=(w,n)=>{n=Math.round(n);if(w&&n>0)r.got[w]=(r.got[w]||0)+n};
+  for(const w of['银币','科研点','设计点'])if(G0[w])add(w,G0[w]*k);
+  const L=(M.basic&&M.basic.length?M.basic:Object.values(W.basic||{})).filter(w=>CFG.wares.items[w]);if(G0.mat&&L.length)add(L[Math.floor(Math.random()*L.length)],G0.mat*k);
+  if(G0.core&&M.core&&CFG.wares.items[M.core]&&Math.random()<G0.core[0])add(M.core,G0.core[1]);if(G0.exp)r.exp+=Math.round(G0.exp*k)}
+// 每个整小时结算一次：evP 概率遇到事件 → 先判成功、再判失败（失败：一处轻伤、撤回，不再遇到事件）
+function elDispTick(){const C=ELD(),now=metaNow(),L=elDispSt();let ch=false;
+  for(const r of L){const e=elById(r.id);if(!e||!elSt().list.includes(e)){r.end=1;continue}const H=Math.min(C.maxH,Math.floor((now-r.t)/3.6e6));
+    for(let h=r.h+1;h<=H&&!r.end;h++){r.h=h;ch=true;if(Math.random()>=C.evP)continue;const ks=Object.keys(C.events);let tw=0;for(const k of ks)tw+=C.events[k].w;let x=Math.random()*tw,ev=ks[0];for(const k of ks){x-=C.events[k].w;if(x<0){ev=k;break}}
+      const E=C.events[ev],R=elDispRate(e,r.reg,ev);
+      if(Math.random()<R.ok){elDispGot(r,E);r.log.push([h,`${E.name}：${E.okTxt}`,'ok'])}
+      else if(Math.random()<R.fail){const parts=Object.keys(EL().injuries).filter(p=>!e.inj[p]);if(parts.length)e.inj[elPick(parts)]={lv:1,t:now};r.end=1;r.log.push([h,`${E.name}：${E.failTxt}`,'fail'])}
+      else r.log.push([h,E.noTxt,'no'])}
+    if(r.h<H){r.h=H;ch=true}}
+  if(elGarTick())ch=true;if(ch)saveMeta();return ch}
+// 召回：满 minH 小时才发奖励；返回 {got, exp, h} 或 {err}
+function elDispRecall(eid){elDispTick();const L=elDispSt(),i=L.findIndex(r=>r.id===eid);if(i<0)return{err:'这名精英没有在派遣'};const r=L[i],e=elById(eid);L.splice(i,1);
+  const ok=r.h>=ELD().minH;let ex=0;if(ok){for(const w in r.got){if(w in META.wallet)META.wallet[w]=(META.wallet[w]||0)+r.got[w];else trAdd(w,r.got[w])}if(e&&r.exp>0){ex=Math.round(r.exp*elExpMul('e'+e.id));elExpGain(e,ex)}}
+  saveMeta();return{got:ok?r.got:{},exp:ex,h:r.h,ok}}
+// —— 精英驻军 ——
+const elNextDay=()=>{const d=new Date(metaNow());d.setHours(24,0,0,0);return d.getTime()};
+const elGarLockLeft=id=>Math.max(0,((elSt().gl||{})[id]||0)-metaNow());
+// on = true 驻到 reg（在别处就挪过来，挪也算一次调动）；撤下随时可以，撤下或驻扎以后到第二天前不能再驻扎（用户定一天一次）
+function elGarSet(reg,eid,on){elDispSt();const R=stRegion(reg),e=elById(eid),C=CFG.elite.gar,m=elSt();if(!R||!e||!m.list.includes(e))return{err:'没有这名精英'};
+  const at=elGarWhere(eid);if(on&&at===reg||!on&&at!==reg)return{ok:true};
+  if(on){if(elDispOf(eid))return{err:'这名精英正在派遣'};const left=elGarLockLeft(eid);if(left>0)return{err:`${elName(e)}今天调动过了，${stDurTxt(left)}后(明天)才能再驻扎`};if(elGarOf(reg).length>=C.max)return{err:`每个开拓地最多驻军 ${C.max} 名精英`}}
+  if(at){const A=stRegion(at);A.egar=(A.egar||[]).filter(x=>x!==eid)}if(on)R.egar=(Array.isArray(R.egar)?R.egar:[]).filter(x=>m.list.some(q=>q.id===x)).concat([eid]);
+  m.gl[eid]=elNextDay();saveMeta();return{ok:true}}
+// 驻军经验：每个整小时按开拓地的阶给（离线最多补 72 小时）
+function elGarTick(){const m=elSt(),H=Math.floor(metaNow()/3.6e6);if(!(m.gt>0)){m.gt=H;return true}const n=Math.min(72,H-m.gt);if(n<=0)return false;m.gt=H;
+  const X=CFG.elite.gar.exp;for(const reg in META.settle.R){const t=Math.min(X.length-1,elRegTier(reg));for(const e of elGarOf(reg))elExpGain(e,Math.round(X[t]*n*elExpMul('e'+e.id)))}return true}
+// 入侵战：这个开拓地驻军的精英（按「伤兵上阵」开关挑掉有伤病的）
+function elInvList(reg){const m=elSt();return elGarOf(reg).filter(e=>!m.opt.injOff||!elHurt(e))}
 
 // ---------- 0.12.0 自建家族（用户定；数据 data/el_blood.js 末尾 CFG.elite.cfam）----------
 // META.el.cf = [{id, name 姓, tier 阶（1 起）, alloc {属性: 上限}, sp [特别属性键（每个 spStep）], tr {门槛: 特性选项}, trH [用过的特性键], crest {shape, bg, pat, fg}, at 建立时间}]
@@ -62414,7 +62493,7 @@ function elMemLv(){if(!META||!META.el)return 0;const N=elRollN();let n=0;while(n
 const elMemOn=()=>!!(G&&G.heroes&&G.heroes.some(h=>h.id==='scribe'));
 const elMemK=()=>elMemOn()?(G.elMem||0)*0.01:0;
 // —— 开局：放出这一局上阵的精英 ——
-function elSpawnRun(list){if(!G||!META||G.invade||G.story)return;const m=elSt();G.elites=[];const P=list?list.map(x=>[m.list.find(e=>e.id===x.id),x.slot]).filter(x=>x[0]):elDeployList().map((e,i)=>[e,10+i]),L=P.map(x=>x[0]);if(!L.length)return;   // P：0.12.0 修复——读档时有精英已经不在队里（退休、去世），原来按过滤后的下标取 slot，后面的精英全错位
+function elSpawnRun(list){if(!G||!META||G.story)return;const m=elSt();G.elites=[];const P=list?list.map(x=>[m.list.find(e=>e.id===x.id),x.slot]).filter(x=>x[0]):(G.invade?elInvList(G.invade.id):elDeployList()).map((e,i)=>[e,10+i]),L=P.map(x=>x[0]);if(!L.length)return;   // P：0.12.0 修复——读档时有精英已经不在队里（退休、去世），原来按过滤后的下标取 slot，后面的精英全错位
   G.elMem=elMemLv();
   L.forEach((e,i)=>{const sp=elSpec(e),slot=P[i][1];HERO_FX[sp.id]=EL_FX;const h=makeHero(sp,slot);h.elite=e.id;h.ai=true;h.ctl=null;
     const a=i/Math.max(1,L.length)*Math.PI*2;h.x=G.base.x+Math.cos(a)*22;h.y=G.base.y+24+Math.sin(a)*8;
@@ -63035,10 +63114,10 @@ const stGarLockLeft=h=>{const t=(META.settle.gl||{})[h]||0;return Math.max(0,t-m
 // 驻扎 / 撤下：on = true 驻扎到 id（在别的地区就挪过来）；返回 {err} 或 {ok}
 function stGarSet(id,h,on){const C=CFG.settlement.garrison,R=stRegion(id);if(!R||!CFG.heroes[h]||!(META.heroes[h]&&META.heroes[h].owned))return{err:'没有这名英雄'};
   const at=stGarWhere(h);if(on&&at===id||!on&&at!==id)return{ok:true};
-  const left=stGarLockLeft(h);if(left>0)return{err:`${CFG.heroes[h].name}刚换过位置，还要 ${stDurTxt(left)}才能再动`};
+  const left=stGarLockLeft(h);if(left>0&&(on||!C.daily))return{err:C.daily?`${CFG.heroes[h].name}今天调动过了，${stDurTxt(left)}后(明天)才能再驻扎`:`${CFG.heroes[h].name}刚换过位置，还要 ${stDurTxt(left)}才能再动`};   // daily：0.12.2 撤下随时可以
   if(on&&stGarOf(id).length>=C.max)return{err:`每个开拓地最多驻扎 ${C.max} 名英雄`};
   if(at){const A=stRegion(at);A.gar=stGarOf(at).filter(x=>x!==h)}if(on)R.gar=stGarOf(id).concat([h]);else R.gar=stGarOf(id).filter(x=>x!==h);
-  if(!META.settle.gl)META.settle.gl={};META.settle.gl[h]=metaNow()+C.lock*3.6e6;saveMeta();return{ok:true}}
+  if(!META.settle.gl)META.settle.gl={};META.settle.gl[h]=C.daily?elNextDay():metaNow()+C.lock*3.6e6;saveMeta();return{ok:true}}   // daily：0.12.2（用户定）一天一次，到第二天 0 点
 // —— 外圈：会被入侵的开拓地（最多 CFG.settlement.outer 个；最高阶优先、尽量各占王都的一个方向）——
 function stDirOf(id){const W=CFG.worldMap.regions,a=W[id],o=W.royal;if(!a||!o)return'?';const dx=a.x-o.x,dy=a.y-o.y;return Math.abs(dx)>=Math.abs(dy)?(dx>=0?'东':'西'):(dy>=0?'南':'北')}
 function stOuter(){const L=stRegions().filter(r=>stRegionOpen(r.id)).slice(),W=CFG.worldMap.regions,o=W.royal,far=id=>W[id]&&o?Math.hypot(W[id].x-o.x,W[id].y-o.y):0;
@@ -64802,7 +64881,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2f',GAME_TAG='测试版',GAME_CODE=171,GAME_BUILD="9451632",GAME_BUILT=1793143015781,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2f',GAME_TAG='测试版',GAME_CODE=171,GAME_BUILD="543ec53",GAME_BUILT=1793145377597,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -65984,7 +66063,7 @@ function onSheetClick(e){
   else if(a==='stch')stChoose(v);   // v0.7.0 剧情里的选择
   else if(a==='stnext'||a==='stagain'){storyArm='';running=false;hudEl.hidden=true;audioInit();if(!startStory(v)){newGame({});showStory()}}
   else if(a==='stlist'){if(running){running=false;hudEl.hidden=true;newGame({})}showStory(v)}
-  else if(a==='invgo'){if(!stGarOf(v).length){ST_NOGAR=v;sfx('click');showHub('settle');return}audioInit();startInvasion(v)}   // v0.6.2 迎战入侵；v0.10.1 没有驻扎英雄先弹提示
+  else if(a==='invgo'){if(!stGarOf(v).length&&!elGarOf(v).length){ST_NOGAR=v;sfx('click');showHub('settle');return}audioInit();startInvasion(v)}   // v0.6.2 迎战入侵；v0.10.1 没有驻扎英雄先弹提示
   else if(a==='invgo0'){ST_NOGAR=null;audioInit();startInvasion(v)}   // v0.10.1 不带英雄迎战
   else if(a==='stnogarx'){ST_NOGAR=null;showHub('settle')}
   else if(a==='invsw'){const r=invSweep(v);if(r.err)toast(r.err);else{sfx('pick');toast(`扫荡完成：金币 +${r.gold}`)}if(WM_POP)wmRefresh();else showHub('settle')}   // WM_POP：v0.9.5 在大地图的面板里扫荡，留在大地图
@@ -66000,6 +66079,7 @@ function onSheetClick(e){
   else if(a==='staf'){const[id,ok]=v.split(':'),r=stAfAct(id,ok==='1');if(r.err)toast(r.err);else if(!r.skip){toast(`${CFG.settlement.ev.aff[r.k].name}：${r.cost?'花了':'得到'} ${r.n} 银币`);sfx('pick')}showHub('settle')}
   else if(a==='strep'){const r=stRepair(v,stRegion(v).b);if(r.err)toast(r.err);else{toast(`修好了 ${r.c} 座建筑，花了 ${r.n} 建材`);sfx('pick')}showHub('settle')}   // v0.10.1 每个开拓地一个调配面板
   else if(a==='stalx'){ST_AL=null;showHub('settle')}
+  else if(a==='stgart'){ST_GART=v;showHub('settle')}else if(a==='stegar'&&ST_GAR){const[x,on]=v.split(':'),r=elGarSet(ST_GAR,+x,on==='1');if(r.err)toast(r.err);else sfx('pick');showHub('settle')}   // 0.12.2 精英驻军
   else if(a==='stgarset'&&ST_GAR){const[h,on]=v.split(':'),r=stGarSet(ST_GAR,h,on==='1');if(r.err)toast(r.err);else sfx('pick');showHub('settle')}
   else if(a==='invtest'){invForce(v);toast('测试：来了一次入侵');if(WM_POP)wmRefresh();else showHub('settle')}
   else if(a==='stexit'){hideModal();settleExit()}
@@ -66756,7 +66836,8 @@ Object.assign(HELP,{
       `木匠铺：周围 ${cp.r} × ${cp.r} 格内每小时 +${cp.rate}%，每级 +${cp.rateLv}%，每 ${cp.rStep} 级范围 +${cp.rStep} 格；几座不叠加`,`手动修理花建材：修满 = 造价里的建材 × ${D.repairK*100}% × 缺的比例`])}},
   'st-alloc':()=>{const T=CFG.settlement.transfer;return{t:'调配',b:hpL(['所有开拓地多出来的谷物、肉类、衣物合成一个池','每个开拓地有自己的调配面板：拉到 100% 就补上这里剩下的全部缺口，池不够时拉不过去',
     `路上损耗 ${Math.round(T.base*100)}% + 目标地区每一阶 ${Math.round(T.tier*100)}%`,'溢出变少、付不起已经拉好的量时，各地按比例一起少拿','粮仓没存满时，多出来的谷物先进粮仓，不进池'])}},
-  'st-gar':()=>{const C=CFG.settlement.garrison;return{t:'驻扎和入侵',b:hpL([`每个开拓地最多驻扎 ${C.max} 名英雄；入侵这里时只有驻扎的英雄上场，没驻扎就不带英雄、只靠建筑和士兵守(迎战前会先提示)`,`一名英雄驻扎、撤下或换地方以后 ${C.lock} 小时内不能再动`,
+  'st-gar':()=>{const C=CFG.settlement.garrison;return{t:'驻扎和入侵',b:hpL([`每个开拓地最多驻扎 ${C.max} 名英雄、驻军 ${CFG.elite.gar.max} 名精英；入侵这里时只有驻扎的英雄、驻军的精英上场(平时上阵的精英不带)，都没有就只靠建筑和士兵守(迎战前会先提示)`,
+    '驻扎、调动一天一次：驻扎或撤下以后，到第二天 0 点前不能再驻扎；撤下随时可以',`驻军的精英每小时获得少量经验(按开拓地的阶)`,`入侵每天刷新一次`,
     `只有外圈的 ${CFG.settlement.outer} 个开拓地会遭到入侵(最高阶的优先，各占一个方向)；内圈不会`,'入侵战沿用开拓地的布置，不能建造；打赢拿金币'])}},
 });
 // —— 商店 ——
@@ -67587,22 +67668,29 @@ function stAlPopHTML(){const id=ST_AL,S=CFG.settlement;if(!stRegion(id)){ST_AL=n
     <p class="meta">剩余可调配(每小时)：${left}</p>${sh}<div class="slist" data-sk="st-al">${rows}</div>
     </aside>`}
 // v0.10.0 第三步：英雄驻扎一行（入侵战只有驻扎的英雄上场）
-function stGarLine(id){const L=stGarOf(id),C=CFG.settlement.garrison;
-  return`<p class="meta">${stIsOuter(id)?'外圈 · ':''}驻扎：${L.length?L.map(h=>CFG.heroes[h].name).join('、'):'没有(入侵时不带英雄，只靠建筑和士兵守)'}(最多 ${C.max} 名)${stBtns(`<button class="px sm" type="button" data-act="stgar" data-v="${id}">驻扎英雄</button>`)}</p>`}
+function stGarLine(id){const L=stGarOf(id),C=CFG.settlement.garrison,EL_=elGarOf(id);
+  return`<p class="meta">${stIsOuter(id)?'外圈 · ':''}驻扎英雄：${L.length?L.map(h=>CFG.heroes[h].name).join('、'):'没有'}(最多 ${C.max} 名) · 驻军精英：${EL_.length?EL_.map(elName).join('、'):'没有'}(最多 ${CFG.elite.gar.max} 名)${stBtns(`<button class="px sm" type="button" data-act="stgar" data-v="${id}">安排驻扎</button>`)}</p>`}   // 0.12.2 加精英驻军
 // 驻扎面板：所有拥有的英雄，驻扎 / 撤下；刚动过的要等 lock 小时
 // v0.10.1（用户定）迎战入侵时没有驻扎英雄：先提示，去安排英雄，或者不带英雄、只靠建筑和士兵守
 let ST_NOGAR=null;
 function stNoGarPopHTML(){const id=ST_NOGAR;if(!stRegion(id)){ST_NOGAR=null;return''}
-  return`<div class="btback" data-act="stnogarx" aria-hidden="true"></div><aside class="hpop" role="dialog"><div class="hpop-h"><h4>${CFG.maps[id].name}开拓地没有驻扎英雄</h4><button class="px" type="button" data-act="stnogarx">关闭</button></div>
-    <p class="meta">入侵战只有驻扎在这里的英雄出战。现在没有驻扎英雄：可以先安排英雄；不安排的话，就只靠开拓地的建筑和士兵守。</p>
-    <div class="stbtns"><button class="px on" type="button" data-act="stgar" data-v="${id}">安排英雄</button><button class="px" type="button" data-act="invgo0" data-v="${id}">不带英雄迎战</button></div></aside>`}
+  return`<div class="btback" data-act="stnogarx" aria-hidden="true"></div><aside class="hpop" role="dialog"><div class="hpop-h"><h4>${CFG.maps[id].name}开拓地没有驻扎</h4><button class="px" type="button" data-act="stnogarx">关闭</button></div>
+    <p class="meta">入侵战只有驻扎在这里的英雄、驻军的精英出战(平时上阵的精英不带进入侵战)。现在没有驻扎：可以先安排；不安排的话，就只靠开拓地的建筑和士兵守。</p>
+    <div class="stbtns"><button class="px on" type="button" data-act="stgar" data-v="${id}">安排驻扎</button><button class="px" type="button" data-act="invgo0" data-v="${id}">不带人迎战</button></div></aside>`}
 let ST_GAR=null;
-function stGarPopHTML(){const id=ST_GAR,C=CFG.settlement.garrison;if(!stRegion(id)){ST_GAR=null;return''}const L=stGarOf(id);
-  const hs=HIDS.filter(h=>META.heroes[h]&&META.heroes[h].owned),rows=hs.map(h=>{const at=stGarWhere(h),lk=stGarLockLeft(h),here=at===id,full=!here&&L.length>=C.max;
-    const st=here?'驻扎在这里':at?`驻扎在${CFG.maps[at].name}`:'空闲',lt=lk>0?`，${stDurTxt(lk)}后才能再动`:'';
-    return`<div class="row2"><img class="gic" alt="" src="${heroIcon(h,1)}"><span class="meta"><b>${CFG.heroes[h].name}</b> · ${st}${lt}</span><button class="px sm" type="button" data-act="stgarset" data-v="${h}:${here?0:1}" ${lk>0||full?'disabled':''}>${here?'撤下':at?'调到这里':'驻扎'}</button></div>`}).join('');
-  return`<div class="btback" data-act="stgarx" aria-hidden="true"></div><aside class="hpop" role="dialog"><div class="hpop-h"><h4>${CFG.maps[id].name}开拓地 · 驻扎英雄(${L.length}/${C.max})${helpBtn('st-gar')}</h4><button class="px" type="button" data-act="stgarx">关闭</button></div>
-    <div class="slist" data-sk="st-gar">${rows}</div></aside>`}
+// 0.12.2（用户定）分「英雄 / 精英」两页：精英驻军每个开拓地最多 CFG.elite.gar.max 名；调动一天一次（撤下随时可以，撤下后到明天前不能再驻扎）
+let ST_GART='h';
+function stGarPopHTML(){const id=ST_GAR,C=CFG.settlement.garrison;if(!stRegion(id)){ST_GAR=null;return''}const L=stGarOf(id),EL_=elGarOf(id),EC=CFG.elite.gar;
+  const lkT=lk=>lk>0?`，今天调动过了(${stDurTxt(lk)}后可再驻扎)`:'';let rows;
+  if(ST_GART==='e'){const m=elSt();rows=m.list.map(e=>{const at=elGarWhere(e.id),lk=elGarLockLeft(e.id),here=at===id,full=!here&&EL_.length>=EC.max,dsp=!!elDispOf(e.id);
+      const st=here?'驻军在这里':at?`驻军在${CFG.maps[at].name}`:dsp?'派遣中':'空闲';
+      return`<div class="row2"><img class="gic" alt="" src="${elIcon(e)}"><span class="meta"><b>${elName(e)}</b> · Lv${elLv(e)} · ${st}${here?'':lkT(lk)}</span><button class="px sm" type="button" data-act="stegar" data-v="${e.id}:${here?0:1}" ${!here&&(lk>0||full||dsp)?'disabled':''}>${here?'撤下':at?'调到这里':'驻军'}</button></div>`}).join('')||'<p class="meta">还没有精英</p>'}
+  else{const hs=HIDS.filter(h=>META.heroes[h]&&META.heroes[h].owned);rows=hs.map(h=>{const at=stGarWhere(h),lk=stGarLockLeft(h),here=at===id,full=!here&&L.length>=C.max;
+      const st=here?'驻扎在这里':at?`驻扎在${CFG.maps[at].name}`:'空闲';
+      return`<div class="row2"><img class="gic" alt="" src="${heroIcon(h,1)}"><span class="meta"><b>${CFG.heroes[h].name}</b> · ${st}${here?'':lkT(lk)}</span><button class="px sm" type="button" data-act="stgarset" data-v="${h}:${here?0:1}" ${!here&&(lk>0||full)?'disabled':''}>${here?'撤下':at?'调到这里':'驻扎'}</button></div>`}).join('')}
+  return`<div class="btback" data-act="stgarx" aria-hidden="true"></div><aside class="hpop" role="dialog"><div class="hpop-h"><h4>${CFG.maps[id].name}开拓地 · 驻扎${helpBtn('st-gar')}</h4><button class="px" type="button" data-act="stgarx">关闭</button></div>
+    <div class="tabs sub"><button class="px sm${ST_GART!=='e'?' on':''}" type="button" data-act="stgart" data-v="h">英雄 ${L.length}/${C.max}</button><button class="px sm${ST_GART==='e'?' on':''}" type="button" data-act="stgart" data-v="e">精英 ${EL_.length}/${EC.max}</button></div>
+    <div class="slist" data-sk="st-gar-${ST_GART}">${rows}</div></aside>`}
 
 // ---------- v0.10.0（用户定）左上角面板只留铜币、主堡血量、波次和剩余；点面板弹出详情 ----------
 // 战斗：时段、天气（和它们的效果）、视野、血月、地图机制、誓约、主堡；开拓地：概况 / 需求 / 产出 三页（翻页）
@@ -68848,8 +68936,8 @@ const elBtn=(a,v,t,o)=>{o=o||{};return`<button class="px${o.on?' on':''}" type="
 // —— 开拓地页顶部 ——
 let EL_EVON=false;   // 0.12.0（用户定）日志不自动弹，点了才弹
 function elTopTabs(){const ev=elEvPending();return`<div class="eltop">${[['hero','英雄'],['elite','精英']].map(([k,n])=>elBtn('elxtop',k,n,{on:(EL_TOP==='elite')===(k==='elite')})).join('')}<span class="elbr${ev?' elnew':''}">${elBtn('elxevo','',ev?`精英日志 ${elSt().ev.length}`:'精英日志',{dis:!ev,ti:ev?'这段时间精英的事：学会技能、出生、成家、伤好了':'暂时没有新日志'})}</span></div>`}
-function elHub(){elTick();elAllySync();const m=elSt();const tabs=`<div class="tabs sub">${[['list','精英'],['rec','招募'],['mar','婚配'],['rep','声望'],['cf','家族'],['roll','名册'],['kids','训练所']].map(([k,n])=>elBtn('elxsub',k,n,{on:EL_SUB===k})).join('')}</div>`;
-  return`<div class="kt2 elui"><div class="elstk">${elTopTabs()}${tabs}</div>${elTutHub()}${EL_SUB==='rec'?elRecAllHTML():EL_SUB==='mar'?elMarHTML():EL_SUB==='rep'?elRepHTML():EL_SUB==='cf'?elCfHTML():EL_SUB==='roll'?elRollHTML():EL_SUB==='ins'||EL_SUB==='kids'?elKidsHTML():elListHTML()}</div>`}
+function elHub(){elTick();elAllySync();const m=elSt();const tabs=`<div class="tabs sub">${[['list','精英'],['rec','招募'],['mar','婚配'],['rep','声望'],['cf','家族'],['roll','名册'],['kids','训练所'],['disp','派遣']].map(([k,n])=>elBtn('elxsub',k,n,{on:EL_SUB===k})).join('')}</div>`;
+  return`<div class="kt2 elui"><div class="elstk">${elTopTabs()}${tabs}</div>${elTutHub()}${EL_SUB==='rec'?elRecAllHTML():EL_SUB==='mar'?elMarHTML():EL_SUB==='rep'?elRepHTML():EL_SUB==='cf'?elCfHTML():EL_SUB==='roll'?elRollHTML():EL_SUB==='ins'||EL_SUB==='kids'?elKidsHTML():EL_SUB==='disp'?elDispHTML():elListHTML()}</div>`}
 // —— 精英列表 ——
 let EL_LSORT=null,EL_MARF='';   // 0.12.1 精英列表排序 [键, 倒序]；婚配页筛选（'' 全部 / 'y' 已婚 / 'n' 未婚）
 function elListHTML(){const m=elSt(),dep=m.list.filter(e=>e.dep).length;
@@ -68861,7 +68949,7 @@ function elListHTML(){const m=elSt(),dep=m.list.filter(e=>e.dep).length;
 function elCardHTML(e){const J=elJobD(e),hurt=elHurt(e);
   const L=e.learn?` · 正在学${EL().skills[e.learn.k].name} ${elRoman(e.learn.lv)} 级`:'';
   return`<div class="elcard${e.dep?' dep':''}${hurt?' hurt':''}"><div class="elpic"><img alt="" src="${elIcon(e)}">${elBtn('elxdep',e.id,e.dep?'上阵中':'待命',{on:e.dep})}${elRankBtn(e)}</div><div class="elmain">
-    <div><b class="nm">${elName(e)}</b>${elSexI(e)} <span class="meta">${J.name} · Lv${elLv(e)} · ${elAgeTxt(e)} · 功勋 ${e.rank} 阶${e.lock?' · 已锁定配置':''}${L}</span></div>
+    <div><b class="nm">${elName(e)}</b>${elSexI(e)} <span class="meta">${J.name} · Lv${elLv(e)} · ${elAgeTxt(e)} · 功勋 ${e.rank} 阶${e.lock?' · 已锁定配置':''}${L}${(b=>b==='disp'?` · <b class="warn">派遣中(${CFG.maps[elDispOf(e.id).reg].name})</b>`:b==='gar'?` · 驻军：${CFG.maps[elGarWhere(e.id)].name}`:'')(elBusy(e))}</span></div>
     <div class="elchips">${elTraitChips(e)}${elInjChips(e)}</div>${EL_CARDV==='eq'?elGearRow(e,true):elSlotsHTML(e,false,true)}
     <div class="elbtns">${elBtn('elxpop','at:'+e.id,'属性',{on:true})}${elBtn('elxpop','job:'+e.id,'转职')}${elBtn('elxpop','log:'+e.id,'日志')}${hurt?elBtn('elxpop','inj:'+e.id,'伤病'):''}${elBtn('elxpop','tree:'+e.id,'族谱')}<span class="elbr">${elBtn('elxpop','ret:'+e.id,'退休')}</span></div></div></div>`}   // 0.12.0（用户定）「上阵」放头像下面、「退休」排到这一排最右；属性搬进「装备」；没有伤病时不出现「伤病」
 // 0.12.2（用户定）头像下面「上阵中」下方加「升阶」（功勋晋升）：平时灰的，功勋和银币都够时亮起
@@ -68879,6 +68967,7 @@ function elPopHTML1(){if(!EL_POP)return'';const i=EL_POP.indexOf(':'),k=EL_POP.s
   else if(k==='cfnew'){T='建立家族';body=elCfNewHTML()}
   else if(k==='ipick'){if(!elInsHas(rest)){EL_POP=null;return''}T='挑学生';body=elPickHTML(rest)}
   else if(k==='mar'||k==='mc'||k==='bq'||k==='wed'){const e=elById(+rest);if(!e){EL_POP=null;return''}T=`${elName(e)} · ${k==='mar'?'婚配':k==='mc'?'选一位':k==='wed'?'婚宴':'宴会'}`;body=k==='mar'?elMarDetHTML(e):k==='mc'?elMcHTML(e):k==='wed'?elWedHTML(e):elBqHTML(e)}
+  else if(k==='dsp'){const A=elDispPopHTML(rest);if(!A){EL_POP=null;return''}[T,body,back]=A}   // 0.12.2 派遣（ui/el_disp）
   else if(k==='at'||k==='aeq'||k==='ask'){const A=elAttrPop(k,rest);if(!A){EL_POP=null;return''}[T,body,wide]=A;back=A[3]}   // 0.12.2 属性弹窗（ui/el_attr）
   else{const e=elById(+rest);if(!e){EL_POP=null;return''}
     T=elName(e)+' · '+({info:'属性',eq:'属性 / 装备',sk:'技能',job:'转职',log:'日志',inj:'伤病',ret:'退休',tree:'族谱'}[k]||'');wide=k==='eq'||k==='tree';
@@ -69204,7 +69293,7 @@ const elCmdLk=h=>{const e=h&&h.elite?elById(h.elite):null;return!!(e&&e.clk)};
 function elCmdBody(hrow){const L=G.heroes.filter(h=>h.elite);return`<div class="cmrow"><b>全部精英<i>锁定的不变</i></b><div class="cmb">${Object.keys(HERO_MODES).map(m=>cmdBtn(false,'ea',m,'全部'+HERO_MODES[m])).join('')}</div></div>`+L.map(hrow).join('')}
 function elCmdAct(a,v){if(a==='elk'){const e=elById(+v);if(e){e.clk=!e.clk;saveMeta()}}else for(const h of G.heroes)if(h.elite&&!elCmdLk(h)){G.heroModes[h.id]=v;h.aiT=0;h.wpost=null;const e=elById(h.elite);if(e)e.cmd=v}cmdRender(true)}
 // —— 操作 ——
-function elAct(a,v){if(elTutAct(a,v)||elAttrAct(a,v)||elTribAct(a,v)){sfx('click');showHub(hubTab);return}   // elAttrAct：0.12.2 属性弹窗（ui/el_attr）；elTribAct：上贡、索贡   // 0.12.2 引导、全部自动（ui/el_tut）
+function elAct(a,v){if(elTutAct(a,v)||elAttrAct(a,v)||elTribAct(a,v)||elDispAct(a,v)){sfx('click');showHub(hubTab);return}   // elAttrAct：0.12.2 属性弹窗（ui/el_attr）；elTribAct：上贡、索贡   // 0.12.2 引导、全部自动（ui/el_tut）
 const[x,y]=String(v||'').split(':'),e=elById(+x);let err=null;EL_SAY='';
   if(a==='elxtop'){EL_TOP=v;EL_POP=null}
   else if(a==='elxsub'){EL_SUB=v;EL_POP=null}
@@ -69365,6 +69454,49 @@ function elAttrAct(a,v){
   if(a==='elxaeq'){const[x,y]=String(v).split(':'),e=elById(+x);if(!e)return true;const err=elEquip(e,+y);if(err)toast(err);else{saveMeta();EL_POP=EL_QK?null:'at:'+e.id;EL_QK=false;EL_APG=0}return true}
   if(a==='elxauneq'){const[x,y]=String(v).split(':'),e=elById(+x);if(e){elUnequip(e,y);saveMeta()}return true}
   if(a==='elxsks'){const[x,t,i,k]=String(v).split('|'),e=elById(+x);if(!e)return true;const err=elSkSlotSet(e,t,+i,k||null);if(err)toast(err);else{saveMeta();EL_POP=EL_QK?null:'at:'+e.id;EL_QK=false;EL_APG=0}return true}
+  return false}
+
+// ---------- 0.12.2 精英「派遣」页签（用户定；逻辑 game/el_disp）：派遣位一格一张卡；空位点「派遣」弹窗先挑精英、再挑地区 ----------
+{const css=`
+.eldsp{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(300px * var(--fk,1)),1fr));gap:8px}
+.eldc{display:flex;flex-direction:column;gap:6px;background:#1a1622;padding:10px;box-shadow:0 0 0 2px var(--rivet),inset 0 0 0 1px var(--iron)}
+.eldc.emp{align-items:center;justify-content:center;min-height:120px;color:var(--ash)}
+.eldc.end{box-shadow:0 0 0 2px var(--rivet),inset 0 0 0 1px var(--blood)}
+.eldh{display:flex;gap:8px;align-items:center}.eldh img{width:40px;height:40px;image-rendering:pixelated;object-fit:contain;background:#120f17}.eldh b{color:var(--brass-hi);font-weight:400}
+.eldlog{max-height:7.5em;overflow-y:auto;font-size:.78rem;line-height:1.5;background:#120f17;padding:4px 6px;box-shadow:inset 0 0 0 1px var(--iron)}
+.eldlog .ok{color:#9fd27a}.eldlog .fail{color:#e8645a}.eldlog .no{color:var(--ash)}
+.eldgot{display:flex;flex-wrap:wrap;gap:4px}.eldgot>span{display:flex;align-items:center;gap:3px;padding:2px 6px 2px 3px;background:#120f17;box-shadow:inset 0 0 0 1px var(--iron);font-size:.78rem}.eldgot img,.eldgot .wic{width:18px;height:18px}
+.eldreg{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 10px;align-items:center}.eldreg>.sh{grid-column:1/-1;margin:6px 0 0}
+.elui .elstk .tabs.sub{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.elui .elstk .tabs.sub>.px{flex:none}`;
+ if(typeof document!=='undefined'){const st=document.createElement('style');st.textContent=css;document.head.appendChild(st)}}
+let EL_DRC=null;   // 不满 1 小时的召回：先点一次变成「确认」
+const elDurTxt=ms=>{const m=Math.floor(ms/6e4);return m>=60?`${Math.floor(m/60)} 小时 ${m%60} 分钟`:`${m} 分钟`};
+function elDispHTML(){elDispTick();const C=ELD(),L=elDispSt(),N=elDispSlots(),now=metaNow();
+  const card=r=>{const e=elById(r.id);if(!e)return'';const R=elDispRate(e,r.reg),gk=Object.keys(r.got),ms=now-r.t,arm=EL_DRC===r.id,ok=r.h>=C.minH;
+    return`<div class="eldc${r.end?' end':''}"><div class="eldh"><img alt="" src="${elIcon(e)}"><div><b>${elName(e)}</b><span class="meta"> Lv${elLv(e)}(第 ${elStage(e)} 阶段) → ${CFG.maps[r.reg].name}(${mapTierOf(r.reg)+1} 阶)</span><br>
+      <span class="meta">${r.end?'<b class="warn">受伤撤回，等你召回</b>':`已出发 ${elDurTxt(ms)}${r.h>=C.maxH?`(满 ${C.maxH} 小时，不再遇到事件)`:''}`} · 成功 ${Math.round(R.ok*100)}% · 失败 ${Math.round(R.fail*100)}%</span></div></div>
+      <div class="eldgot">${gk.length?gk.map(w=>`<span title="${rwName(w)}">${rwIco(w,'')}${r.got[w]}</span>`).join(''):'<span class="meta">还没有收获</span>'}${r.exp?`<span>经验 ${r.exp}</span>`:''}</div>
+      <div class="eldlog">${r.log.length?r.log.slice().reverse().map(([h,t,c])=>`<div class="${c}">第 ${h} 小时：${t}</div>`).join(''):'<div class="no">还没有遇到事件</div>'}</div>
+      <div class="elrow">${elBtn('elxdrc',r.id,ok?'召回':arm?'确认召回(没有奖励)':'召回',{on:ok||arm,ti:ok?'召回并领取收获':`不满 ${C.minH} 小时，召回拿不到奖励`})}${ok?'':`<span class="meta">满 ${C.minH} 小时才有奖励</span>`}</div></div>`};
+  const cards=Array.from({length:N},(_,i)=>L[i]?card(L[i]):`<div class="eldc emp"><span>空的派遣位</span>${elBtn('elxpop','dsp:','派遣',{on:true})}</div>`).join('');
+  return`<div class="elhead"><span class="meta">派遣位 <b>${L.length}</b> / ${N}(科技「特遣行动」每级 +1)${helpBtn('el-disp')}</span></div><div class="eldsp">${cards}</div>`}
+// 弹窗：dsp: 挑精英；dsp:编号 挑地区
+function elDispPopHTML(rest){if(!rest){const m=elSt();const rows=m.list.map(e=>{const w=elDispWhyNot(e);
+      return`<div class="elrow"><img class="elpor2" alt="" src="${elIcon(e)}"><b>${elName(e)}</b><span class="meta">Lv${elLv(e)} · 第 ${elStage(e)} 阶段${w?` · ${w}`:''}</span><span class="elbr">${elBtn('elxpop','dsp:'+e.id,'选择',{on:!w,dis:!!w})}</span></div>`}).join('');
+    return['派遣：挑一名精英',`<p class="meta">上阵中、有伤病、驻军中的精英不能派遣</p><div class="elroll">${rows||'<p class="meta">还没有精英</p>'}</div>`]}
+  const e=elById(+rest);if(!e)return null;
+  const ms=Object.keys(CFG.maps).filter(k=>mapOpen(k)&&CFG.worldMap&&CFG.worldMap.regions[k]).sort((a,b)=>mapTierOf(a)-mapTierOf(b));let last=-1,rows='';
+  for(const k of ms){const t=mapTierOf(k);if(t!==last){last=t;rows+=`<h5 class="sh">${(CFG.mapPages[t]||{name:(t+1)+' 阶地区'}).name}</h5>`}const R=elDispRate(e,k);
+    rows+=`<span><b>${CFG.maps[k].name}</b></span><span class="meta">成功 ${Math.round(R.ok*100)}% · 失败 ${Math.round(R.fail*100)}%</span>${elBtn('elxdgo',e.id+':'+k,'派遣',{on:true})}`}
+  return[`派遣 ${elName(e)}：挑地区`,`<p class="meta">Lv${elLv(e)}，第 ${elStage(e)} 阶段；装备、技能分 ${Math.round(elDispGs(e,ms[0]||'wild')*100)}(按一阶算，越高成功率加得越多)</p><div class="eldreg">${rows}</div>`,'dsp:']}
+HELP['el-disp']=()=>{const C=ELD(),E=C.events.raid;return{t:'精英派遣',b:hpL(['没上阵、没受伤、没驻军的精英可以派去大地图上任意开放的地区探索；随时可以召回，满 '+C.minH+' 小时才拿得到收获',
+  `每个整小时有 ${Math.round(C.evP*100)}% 概率遇到一次事件：先判成功(拿奖励)，不成功再判失败(受轻伤并撤回)，都没中就是有惊无险；最多算 ${C.maxH} 小时`,
+  `精英每 ${C.stageLv} 级一个阶段，和地区的阶比：地区高出的阶段越多，成功率越低、失败率越高；精英高出时反过来`,`装备越好(按装备阶和品质)、装上的技能等级越高，成功率额外提高，至多 +${Math.round(C.gsMax*100)}%(按原成功率算)`,
+  `「${E.name}」：成功率 ${Math.round(E.ok*100)}%、失败率 ${Math.round(E.fail*100)}%；成功给银币、科研点、设计点、这个地区的材料、可能有特产、精英经验，按地区阶放大`,`派遣位：${C.slots} 个，科技「特遣行动」每级 +1`])}};
+// 按钮：elxdgo 派遣（v = 精英:地区）；elxdrc 召回
+function elDispAct(a,v){if(a==='elxdgo'){const i=String(v).indexOf(':'),r=elDispGo(+v.slice(0,i),v.slice(i+1));if(r.err)toast(r.err);else{EL_POP=null;EL_SUB='disp';toast(`${elName(elById(r.r.id))}出发去${CFG.maps[r.r.reg].name}`)}return true}
+  if(a==='elxdrc'){const id=+v,r0=elDispOf(id);if(!r0)return true;if(r0.h<ELD().minH&&EL_DRC!==id){EL_DRC=id;return true}EL_DRC=null;const e=elById(id),r=elDispRecall(id);if(r.err){toast(r.err);return true}
+    if(r.ok&&!(Object.keys(r.got).length&&typeof rwShow==='function'&&rwShow(`${e?elName(e):''}派遣归来`,r.got,`派遣 ${r.h} 小时${r.exp?`，经验 +${r.exp}`:''}`)))toast(`${e?elName(e):''}回来了：派遣 ${r.h} 小时${r.exp?`，经验 +${r.exp}`:''}，没有别的收获`);else if(!r.ok)toast(`${e?elName(e):''}回来了(不满 ${ELD().minH} 小时，没有奖励)`);return true}
   return false}
 
 // ---------- 0.12.2 收获弹窗（用户定：开拓地领取、家族上贡 / 索贡的东西从一行文字改成「图标 + 数字」平铺的弹窗，能上下滑）----------
