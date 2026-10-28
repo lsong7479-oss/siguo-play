@@ -990,7 +990,7 @@ html.fkUp .hr .hn b{white-space:normal;overflow-wrap:anywhere}   /* v0.10.5 字�
 .hskd{line-height:1.6;min-height:5.5em}
 .hskdots{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px}.hskdots i{width:7px;height:7px;border-radius:50%;background:var(--iron-hi)}.hskdots i.on{background:var(--brass-hi)}.hskdots .px{min-width:2.4em}
 .idetw .idet>.skl{height:230px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding-right:4px}
-.idetw .idet>.actions{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}.idetw .idet>.actions>*{flex:1 0 auto;width:auto;min-height:36px;padding:4px 12px}
+.idetw>.idet,.idetw .idet>.skl{min-width:0}.idetw .idet>.actions{display:flex;flex-wrap:nowrap;overflow-x:auto;min-width:0;max-width:100%;touch-action:pan-x pan-y;overscroll-behavior-x:contain;scrollbar-width:thin;padding-bottom:2px}   /* 0.12.2 修（用户报）：按钮多了不再把详情框撑宽(撑宽会挤坏整页)，超出的部分左右滑动 */.idetw .idet>.actions>*{flex:1 0 auto;width:auto;min-height:36px;padding:4px 12px}
 @media (orientation:landscape),(min-width:821px){.herow{display:flex;flex-direction:column;height:100%;min-height:0}.herow>.hero2{flex:1 1 0;min-height:0;height:auto}.hero2 .hdb{overflow:hidden}.hero2 .hpane{flex:1 1 auto;min-height:0;height:100%;align-items:stretch;grid-template-rows:minmax(0,1fr)}
   .hero2 .hpL,.hero2 .hpR{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;padding-right:4px;display:flex;flex-direction:column}.hero2 .hpL>*,.hero2 .hpR>*{flex:none}}
 .doll{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,1fr);gap:6px;align-items:stretch}
@@ -1125,7 +1125,7 @@ img.mici{width:32px;height:32px;image-rendering:pixelated;flex:none;vertical-ali
 .trlist{display:flex;flex-direction:column;gap:6px}
 .trpop .opb{display:grid;gap:10px}.trn{display:flex;gap:8px;align-items:center}.trn input[type=range]{flex:1 1 auto;min-width:0;accent-color:var(--brass-hi)}.trn input[type=number]{width:5.5em;font:inherit;background:#0f0c13;color:var(--bone);border:1px solid var(--iron-hi);padding:4px 6px}
 .trtot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;padding:8px;background:var(--rivet);box-shadow:inset 0 0 0 1px var(--iron)}.trq{display:flex;align-items:center;gap:6px}.trq .trv{font-style:normal;color:var(--brass-hi)}.trpop .opf{display:flex;justify-content:flex-end;margin-top:10px}
-.ftbar{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin;flex:none}.ftb{flex:none;display:flex;align-items:center;gap:4px}.ftb img{width:20px;height:20px;image-rendering:pixelated}.ftb em{font-style:normal;font-size:.7rem}
+.ftbar{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin;flex:none}.ftb{flex:none;display:flex;align-items:center;gap:4px}.ftb img{width:20px;height:20px;image-rendering:pixelated}.ftb em{font-style:normal;font-size:.7rem}.ftbar .ftcur{flex:1 1 auto;min-width:0;padding:2px 6px;background:#1a1622;box-shadow:inset 0 0 0 1px var(--iron)}.ftbar .ftcur>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ftlist,.bklist{display:flex;flex-direction:column;gap:4px;max-height:60vh;overflow-y:auto}.ftrow{justify-content:flex-start;gap:8px}.ftrow em{margin-left:auto}.bkrow{display:flex;align-items:center;gap:8px;justify-content:flex-start;text-align:left}.bkrow>span{display:flex;flex-direction:column}.bkrow .meta{font-size:.72rem}
 .trrow{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:4px 8px;padding:6px 8px;background:var(--rivet);box-shadow:inset 0 0 0 1px var(--iron)}
 .trrow>.meta{grid-column:1/-1;font-size:.72rem}
 .trg{display:flex;flex-direction:column;min-width:0}.trg b{font-weight:400;color:var(--brass-hi)}.trg .meta{font-size:.72rem}
@@ -1986,7 +1986,7 @@ Object.assign(CFG,{
   },
   // —— 装备品质（v6）：rate 强化基础成功率、silver 强化基础银币、mul 武器伤害倍率 ——
   // v0.6.01（用户定）强化成功率 = rate ÷ (1 + 当前强化等级 × 10%) × (1 + 铁匠铺加成) × (用幸运符时 smith.luckMul)；+10 及以上失败有 smith.dropP 概率掉 1 级（用护刃钳不掉）
-  // 强化银币 = silver × (1 + L² × 0.05 − L × 0.05) × smith.silverK（L = 当前强化等级；v0.6.01 用户定：只收原来的 20%），另外要强化石（enhStone）
+  // 强化银币 = silver × (1 + L² × 0.05 − L × 0.05) × smith.silverK × 地区奖励倍率 rewardTierK[装备阶]（L = 当前强化等级；v0.6.01 用户定：只收原来的 20%；地区倍率 0.12.2 用户定），另外要强化石（enhStone）
   // v10：普通装备只有「普通」品质；更高品质只属于打造书武器（品质固定、属性单独设计），品质不再额外乘伤害
   itemQ:{
     common:{name:'普通', color:'#d8d2c4', rate:0.6,  silver:50,  mul:1},   // v0.6.01（用户定）基础成功率 60 / 55 / 50 / 40 / 30%（原来 50 / 40 / 30 / 20 / 10%）
@@ -12498,14 +12498,14 @@ Object.assign(CFG.skills,{
     desc:p=>`按住释放，最多 ${p.maxT} 秒：持近战武器时向瞄准方向共冲刺 ${p.dist} 格，可转向；每个攻击间隔对前方宽 ${p.w} 格、长 ${p.depth} 格加武器攻击距离的范围造成 ${sv_(p.b,p.ad)} 伤害；`+
       `持远程武器时向瞄准方向连续射击，移动速度 ×${p.chMv}，每个攻击间隔命中路线上的第一个亡灵，伤害同上。生命低于 50% 时，每次命中将当前斗气护盾的 ${pc_(p.conv)} 转化为生命，高于 50% 时转化为该次攻击的额外伤害；松开后冷却 ${p.cd} 秒`},
   // v0.10.3（用户 2026-10-18 重做）五兵：攻击距离、伤害（固定 + AD）、各自的效果，效果都持续 dT 秒；弓的箭是瞬发直线（打中路上第一只，Claude 定）
-  loArms:{name:'五神斗兵', cd:15, aim:'self', dT:3, spR:3, spLen:3, spW:1, swR:2, axR:2.5, hbR:3, hbArc:180, bowR:10,
+  loArms:{name:'五神斗兵', cd:15, aim:'self', armInt:1, dT:3, spR:3, spLen:3, spW:1, swR:2, axR:2.5, hbR:3, hbArc:180, bowR:10,
     byStar:{spB:[40,60,90,125,180], spAd:[0.8,0.9,1,1.25,1.5], spDef:[0.2,0.4,0.6,0.8,1],
       swB:[80,150,240,360,500], swAd:[1,1.2,1.4,1.7,2], swVu:[0.2,0.4,0.6,0.8,1],
       axB:[100,180,270,400,600], axAd:[1.2,1.5,1.8,2.4,3], axIg:[0.2,0.4,0.6,0.8,1], axHw:[0.2,0.4,0.6,0.8,1],
       hbB:[50,75,120,175,240], hbAd:[0.8,1,1.2,1.4,1.6], hbBl:[0.2,0.25,0.3,0.4,0.5], hbSl:[0.2,0.25,0.3,0.4,0.5],
       bwB:[40,60,100,150,240], bwAd:[0.6,0.75,0.9,1.05,1.2], bwBn:[0.1,0.2,0.35,0.55,0.8], bwN:[3,3,5,7,9], bwA:[15,15,30,45,60],
       leash:[5,6,7,8,10], hp:[0.1,0.15,0.2,0.25,0.3]},
-    desc:p=>`召唤枪、剑、斧、戟、弓五把斗兵，斗兵自动索敌攻击，移动速度、攻击速度与自身相同，与自身的距离不超过 ${p.leash} 格，生命各为自身最大生命的 ${pc_(p.hp)}，被击碎后消失：`+
+    desc:p=>`召唤枪、剑、斧、戟、弓五把斗兵，斗兵自动索敌攻击，移动速度与自身相同，攻击间隔 ${p.armInt} 秒(仅受卡牌的攻击速度加成影响)，与自身的距离不超过 ${p.leash} 格，生命各为自身最大生命的 ${pc_(p.hp)}，被击碎后消失：`+
       `枪——攻击距离 ${p.spR} 格，对前方宽 ${p.spW} 格、长 ${p.spLen} 格造成 ${sv_(p.spB,p.spAd)} 伤害，物理防御 −${pc_(p.spDef)}；`+
       `剑——攻击距离 ${p.swR} 格，单体 ${sv_(p.swB,p.swAd)} 伤害，使目标受到的伤害 +${pc_(p.swVu)}；`+
       `斧——攻击距离 ${p.axR} 格，单体 ${sv_(p.axB,p.axAd)} 伤害，移除 ${pc_(p.axIg)} 的减伤(不移除免伤)、无视 ${pc_(p.axIg)} 的防御，禁疗 ${pc_(p.axHw)}；`+
@@ -13772,12 +13772,12 @@ CFG.buildings.sMarket={cat:'settle', st:'market', name:'市场', size:2, cost:0,
 // v0.9.5（用户定）记了掉落地图的书：银币大幅减少、不再要建材（换成了地区物资）——银币 silver（Claude 定 30，原来 150 银 + 100 建材）；以前的书照旧 150 银 + 100 建材
 // 每波打完给这一阶的四种基础材料（用户定：四种都掉，本地产的多，大约 100% 比 40%）：本地产的 wave.base 个、别的 base × far 个（× 难度结算倍率，小数部分按概率再给 1 个；Claude 定 base = 2）
 // v0.10.1（用户定）所有打造书都要本地材料（老书、商店 / 黑市 / 抽奖的书按装备的来源地区，game/trade095.bookHome）；材料、银币都按品质和装备阶算（数 Claude 定）：
-//   主料 main[阶] × qK[品质]、副料 sub[阶] × qK、核心特产 coreN[阶] × coreQ[品质]（向上取整）；银币 silverQ[品质] × silverT[阶]（四舍五入到 10）；不要建材
+//   主料 main[阶] × qK[品质]、副料 sub[阶] × qK、核心特产 coreN[阶] × coreQ[品质]（向上取整）；银币 silverQ[品质] × 地区奖励倍率 CFG.rewardTierK[阶]（四舍五入到 10；0.12.2 用户定，原来 × silverT）；不要建材
 CFG.forgeMat={core:{elite:0.3, boss:1}, wave:{base:1, far:0.4},   // wave.base：v0.10.2（用户定）2 → 1（基础 50%），每波再 × waveRewK
  
   main:[10,12,16,20,26,32,40,50], sub:[5,6,8,10,13,16,20,25], coreN:[1,1,1,1,2,2,3,3],   // 八阶 50 / 25 / 3：v0.11.0 Claude 定
   qK:{common:1, fine:1.25, rare:1.6, epic:2.2, legend:3, red:4, ancient:5}, coreQ:{common:1, fine:1, rare:1.5, epic:2, legend:3, red:4, ancient:5},
-  silverQ:{common:30, fine:50, rare:80, epic:130, legend:200, red:320, ancient:450}, silverT:[1, 1.4, 1.9, 2.5, 3.2, 4, 5, 6.2],   // 八阶 6.2：v0.11.0 Claude 定
+  silverQ:{common:30, fine:50, rare:80, epic:130, legend:200, red:320, ancient:450},
   recipe:{cloth:['cloth','hide'], leather:['hide','cloth'], chain:['ore','hide'], plate:['ore','wood'],
     sword:['ore','wood'], axe:['ore','wood'], spear:['ore','wood'], hammer:['ore','wood'], club:['ore','wood'], dagger:['ore','wood'], fist:['ore','wood'],
     bow:['wood','ore'], crossbow:['wood','ore'], staff:['wood','ore'], tome:['wood','ore'],
@@ -18347,7 +18347,7 @@ CFG.olv={
  const C=CFG.combat;P(C.regTough,170);P(C.regDefl,28);P(C.ePenTier,16);
  for(const id in CFG.diffTier){const D=CFG.diffTier[id];P(D.hp,D.hp[D.hp.length-1]);P(D.dmg,D.dmg[D.dmg.length-1])}
  P(CFG.goldDay.tier,450);P(CFG.settlement.prodTierK,3.8);P(CFG.settlement.invade.regionMul,1.8);P(CFG.shop.regular.tierPrice,55);
- const F=CFG.forgeMat;P(F.main,62);P(F.sub,31);P(F.coreN,4);P(F.silverT,7.5);
+ const F=CFG.forgeMat;P(F.main,62);P(F.sub,31);P(F.coreN,4);
  P(CFG.caravan.req,1750);
  const O=CFG.olv;P(O.expWave,1400);O.capMax=Math.max(O.capMax,100);
  for(const k of['slopeAtk','bSlopeAtk'])if(O[k].length<10)O[k].push(0.095);
@@ -53087,7 +53087,7 @@ function gearAgg(h){const d=h.d,P=CFG.armorParts,EN=CFG.armorEnh,g={def:0,dodge:
 // 暴击伤害：武器自带的（皇家骑枪）或默认 150%，再加饰品「暴击伤害」
 const heroCritMul=h=>{const b=h.ws.critMul||0;return(h.gCritDmg||0)>0?(b||CFG.combat.critMul)+h.gCritDmg:b||undefined};
 // —— 特殊装备 ——
-function gearSpecialInit(h){const D=h.spc?CFG.trinkets[h.spc.base]:null;h.spcD=D&&D.kind==='spc'?D:null;h.spcPow=(h.spc&&h.spc.roll&&h.spc.roll.pow)||1;
+function gearSpecialInit(h){const D=h.spc?CFG.trinkets[h.spc.base]:null;h.spcD=D&&D.kind==='spc'?D:null;h.spcPow=1;   // 0.12.2（用户定）威力浮动删掉：老存档里抽过的 roll.pow 也不算
   h.mRed=h.spcD&&h.spcD.aura&&h.spcD.aura.mRed?Math.min(0.5,h.spcD.aura.mRed*h.spcPow):0;   // 大蒜：受到的近战伤害减免
   if(h.spcT===undefined)h.spcT=0;if(h.droneT===undefined)h.droneT=0}
 const DRONE_W={proj:'arcane',speed:13,spread:2,aoe:0,mix:{arcane:1}};
@@ -57162,7 +57162,7 @@ function loArmTick(s,dt){const h=s.owner,P=s.loP;if(!h||h.dead||!P){s.dead=true;
   if(d>want){const st=Math.min(d-want,sp*dt);let nx=s.x+dx/d*st,ny=s.y+dy/d*st;if(!back){const ex=nx-h.x,ey=ny-h.y,el=Math.hypot(ex,ey);if(el>L){nx=h.x+ex/el*L;ny=h.y+ey/el*L}}
     s.x=clamp(nx,8,MW-8);s.y=clamp(ny,8,MH-8);s.walking=true;if(Math.abs(dx)>1)s.facing=dx>0?1:-1}else s.walking=false;
   if(j<0||s.atkCd>0)return true;const tx=E.x[j]-s.x,ty=E.y[j]-s.y,dj=Math.hypot(tx,ty)||1;if(dj>reach+E.r[j])return true;
-  s.facing=tx>=0?1:-1;s.atkCd=heroAtkInt(h);s.swing=0.2;loArmHit(s,h,P,k,j,tx/dj,ty/dj);return true}
+  s.facing=tx>=0?1:-1;s.atkCd=P.armInt/(1+heroPool(HP_AS,HP_AS2));s.swing=0.2;loArmHit(s,h,P,k,j,tx/dj,ty/dj);return true}   // 0.12.2（用户定）削弱：斗兵攻击间隔固定 armInt 秒，只吃卡牌的攻击速度加成(原来跟萝拉自身的攻击间隔走)
 // v0.10.3（用户 2026-10-18 重做）五兵各自的一击：都用积木（伤害 = 固定 + AD，效果持续 P.dT 秒）
 function loArmHit(s,h,P,k,j,ux,uy){const x=s.x,y=s.y,a=Math.atan2(uy,ux),V=inViewPt(x,y),T=P.dT;if(V)fx5LoArm(h,k,x,y,a,E.x[j],E.y[j],P);   // v0.10.3 每一击的命中特效（heroes/skillfx5）
   if(k==='spear'){bkCast({k:'rect',len:P.spLen,w:P.spW},{who:'E',melee:true,mix:{pierce:1},vis:1,fx:null,st:{defDn:{f:P.spDef,t:T}}},bkCH(h,skV(h,P.spB,P.spAd),x,y-4,a));   // 前方宽 1 格、长 3 格，物理防御 −X%
@@ -63037,7 +63037,7 @@ const smithReady=()=>true;   // v0.7.0（用户定）强化、打造不再需要
 //   +10 及以上失败 20% 概率掉 1 级，用护刃钳不掉；最高 +20
 const enhBase=it=>it.q==='red'?CFG.enhRateRed:itemQ(it).rate;
 function enhRate(it,luck){if(testOn())return 1;const SM=CFG.smith;return Math.min(1,enhBase(it)/(1+(it.enh||0)*SM.rateLv)*(luck?SM.luckMul:1)+(it.ef||0)*SM.failAdd)}
-function enhCost(it){const L=it.enh||0;return Math.ceil(itemQ(it).silver*(1+L*L*0.05-L*0.05)*CFG.smith.silverK)}
+function enhCost(it){const L=it.enh||0;return Math.ceil(itemQ(it).silver*(1+L*L*0.05-L*0.05)*CFG.smith.silverK*smTierK(it.base))}   // smTierK：0.12.2（用户定）× 地区奖励倍率（game/trade095）
 const enhStoneN=it=>{const S=CFG.enhStone[it.q||'common']||CFG.enhStone.common;return Math.round(S[0]+S[1]*(it.enh||0))};
 const enhCanDrop=it=>(it.enh||0)>=CFG.smith.dropLv;
 function enhance(uid,o){o=o||{};const it=itemByUid(uid);if(!canEnhance(it))return{err:'这件装备不能强化'};if(it.enh>=CFG.smith.maxEnh)return{err:'已强化到上限'};
@@ -63100,7 +63100,7 @@ function rollKeys(base){const k=gearKindOf(base);
   if(k==='w')return CFG.weapons[base].dmg>0?['dmg','spd','rng']:[];
   if(k==='s'){const w=CFG.weapons[base];return w.type==='shield'?['block','shield','def']:w.dmg?['dmg']:[]}
   if(k==='a'){const a=CFG.armors[base];return['def','dodge'].filter(s=>a[s]>0)}
-  if(k==='p')return['pow'];return[]}
+  return[]}   // 0.12.2（用户定）特殊装备的「威力」浮动删掉(原来 k==='p' 抽 pow)
 function rollRange(craft,key,minR){const C=CFG.crafts[craft]||CFG.crafts.plain,R=CFG.craftNarrow.includes(key)?C.s:C.r,lo=Math.max(R[0],minR||0);return[lo,Math.max(lo,R[1])]}
 function rollStats(base,craft,minR){const o={};for(const k of rollKeys(base)){const[a,b]=rollRange(craft,k,minR);o[k]=rollIn(a,b)}return o}
 // 饰品：抽 n 个不重复的词条（按戒指 / 护符的权重），fxP 概率再带一个特效
@@ -63746,8 +63746,10 @@ function elRecLeft(){const ms=EL().recruit.hours*3600000-metaNow()%(EL().recruit
 function elHire(reg,i){const m=elSt(),R=elRecOf(reg),e=R.offers[i];if(!e)return'这名已经被招走了';if(m.list.length>=elCap())return`精英已满(${elCap()} 名；每多一个开拓地 +${EL().capPer})`;
   const p=elPrice(e);if((META.wallet.银币||0)<p)return`银币不够(需要 ${p})`;META.wallet.银币-=p;R.offers.splice(i,1);e.id=m.n++;e.ja=e.age;m.list.push(e);elAutoSk(e);saveMeta();return null}   // ja：0.12.0 入队时的年龄（主动退休时在部队不到 rollYears 年的不进名册）
 // —— 年龄、家族、学习：现实 24 小时 = 1 岁，一次最多算 24 小时（用户定）——
+// 0.12.2（用户定）每天第一次进游戏(0 点刷新，没上线的那天不补)弹「家族上贡」：进营地就查(不管有没有别的弹窗开着)，营地外每分钟的 elTick 也会查
+function elTribPop(){if(!META)return;const tb=elTribTick();if(tb&&typeof rwQueue==='function')setTimeout(()=>rwQueue('家族上贡',tb,'声望到「信任」以上的结盟家族，今天向你上贡了这些(每天 0 点刷新)'),400)}
 function elTick(){if(!META)return;try{elDispTick()}catch(err){console.error('elDispTick',err)}   // 0.12.2 派遣、驻军经验（game/el_disp）
-  {const tb=elTribTick();if(tb&&typeof rwShow==='function')setTimeout(()=>rwShow('家族上贡',tb,'声望到「信任」以上的家族，今天向联盟上贡了这些'),400)}const m=elSt(),now=metaNow();let dt=now-m.t;if(!(dt>0))return;const t0=m.t;m.t=now;dt=Math.min(dt,EL().offlineCapMs);const yr=dt/EL().yearMs,F=EL().family;let ch=false;
+  elTribPop();const m=elSt(),now=metaNow();let dt=now-m.t;if(!(dt>0))return;const t0=m.t;m.t=now;dt=Math.min(dt,EL().offlineCapMs);const yr=dt/EL().yearMs,F=EL().family;let ch=false;
   EL_FOLLOW_SET=elFamReach(m.follow);
   const life=x=>{const a0=x.age;x.age+=yr;if(!elSpouse(x)&&x.age>=EM().age&&!x.dead&&elAutoSpouse(x)){if(m.list.includes(x))elEv('mar',{id:x.id,auto:1});ch=true}if(x.sp&&!x.sp.dead){x.sp.age+=yr;if(x.sp.age>=(x.sp.life||75))x.sp.dead=1}   // 队外配偶到寿命去世 → 丧偶   // 0.12.0（用户定）25 岁还没成家的自己相亲
     const pa=x.spId&&elById(x.spId);if(pa&&m.list.includes(pa)&&pa.id<x.id)return;   // 队内夫妻：编号小的那位判生育
@@ -64909,7 +64911,9 @@ function forgeWares(it){if(!it||!it.book)return[];const mp=bookMp(it),T=CFG.ware
   const a=CFG.armors[it.base],ty=a?(a.type||(CFG.armors[a.body]||{}).type):CFG.weapons[it.base]?CFG.weapons[it.base].type:'trinket',R=F.recipe[ty]||F.recipe.sword;
   return[[T.basic[R[0]],Math.ceil(F.main[g]*k)],[T.basic[R[1]],Math.ceil(F.sub[g]*k)],[M.core,Math.ceil(F.coreN[g]*(F.coreQ[q]||1))]]}
 // 银币：按品质 × 阶（四舍五入到 10）；不要建材
-const forgeFee=it=>{const F=CFG.forgeMat,g=clamp(gearTier(it.base)-1,0,F.silverT.length-1);return{silver:Math.round((F.silverQ[baseQ(it.base)]||F.silverQ.common)*F.silverT[g]/10)*10,material:0}};
+// 0.12.2（用户定）强化、打造的银币 × 地区奖励倍率（按装备阶，= 每波资源的地图倍率 CFG.rewardTierK；打造原来乘 silverT）
+const smTierK=base=>{const K=CFG.rewardTierK;return K[clamp(gearTier(base)-1,0,K.length-1)]||1};
+const forgeFee=it=>({silver:Math.round((CFG.forgeMat.silverQ[baseQ(it.base)]||CFG.forgeMat.silverQ.common)*smTierK(it.base)/10)*10,material:0});
 // 老存档：没记地图的打造书补上 mp（这样同一种书叠在一起、界面上写得出是哪里的材料）
 function bookMpMig(m){if(!m||!m.inv||!Array.isArray(m.inv.books)||m.bookMp1)return;for(const it of m.inv.books)if(it&&!it.mp&&bookDef(it.base))it.mp=bookHome(it.base);m.bookMp1=1;m._dirty=true}
 const forgeOk=it=>{const f=forgeFee(it);return(META.wallet.银币||0)>=f.silver&&(META.wallet.建材||0)>=f.material&&forgeWares(it).every(([w,n])=>((META.wares||{})[w]||0)>=n)};
@@ -64936,6 +64940,22 @@ function trGoldOffers(id){if(id==='royal'||!CFG.maps[id])return[];const C=CFG.tr
 function trGoldDo(id,k){if(!trOpen(id))return{err:'这个地区还没开放'};if(!trHere(id))return{err:`商队不在${trName(id)}：先「前往」`};const o=trGoldOffers(id).find(x=>x.k===k);if(!o)return{err:'这批货已经刷新了'};if(o.done)return{err:'这一批已经买过了'};
   if((META.wallet.金币||0)<o.price)return{err:`金币不够(需要 ${o.price})`};META.wallet.金币-=o.price;const T=trGState();if(!T.gu[id])T.gu[id]={};T.gu[id][k]=1;
   if(k==='book')addGear(makeGear(o.base,{book:true,mp:id}));else META.souls[o.id]=(META.souls[o.id]||0)+o.n;saveMeta();return{o}}
+
+// ---------- 0.12.2 王都「一键采购 / 一键售出」（用户定）：范围 = 王都这个小时的报价 + 能贸易的家族的报价 ----------
+// 采购：挑中的材料从单价最低的报价买起，直到没银币或报价做满；售出：从单价最高的报价卖起，直到没货或报价做满
+// 做过几次照常记在 META.trade.u（王都 'royal'、家族 'f:家族'），整点刷新；全部做完只存一次档
+function trBkOffers(){const L=[];for(const o of trOffers('royal'))L.push({k:'royal',o});if(typeof elFtFams==='function')for(const fid of elFtFams())for(const o of elFtOffers(fid))L.push({k:'f:'+fid,o});return L}
+const trBkW=(m,o)=>m==='buy'?o.get.w:o.give.w;
+const trBkU=(m,o)=>m==='buy'?o.give.n/o.get.n:o.get.n/o.give.n;   // 每件的单价（银币）
+// 这一类（buy / sell）报价里出现的材料：{材料: {n 还能做的件数合计, u 最好的单价}}
+function trBkMats(m){const R={};for(const{o}of trBkOffers()){if(o.type!==m||o.left<=0)continue;const w=trBkW(m,o),u=trBkU(m,o),q=(m==='buy'?o.get.n:o.give.n)*o.left,r=R[w]||(R[w]={n:0,u});r.n+=q;r.u=m==='buy'?Math.min(r.u,u):Math.max(r.u,u)}return R}
+// 做：返回 {k 成交笔数, got:{得到}, paid:{付出}}
+function trBkRun(m,ws){const S=new Set(ws),T=trState(),L=trBkOffers().filter(x=>x.o.type===m&&x.o.left>0&&S.has(trBkW(m,x.o)));
+  L.sort((a,b)=>m==='buy'?trBkU(m,a.o)-trBkU(m,b.o):trBkU(m,b.o)-trBkU(m,a.o));const got={},paid={};let k=0;
+  for(const{k:key,o}of L){const n=Math.min(o.left,Math.floor(trHave(o.give.w)/o.give.n));if(n<=0)continue;
+    trAdd(o.give.w,-o.give.n*n);trAdd(o.get.w,o.get.n*n);const U=T.u[key]||(T.u[key]={});U[o.i]=(U[o.i]||0)+n;k+=n;
+    got[o.get.w]=(got[o.get.w]||0)+o.get.n*n;paid[o.give.w]=(paid[o.give.w]||0)+o.give.n*n}
+  if(k)saveMeta();return{k,got,paid}}
 
 // ---------- v0.10.0 开拓地大更新·第一步：经济（数据见 data/settle_0100.js；场景见 structs/settle_scene.js；界面见 ui/settle.js）----------
 // 一个地区的经济（stEcon）全部从建筑记录现算：人口、岗位和在岗、需求和供给、覆盖率、满意度、生产效率、繁荣度、主堡等级、每小时产出
@@ -66908,7 +66928,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=172,GAME_BUILD="4f68d41+",GAME_BUILT=1793167607588,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=172,GAME_BUILD="763601c+",GAME_BUILT=1793169219933,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -67622,6 +67642,7 @@ function showHub(tab){
   else if(hubTab==='design'){body=hubDesign();over=btOpen?btDrawer(btOpen):(btShown=null,'')}else body=hubStore();
   if(hubTab!=='go')contPop=false;else if(contPop&&allSaves().length)over=contPopHTML();
   if(hubTab==='settle')over=wmPopHTML('settle');else if(hubTab==='hero'&&(EL_TOP==='elite'||EL_POP))over=elPopHTML();else if(hubTab!=='settle'&&sheet.dataset.view==='hub:settle')WM_POP=null;   // EL_TOP：v0.11.4 开拓地页顶部「开拓地 / 精英」   // EL_POP：0.12.2 修（用户报）在「英雄」页打开精英日志，点孩子的「详情」不显示——精英弹窗原来只在「精英」页画
+  if(!running)try{elTribPop()}catch(e){console.warn('elTribPop',e)}   // 0.12.2 每天的家族上贡：进营地就弹(原来别的弹窗开着时要等每分钟的 elTick)
   if(!running&&(!over||(hubTab==='hero'&&EL_TOP==='elite'))){try{elTick()}catch(e){}if(EL_EVON&&elEvPending())over=elEvPopHTML()+(over||'')}   // 0.12.1 日志里点「详情」等：精英弹窗叠在日志上面   // 0.12.0 精英日志：不自动弹，玩家点「日志」(有红点)才弹（ui/el_ui）
   if(hubTab!=='settle')ST_GAR=ST_AL=ST_DET=ST_NOGAR=ZL_ED=KT2_GOD=null;else if(ZL_ED)over=zlEdPopHTML()||over;else if(ST_NOGAR)over=stNoGarPopHTML()||over;else if(ST_GAR)over=stGarPopHTML()||over;else if(ST_AL)over=stAlPopHTML()||over;else if(ST_DET&&!stMapView())over=stDetPopHTML()||over;   // ST_GAR：第三步驻扎英雄的弹窗   // v0.10.0 开拓地调配的弹窗（盖在大地图的地区面板上，关掉回到那里）   // v0.9.51 开拓地页默认大地图：点地区弹面板   // 代理 KT：列表模式也用大地图的地区面板（用户定：两边共用一套）   // ZL_ED：代理 ZL 加，开拓地政令的弹窗（ui/zl_settle）
   openModal('start',scrHTML({title:'营地',back:['menu','','主界面'],rail:hubRail(hubTab),sk:'hub-'+hubTab+(hubTab==='hero'&&EL_TOP==='elite'?'-el':''),body:hubIntro(hubTab)+body,over}),null,true,'hub:'+hubTab);
@@ -68994,7 +69015,7 @@ function spcText(T,pow){pow=pow||1;const r=v=>v*pow;
   if(T.drone){const P=T.drone;return`跟在英雄身边的小炮台：每 ${P.cd} 秒向 ${P.range} 格内最近的亡灵打一发 ${Math.round(P.dmg*pow)} 伤害的法术弹`}
   return T.note||''}
 function itemStats(it,hid){const k=gearKindOf(it.base),prof=hid?CFG.heroes[hid].prof:null;   // hid 为空：不看熟练（装备图鉴）
-  let s=k==='w'||k==='s'?weaponLine(it,prof):k==='a'?armorLine(it,hid):k==='r'?accLine(it):`<div><b>特殊装备</b><br>${spcText(CFG.trinkets[it.base],it.roll&&it.roll.pow)}${it.roll&&it.roll.pow?` <i class="${it.roll.pow>1?'rup':'rdn'}">威力 ${Math.round(it.roll.pow*100)}%</i>`:''}</div>`;
+  let s=k==='w'||k==='s'?weaponLine(it,prof):k==='a'?armorLine(it,hid):k==='r'?accLine(it):`<div><b>特殊装备</b><br>${spcText(CFG.trinkets[it.base])}</div>`;   // 0.12.2（用户定）特殊装备不再有「威力 X%」浮动
   if(!it.book)s+=axHTML(it);else if(axSideOf(it.base))s+=`<div class="meta">打造出来时按品质随机 ${CFG.gearAffix.slots[baseQ(it.base)]||0} 个词条位</div>`;   // v0.5.9 装备词条
   if(it.book)s=forgeBoxHTML(it)+s;   // v0.9.5 打造面板（ui/wares）
   return s}
@@ -69436,7 +69457,7 @@ function formulaHTML(){
     `金币：首领 ${D.bossGold}、噩梦及以上的精英 ${D.eliteGold}，× 难度结算倍率，噩梦及以上的首领再 × 2；每张地图每天最多拿 `+CFG.goldDay.tier.map((v,i)=>CFG.mapPages[i].name+' '+v).join('、')+` × 难度(`+Object.entries(CFG.goldDay.diffK).map(([k,v])=>(CFG.difficulties.find(d=>d.id===k)||{}).name+' '+v).join(' / ')+`)，签到、任务、商店给的不算`,
     `出售：装备 = 基础银币 × ${pc(SM.sellPct)} × (1 + 强化等级 × 0.5)；打造书装备 ${FG.specialItemSell} × (1 + 强化等级 × 0.5)；打造书 ${FG.bookSell}、打造书装备的书 ${FG.specialBookSell}`,
     `强化成功率 = 品质成功率 ÷ (1 + 强化等级 × ${pc(SM.rateLv)}) × (用幸运符 ×${SM.luckMul}) + 这件装备连续失败的次数 × ${pc(SM.failAdd)}(成功后清零)，最高 +${SM.maxEnh}；+${SM.dropLv} 及以上失败 ${pc(SM.dropP)} 概率掉 1 级，用护刃钳不掉`,
-    `强化花费：银币 = 品质基础 × (1 + 0.05 × L² − 0.05 × L) × ${pc(SM.silverK)}；X 阶装备另要 X 阶强化石 = 初始 + 每级 × L(四舍五入)，${Object.entries(CFG.enhStone).filter(([q])=>CFG.itemQ[q]).map(([q,v])=>`${CFG.itemQ[q].name} ${v[0]} + ${v[1]}L`).join('、')}；L = 当前强化等级`,
+    `强化花费：银币 = 品质基础 × (1 + 0.05 × L² − 0.05 × L) × ${pc(SM.silverK)} × 地区奖励倍率(按装备阶 ${CFG.rewardTierK.join(' / ')})；X 阶装备另要 X 阶强化石 = 初始 + 每级 × L(四舍五入)，${Object.entries(CFG.enhStone).filter(([q])=>CFG.itemQ[q]).map(([q,v])=>`${CFG.itemQ[q].name} ${v[0]} + ${v[1]}L`).join('、')}；L = 当前强化等级`,
     `洗词条：金币按品质(锁词条不加价)；或 X 阶洗练石 ${Object.entries(CFG.washStone).filter(([q])=>CFG.itemQ[q]).map(([q,v])=>`${CFG.itemQ[q].name} ${v}`).join('、')} 个 × (1 + 锁住的词条数)；必出最高档：花 ${Object.entries(CFG.gearAffix.bestMul).filter(([q])=>CFG.itemQ[q]).map(([q,v])=>`${CFG.itemQ[q].name} ${v}`).join('、')} 倍，没锁的词条全是这个品质能出的最高档(普通品质不能用)`,
     `强化石：X 阶地区的精英 ${pc(CFG.matDrop.elite.enh[0])} 掉 1 个、小首领 ${CFG.matDrop.mini.enh[1]}～${CFG.matDrop.mini.enh[2]} 个、首领 ${CFG.matDrop.boss.enh[1]}～${CFG.matDrop.boss.enh[2]} 个；洗练石：小首领 ${pc(CFG.matDrop.mini.wash[0])} 掉 1 个、首领 ${CFG.matDrop.boss.wash[1]}～${CFG.matDrop.boss.wash[2]} 个；概率 × (1 + 掉宝率)，数量 × 难度掉宝倍率`])}
   ${sec('开拓地与科技',[
@@ -69854,7 +69875,7 @@ function wmTradeHTML(id){if(!trOpen(id))return`<p class="meta">这个地区还�
   const pct=o=>{if(o.type==='swap')return'';const w=o.type==='buy'?o.get.w:o.give.w,s=o.type==='buy'?o.give.n:o.get.n,u=s/(o.type==='buy'?o.get.n:o.give.n);const pc=Math.round(u/W[w].price*100),good=o.type==='buy'?pc<=100:pc>=100;return`<span class="meta">单价 ${Math.round(u*10)/10}(标准价 ${W[w].price}，<b class="${good?'pgood':'pbad'}">${pc}%</b>)</span>`};   // 用户定：卖价 100% 以上绿、以下红；买价反过来
   const rows=L.map(o=>{const can=here&&o.left>0&&trHave(o.give.w)>=o.give.n;
     return`<div class="trrow">${side(o.give,true)}<span class="tra">→</span>${side(o.get,false)}<button class="px sm${can?'':' poor'}" type="button" data-act="wmtrp" data-v="r:${id}:${o.i}" ${here&&o.left>0?'':'disabled'}>${o.left>0?`成交 ${o.left}/${o.times}`:'已做满'}</button>${pct(o)}</div>`}).join('');   // 0.12.2 点「成交」开批量弹窗（滑条 + 数字）
-  return`<p class="meta">繁荣度 <b>${p}</b>(${lv} 级)· 这个小时 ${L.length} 笔报价 · ${nx}:00 刷新 · 银币 <b>${Math.floor(META.wallet.银币||0)}</b>${helpBtn('trade')}</p><div class="row2">${acc}</div>
+  return`<p class="meta">繁荣度 <b>${p}</b>(${lv} 级)· 这个小时 ${L.length} 笔报价 · ${nx}:00 刷新 · 银币 <b>${Math.floor(META.wallet.银币||0)}</b>${helpBtn('trade')}</p><div class="row2">${acc}${id==='royal'?`<button class="px sm" type="button" data-act="wmbk" data-v="buy">一键采购</button><button class="px sm" type="button" data-act="wmbk" data-v="sell">一键售出</button>`:''}</div>
     <div class="trlist">${rows||'<p class="meta">暂时没有报价</p>'}</div>${id==='royal'?wmFamTradeHTML(side,pct):''}${wmGoldHTML(id,here)}`}
 HELP.trade=()=>({t:'贸易',b:hpL(['左边付出、右边得到；点「成交」可以一次做多次(滑条或输入次数)',`繁荣度等级就是开拓地的主堡等级(王都算 ${CFG.trade.lv.royal} 级、没开拓的算 ${CFG.trade.lv.open} 级)，等级越高报价越多、每笔能做的次数越多、买价越低，英雄之魄和打造书越常出现`,'报价每个整点刷新；物资放在仓库',
   `王都的「家族贸易」：结盟、声望到「接纳」以上的家族卖出 / 收购自己地区这一阶的材料；关系越好，报价越多、每笔能做的次数越多、买价越低、卖价越高(${Object.entries(EL().famTrade.lv).map(([k,v])=>`${k} ${v.rows} 笔 × ${v.times} 次、买 ${Math.round(v.buy*100)}% / 卖 ${Math.round(v.sell*100)}%`).join('；')}，按标准价)`])});
@@ -69862,9 +69883,24 @@ HELP.trade=()=>({t:'贸易',b:hpL(['左边付出、右边得到；点「成交�
 let WM_FT=null;
 function wmFamTradeHTML(side,pct){const F=elFtFams();if(!F.length)return`<h4 class="sh">家族贸易</h4><p class="meta">和家族结盟、声望到「接纳」以后，可以在这里和他们买卖材料</p>`;
   if(!F.includes(WM_FT))WM_FT=F[0];const B=elBlood(),col=fid=>CFG.elite.repCol[elRepLv(elRepOf(fid))]||'';
-  const tabs=F.map(fid=>`<button class="px sm ftb${WM_FT===fid?' on':''}" type="button" data-act="wmft" data-v="${fid}"><img alt="" src="${elCrestURL(fid)}"><span>${B[fid].name}</span><em style="color:${col(fid)}">${elTribLvN(fid)}</em></button>`).join('');
+  const tabs=`<span class="ftb ftcur"><img alt="" src="${elCrestURL(WM_FT)}"><span>${B[WM_FT].name}</span><em style="color:${col(WM_FT)}">${elTribLvN(WM_FT)}</em></span><button class="px sm" type="button" data-act="wmftp">选择</button>`;   // 0.12.2（用户定）右边「选择」弹窗挑家族（原来一排页签）
   const L=elFtOffers(WM_FT),rows=L.map(o=>{const can=o.left>0&&trHave(o.give.w)>=o.give.n;return`<div class="trrow">${side(o.give,true)}<span class="tra">→</span>${side(o.get,false)}<button class="px sm${can?'':' poor'}" type="button" data-act="wmtrp" data-v="f:${WM_FT}:${o.i}" ${o.left>0?'':'disabled'}>${o.left>0?`成交 ${o.left}/${o.times}`:'已做满'}</button>${pct(o)}</div>`}).join('');
   return`<h4 class="sh">家族贸易 <span class="meta">${CFG.maps[B[WM_FT].reg]?CFG.maps[B[WM_FT].reg].name+' · ':''}关系越好报价越多、价钱越好</span></h4><div class="ftbar">${tabs}</div><div class="trlist">${rows||'<p class="meta">这个小时没有报价</p>'}</div>`}
+// 0.12.2（用户定）挑家族的弹窗
+let WM_FTP=false;
+function wmFtPopHTML(){if(!WM_FTP)return'';const F=elFtFams(),B=elBlood(),col=fid=>CFG.elite.repCol[elRepLv(elRepOf(fid))]||'';
+  const rows=F.map(fid=>`<button class="px ftb ftrow${WM_FT===fid?' on':''}" type="button" data-act="wmft" data-v="${fid}"><img alt="" src="${elCrestURL(fid)}"><span>${B[fid].name}</span><span class="meta">${CFG.maps[B[fid].reg]?CFG.maps[B[fid].reg].name:''}</span><em style="color:${col(fid)}">${elTribLvN(fid)}</em></button>`).join('');
+  return`<div class="mpopbg" data-act="wmftx" role="button" aria-label="关闭" style="z-index:70"></div><div class="mpop oppop" role="dialog" style="z-index:71"><div class="oph"><b>选择家族</b><button class="px sq" type="button" data-act="wmftx" aria-label="关闭">×</button></div>
+    <div class="opb"><div class="ftlist">${rows||'<p class="meta">没有能贸易的家族</p>'}</div></div></div>`}
+// 0.12.2（用户定）王都一键采购 / 一键售出（逻辑 game/tr_bulk）：WM_BK = {m:'buy'|'sell', sel:[材料]}
+let WM_BK=null;
+function wmBkPopHTML(){if(!WM_BK)return'';const m=WM_BK.m,buy=m==='buy',R=trBkMats(m),ws=Object.keys(R).filter(w=>buy||trHave(w)>0).sort((a,b)=>(CFG.wares.items[a].tier-CFG.wares.items[b].tier)||trWName(a).localeCompare(trWName(b)));
+  WM_BK.sel=WM_BK.sel.filter(w=>ws.includes(w));const on=w=>WM_BK.sel.includes(w),f=u=>Math.round(u*10)/10;
+  const rows=ws.map(w=>`<button class="px bkrow${on(w)?' on':''}" type="button" data-act="wmbkw" data-v="${w}">${tradeIco(w)}<span><b>${trWName(w)}</b><span class="meta">${buy?`可买 ${R[w].n} · 最低单价 ${f(R[w].u)}`:`有 ${trHave(w)} · 可卖 ${R[w].n} · 最高单价 ${f(R[w].u)}`}</span></span></button>`).join('');
+  return`<div class="mpopbg" data-act="wmbkx" role="button" aria-label="关闭" style="z-index:70"></div><div class="mpop oppop bkpop" role="dialog" style="z-index:71"><div class="oph"><b>${buy?'一键采购':'一键售出'}</b><button class="px sq" type="button" data-act="wmbkx" aria-label="关闭">×</button></div>
+    <div class="opb"><p class="meta">${buy?'选要买的材料：从单价最低的报价买起，直到银币不够或报价做满':'选要卖的材料：从单价最高的报价卖起，直到卖完或报价做满'}(王都和家族的报价都算)· 银币 <b>${trHave('银币')}</b></p>
+    <div class="row2"><button class="px sm" type="button" data-act="wmbkall">${ws.length&&ws.every(on)?'全不选':'全选'}</button><span class="meta">已选 ${WM_BK.sel.length} 种</span></div><div class="bklist">${rows||`<p class="meta">${buy?'这个小时没有能买的材料':'没有能卖的材料'}</p>`}</div></div>
+    <div class="opf"><button class="px on" type="button" data-act="wmbkgo" ${WM_BK.sel.length?'':'disabled'}>${buy?'采购所有':'售出所有'}</button></div></div>`}
 // 批量成交弹窗：WM_TR = {s:'r' 地区 | 'f' 家族, id, i}；滑条和数字框联动，下面显示合计
 let WM_TR=null;
 function wmTrOffer(){const T=WM_TR;if(!T)return null;return(T.s==='f'?elFtOffers(T.id):trOffers(T.id)).find(x=>x.i===T.i)||null}
@@ -69890,7 +69926,7 @@ function wmPopHTML(ctx){if(KT2_GOD)return kt2GodPopHTML();if(ZL_ED&&ctx!=='settl
   const tabs=T.map(([k,n])=>`<button type="button" class="px sm${WM_TAB===k?' on':''}" data-act="wmtab" data-v="${k}">${n}${k==='settle'&&wmInv(id)?'<b class="wmx in">!</b>':''}</button>`).join('');
   const body=kt2Body(id,ctx);   // 代理 KT 第二轮（ui/kt2_settle）
   return`<div class="btback" data-act="wmx" aria-hidden="true"></div><aside class="hpop wmpop kt2" role="dialog"><div class="hpop-h"><h4>${trName(id)}${id!=='royal'&&CFG.maps[id]?` <span class="meta">${WM_TN[mapTierOf(id)]}阶</span>`:''}</h4><button class="px" type="button" data-act="wmx">关闭</button></div>
-    <div class="tabs sub kt2tabs">${tabs}</div><div class="wmbody" data-sk="wmbody">${body}</div></aside>${WM_TAB==='trade'?wmTrPopHTML():''}`}
+    <div class="tabs sub kt2tabs">${tabs}</div><div class="wmbody" data-sk="wmbody">${body}</div></aside>${WM_TAB==='trade'?wmTrPopHTML()+wmFtPopHTML()+wmBkPopHTML():''}`}
 // 整屏大地图（营地出征页的「大地图」按钮）
 function showWorld(){openModal('start',scrHTML({title:'大地图',back:['hub',WM_BACK,'营地'],sk:'world',body:`<p class="meta wmtip">点地区图标：出征、开拓地、贸易。灰色的还没开放；小旗 = 有开拓地；红色感叹号 = 亡灵入侵；「商」= 商队所在；双指或滑条缩放</p>${wmHTML('world')}`,over:wmPopHTML('world')}),null,true,'hub:world')}
 // 开拓地页默认用大地图（用户定），SET.stView='list' 时用原来的地区卡片
@@ -69911,7 +69947,12 @@ function wmAct(a,v){if(a==='wmcv'){caraAct(v);return}if(a==='wmkt'){ktPanel(v);r
   else if(a==='wmtgo'){const r=trGo(v);if(r.err)toast(r.err);else{sfx('pick');toast(`商队到了${trName(v)}`)}wmRefresh()}
   else if(a==='wmgold'){const k=v.lastIndexOf(':'),id=v.slice(0,k),r=trGoldDo(id,v.slice(k+1));if(r.err)toast(r.err);else{sfx('coin');toast(r.o.k==='book'?`买到《${bookDef(r.o.base).name}》打造书(在仓库)`:`买到${CFG.heroes[r.o.id].name}的英雄之魄 ×${r.o.n}`)}wmRefresh()}
   else if(a==='wmtrp'){const[s,...r]=v.split(':'),i=+r.pop();WM_TR={s,id:r.join(':'),i,n:0};sfx('click');wmRefresh()}   // 0.12.2 批量交易弹窗
-  else if(a==='wmtrx'){WM_TR=null;wmRefresh()}else if(a==='wmft'){WM_FT=v;wmRefresh()}
+  else if(a==='wmtrx'){WM_TR=null;wmRefresh()}else if(a==='wmft'){WM_FT=v;WM_FTP=false;wmRefresh()}
+  else if(a==='wmftp'){WM_FTP=true;wmRefresh()}else if(a==='wmftx'){WM_FTP=false;wmRefresh()}
+  else if(a==='wmbk'){WM_BK={m:v,sel:[]};sfx('click');wmRefresh()}else if(a==='wmbkx'){WM_BK=null;wmRefresh()}
+  else if(a==='wmbkw'){const S=WM_BK.sel,i=S.indexOf(v);if(i>=0)S.splice(i,1);else S.push(v);wmRefresh()}
+  else if(a==='wmbkall'){const R=trBkMats(WM_BK.m),ws=Object.keys(R).filter(w=>WM_BK.m==='buy'||trHave(w)>0);WM_BK.sel=ws.every(w=>WM_BK.sel.includes(w))?[]:ws;wmRefresh()}
+  else if(a==='wmbkgo'){const buy=WM_BK.m==='buy',r=trBkRun(WM_BK.m,WM_BK.sel);WM_BK=null;if(!r.k)toast(buy?'银币不够，或者这些材料的报价已经做满':'没有能卖的了');else{sfx('coin');const pd=Object.keys(r.paid).map(w=>`${trWName(w)} ×${r.paid[w]}`).join('、');if(!rwShow(buy?'一键采购':'一键售出',r.got,`成交 ${r.k} 次，付出 ${pd}`))toast(`成交 ${r.k} 次`)}wmRefresh()}
   else if(a==='wmtrm'){const R=sheet.querySelector('#trRange');if(R){R.value=R.max;wmTrSync(R)}}
   else if(a==='wmtrok'){const T=WM_TR,N=sheet.querySelector('#trNum'),n=Math.max(1,parseInt(N&&N.value,10)||T.n||1),r=T.s==='f'?elFtDo(T.id,T.i,n):trDoN(T.id,T.i,n);
     if(r.err)toast(r.err);else{sfx('coin');toast(`成交 ${r.n} 次：付出 ${trWName(r.o.give.w)} ×${r.o.give.n*r.n}，得到 ${trWName(r.o.get.w)} ×${r.o.get.n*r.n}`)}WM_TR=null;wmRefresh()}
@@ -71569,12 +71610,18 @@ const RW_RES=['银币','金币','建材','科研点','设计点'];
 function rwId(k){if(CFG.wares.items[k]||RW_RES.includes(k))return k;if(!RW_NM){RW_NM=new Map();for(const w in CFG.wares.items)if(!RW_NM.has(CFG.wares.items[w].name))RW_NM.set(CFG.wares.items[w].name,w)}return RW_NM.get(k)||null}
 // 强化石、洗练石这类开拓地产的材料：名字是「1阶强化石」
 const RW_MAT={强化石:'enh',洗练石:'wash',护刃钳:'guard',幸运符:'luck'};
-function rwSrc(k){const w=rwId(k);if(w&&RW_RES.includes(w))return resIcon(w);if(!w){const u=mdRwSrc(k);if(u)return u}const m=/^(\d+)阶(.+)$/.exec(k);return m&&RW_MAT[m[2]]&&typeof matIconURL==='function'?matIconURL(RW_MAT[m[2]],+m[1]):null}   // mdRwSrc：代理 5 加，英雄之魄碎片、纪念勋章的图标（ui/md_ui）
+// 0.12.2 修（用户报）：铁匠铺装备(开拓地领取给的是名字「铁匠铺装备」)用开拓地产出的装备图标
+function rwEi(k){if(typeof eiIcon!=='function')return null;if(k==='pgGear'||k===CFG.pgWork.gearName)return eiIcon('rs:gear');return null}
+function rwSrc(k){const e=rwEi(k);if(e)return e;const w=rwId(k);if(w&&RW_RES.includes(w))return resIcon(w);if(!w){const u=mdRwSrc(k);if(u)return u}const m=/^(\d+)阶(.+)$/.exec(k);return m&&RW_MAT[m[2]]&&typeof matIconURL==='function'?matIconURL(RW_MAT[m[2]],+m[1]):null}   // mdRwSrc：代理 5 加，英雄之魄碎片、纪念勋章的图标（ui/md_ui）
 // 图标：cls 给图片加的 class（收获弹窗用 wic rc，开拓地面板用默认）
 function rwIco(k,cls){const u=rwSrc(k);if(u)return`<img class="${cls==null?'wic rc':cls}" alt="" src="${u}">`;const w=rwId(k);return w?wareIco(w):'<i class="wic"></i>'}
 const rwName=k=>{const w=rwId(k);return w&&CFG.wares.items[w]?CFG.wares.items[w].name:k};
-function rwClose(){const el=document.getElementById('rwpop');if(el)el.remove()}
-function rwShow(title,got,note){const ks=Object.keys(got||{}).filter(k=>got[k]>0);if(!ks.length)return false;rwClose();
+const rwRm=()=>{const el=document.getElementById('rwpop');if(el)el.remove()};
+// 0.12.2（用户定）排队：已经开着一个收获弹窗时，后来的(每天的家族上贡)等它关了再弹，不把它顶掉
+const RW_Q=[];
+function rwQueue(title,got,note){if(document.getElementById('rwpop'))RW_Q.push([title,got,note]);else rwShow(title,got,note)}
+function rwClose(){rwRm();const q=RW_Q.shift();if(q)setTimeout(()=>rwShow(q[0],q[1],q[2]),150)}
+function rwShow(title,got,note){const ks=Object.keys(got||{}).filter(k=>got[k]>0);if(!ks.length)return false;rwRm();
   const el=document.createElement('div');el.id='rwpop';
   el.innerHTML=`<div class="rwbg" data-rwx="1"></div><div class="mpop oppop elpop rwpop" role="dialog"><div class="oph"><b>${title}</b><button class="px sq" type="button" data-rwx="1" aria-label="关闭">×</button></div><div class="opb">${note?`<p class="meta">${note}</p>`:''}
     <div class="rwg">${ks.map(k=>`<div class="rwt" title="${rwName(k)} ${got[k]}">${rwIco(k)}<b>${Math.round(got[k])}</b><span>${rwName(k)}</span></div>`).join('')}</div></div></div>`;
