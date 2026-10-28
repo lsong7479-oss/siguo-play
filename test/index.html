@@ -976,7 +976,7 @@ html.fkUp .hr .hn b{white-space:normal;overflow-wrap:anywhere}   /* v0.10.5 字�
 .hlup{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 16px) / 5);gap:4px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;flex:none;padding:2px 0}
 .hlup::-webkit-scrollbar,.hrole::-webkit-scrollbar,.hskpgr::-webkit-scrollbar{display:none}
 .hlu{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px 4px;background:var(--rivet);border:0;box-shadow:inset 0 0 0 1px var(--iron);color:var(--bone);font:inherit;cursor:pointer;scroll-snap-align:start;min-width:0;min-height:62px}
-.hlu.on{box-shadow:inset 0 0 0 2px var(--brass)}.hlu img{width:30px;height:30px;image-rendering:pixelated;object-fit:contain}
+.hlu.on{box-shadow:inset 0 0 0 2px var(--brass)}.hlu.sel{outline:2px solid #6ac86a;outline-offset:-4px}.hrw{display:flex;gap:4px;align-items:stretch}.hrw>.hr{flex:1 1 auto;min-width:0}.hrw>.hrep{flex:none;min-width:3.4em;margin:0;align-self:center}.hlu img{width:30px;height:30px;image-rendering:pixelated;object-fit:contain}
 .hlu b{font-size:.68rem;font-weight:400;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hlu i{position:absolute;left:3px;top:1px;font-style:normal;font-size:.62rem;color:var(--brass-hi)}.hlu.emp span{font-size:.7rem;color:var(--ash);margin:auto}
 .hrole{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;flex:none}.hrole .px{min-width:0;padding:3px 0;justify-content:center}
@@ -66908,7 +66908,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=172,GAME_BUILD="9854dc6+",GAME_BUILT=1793166061799,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=172,GAME_BUILD="4f68d41+",GAME_BUILT=1793167607588,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -67621,7 +67621,7 @@ function showHub(tab){
   if(hubTab==='go')body=hubGo();else if(hubTab==='settle')body=hubSettle();else if(hubTab==='tech')body=hubTech();else if(hubTab==='hero')body=EL_TOP==='elite'?elHub():`<div class="herow">${elTopTabs()}${hubHero_()}</div>`;else if(hubTab==='shop')body=hubShop();else if(hubTab==='daily')body=chDaily();else if(hubTab==='soul')body=hubSoul();   // chDaily：代理 CH 日常页加「成就」页签（ui/ch_ach）   // 英雄页：0.12.1（用户定）精英从开拓地挪过来，顶上「英雄 / 精英」
   else if(hubTab==='design'){body=hubDesign();over=btOpen?btDrawer(btOpen):(btShown=null,'')}else body=hubStore();
   if(hubTab!=='go')contPop=false;else if(contPop&&allSaves().length)over=contPopHTML();
-  if(hubTab==='settle')over=wmPopHTML('settle');else if(hubTab==='hero'&&EL_TOP==='elite')over=elPopHTML();else if(hubTab!=='settle'&&sheet.dataset.view==='hub:settle')WM_POP=null;   // EL_TOP：v0.11.4 开拓地页顶部「开拓地 / 精英」
+  if(hubTab==='settle')over=wmPopHTML('settle');else if(hubTab==='hero'&&(EL_TOP==='elite'||EL_POP))over=elPopHTML();else if(hubTab!=='settle'&&sheet.dataset.view==='hub:settle')WM_POP=null;   // EL_TOP：v0.11.4 开拓地页顶部「开拓地 / 精英」   // EL_POP：0.12.2 修（用户报）在「英雄」页打开精英日志，点孩子的「详情」不显示——精英弹窗原来只在「精英」页画
   if(!running&&(!over||(hubTab==='hero'&&EL_TOP==='elite'))){try{elTick()}catch(e){}if(EL_EVON&&elEvPending())over=elEvPopHTML()+(over||'')}   // 0.12.1 日志里点「详情」等：精英弹窗叠在日志上面   // 0.12.0 精英日志：不自动弹，玩家点「日志」(有红点)才弹（ui/el_ui）
   if(hubTab!=='settle')ST_GAR=ST_AL=ST_DET=ST_NOGAR=ZL_ED=KT2_GOD=null;else if(ZL_ED)over=zlEdPopHTML()||over;else if(ST_NOGAR)over=stNoGarPopHTML()||over;else if(ST_GAR)over=stGarPopHTML()||over;else if(ST_AL)over=stAlPopHTML()||over;else if(ST_DET&&!stMapView())over=stDetPopHTML()||over;   // ST_GAR：第三步驻扎英雄的弹窗   // v0.10.0 开拓地调配的弹窗（盖在大地图的地区面板上，关掉回到那里）   // v0.9.51 开拓地页默认大地图：点地区弹面板   // 代理 KT：列表模式也用大地图的地区面板（用户定：两边共用一套）   // ZL_ED：代理 ZL 加，开拓地政令的弹窗（ui/zl_settle）
   openModal('start',scrHTML({title:'营地',back:['menu','','主界面'],rail:hubRail(hubTab),sk:'hub-'+hubTab+(hubTab==='hero'&&EL_TOP==='elite'?'-el':''),body:hubIntro(hubTab)+body,over}),null,true,'hub:'+hubTab);
@@ -69162,7 +69162,7 @@ function enhPicker(hid){const seg=`<div class="seg enhsrc"><button class="px sm$
 function hubHero_(){
   const id=advBase(hubHero||META.hero);hubHero=id;const f=heroForm(id),H=CFG.heroes[f],MH=META.heroes[id],star=Math.max(1,META.heroes[f].star||1),souls=META.souls[f]||0;   // f：v0.7.3 进阶形态
   const hl=HIDS.filter(k=>heroListed(k)||k===id),hs=hl.filter(k=>k===id||hvShowHero(k)),hr=HROLE==='all'?hs:hs.filter(k=>heroRoleOf(k)===HROLE);   // hvShowHero：v0.10.11 还没法拿到的高阶英雄先不显示（ui/hv）   // HROLE：0.12.2 分类页签
-  const list=(heroOrder(hr,SET.heroSort||'id').map(k=>heroRow(k,'hsel',id)).join('')||'<p class="meta">这一类还没有英雄</p>')+(HROLE==='all'?hvMore(hl.length-hs.length,'位英雄'):'');
+  const lk=heroLupSel(id),list=(heroOrder(hr,SET.heroSort||'id').map(k=>lk<0?heroRow(k,'hsel',id):`<div class="hrw">${heroRow(k,'hsel',id)}${META.heroes[k]&&META.heroes[k].owned&&META.lineup[lk]!==k?`<button class="px sm hrep" type="button" data-act="hrep" data-v="${k}" title="换到 ${lk+1} 号上阵位">替换</button>`:''}</div>`).join('')||'<p class="meta">这一类还没有英雄</p>')+(HROLE==='all'?hvMore(hl.length-hs.length,'位英雄'):'');
   let L=MH.owned?dollHTML(id):`<div class="porsolo"><img alt="" src="${heroPortrait(f)}"></div><p class="meta">招募以后才显示装备</p>`,R='';   // v0.9.51（用户定）没招募的英雄也显示立绘   // v0.8.15（用户定）没招募的英雄不显示装备
   if(!MH.owned&&heroSub!=='info')heroSub='info';
   if(heroSub==='enh'){L=enhPanel(id);R=enhPicker(id)}
@@ -69178,8 +69178,11 @@ function hubHero_(){
 let HROLE='all';
 const heroRoleOf=k=>CFG.heroRoles.of[CFG.heroes[k].advOf||k]||'warrior';
 const heroRoleBar=()=>`<div class="hrole">${[['all','全部']].concat(CFG.heroRoles.names).map(([k,n])=>`<button class="px sm${HROLE===k?' on':''}" type="button" data-act="hrole" data-v="${k}">${n}</button>`).join('')}</div>`;
-function heroLupHTML(cur){return`<div class="hlup">${Array.from({length:lineupSize()},(_,k)=>{const id=META.lineup[k],f=id&&CFG.heroes[id]?heroForm(id):null;
-  return f?`<button class="hlu${cur===id?' on':''}" type="button" data-act="hsel" data-v="${id}"><i>${k+1}</i><img alt="" src="${heroIconS(f,3)}"><b>${CFG.heroes[f].name}</b></button>`:`<button class="hlu emp" type="button" data-act="lpick" data-v="${k}"><i>${k+1}</i><span>空位</span></button>`}).join('')}</div>`}
+// 0.12.2（用户定）列表右边「替换」：把这位英雄换到选中的顶部上阵位（HLUP_SEL；没点过就用当前英雄所在的位子）；点顶部的位子 = 选中它（有英雄的同时看他的详情）
+let HLUP_SEL=-1;
+function heroLupSel(cur){const n=lineupSize();if(HLUP_SEL>=0&&HLUP_SEL<n)return HLUP_SEL;const i=META.lineup.slice(0,n).indexOf(cur);return i}
+function heroLupHTML(cur){const sel=heroLupSel(cur);return`<div class="hlup">${Array.from({length:lineupSize()},(_,k)=>{const id=META.lineup[k],f=id&&CFG.heroes[id]?heroForm(id):null;
+  return f?`<button class="hlu${cur===id?' on':''}${sel===k?' sel':''}" type="button" data-act="hlusel" data-v="${k}"><i>${k+1}</i><img alt="" src="${heroIconS(f,3)}"><b>${CFG.heroes[f].name}</b></button>`:`<button class="hlu emp${sel===k?' sel':''}" type="button" data-act="hlusel" data-v="${k}"><i>${k+1}</i><span>空位</span></button>`}).join('')}</div>`}
 HELP['hero-lore']=()=>{const f=heroForm(advBase(hubHero||META.hero)),H=CFG.heroes[f];return{t:H.name,b:`<p>${H.lore}</p>`}};
 HELP['hero-skill']=()=>({t:'技能',b:hpL(['点技能图标查看效果；弹窗里左右滑动（或点 ‹ ›）切换各星级的效果','技能数值里的 AD / AP 加成、技能伤害随局内加成和波次的成长，见「公式」','标「3★」的技能升到三星解锁'])});
 // —— 操作 ——
@@ -69187,7 +69190,9 @@ HELP['hero-skill']=()=>({t:'技能',b:hpL(['点技能图标查看效果；弹窗
 const enhResText=(it,r)=>{if(r.err)return`<span class="warn">${r.err}</span>`;const cost=`成功率 ${Math.round(r.p*100)}%，花费 ${r.c} 银币 + ${r.ns} 个${matName('enh',r.t)}${r.luck?' + 1 个'+matName('luck',r.t):''}${r.guard?' + 1 个'+matName('guard',r.t):''}`;
   return r.ok?`<b class="ok">强化成功！${itemName(it)} +${r.lv}</b>(${cost})`:r.down?`<span class="warn">强化失败，掉到 +${r.lv}</span>(${cost})`:`<span class="warn">强化失败</span>(${cost}；等级不变${r.guard?'，护刃钳保住了':''})`};
 function itemAct(a,v){const hid=hubHero||META.hero;if(a==='hskl'){hskGo(+v);return}   // 0.12.2 技能弹窗翻页：不重画，滚过去
-  if(a==='hskp'){const f=heroForm(advBase(hid));HSK_POP={i:+v,p:Math.max(1,META.heroes[f].star||1)-1};showHub('hero');return}if(a==='hskx'){HSK_POP=null;showHub('hero');return}if(a==='hrole'){HROLE=v;showHub('hero');return}eqMsg='';if(a!=='ibulk')bulkArm='';if(!['enhgo','axrr','axrs','axbg','axbs','axlk','enhluck','enhguard'].includes(a))enhMsg='';
+  if(a==='hskp'){const f=heroForm(advBase(hid));HSK_POP={i:+v,p:Math.max(1,META.heroes[f].star||1)-1};showHub('hero');return}if(a==='hskx'){HSK_POP=null;showHub('hero');return}if(a==='hrole'){HROLE=v;showHub('hero');return}
+  if(a==='hlusel'){const k=+v,id=META.lineup[k];HLUP_SEL=k;if(id&&CFG.heroes[id]){hubHero=advBase(id);HSK_POP=null}showHub('hero');return}
+  if(a==='hrep'){const k=heroLupSel(advBase(hid));if(k>=0){setLineup(v,k);hubHero=advBase(v);HSK_POP=null;sfx('pick');toast(`${CFG.heroes[heroForm(v)].name}换到 ${k+1} 号上阵位`)}showHub('hero');return}eqMsg='';if(a!=='ibulk')bulkArm='';if(!['enhgo','axrr','axrs','axbg','axbs','axlk','enhluck','enhguard'].includes(a))enhMsg='';
   if(a==='ienhgo'){const it=itemByUid(eqSel);heroSub='enh';enhSel=eqSel;enhSrc=it&&slotOf(hid,it.uid)?'hero':'bag';if(it&&enhSrc==='bag')enhTab=itemKind(it)}
   else if(a==='enhsrc'){enhSrc=v}else if(a==='enhtab'){enhTab=v}else if(a==='enhsel'){enhSel=+v}
   else if(a==='enhgo'){const it=itemByUid(enhSel),t=it?gearTier(it.base):1,r=enhance(enhSel,{luck:enhLuck&&matHas('luck',t)>0,guard:enhGuard&&matHas('guard',t)>0});enhMsg=enhResText(it,r);sfx(r.ok?'build':'clank')}
@@ -69215,7 +69220,7 @@ function itemAct(a,v){const hid=hubHero||META.hero;if(a==='hskl'){hskGo(+v);retu
   else if(a==='itestb'){const it=newItem(null,vpick(dropPool()),'common',{book:true});saveMeta();eqSel=it.uid;bagTab='b'}
   else if(a==='itests'){META.wallet.银币+=1000;saveMeta()}
   showHub('hero')}
-const ITEM_ACTS=['hskp','hskx','hskl','hrole','ienhgo','enhsrc','enhtab','enhsel','enhgo','axrr','axrs','axbg','axbs','axlk','enhluck','enhguard','eqslot','ibag','itsel','ieq','iuneq','ienh','isell','iforge','itest','itestb','itests','ilock','ibulk','ibulkq','ibulkt','ibprof','ibfree','ipage','ipjump'];
+const ITEM_ACTS=['hskp','hskx','hskl','hrole','hlusel','hrep','ienhgo','enhsrc','enhtab','enhsel','enhgo','axrr','axrs','axbg','axbs','axlk','enhluck','enhguard','eqslot','ibag','itsel','ieq','iuneq','ienh','isell','iforge','itest','itestb','itests','ilock','ibulk','ibulkq','ibulkt','ibprof','ibfree','ipage','ipjump'];
 // 仓库的下拉框（品质、部位、排序）
 function heroSheetChange(el){const k=el.dataset.chg;if(!k)return false;if(k==='bq')bagQ=el.value;else if(k==='bpart')bagPart=el.value;else if(k==='bcat')bagCats[bagTab]=el.value;else if(k==='bsort')bagSort=el.value;else return false;bagPage=0;showHub('hero');return true}
 // v0.9.51 英雄属性页的「皮肤」：每款一张卡（立绘、碎片进度、来源）；兑换、使用 / 换回原版
@@ -70860,7 +70865,16 @@ function musicTick(){if(!AC||!MU||AC.state!=='running')return;const now=AC.curre
   if(!MZ.cur||MZ.cur.id!==MZ.want){if(MZ.cur)mzFade(MZ.cur,1.6);MZ.cur=mzStart(MZ.want,now+0.08)}
   const c=MZ.cur;if(c.next<now)c.next=now+0.05;   // 卡过（切后台、掉帧）：从现在接着排，不补
   const s1=mzSched(c.tr,c.B,c.next,c.s,now+0.45);c.next+=(s1-c.s)*c.e;c.s=s1}
-if(typeof document!=='undefined')document.addEventListener('visibilitychange',()=>{if(!AC)return;if(document.hidden)AC.suspend();else if(soundOn)AC.resume()});
+// 0.12.2 修（用户报：切到别的软件、分屏、小窗时背景音乐出现大量噪音）：离开前台（切后台、失去焦点、安卓的 pause）就先把音量压到 0 再暂停整个声音；
+//   回到前台时恢复，并且当前曲子从头淡入重排（不接着用离开前排好的音符）。状态变化先等 0.15 秒再处理，免得分屏时来回抖动、反复暂停 / 恢复
+let AU_BG=false,AU_T=0;
+function audioBgApply(){if(!AC)return;const t=AC.currentTime;
+  if(AU_BG){try{if(MU)MU.gain.setTargetAtTime(0,t,0.01);if(MG)MG.gain.setTargetAtTime(0,t,0.01)}catch(e){}setTimeout(()=>{if(AU_BG&&AC&&AC.state==='running')AC.suspend()},60);return}
+  if(!soundOn)return;const go=()=>{if(MZ.cur){mzFade(MZ.cur,0.05);MZ.cur=null}musicApply()};if(AC.state!=='running')AC.resume().then(go,()=>{});else go()}
+function audioBgSet(bg){bg=!!bg;if(bg===AU_BG)return;AU_BG=bg;clearTimeout(AU_T);AU_T=setTimeout(audioBgApply,150)}
+if(typeof document!=='undefined'){document.addEventListener('visibilitychange',()=>audioBgSet(document.hidden));
+  document.addEventListener('pause',()=>audioBgSet(true));document.addEventListener('resume',()=>audioBgSet(document.hidden));   // Capacitor（安卓）的生命周期事件
+  addEventListener('blur',()=>audioBgSet(true));addEventListener('focus',()=>audioBgSet(document.hidden));addEventListener('pagehide',()=>audioBgSet(true));addEventListener('pageshow',()=>audioBgSet(document.hidden))}
 
 // ---------- 0.11.4 笑面谋主·黄虎的界面（代理 hh；逻辑 heroes/hh_huanghu.js）----------
 // 选卡弹窗：和每波选卡同一个弹窗（状态 'cards'，数字键、选卡确认、返回键都照旧），卡面左上角写「献计三策 / 宏图三略」，不给刷新按钮
