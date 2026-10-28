@@ -12669,8 +12669,8 @@ Object.assign(CFG.skills,{
   alSpice:{name:'香料贸易', passive:true, cd:0, aim:'self', base:5, per:0.4, byStar:{v:[5,6,7,8,10]},
     desc:p=>`被动：每波结算时铜币额外增加 兵营编制数 × (${p.base} + 波数 × ${p.per}) × ${p.v}，不受卡牌加成影响；阵亡后仍然生效`},
   // 贸易天平：战斗结算时手上剩下的铜币换资源；每种资源的结算总量最多 = 基础结算奖励 × cap（用户定 300%，即额外最多 200%）
-  alScale:{name:'贸易天平', passive:true, cd:0, aim:'self', cap:3, byStar:{s:[30,25,20,15,10], t:[300,250,200,150,100]},
-    desc:p=>`被动：战斗结算时，每持有 ${p.s} 铜币额外获得 1 银币和 1 建材，每持有 ${p.t} 铜币额外获得 1 科研点和 1 设计点；每种资源的结算总量不超过基础结算奖励的 ${pc_(p.cap)}；阵亡后仍然生效`},
+  alScale:{name:'贸易天平', passive:true, cd:0, aim:'self', cap:3, byStar:{s:[30,25,20,15,10], t:[300,250,200,150,100], mcMax:[0,0,5,5,5], mcRef:[0,0,0,0,1]},   // mcMax / mcRef：0.12.2（用户定）在场时流浪商人：1★ 道具不涨价，3★ 一次最多买 5 件，5★ 道具页可以「刷新」一批（次数 Claude 定：每个商人 1 次）
+    desc:p=>`被动：战斗结算时，每持有 ${p.s} 铜币额外获得 1 银币和 1 建材，每持有 ${p.t} 铜币额外获得 1 科研点和 1 设计点；每种资源的结算总量不超过基础结算奖励的 ${pc_(p.cap)}；阵亡后仍然生效。在场时，流浪商人的道具不会因购买而涨价`+(p.mcMax?`，一次最多可购买 ${p.mcMax} 件道具`:'')+(p.mcRef?`，道具商店可刷新 ${p.mcRef} 次`:'')},
 });
 // 驼队的两种兵（Claude 定：骆驼枪骑兵参照重骑兵，骆驼弓骑兵参照弓骑兵，生命略高、速度略低）
 Object.assign(CFG.units,{
@@ -12686,9 +12686,9 @@ CFG.heroes.alibaba={name:'阿里巴巴', title:'骆驼商人', quality:'blue', l
   skills:['alCaravan','alSpice','alScale'],
   stars:[null,
     {desc:'驼铃悠悠：1 + 1 名、属性 90%；香料贸易 ×6；贸易天平：每 25 铜币 1 银币 + 1 建材，每 250 铜币 1 科研点 + 1 设计点'},
-    {desc:'驼铃悠悠：2 + 2 名、属性 100%；香料贸易 ×7；贸易天平：每 20 / 200 铜币'},
+    {desc:'驼铃悠悠：2 + 2 名、属性 100%；香料贸易 ×7；贸易天平：每 20 / 200 铜币，流浪商人处一次最多可购买 5 件道具'},
     {desc:'驼铃悠悠：2 + 2 名、属性 110%；香料贸易 ×8；贸易天平：每 15 / 150 铜币'},
-    {q:true, desc:'【质变 · 驼铃满载】驼铃悠悠：3 + 3 名、属性 120%；香料贸易 ×10；贸易天平：每 10 / 100 铜币'}],
+    {q:true, desc:'【质变 · 驼铃满载】驼铃悠悠：3 + 3 名、属性 120%；香料贸易 ×10；贸易天平：每 10 / 100 铜币，流浪商人的道具商店可刷新 1 次'}],
   lore:'走沙海商路的骆驼商人，手里的天平从不缺斤短两。驼铃一响，他的驼队就从沙丘后面赶来。擅长弓、火枪、弩，穿布甲、皮甲。英雄之魄：困难及以上的无尽沙漠首领有概率掉落。',tough:110};   // v0.10.2 数值第一轮
 CFG.heroStats.alibaba={atk:11, ap:4.2, mdef:0, defG:0.1, mdefG:0.06, aspd:0, prec:1};   // v0.10.2 数值第一轮
 Object.assign(CFG.heroes.alibaba,CFG.heroStats.alibaba);   // 生命、防御、物攻、法攻、法防：原始值取射手的平均（数值第一轮按「和同定位平均比」做个人修正，取平均就不会带动别的射手变），实际值（v0.10.2 数值第一轮）写在本文件的 heroStats
@@ -19340,14 +19340,15 @@ Object.assign(CFG.shop.gear.bookSilver,{red:8500, ancient:14500, holy:24500});
 {const M=CFG.maps.obsidianFort,S=CFG.enemies,has=k=>!!S[k];
  M.elites=['obGuardCmd','obCavCmd','obSnipeCmd','obGunCmd'].filter(has);
  M.boss=['obManstein'].filter(has);
- M.minis=['obHaus','obMar','obVog'].filter(has);M.miniEvery=Infinity;M.miniNote='第 20 波三位一起出现';
+ M.minis=['obHaus','obMar','obVog'].filter(has);M.miniEvery=Infinity;M.miniNote='第 20 波起每 25 波三位一起出现(20、45、70……)';
  const E1=(...k)=>k.filter(has),pool=[M.elites.slice()],me={};
  for(const r of[0,25]){
    const add=(n,L)=>{if(L.length)me[n+r]=L};
    add(5,E1('obGuardCmd'));add(10,E1('obCavCmd'));add(15,E1('obSnipeCmd','obGunCmd'));
    if(M.elites.length)for(const n of[11,12,13,14,16,17,18,19,21,22,23,24])me[n+r]=pool;
-   add(20,M.minis.slice())}
+  }
  M.miniElites=me;
+ M.miniRep={from:20, every:25};   // 0.12.2（用户定）三位统帅第 20 + 25×k 波一起出(20、45、70……)：常规第二轮、无尽都算(原来 miniElites 只管常规第一轮，第 45 波和无尽都没有)
  // 荒野表换算（图鉴分组、精英位、借荒野表的地方）
  const sw={zombie:{obGuard:0.6, obBow:0.4}, skeleton:{obGuard:0.4, obBow:0.3, obGun:0.3}, ghoul:{obHCav:0.6, obGuard:0.4}, troll:{obTower:0.5, obMg:0.5},
    skArcher:{obBow:0.5, obGun:0.5}, vampire:{obBalloon:0.5, obFighter:0.5}, skRider:{obRoyalCav:0.6, obHCav:0.4}, skSniper:{obAceSniper:0.5, obAceGun:0.5},
@@ -60182,7 +60183,7 @@ function enterSettle(id){id=id||'wild';const R=stRegion(id);const E=stAccrue(id)
   G.settleId=id;G.stK=E.sk;G.stCapK=E.zlCap||1;G.gold=META.wallet.银币;G.goldSeen=G.gold;G.residents=[];G.stSaveT=0;G.stDirty=false;   // stK：v0.10.0 开拓地士兵按满意度 50%～200%   // stCapK：代理 ZL 加，战争之神的兵营编制
   settleLoad(R);spawnResidents();beginRun('开拓地',`在虚线框里建造民居和生产建筑、布置防线；选中主堡看需求和满意度，入侵时直接用这里的布置迎战`);
   if(dr.n)toast(`开拓地不能再造矿山：拆掉了 ${dr.n} 座，退回 ${dr.g} 银币`)}
-function settleLoad(R){G.stPut=new Set();
+function settleLoad(R){G.stPut=new Set();{const S=mapDef().start;if(S&&S.church&&Array.isArray(R.b))R.b=R.b.filter(e=>!(e.k==='church'&&!(e.inv>0)))}   // 0.12.2 修（用户报）圣堂墓园开拓地：去掉以前每次进来白送、存进布局的教堂（花钱造的 inv > 0 留着）
   for(const i of R.cleared||[])if(clearCostOf(G.terrain[i])){clearTileRaw(i);G.cleared.push(i)}
   {const k=G.base,lv=stEcon(G.settleId||(G.invade&&G.invade.id)||'wild').keep;if(lv>1){k.level=lv;k.maxHp=structMax(k);k.hp=k.maxHp;onKeepLevel(k,true)}}   // v0.10.0 主堡等级按繁荣度（不再花银币升）
   for(const e of R.b){if(!BDEF[e.k])continue;const n=bSize(e.k);let ok=true;
@@ -61434,7 +61435,7 @@ function startKit(){const S=mapDef().start;if(!S&&!HK.kit.length)return;
     for(let x=x0;x<=x1;x++)for(const y of[y0,y1])pw(x,y);
     for(let y=y0+1;y<y1;y++)for(const x of[x0,x1])pw(x,y)}
   if(S&&S.tao)taoKit(put);   // v0.7.0 道观废墟：5 级符墙（塌了一半）+ 张道成（maps/taoruins）
-  if(S&&S.church){for(const[dx,dy]of[[3,3],[-2,3],[3,-2],[-2,-2],[4,1],[-3,1]]){if(put('church',BASE_TX+dx,BASE_TY+dy))break}}
+  if(S&&S.church&&!G.stMap){for(const[dx,dy]of[[3,3],[-2,3],[3,-2],[-2,-2],[4,1],[-3,1]]){if(put('church',BASE_TX+dx,BASE_TY+dy))break}}   // !G.stMap：0.12.2 修（用户报）圣堂墓园开拓地（和入侵战）不再每次进去都送一座教堂
   if(HK.kit.length)hkEach('kit',put);   // v0.10.0 地图自己的开局套件（玄钢山城：废墟的木城墙、王城的玄钢城墙，maps/steelcity）
   G.structVer++;G.flowDirty=true;G.visDirty=true}
 function placeBase(){
@@ -61543,6 +61544,7 @@ function planWave(n){
     else if(!MN&&n%B.eliteEvery===0)for(let k=0;k<1+Math.floor(n/30);k++)elites.push(pick(MD.elites));
     elites.push(...miniAt(n));
     sides=n<=3?1:n<=8?2:n<=15?3:4;dur=20+Math.min(n,20)}
+  if(MN&&MD.miniRep){const P=MD.miniRep;if(n>=P.from&&(n-P.from)%P.every===0)for(const k of MN)if(!elites.includes(k))elites.push(k)}   // miniRep：0.12.2 黑曜要塞三位统帅第 20 + 25×k 波一起出（data/map_obfort_fin）
   const SW=G.story?stWaveOv(n):null;if(SW){if('boss' in SW)boss=SW.boss;if(SW.elites)elites=SW.elites.slice()}   // v0.7.0 剧情：这一波换首领 / 精英（game/story）
   const eliteWave=elites.length+withB.length>0;
   // 组：数量倍率（亡灵卡「数量」、地图 countMul、剧情）乘在组数上；units 照样记一份（精英血量参考、出怪预览用）
@@ -62173,9 +62175,12 @@ const potPrice=id=>Math.round(CFG.merchant.pots[id].price*potX());
 const mc2Cnt=id=>(G&&G.mcN&&G.mcN[id])||0;
 const mc2Lim=id=>{const I=CFG.merchant.items[id];return I.lim||(I.rep?0:1)};
 const mc2Left=id=>{const L=mc2Lim(id);return!L||mc2Cnt(id)<L};
-const mc2Full=C=>(C.nb||0)>=(CFG.merchant.itemMax||99);
+// 0.12.2（用户定）阿里巴巴在场（贸易天平的参数，按星级）：道具不再因购买涨价；mcMax 这一次最多买几件（3★ 起 5 件）；mcRef 道具页「刷新」几次（5★）
+const mcAl=()=>G&&G.heroes?heroPassiveP('alScale'):null;
+const mcItemMax=()=>{const p=mcAl();return Math.max(CFG.merchant.itemMax||99,(p&&p.mcMax)||0)};
+const mc2Full=C=>(C.nb||0)>=mcItemMax();
 function mc2Base(id){const M=CFG.merchant,I=M.items[id],n=mc2Cnt(id);return(I.price>0?I.price+(I.up||0)*n:(I.base!=null?I.base:M.itemBase)+(I.per!=null?I.per:M.itemPer)*G.wave)*(1+(I.step||0)*n)}
-const itemPrice=id=>{const C=G.mc;return Math.round(mc2Base(id)*(1+(CFG.merchant.itemUp||0)*(C&&C.nb||0)))};
+const itemPrice=id=>{const C=G.mc;return Math.round(mc2Base(id)*(1+(mcAl()?0:CFG.merchant.itemUp||0)*(C&&C.nb||0)))};   // mcAl：0.12.2 阿里巴巴在场不涨价
 const mcBought=(C,id)=>!mc2Left(id)||C.bought.includes(id);   // v0.11.0（用户定）幸运卡牌、几种升级（可重复买的）同一个商人只能买一次
 const mc2D={on:false,bp:0,bm:0,up:0,um:0,ip:0,im:0};
 function mc2Sync(){for(const k in mc2D)if(k!=='on')mc2D[k]=0;mc2D.on=false;const N=G&&G.mcN,I=CFG.merchant.items;if(!N)return;
@@ -62195,15 +62200,19 @@ function mcNorm(C){if(C&&!C.bought){C.bought=C.item?[C.item]:[];C.nb=C.item?1:0}
 // —— 来不来：每波打完判一次（开局那个准备阶段不来）；来了概率回到 p0，没来 +step
 function mcRoll(){if(!G||!G.prepEvOn||G.story||G.invade||G.expand!=null)return;const M=CFG.merchant;if(!(G.mcP>0))G.mcP=M.p0;
   if(rng()<G.mcP){G.mcP=M.p0;G.mc=mcMake();MC_HTML=null;toast('流浪商人来了：准备阶段可以去看看(右上角「商人」)');mcPre()}else{G.mcP=Math.min(1,G.mcP+M.step);G.mc=null}}
+// 一批道具：按权重抽 itemN 件(ex 里的不抽)；地图独有的商品排在最前（0.12.2 从 mcMake 拆出来，阿里巴巴 5★ 的「刷新」也用）
+function mcItemsNew(ex){const M=CFG.merchant,items=mc2Pick(Object.keys(M.items).filter(id=>mc2Left(id)&&!M.items[id].map&&!ex.includes(id)),M.itemN);for(const id in M.items)if(M.items[id].map===G.map&&mc2Left(id)&&!(G.mcOwn||[]).includes(id)&&!ex.includes(id))items.unshift(id);return items}
+// 0.12.2（用户定）阿里巴巴 5★：道具页「刷新」——没买的换一批新的，买过的留着显示
+function mcRefresh(){const C=mcNorm(G.mc),p=mcAl();if(!C||G.phase!=='prep'||!p||!(p.mcRef>(C.rf||0)))return;C.rf=(C.rf||0)+1;C.items=C.bought.filter(id=>C.items.includes(id)).concat(mcItemsNew(C.bought));sfx('pick');saveRun();mcOpen()}
 function mcMake(){const M=CFG.merchant,P=M.pots,F=G.seenF||{};
-  const pots=shuffle(Object.keys(P).filter(id=>!P[id].seen||F[P[id].seen])).slice(0,M.potN),items=mc2Pick(Object.keys(M.items).filter(id=>mc2Left(id)&&!M.items[id].map),M.itemN);for(const id in M.items)if(M.items[id].map===G.map&&mc2Left(id)&&!(G.mcOwn||[]).includes(id))items.unshift(id);   // 0.12.1 地图独有的商品（map）：在这张图每次都有、买过就不再出   // v0.10.3（用户定）装置这一局买过就不再出；v0.10.11 限次的买满了不再出，按权重 w 抽（mc2Pick）
+  const pots=shuffle(Object.keys(P).filter(id=>!P[id].seen||F[P[id].seen])).slice(0,M.potN),items=mcItemsNew([]);   // 0.12.1 地图独有的商品（map）：在这张图每次都有、买过就不再出   // v0.10.3（用户定）装置这一局买过就不再出；v0.10.11 限次的买满了不再出，按权重 w 抽（mc2Pick）
   const t=Math.max(0,Math.min(CFG.wares.tiers.length-1,mapTierOf(G.map))),T=CFG.wares.tiers[t],mp=T.maps[G.map],pool=Object.values(T.basic).concat(mp?[mp.core]:[]),lots=[];
   for(let k=0;k<M.wareN;k++){const id=pick(pool),n=pick(M.wareLots),W=CFG.wares.items[id];lots.push({id,n,price:Math.round(W.price*M.wareRate*n*(1+(rng()*2-1)*M.wareVar)),sold:false})}
   return{w:G.wave,pots,items,bought:[],nb:0,lots}}
 // —— 买
 function mcBuy(kind,v){const C=mcNorm(G.mc);if(!C||G.phase!=='prep')return;const M=CFG.merchant;
   if(kind==='pot'){if(!C.pots.includes(v))return;if(mc2PotRem(v)>=M.potMax){toast(`同一种药水最多剩 ${M.potMax} 波`);return}const c=potPrice(v);if(G.gold<c){toast('铜币不够');return}G.gold-=c;if(!G.pots)G.pots={};const last=G.pots[v]>=G.wave+1?G.pots[v]:G.wave;G.pots[v]=Math.min(G.wave+M.potMax,last+M.potWaves);sfx('pick');toast(`${M.pots[v].name}：生效到第 ${G.pots[v]} 波`)}   // msh*：v0.11.1 马歇尔的铜币记账(heroes/marshall：花费 mshPay、进账 mshGain、拆除 / 回收 mshBack)
-  else if(kind==='item'){if(!C.items.includes(v)||mcBought(C,v))return;if(mc2Full(C)){toast(`这一次最多买 ${M.itemMax} 件道具`);return}const c=itemPrice(v);if(G.gold<c){toast('铜币不够');return}G.gold-=c;C.bought.push(v);C.nb=(C.nb||0)+1;if(!G.mcN)G.mcN={};G.mcN[v]=(G.mcN[v]||0)+1;if(!M.items[v].rep)(G.mcOwn||(G.mcOwn=[])).push(v);sfx('pick');if(itemApply(v))return}   // msh*：v0.11.1 马歇尔的铜币记账(heroes/marshall：花费 mshPay、进账 mshGain、拆除 / 回收 mshBack)
+  else if(kind==='item'){if(!C.items.includes(v)||mcBought(C,v))return;if(mc2Full(C)){toast(`这一次最多买 ${mcItemMax()} 件道具`);return}const c=itemPrice(v);if(G.gold<c){toast('铜币不够');return}G.gold-=c;C.bought.push(v);C.nb=(C.nb||0)+1;if(!G.mcN)G.mcN={};G.mcN[v]=(G.mcN[v]||0)+1;if(!M.items[v].rep)(G.mcOwn||(G.mcOwn=[])).push(v);sfx('pick');if(itemApply(v))return}   // msh*：v0.11.1 马歇尔的铜币记账(heroes/marshall：花费 mshPay、进账 mshGain、拆除 / 回收 mshBack)
   else if(kind==='ware'){const L=C.lots[v|0];if(!L||L.sold)return;if(G.gold<L.price){toast('铜币不够');return}G.gold-=L.price;L.sold=true;if(!G.wares)G.wares={};G.wares[L.id]=(G.wares[L.id]||0)+L.n;sfx('pick');toast(`买到 ${CFG.wares.items[L.id].name} ×${L.n}(结算时入库)`)}   // msh*：v0.11.1 马歇尔的铜币记账(heroes/marshall：花费 mshPay、进账 mshGain、拆除 / 回收 mshBack)
   saveRun();mcOpen()}
 function itemApply(v){const V=CFG.merchant.itemV,I=CFG.merchant.items[v];   // 返回 true = 打开了选卡（选完 mcCardBack 回到商人）
@@ -62229,7 +62238,7 @@ let MC_TAB='pot';
 //   1. 分帧：mcAsk 不在选卡那一帧里打开，等两帧（选卡窗口关掉、准备阶段的推进和存档画完）再开（mcDefer）
 //   2. 早渲染、复用：窗口的 HTML 按内容的键缓存（MC_HTML），选卡期间空闲时先拼好（mcPre）；买东西、切页才重拼
 let MC_HTML=null;
-function mcKey(){const C=mcNorm(G.mc);return[MC_TAB,G.wave,C.nb||0,C.bought.join(','),C.lots.map(L=>L.sold?1:0).join(''),JSON.stringify(G.pots||{}),potX().toFixed(2)].join('|')}
+function mcKey(){const C=mcNorm(G.mc);return[MC_TAB,G.wave,C.nb||0,C.bought.join(','),C.items.join(','),C.rf||0,mcAl()?mcAl().mcRef:0,C.lots.map(L=>L.sold?1:0).join(''),JSON.stringify(G.pots||{}),potX().toFixed(2)].join('|')}
 function mcOpen(){const C=G&&G.mc;if(!C||G.phase!=='prep'){hideModal();return}const k=mcKey();if(!MC_HTML||MC_HTML.k!==k||MC_HTML.mc!==C)MC_HTML={k,mc:C,h:mcHTML()};openModal('merchant',MC_HTML.h,null,false,'merchant');mcGold()}
 // 铜币不进缓存的键：打开后只改铜币数字和买不起的按钮
 function mcGold(){const g=Math.floor(G.gold),b=sheet.querySelector('[data-mcg]');if(b)b.textContent=g;for(const el of sheet.querySelectorAll('[data-p]'))el.classList.toggle('poor',+el.dataset.p>G.gold)}
@@ -62246,15 +62255,15 @@ function mcHTML(){const C=mcNorm(G.mc),M=CFG.merchant,W=CFG.wares.items;
   const row=(name,desc,price,act,v,dis,tag)=>`<div class="mcrow"><div><b>${name}</b>${tag?` <span class="meta">${tag}</span>`:''}<br><span class="meta">${desc}</span></div><button type="button" class="px sm${dis?' poor':''}" data-act="mcbuy" data-v="${act}:${v}"${dis?' disabled':` data-p="${price}"`}>${dis?(dis===true?'已售':dis):price+' 铜币'}</button></div>`;   // dis：true = 已售，字符串 = 按钮上写的字
   let body='';
   if(MC_TAB==='pot')body=C.pots.map(id=>{const P=M.pots[id],rm=mc2PotRem(id),on=rm>0?`生效到第 ${G.pots[id]} 波`:'';return row(P.name,P.desc,potPrice(id),'pot',id,rm>=M.potMax?`已满 ${M.potMax} 波`:false,on)}).join('')+`<p class="meta">作用于英雄和士兵；价格按英雄和士兵人数算(现在 ×${potX().toFixed(1)})；同一种可以再买，再加 ${M.potWaves} 波，最多剩 ${M.potMax} 波</p>`;
-  else if(MC_TAB==='item'){const full=mc2Full(C);body=C.items.map(id=>{const I=M.items[id],n=mc2Cnt(id),L=mc2Lim(id),tag=L>1?`已买 ${n}/${L} 次`:!L&&n?`已买 ${n} 次`:'';
-    return mcBought(C,id)?`<div class="mcrow"><div><b>${I.name}</b>${tag?` <span class="meta">${tag}</span>`:''}<br><span class="meta">${I.desc}</span></div><button type="button" class="px sm" disabled>${L>1?'已买满':'已买'}</button></div>`:row(I.name,I.desc,itemPrice(id),'item',id,full?`已买 ${M.itemMax} 件`:false,tag)}).join('')+
-    `<p class="meta">这一次最多买 ${M.itemMax} 件(已买 ${C.nb||0} 件)；每买一件，这次剩下的道具价格 +${Math.round(M.itemUp*100)}%(加算)；效果这一局一直有效；同一种道具这个商人只卖一件；装置和限次数的买满了以后不再出现</p>`}
+  else if(MC_TAB==='item'){const full=mc2Full(C),AL=mcAl();body=C.items.map(id=>{const I=M.items[id],n=mc2Cnt(id),L=mc2Lim(id),tag=L>1?`已买 ${n}/${L} 次`:!L&&n?`已买 ${n} 次`:'';
+    return mcBought(C,id)?`<div class="mcrow"><div><b>${I.name}</b>${tag?` <span class="meta">${tag}</span>`:''}<br><span class="meta">${I.desc}</span></div><button type="button" class="px sm" disabled>${L>1?'已买满':'已买'}</button></div>`:row(I.name,I.desc,itemPrice(id),'item',id,full?`已买 ${mcItemMax()} 件`:false,tag)}).join('')+(AL&&AL.mcRef?`<div class="row2"><button type="button" class="px sm" data-act="mcref" ${(C.rf||0)<AL.mcRef?'':'disabled'}>刷新道具(${AL.mcRef-(C.rf||0)}/${AL.mcRef})</button><span class="meta">阿里巴巴：没买的道具换一批</span></div>`:'')+
+    `<p class="meta">这一次最多买 ${mcItemMax()} 件(已买 ${C.nb||0} 件)；${AL?'阿里巴巴在场：道具不涨价':`每买一件，这次剩下的道具价格 +${Math.round(M.itemUp*100)}%(加算)`}；效果这一局一直有效；同一种道具这个商人只卖一件；装置和限次数的买满了以后不再出现</p>`}
   else body=C.lots.map((L,k)=>{const I=W[L.id];return row(`${wareIco(L.id)}${I.name} ×${L.n}`,`${I.kind==='core'?CFG.maps[I.map].name+'特产':CFG.wares.kinds[I.kind]+' · '+(WM_TN[I.tier]||I.tier+1)+'阶地区'} · 标准价 ${I.price} 银币 / 个`,L.price,'ware',k,L.sold,'')}).join('')+'<p class="meta">买到的物资在结算时入库(打赢打输都算)</p>';
   return`<h2 class="hd">流浪商人</h2><p class="meta">铜币 <b data-mcg="1">${Math.floor(G.gold)}</b> · 开始下一波时商人离开</p><div class="tabs sub">${tabs}</div><div class="mclist">${body}</div><div class="actions"><button type="button" class="px" data-act="mcx" data-v="">离开</button></div>`}
 // v0.10.0（玩家反馈：开着自动下一波，选完卡直接开打，商人白来了）商人来了的准备阶段：选完卡（和誓约、五神法）后自动打开商人；go = 本来要自动开下一波 → 离开商人时再开
 //   每个准备阶段只自动打开一次（G.mcAsk 记 prepId）；返回 true = 打开了，调用的地方不再自己开下一波
 function mcAsk(go){if(!G||!G.mc||G.phase!=='prep'||G.mcAsk===G.prepId)return false;G.mcAsk=G.prepId;G.mcGo=!!go;mcDefer();return true}   // v0.10.1 隔两帧再开（mcDefer）
-function merchantAct(a,v){if(!G)return;if(a==='mcx'){hideModal();if(G.mcGo){G.mcGo=false;if(G.phase==='prep')startWave()}return}if(a==='mctab'){MC_TAB=v;mcOpen();return}if(a==='mcbuy'){const i=v.indexOf(':');mcBuy(v.slice(0,i),v.slice(i+1))}}
+function merchantAct(a,v){if(!G)return;if(a==='mcx'){hideModal();if(G.mcGo){G.mcGo=false;if(G.phase==='prep')startWave()}return}if(a==='mctab'){MC_TAB=v;mcOpen();return}if(a==='mcref'){mcRefresh();return}if(a==='mcbuy'){const i=v.indexOf(':');mcBuy(v.slice(0,i),v.slice(i+1))}}
 // 隐身药水：开打时英雄、士兵隐身 hide 秒（potStU；挨打照常显形，combat.hurtF）
 let POT_ST=0;
 function potHideStart(){const t=G.time+POT.hide;for(const h of G.heroes)if(!h.dead){h.potStU=t;h.stealthed=true}for(const u of G.soldiers)if(!u.dead){u.potStU=t;u.stealthed=true}}
@@ -66928,7 +66937,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=172,GAME_BUILD="763601c+",GAME_BUILT=1793169219933,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=172,GAME_BUILD="a0919d7+",GAME_BUILT=1793195833205,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
