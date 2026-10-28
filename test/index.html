@@ -19472,16 +19472,35 @@ CFG.elite.cfam.trAll=Object.assign({},CFG.elite.cfam.trOpts);for(const t in CFG.
 // ---------- 0.12.2 精英派遣、精英驻军（用户定玩法；具体数值 Claude 暂定，用户说事件以后再补）----------
 // 派遣：没上阵、没驻军、没受伤的精英去大地图上任意开放的地区探索；随时召回，满 1 小时才有奖励（每个整小时结算一次事件）。
 //   槽位 = slots + 科技「特遣行动」等级；每小时 evP 概率遇到一次事件（events 里按 w 抽）
-//   阶段：精英每 10 级一个阶段（1～10 级第 1 阶段……），和地区阶比：地区每高出一个阶段，成功率 −0.1 × (n² − n)、失败率 +同样多；
-//     每低一个阶段反过来（n = 相差的阶段数 + stageOff；stageOff = 1 时差 1 阶就有 0.2，= 0 时差 1 阶不变——用户的公式里「阶数」待确认，先按 +1 算）
-//   先判成功：成功拿奖励；不成功再判失败：失败 = 受伤(一处轻伤)并自动撤回；都没中 = 有惊无险，什么也不发生
+//   阶段：精英每 10 级一个阶段（1～10 级第 1 阶段……），和地区阶比：相差 n 个阶段，成功率、失败率各变化 stageK × n(n + 1) ÷ 2
+//     （用户定：差 1 阶 0.1、2 阶 0.3、3 阶 0.6、同阶 0；地区高出时成功率降、失败率升，精英高出时反过来）
+//   先判成功：成功拿奖励；不成功再判失败：失败按事件的 bad 处理（hurt 受一处轻伤并撤回 / lose 丢掉已有收获的 loseK / none 白跑一趟）；都没中 = 有惊无险
 //   装备、技能加成：成功率 × (1 + gsMax × 装备技能分)，装备技能分 0～1（装备按阶、品质，技能按装上的技能等级）
-//   奖励 × 地区倍率（同上贡的 matK，按地区阶）；经验 × 精英自己的经验加成
-CFG.elite.disp={slots:3, minH:1, maxH:24, evP:0.6, stageLv:10, stageK:0.1, stageOff:1, gsMax:0.5,
+//   奖励（got）× 地区倍率（同上贡的 matK，按地区阶；金币、声望不乘）：银币、科研点、设计点、金币；mat 本地基础材料、mat2 这一阶任意基础材料、
+//     core [概率, 个数] 本地特产、goods [概率, 个数] 这一阶的加工品；exp 精英经验（× 精英的经验加成）；rep 这个地区各家族的声望
+//   文字 okTxt / failTxt / noTxt 可以是数组（随机挑一句）
+//   0.12.2（用户：派遣事件可以多做一些，奇遇、商人、悬赏、找孩子、抓小偷之类）事件和数值 Claude 定
+CFG.elite.disp={slots:3, minH:1, maxH:24, evP:0.6, stageLv:10, stageK:0.1, gsMax:0.5, loseK:0.3,
   events:{
-    raid:{name:'亡灵袭击', w:1, ok:0.5, fail:0.5, okTxt:'击退了袭击的亡灵', failTxt:'被亡灵击伤，撤了回来', noTxt:'遭遇亡灵袭击，有惊无险',
-      got:{银币:300, 科研点:15, 设计点:15, mat:6, core:[0.3,1], exp:120}}},   // mat：这个地区这一阶的基础材料（本地产的随机一种）；core：[概率, 个数] 这个地区的特产
-  };
+    raid:{name:'亡灵袭击', w:3, ok:0.5, fail:0.5, bad:'hurt', okTxt:['击退了袭击的亡灵','守住了营地，清理了附近的亡灵'], failTxt:'被亡灵击伤，撤了回来', noTxt:'遭遇亡灵袭击，有惊无险',
+      got:{银币:300, 科研点:15, 设计点:15, mat:6, core:[0.3,1], exp:120}},
+    merchant:{name:'行商', w:1.5, ok:0.8, fail:0.1, bad:'lose', okTxt:['在路上遇到行商，换到了一批当地货物','帮行商修好了马车，对方送了些货物作为谢礼'], failTxt:'和行商做买卖时被骗，丢了一部分收获', noTxt:'遇到行商，没有谈成买卖',
+      got:{mat2:8, goods:[0.6,2], core:[0.4,1], exp:40}},
+    bounty:{name:'地方悬赏', w:1.5, ok:0.45, fail:0.35, bad:'hurt', okTxt:['完成了当地村落张贴的悬赏，清除了作乱的亡灵头目','护送商队通过险路，领到了悬赏'], failTxt:'追击悬赏目标时受了伤，撤了回来', noTxt:'接了悬赏，但目标逃走了',
+      got:{银币:500, 金币:2, mat:4, exp:180}},
+    child:{name:'寻找走失的孩子', w:1, ok:0.6, fail:0.1, bad:'none', okTxt:['在林子里找到了走失的孩子，送回了村子','从亡灵出没的废屋里救出了孩子，村民十分感激'], failTxt:'找了一夜也没有找到孩子', noTxt:'孩子已经被家人找回',
+      got:{银币:120, rep:30, exp:100}},
+    thief:{name:'抓捕小偷', w:1, ok:0.55, fail:0.2, bad:'lose', okTxt:['抓住了偷窃物资的小偷，追回了失物','在集市上抓到扒手，摊主送来谢礼'], failTxt:'追小偷时自己的行囊被偷了', noTxt:'小偷混进人群跑掉了',
+      got:{银币:250, mat2:4, rep:10, exp:80}},
+    ruins:{name:'奇遇 · 古代遗迹', w:0.6, ok:0.35, fail:0.3, bad:'hurt', okTxt:['发现了一处古代遗迹，带回了大量资料和材料','在遗迹深处找到了一箱古代物资'], failTxt:'遗迹里的机关被触发，受了伤', noTxt:'遗迹入口已经坍塌，没能进去',
+      got:{科研点:80, 设计点:80, core:[1,2], goods:[0.5,3], exp:250}},
+    spring:{name:'奇遇 · 山间清泉', w:0.5, ok:0.7, fail:0, bad:'none', okTxt:'在山间清泉边休整，似乎有所领悟', failTxt:'', noTxt:'泉水已经干涸',
+      got:{exp:400}},
+    hermit:{name:'奇遇 · 隐居老兵', w:0.4, ok:0.5, fail:0, bad:'none', okTxt:'遇到一位隐居的老兵，得到了他的指点', failTxt:'', noTxt:'老兵不愿意见客',
+      got:{exp:600, 金币:1}},
+    patrol:{name:'协助巡逻', w:1.5, ok:0.65, fail:0.25, bad:'hurt', okTxt:['协助当地守军巡逻，清理了几处亡灵巢穴','和守军一起击退了夜袭的亡灵'], failTxt:'巡逻时遭到伏击，受了伤', noTxt:'巡逻了一整夜，没有发现亡灵',
+      got:{银币:200, 设计点:10, mat:3, exp:150}},
+  }};
 // 精英驻军（用户定）：每个开拓地最多 max 名精英；每小时 exp 经验（按开拓地的阶，× 精英经验加成）；入侵战时驻军的精英上场（上阵的精英不带进入侵战）
 CFG.elite.gar={max:3, exp:[20,30,40,55,70,90,110,135,160]};
 // 科技：特遣行动（用户定：每级派遣槽位 +1；三级，价格 Claude 定）
@@ -62338,8 +62357,8 @@ function elDispGs(e,reg){const t=mapTierOf(reg)+1,QK={common:0.6,fine:0.8,rare:1
   const sl=elSlots(e),n=(sl[0]+sl[1])*elSkMax();let k=0;for(const x of(e.ea||[]).concat(e.ep||[]))if(x)k+=Math.min(elSkMax(),e.sk[x]||1);
   return clamp(0.5*g+0.5*(n>0?k/n:0),0,1)}
 // 一种事件对这名精英、这个地区的成功率 / 失败率
-function elDispRate(e,reg,ev){const C=ELD(),E=C.events[ev||'raid'],d=mapTierOf(reg)+1-elStage(e),n=Math.abs(d)+(d?C.stageOff:0),x=C.stageK*(n*n-n)*Math.sign(d);
-  const ok=clamp((E.ok-x)*(1+C.gsMax*elDispGs(e,reg)),0,1),fail=clamp(E.fail+x,0,1);return{ok,fail}}
+function elDispRate(e,reg,ev){const C=ELD(),E=C.events[ev||'raid'],d=mapTierOf(reg)+1-elStage(e),n=Math.abs(d),x=C.stageK*n*(n+1)/2*Math.sign(d);   // 用户定：差 1 阶 0.1、2 阶 0.3、3 阶 0.6
+  const ok=clamp((E.ok-x)*(1+C.gsMax*elDispGs(e,reg)),0,1),fail=E.bad==='none'&&!E.fail?0:clamp(E.fail+x,0,1);return{ok,fail}}
 // 能不能派：返回原因（能派返回 ''）
 function elDispWhyNot(e){if(!e||!elSt().list.includes(e))return'不在队里';if(e.dep)return'上阵中的精英不能派遣';if(elHurt(e))return'有伤病，先治好';const b=elBusy(e);if(b==='disp')return'已经在派遣';if(b==='gar')return'在开拓地驻军';return''}
 function elDispGo(eid,reg){const e=elById(eid),w=elDispWhyNot(e);if(w)return{err:w};if(!CFG.maps[reg]||!mapOpen(reg))return{err:'这个地区还没开放'};
@@ -62347,17 +62366,23 @@ function elDispGo(eid,reg){const e=elById(eid),w=elDispWhyNot(e);if(w)return{err
   const r={id:eid,reg,t:metaNow(),h:0,got:{},exp:0,log:[]};elDispSt().push(r);saveMeta();return{r}}
 // 一次事件的奖励（× 地区倍率）
 function elDispGot(r,E){const reg=r.reg,tier=Math.min(CFG.wares.tiers.length-1,elRegTier(reg)),W=CFG.wares.tiers[tier],M=(W.maps&&W.maps[reg])||{},T=EL().tribute.matK,k=T[Math.min(T.length-1,elRegTier(reg))],G0=E.got,add=(w,n)=>{n=Math.round(n);if(w&&n>0)r.got[w]=(r.got[w]||0)+n};
-  for(const w of['银币','科研点','设计点'])if(G0[w])add(w,G0[w]*k);
-  const L=(M.basic&&M.basic.length?M.basic:Object.values(W.basic||{})).filter(w=>CFG.wares.items[w]);if(G0.mat&&L.length)add(L[Math.floor(Math.random()*L.length)],G0.mat*k);
-  if(G0.core&&M.core&&CFG.wares.items[M.core]&&Math.random()<G0.core[0])add(M.core,G0.core[1]);if(G0.exp)r.exp+=Math.round(G0.exp*k)}
+  const I=CFG.wares.items,pk=a=>a[Math.floor(Math.random()*a.length)];for(const w of['银币','科研点','设计点'])if(G0[w])add(w,G0[w]*k);if(G0.金币)add('金币',G0.金币);
+  const B=Object.values(W.basic||{}).filter(w=>I[w]),L=(M.basic&&M.basic.length?M.basic:B).filter(w=>I[w]),gs=Object.values(W.goods||{}).filter(w=>I[w]);
+  if(G0.mat&&L.length)add(pk(L),G0.mat*k);if(G0.mat2&&B.length)add(pk(B),G0.mat2*k);
+  if(G0.core&&M.core&&I[M.core]&&Math.random()<G0.core[0])add(M.core,G0.core[1]);if(G0.goods&&gs.length&&Math.random()<G0.goods[0])add(pk(gs),G0.goods[1]);
+  if(G0.exp)r.exp+=Math.round(G0.exp*k);
+  if(G0.rep){const BL=elBlood();for(const fid in BL)if(BL[fid].kind==='f'&&!BL[fid].custom&&BL[fid].reg===reg){elRepAdd(fid,G0.rep);r.rep=(r.rep||0)+G0.rep}}}   // 声望当场就加（不等召回）
+const elDispTxt=t=>Array.isArray(t)?t[Math.floor(Math.random()*t.length)]:t;
 // 每个整小时结算一次：evP 概率遇到事件 → 先判成功、再判失败（失败：一处轻伤、撤回，不再遇到事件）
 function elDispTick(){const C=ELD(),now=metaNow(),L=elDispSt();let ch=false;
   for(const r of L){const e=elById(r.id);if(!e||!elSt().list.includes(e)){r.end=1;continue}const H=Math.min(C.maxH,Math.floor((now-r.t)/3.6e6));
     for(let h=r.h+1;h<=H&&!r.end;h++){r.h=h;ch=true;if(Math.random()>=C.evP)continue;const ks=Object.keys(C.events);let tw=0;for(const k of ks)tw+=C.events[k].w;let x=Math.random()*tw,ev=ks[0];for(const k of ks){x-=C.events[k].w;if(x<0){ev=k;break}}
       const E=C.events[ev],R=elDispRate(e,r.reg,ev);
-      if(Math.random()<R.ok){elDispGot(r,E);r.log.push([h,`${E.name}：${E.okTxt}`,'ok'])}
-      else if(Math.random()<R.fail){const parts=Object.keys(EL().injuries).filter(p=>!e.inj[p]);if(parts.length)e.inj[elPick(parts)]={lv:1,t:now};r.end=1;r.log.push([h,`${E.name}：${E.failTxt}`,'fail'])}
-      else r.log.push([h,E.noTxt,'no'])}
+      if(Math.random()<R.ok){elDispGot(r,E);r.log.push([h,`${E.name}：${elDispTxt(E.okTxt)}`,'ok'])}
+      else if(R.fail>0&&Math.random()<R.fail){if(E.bad==='hurt'){const parts=Object.keys(EL().injuries).filter(p=>!e.inj[p]);if(parts.length)e.inj[elPick(parts)]={lv:1,t:now};r.end=1}
+        else if(E.bad==='lose')for(const w in r.got){r.got[w]=Math.floor(r.got[w]*(1-C.loseK));if(r.got[w]<=0)delete r.got[w]}
+        r.log.push([h,`${E.name}：${elDispTxt(E.failTxt)}`,'fail'])}
+      else r.log.push([h,`${E.name}：${elDispTxt(E.noTxt)}`,'no'])}
     if(r.h<H){r.h=H;ch=true}}
   if(elGarTick())ch=true;if(ch)saveMeta();return ch}
 // 召回：满 minH 小时才发奖励；返回 {got, exp, h} 或 {err}
@@ -64881,7 +64906,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2f',GAME_TAG='测试版',GAME_CODE=171,GAME_BUILD="543ec53",GAME_BUILT=1793145377597,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2f',GAME_TAG='测试版',GAME_CODE=171,GAME_BUILD="654b3c3",GAME_BUILT=1793146493326,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -69474,7 +69499,7 @@ const elDurTxt=ms=>{const m=Math.floor(ms/6e4);return m>=60?`${Math.floor(m/60)}
 function elDispHTML(){elDispTick();const C=ELD(),L=elDispSt(),N=elDispSlots(),now=metaNow();
   const card=r=>{const e=elById(r.id);if(!e)return'';const R=elDispRate(e,r.reg),gk=Object.keys(r.got),ms=now-r.t,arm=EL_DRC===r.id,ok=r.h>=C.minH;
     return`<div class="eldc${r.end?' end':''}"><div class="eldh"><img alt="" src="${elIcon(e)}"><div><b>${elName(e)}</b><span class="meta"> Lv${elLv(e)}(第 ${elStage(e)} 阶段) → ${CFG.maps[r.reg].name}(${mapTierOf(r.reg)+1} 阶)</span><br>
-      <span class="meta">${r.end?'<b class="warn">受伤撤回，等你召回</b>':`已出发 ${elDurTxt(ms)}${r.h>=C.maxH?`(满 ${C.maxH} 小时，不再遇到事件)`:''}`} · 成功 ${Math.round(R.ok*100)}% · 失败 ${Math.round(R.fail*100)}%</span></div></div>
+      <span class="meta">${r.end?'<b class="warn">受伤撤回，等你召回</b>':`已出发 ${elDurTxt(ms)}${r.h>=C.maxH?`(满 ${C.maxH} 小时，不再遇到事件)`:''}`} · 战斗成功 ${Math.round(R.ok*100)}% · 失败 ${Math.round(R.fail*100)}%</span></div></div>
       <div class="eldgot">${gk.length?gk.map(w=>`<span title="${rwName(w)}">${rwIco(w,'')}${r.got[w]}</span>`).join(''):'<span class="meta">还没有收获</span>'}${r.exp?`<span>经验 ${r.exp}</span>`:''}</div>
       <div class="eldlog">${r.log.length?r.log.slice().reverse().map(([h,t,c])=>`<div class="${c}">第 ${h} 小时：${t}</div>`).join(''):'<div class="no">还没有遇到事件</div>'}</div>
       <div class="elrow">${elBtn('elxdrc',r.id,ok?'召回':arm?'确认召回(没有奖励)':'召回',{on:ok||arm,ti:ok?'召回并领取收获':`不满 ${C.minH} 小时，召回拿不到奖励`})}${ok?'':`<span class="meta">满 ${C.minH} 小时才有奖励</span>`}</div></div>`};
@@ -69487,12 +69512,13 @@ function elDispPopHTML(rest){if(!rest){const m=elSt();const rows=m.list.map(e=>{
   const e=elById(+rest);if(!e)return null;
   const ms=Object.keys(CFG.maps).filter(k=>mapOpen(k)&&CFG.worldMap&&CFG.worldMap.regions[k]).sort((a,b)=>mapTierOf(a)-mapTierOf(b));let last=-1,rows='';
   for(const k of ms){const t=mapTierOf(k);if(t!==last){last=t;rows+=`<h5 class="sh">${(CFG.mapPages[t]||{name:(t+1)+' 阶地区'}).name}</h5>`}const R=elDispRate(e,k);
-    rows+=`<span><b>${CFG.maps[k].name}</b></span><span class="meta">成功 ${Math.round(R.ok*100)}% · 失败 ${Math.round(R.fail*100)}%</span>${elBtn('elxdgo',e.id+':'+k,'派遣',{on:true})}`}
+    rows+=`<span><b>${CFG.maps[k].name}</b></span><span class="meta">战斗成功 ${Math.round(R.ok*100)}% · 失败 ${Math.round(R.fail*100)}%</span>${elBtn('elxdgo',e.id+':'+k,'派遣',{on:true})}`}
   return[`派遣 ${elName(e)}：挑地区`,`<p class="meta">Lv${elLv(e)}，第 ${elStage(e)} 阶段；装备、技能分 ${Math.round(elDispGs(e,ms[0]||'wild')*100)}(按一阶算，越高成功率加得越多)</p><div class="eldreg">${rows}</div>`,'dsp:']}
-HELP['el-disp']=()=>{const C=ELD(),E=C.events.raid;return{t:'精英派遣',b:hpL(['没上阵、没受伤、没驻军的精英可以派去大地图上任意开放的地区探索；随时可以召回，满 '+C.minH+' 小时才拿得到收获',
-  `每个整小时有 ${Math.round(C.evP*100)}% 概率遇到一次事件：先判成功(拿奖励)，不成功再判失败(受轻伤并撤回)，都没中就是有惊无险；最多算 ${C.maxH} 小时`,
-  `精英每 ${C.stageLv} 级一个阶段，和地区的阶比：地区高出的阶段越多，成功率越低、失败率越高；精英高出时反过来`,`装备越好(按装备阶和品质)、装上的技能等级越高，成功率额外提高，至多 +${Math.round(C.gsMax*100)}%(按原成功率算)`,
-  `「${E.name}」：成功率 ${Math.round(E.ok*100)}%、失败率 ${Math.round(E.fail*100)}%；成功给银币、科研点、设计点、这个地区的材料、可能有特产、精英经验，按地区阶放大`,`派遣位：${C.slots} 个，科技「特遣行动」每级 +1`])}};
+HELP['el-disp']=()=>{const C=ELD(),EV=Object.values(C.events),tw=EV.reduce((a,E)=>a+E.w,0);return{t:'精英派遣',b:hpL(['没上阵、没受伤、没驻军的精英可以派去大地图上任意开放的地区探索；随时可以召回，满 '+C.minH+' 小时才拿得到收获',
+  `每个整小时有 ${Math.round(C.evP*100)}% 概率遇到一次事件：先判成功(拿奖励)，不成功再判失败，都没中就是有惊无险；最多算 ${C.maxH} 小时`,
+  `精英每 ${C.stageLv} 级一个阶段，和地区的阶比：差 1 个阶段成功率、失败率各变化 10%，差 2 个 30%，差 3 个 60%(地区高出时成功率降、失败率升，精英高出时反过来)`,`装备越好(按装备阶和品质)、装上的技能等级越高，成功率额外提高，至多 +${Math.round(C.gsMax*100)}%(按原成功率算)`,
+  '事件(括号里是基础成功率 / 失败率)：'+EV.map(E=>`${E.name}(${Math.round(E.ok*100)}% / ${Math.round(E.fail*100)}%${E.bad==='hurt'?'，失败受伤撤回':E.bad==='lose'?`，失败丢掉 ${Math.round(C.loseK*100)}% 已有收获`:''}；出现 ${Math.round(E.w/tw*100)}%)`).join('、'),
+  '奖励按地区阶放大：银币、科研点、设计点、金币、地区材料、特产、加工品、精英经验；找回孩子、抓到小偷还会提高这个地区家族的声望',`派遣位：${C.slots} 个，科技「特遣行动」每级 +1`])}};
 // 按钮：elxdgo 派遣（v = 精英:地区）；elxdrc 召回
 function elDispAct(a,v){if(a==='elxdgo'){const i=String(v).indexOf(':'),r=elDispGo(+v.slice(0,i),v.slice(i+1));if(r.err)toast(r.err);else{EL_POP=null;EL_SUB='disp';toast(`${elName(elById(r.r.id))}出发去${CFG.maps[r.r.reg].name}`)}return true}
   if(a==='elxdrc'){const id=+v,r0=elDispOf(id);if(!r0)return true;if(r0.h<ELD().minH&&EL_DRC!==id){EL_DRC=id;return true}EL_DRC=null;const e=elById(id),r=elDispRecall(id);if(r.err){toast(r.err);return true}
