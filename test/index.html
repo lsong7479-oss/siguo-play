@@ -50725,6 +50725,14 @@ function explode(x,y,rad,dmg,o0,w,tid,skipId){const o=Object.assign({},o0||{},{b
 function addZone(z){z.t=z.t||0;if(z.ds===undefined)z.ds=DS_CUR;if(!z.skd){const d=FX_TINT||hSkD(z.h||z.hk||(z.o&&z.o.hk));if(d)z.skd=d}G.zones.push(z)}   // skd：v0.11.2 皮肤色调（engine/vfx；放技能时的，或者区域主人英雄的皮肤）   // ds：v0.8.13 数据详情的归属
 // v0.5.4 火坑叠加（用户定）：每 0.5 秒统一结算一次——同一个亡灵脚下的火坑按每秒伤害从高到低排，前 4 个分别算 100% / 60% / 30% / 10%（CFG.combat.pitStack），其余不算
 const PITS=new Map();let pitTk=0;
+let PIT_Z=null;const pfPitBurn=j=>{if(!E.air[j])burnE(j,PIT_Z.dps,PIT_Z.bt*ENV.burn)},pfPitAdd=j=>{if(!E.air[j])pitAdd(j,PIT_Z.dps)};   // v0.9.0（用户定）飞行的亡灵不受地面火坑、陷阱影响
+// P4 加（0.12.2g 性能，用户报黑曜要塞 48 波：809 个区域技能 × 644 名士兵，火坑结算那一帧 14 毫秒）：噩梦及以上火坑也烧守军（z.ff），原来每个火坑把全部守军扫一遍（火坑数 × 守军数次 hypot）。
+//   现在结算帧第一个火坑烧守军时，按此刻的位置把守军分进 PFG_C（64 像素）的格子（做法同 engine/enemy.buildFriendGrid，但单独一份：那份是帧开头建的，这里要用现在的位置），
+//   每个火坑只看自己半径再加 PFG_M（32 像素）范围里的格子，判断（不在墙上、椭圆距离）和烧的顺序（火坑按顺序、每名守军按火坑顺序）都和原来一样。
+//   唯一的差别：同一帧里排在这个火坑前面的区域效果把某名守军瞬移了 32 像素以上又正好落进火坑，这次结算会漏掉它、下次（0.5 秒后）才烧——走路、击退、推挤一帧都远不到 32 像素，只有闪现那种瞬移碰得到
+const PFG={w:0,h:0,L:[],n:new Int32Array(0),at:-1},PFG_C=64,PFG_M=32;
+function pitFriendGrid(){const w=Math.ceil(MW/PFG_C),h=Math.ceil(MH/PFG_C);if(w!==PFG.w||h!==PFG.h){PFG.w=w;PFG.h=h;PFG.L=Array.from({length:w*h},()=>[]);PFG.n=new Int32Array(w*h)}else PFG.n.fill(0);
+  for(let i=0,a=G.friends;i<a.length;i++){const u=a[i],cx=clamp((u.x/PFG_C)|0,0,w-1),cy=clamp((u.y/PFG_C)|0,0,h-1),q=cy*w+cx,n=PFG.n[q];PFG.L[q][n]=u;PFG.n[q]=n+1}PFG.at=G.tick}
 function pitAdd(j,d){const a=PITS.get(j);if(a)a.push(d);else PITS.set(j,[d])}
 function pitResolve(){const W=CFG.combat.pitStack;for(const[j,a]of PITS){if(!E.alive[j])continue;a.sort((x,y)=>y-x);let s=0;for(let k=0;k<W.length&&k<a.length;k++)s+=a[k]*W[k];if(s>0)dealE(j,s*0.5,BURN_HIT)}PITS.clear()}
 function updateZones(dt){
@@ -50779,8 +50787,9 @@ function zoneTick_hacid(z,dt){   // 绝命毒师的酸液池：伤害、叠毒�
       if(z.t>=z.dur)z.dead=true}
 zoneDef('hacid',{tick:zoneTick_hacid});
 function zoneTick_fire(z,dt){   // 火坑：烧亡灵；ff = 也烧守军（噩梦及以上我方火焰、雷暴落雷）
-      if(PIT_NOW){disbandNear(z.x,z.y,z.r);if(z.bt)eQuery(z.x,z.y,z.r,j=>{if(!E.air[j])burnE(j,z.dps,z.bt*ENV.burn)});else eQuery(z.x,z.y,z.r,j=>{if(!E.air[j])pitAdd(j,z.dps)});   // v0.9.0（用户定）飞行的亡灵不受地面火坑、陷阱影响
-        if(z.ff)for(let i_10=0,a_10=G.friends;i_10<a_10.length;i_10++){const u=a_10[i_10];if(!u.layer&&Math.hypot(u.x-z.x,(u.y-z.y)*1.3)<z.r)burnFriend(u,z.dps*0.6,1.2)}}
+      if(PIT_NOW){disbandNear(z.x,z.y,z.r);PIT_Z=z;if(z.bt)eQuery(z.x,z.y,z.r,pfPitBurn);else eQuery(z.x,z.y,z.r,pfPitAdd);   // pfPitBurn / pfPitAdd：P4 改（0.12.2g 性能）固定回调（原来每个火坑每次结算新建两个闭包）   // v0.9.0（用户定）飞行的亡灵不受地面火坑、陷阱影响
+        if(z.ff){if(PFG.at!==G.tick)pitFriendGrid();const R=z.r+PFG_M,x0=Math.max(0,((z.x-R)/PFG_C)|0),x1=Math.min(PFG.w-1,((z.x+R)/PFG_C)|0),y0=Math.max(0,((z.y-R)/PFG_C)|0),y1=Math.min(PFG.h-1,((z.y+R)/PFG_C)|0);   // P4 改：只看火坑周围几格的守军（见 pitFriendGrid）；判断、烧的顺序和原来一样
+          for(let cy=y0;cy<=y1;cy++)for(let cx=x0;cx<=x1;cx++){const q=cy*PFG.w+cx,L=PFG.L[q],n=PFG.n[q];for(let k=0;k<n;k++){const u=L[k];if(!u.layer&&Math.hypot(u.x-z.x,(u.y-z.y)*1.3)<z.r)burnFriend(u,z.dps*0.6,1.2)}}}}
       if(inViewPt(z.x,z.y)&&chance(dt*6)){const a=vr(0,6.28),r=Math.sqrt(Math.random())*z.r;pp(z.x+Math.cos(a)*r,z.y+Math.sin(a)*r*0.6,2,vr(-4,4),vr(-3,1),vr(8,18),0,vr(0.4,0.8),vpick(['#ff9a3c','#ffd25a','#c4483a','#6e6a62']),1,1,1)}
       if(z.t>=z.dur)z.dead=true}
 zoneDef('fire',{tick:zoneTick_fire});
@@ -66961,7 +66970,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=172,GAME_BUILD="a5ccd6b",GAME_BUILT=1793201719262,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=172,GAME_BUILD="569575b",GAME_BUILT=1793203778453,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
