@@ -21183,16 +21183,35 @@ const WALL_PAL={
     taoWall:[null,{top:'#76786e',hi:'#969888',face:'#50524a',lo:'#5e6056',ln:'#24251f'},{top:'#6e7470',hi:'#8e9690',face:'#4a504c',lo:'#585e5a',ln:'#202422'},{top:'#646c6c',hi:'#86908e',face:'#424a4a',lo:'#505858',ln:'#1a2020'},{top:'#5a6266',hi:'#7c868c',face:'#3a4246',lo:'#465054',ln:'#14181c'},{top:'#545a64',hi:'#7a8292',face:'#363c48',lo:'#424a56',ln:'#10141a'}],   // v0.7.3 符墙：青砖
     holyWall:[null,{top:'#d8cfb6',hi:'#f4efe0',face:'#a89c80',lo:'#bfb498',ln:'#5a4e36'},{top:'#e6e0d0',hi:'#fffbef',face:'#b0a890',lo:'#cbc3ac',ln:'#5a5040'},{top:'#ece8dc',hi:'#ffffff',face:'#b8b0a0',lo:'#d6d0c0',ln:'#5c5444'},{top:'#f2eee4',hi:'#ffffff',face:'#c0b69e',lo:'#ddd6c4',ln:'#6a5a3a'},{top:'#fbf6e8',hi:'#ffffff',face:'#cdbf98',lo:'#e8dfc6',ln:'#7a6230'}],
 };
+// —— P4 加（0.12.2g）：士兵 / 亡灵的图延后画（见 buildSprites 里的说明）——
+//   SPR_GEN：按种类画图的函数（u 兵种 / e 亡灵下标 / a 亡灵换图）；SPR_Q：还没画的 [表, 键, 表, 键…]；SPR_DONE：全画完并排好图集了；SPR_BULK：成批画的时候不逐个往图集动态区补
+const SPR_GEN={},SPR_Q=[];let SPR_DONE=false,SPR_BULK=false;
+function sprLazy(obj,key,kind,arg){SPR_Q.push(obj,key);Object.defineProperty(obj,key,{configurable:true,enumerable:true,
+  get(){const n0=REGS.length,v=SPR_GEN[kind](arg);Object.defineProperty(obj,key,{value:v,writable:true,configurable:true,enumerable:true});
+    if(!SPR_BULK&&ATLAS.canvas)for(let j=n0;j<REGS.length;j++){const r=REGS[j];if(r.dynAt)continue;r.dynAt=true;if(!atlasAdd(r)){spriteFinish();break}}   // 图集已经排好：补进动态区；放不下就把剩下的一口气画完、整张重排
+    return v},
+  set(v){Object.defineProperty(obj,key,{value:v,writable:true,configurable:true,enumerable:true})}})}
+function spriteBgStep(ms){if(SPR_DONE)return;const t0=performance.now();SPR_BULK=true;try{while(SPR_Q.length&&performance.now()-t0<ms){const key=SPR_Q.pop(),obj=SPR_Q.pop();obj[key]}}finally{SPR_BULK=false}if(!SPR_Q.length)spriteDone()}   // 每帧在后台画几毫秒（ui/main.frame，不在局里时）
+// 浏览器空闲时（requestIdleCallback，每次给到几十毫秒）也画：标题画面没在动的时候几秒就能画完；没有 requestIdleCallback 的环境只靠 ui/main.frame 每帧抽几毫秒
+function spriteBgIdle(){if(SPR_DONE||typeof requestIdleCallback!=='function')return;requestIdleCallback(d=>{if(!(typeof G!=='undefined'&&G&&running))spriteBgStep(Math.max(2,d.timeRemaining()-1));spriteBgIdle()},{timeout:200})}
+function spriteFinish(){if(SPR_DONE)return;SPR_BULK=true;try{while(SPR_Q.length){const key=SPR_Q.pop(),obj=SPR_Q.pop();obj[key]}}finally{SPR_BULK=false}spriteDone()}   // 开一局前把剩下的当场画完（ui/menus.beginRun）
+function spriteDone(){SPR_DONE=true;SPR.units=Object.fromEntries(Object.entries(SPR.units));SPR.enemies=SPR.enemies.slice();SPR.enemyAlt=SPR.enemyAlt.slice();atlasRepack()}   // 换成普通的表（读到的都已经是画好的）；整张重排图集
+const spriteProgress=()=>SPR_DONE?1:1-SPR_Q.length/2/Math.max(1,UTYPES.length+HB_JY_SPR.length+ETYPES.length*1.2);   // 大约画到几成（标题画面角落显示用）
 function buildSprites(){
   SPR.heroes=hdHeroSprites();SPR.hero=SPR.heroes.arthur;SPR.shields=hdShieldSprites();if(SPR.shields)for(const k in CFG.weapons){const w=CFG.weapons[k];if(w.art&&w.type==='shield'&&SPR.shields[w.art])SPR.shields[k]=SPR.shields[w.art]}   // v0.5.5 英雄全部高清重绘（art/hd_heroes，按立绘画）；原来的 16×16 画法（HERO_BODY、sanHeroSprites……）不再登记
  SPR.cacti=templeCacti();SPR.tmpSeg=[reg(scaleCanvas(tDevSeg(0),1.5)),reg(scaleCanvas(tDevSeg(1),1.5))];   // v0.5.0 骆驼骑士、沙漠吞噬者的身体（art/px_temple）
   // v0.5.5 士兵、亡灵的高清重绘：HD_UNIT[兵种] / HD_ENEMY[亡灵] / HD_ENEMY_ALT[亡灵] 有登记就用（fr => canvas，hdFig 画，宽高 = 原图 ×2），没有就用原来的 16×16 画法
   const hd2=f=>(f.nf>2?[0,1,2]:[0,1]).map(q=>reg(f(q)));   // nf：v0.11.x 第 3 帧 = 攻击的样子（drawUnitSpr 在 lunge 时用；德拉贡首领，代理 A1 加）
-  for(const k of UTYPES){if(CFG.units[k].xe)continue;SPR.units[k]=hd2(HD_UNIT[k])}
-  for(const k of HB_JY_SPR)SPR.units[k]=hd2(HD_UNIT[k]);   // HB 加：锦衣卫 / 锦衣亲卫的样子（不是兵种，art/hd_dilong）
-  ETYPES.forEach((k,i)=>{const xf=CFG.enemies[k].xf;if(xf){SPR.enemies[i]=SPR.units[xf];return}SPR.enemies[i]=hd2(HD_ENEMY[k])});
-  for(const k of UTYPES){const x=CFG.units[k].xe;if(x)SPR.units[k]=SPR.enemies[EIDX[x]]}   // v0.8.6 阵营：换阵营用的兵种 / 亡灵种类（data/faction）用原来的图
-  SPR.enemyAlt=[];ETYPES.forEach((k,i)=>{if(HD_ENEMY_ALT[k])SPR.enemyAlt[i]=hd2(HD_ENEMY_ALT[k])});   // v0.5.1 换一套图（E.alt：企鹅趴着滑、不死骨散架）
+  // P4 改（0.12.2g，用户要「开屏别长卡，闲时后台慢慢加载」）：士兵、亡灵的图（430 + 835 种，启动时画要 3 秒多，手机更久）不在这里画了——
+  //   先登记成「第一次读到再画」的属性（sprLazy，读起来和原来一样是 [帧0, 帧1(, 帧2)]），进标题画面后 ui/main.frame 每帧抽几毫秒在后台慢慢画（spriteBgStep），
+  //   全画完整张重排图集（spriteDone → atlasRepack）；开一局（ui/menus.beginRun）时还没画完就当场把剩下的画完（spriteFinish）。英雄、建筑、界面的图照旧启动时画（标题 / 据点马上要用）
+  SPR_GEN.u=k=>{const c=CFG.units[k],x=c&&c.xe;return x?SPR.enemies[EIDX[x]]:hd2(HD_UNIT[k])};   // xe：v0.8.6 阵营：换阵营用的兵种用亡灵的图（data/faction）
+  SPR_GEN.e=i=>{const k=ETYPES[i],xf=CFG.enemies[k].xf;return xf?SPR.units[xf]:hd2(HD_ENEMY[k])};
+  SPR_GEN.a=i=>hd2(HD_ENEMY_ALT[ETYPES[i]]);
+  for(const k of UTYPES)sprLazy(SPR.units,k,'u',k);
+  for(const k of HB_JY_SPR)sprLazy(SPR.units,k,'u',k);   // HB 加：锦衣卫 / 锦衣亲卫的样子（不是兵种，art/hd_dilong）
+  ETYPES.forEach((k,i)=>sprLazy(SPR.enemies,i,'e',i));
+  SPR.enemyAlt=[];ETYPES.forEach((k,i)=>{if(HD_ENEMY_ALT[k])sprLazy(SPR.enemyAlt,i,'a',i)});   // v0.5.1 换一套图（E.alt：企鹅趴着滑、不死骨散架）
   SPR.skull=reg(fromRows(['.kkkkk.','koooook','kkoookk','koooook','.kokok.','..kkk..']));
   SPR.white=reg(paint(4,4,P=>P.r(0,0,4,4,'#ffffff')));
   for(const ch in DIGITS){const g=DIGITS[ch];SPR.dig[ch]=reg(paint(4,6,P=>{for(let y=0;y<5;y++)for(let x=0;x<3;x++)if(g[y][x]==='1')P.p(x+1,y+1,'#16131b');for(let y=0;y<5;y++)for(let x=0;x<3;x++)if(g[y][x]==='1')P.p(x,y,'#f3d47c')}))}
@@ -21274,6 +21293,8 @@ function packAtlas(){
   for(const r of REGS){r.u0=r.x/AW;r.v0=r.y/AH;r.u1=(r.x+r.pw)/AW;r.v1=(r.y+r.ph)/AH}
   ATLAS.wu=(SPR.white.x+2)/AW;ATLAS.wv=(SPR.white.y+2)/AH;
 }
+// P4 加（0.12.2g）：图集整张重排——后台把士兵 / 亡灵的图画完以后（spriteDone）：按高度重新排一遍（和启动时一样）、整张重传给画面；动态区（手持武器、精英样貌）清掉重来（art/hd_weapons.atlasDynReset）
+function atlasRepack(){packAtlas();for(let i=0;i<REGS.length;i++)REGS[i].dynAt=false;atlasDynReset(true)}
 // —— 装备图标（16×16，界面里放大 3 倍显示）——
 const IICON={};
 function itemIcon(it){const kind=it.book?'b':gearKindOf(it.base),key=kind+it.base;if(IICON[key])return IICON[key];   // v0.5.3 重绘：32×32、每件单独设计（art/icons）
@@ -26881,8 +26902,9 @@ function atlasAdd(r){if(WDYN.y0<0){let my=0;for(const q of REGS)if(q.y>=0)my=Mat
   r.x=WDYN.x;r.y=WDYN.y;WDYN.x+=r.pw+2;WDYN.h=Math.max(WDYN.h,r.ph);
   ATLAS.canvas.getContext('2d').drawImage(r.c,r.x,r.y);r.u0=r.x/AW;r.v0=r.y/AH;r.u1=(r.x+r.pw)/AW;r.v1=(r.y+r.ph)/AH;
   if(R&&R.sub)R.sub(r);return true}
-function atlasDynReset(){const y0=WDYN.y0;if(y0<0)return;ATLAS.canvas.getContext('2d').clearRect(0,y0,AW,AH-y0);if(ATLAS.white)ATLAS.white.getContext('2d').clearRect(0,y0,AW,AH-y0);
-  if(R&&R.reup)R.reup();WDYN.x=0;WDYN.y=y0;WDYN.h=0;for(const e of WPC.values())e.spr=[];if(typeof elLkReAdd==='function')elLkReAdd()}   // 0.12.0 精英样貌小人补回图集
+function atlasDynReset(repacked){const y0=WDYN.y0;if(y0<0&&!repacked)return;   // repacked：P4 加，整张刚重排过（art/art.atlasRepack）：画布是新的，不用清，动态区的起点下次 atlasAdd 时按新图集重算
+  if(!repacked){ATLAS.canvas.getContext('2d').clearRect(0,y0,AW,AH-y0);if(ATLAS.white)ATLAS.white.getContext('2d').clearRect(0,y0,AW,AH-y0)}
+  if(R&&R.reup)R.reup();WDYN.y0=repacked?-1:y0;WDYN.x=0;WDYN.y=repacked?0:y0;WDYN.h=0;for(const e of WPC.values())e.spr=[];if(typeof elLkReAdd==='function')elLkReAdd()}   // 0.12.0 精英样貌小人补回图集
 const WPC=new Map();
 function wpGet(des,s){const key=des+'@'+s;let e=WPC.get(key);
   if(!e){const fn=ICW[des]||WPG[des]||(CFG.weapons[des]&&CFG.weapons[des].type!=='fist'?(S=>icDefault(S,des)):null);e={rec:fn?wpRec(fn):null,s,spr:[]};WPC.set(key,e)}
@@ -36125,9 +36147,10 @@ function makeGL(canvas){
   };
 }
 function make2D(canvas){
-  const ctx=canvas.getContext('2d'),A=ATLAS.canvas;
-  if(!ATLAS.white){ATLAS.white=canvasOf(AW,AH);const w=ATLAS.white.getContext('2d');w.drawImage(A,0,0);w.globalCompositeOperation='source-in';w.fillStyle='#fff';w.fillRect(0,0,AW,AH)}
-  const WA=ATLAS.white;let draws=0,clipped=false;
+  const ctx=canvas.getContext('2d');let A=ATLAS.canvas,WA=null;   // A / WA：P4 改（0.12.2g），图集整张重排后换成新画布（reup）
+  const white=()=>{ATLAS.white=canvasOf(AW,AH);const w=ATLAS.white.getContext('2d');w.drawImage(A,0,0);w.globalCompositeOperation='source-in';w.fillStyle='#fff';w.fillRect(0,0,AW,AH);WA=ATLAS.white};
+  if(!ATLAS.white)white();else WA=ATLAS.white;
+  let draws=0,clipped=false;
   return{mode:'Canvas2D',
     begin(w,h,c){ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;ctx.globalAlpha=1;ctx.fillStyle=c.css;ctx.fillRect(0,0,w,h);draws=0},
     img(r,x,y,w,h,flip,a,f){ctx.globalAlpha=a;const s=f>0.5?WA:A;draws++;
@@ -36139,7 +36162,8 @@ function make2D(canvas){
     end(){if(clipped){ctx.restore();clipped=false}ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over'},updateBG(){},
     blend(add){ctx.globalCompositeOperation=add?'lighter':'source-over'},stats(){return{draws,quads:draws}},
     bg(x,y,w,h){if(!BGC)return;ctx.globalAlpha=1;ctx.drawImage(BGC,x,y,w,h);draws++},
-    sub(r){const w=WA.getContext('2d');w.drawImage(r.c,r.x,r.y);w.globalCompositeOperation='source-atop';w.fillStyle='#fff';w.fillRect(r.x,r.y,r.pw,r.ph);w.globalCompositeOperation='source-over'},reup(){},
+    sub(r){const w=WA.getContext('2d');w.drawImage(r.c,r.x,r.y);w.globalCompositeOperation='source-atop';w.fillStyle='#fff';w.fillRect(r.x,r.y,r.pw,r.ph);w.globalCompositeOperation='source-over'},
+    reup(){A=ATLAS.canvas;white()},   // P4 改：图集整张重排 / 重传（art/art.atlasRepack、hd_weapons.atlasDynReset）
   };
 }
 function initRenderer(force2D){R=(!force2D&&makeGL(cv))||make2D(cv)}
@@ -66937,7 +66961,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=172,GAME_BUILD="a0919d7+",GAME_BUILT=1793195833205,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.2g',GAME_TAG='测试版',GAME_CODE=172,GAME_BUILD="a5ccd6b",GAME_BUILT=1793201719262,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -67604,7 +67628,7 @@ function showMenu(){
       <button class="px" type="button" data-act="exit">退出游戏</button>
     </div>
     <p class="ts-foot">${walletLine()}</p>${saveNotice?`<p class="newmap">${saveNotice}</p>`:''}${metaLock?`<p class="newmap warn">${metaLockText()}</p>`:''}${helpHTML()}${formulaHTML()}
-    <p class="ts-free">游戏免费发布，抵制倒卖行为<br><span>QQ 游戏交流群：1126694396</span></p><span class="ts-ver">v${GAME_VER} ${GAME_TAG} · ${GAME_BUILD} · 存档 ${PROFILE}</span></div>`,sv?'[data-act=continue]':'[data-act=start]',false,'menu');
+    <p class="ts-free">游戏免费发布，抵制倒卖行为<br><span>QQ 游戏交流群：1126694396</span></p><span class="ts-ver">v${GAME_VER} ${GAME_TAG} · ${GAME_BUILD} · 存档 ${PROFILE}</span><span class="ts-ver" id="sprBg"></span></div>`,sv?'[data-act=continue]':'[data-act=start]',false,'menu');
 }
 // v0.5.5（用户定）「继续战斗」：存档多于一个时点开再弹出可滑动的列表，不再在开屏 / 出征页一条条铺开
 const saveLine=sv=>`${slotName(sv)} · ${CFG.heroes[sv.heroSpec.id].name} · 已击退 ${sv.wave} 波`;
@@ -68274,7 +68298,7 @@ function onSheetClick(e){
   else if(a==='devres'&&SET.devOn){dbgResAll(1000);toast('测试：所有地区资源 +1000');showSettings()}
   else if(a==='devstar'&&SET.devOn){const el=$('#devStar'),X=clamp(Math.round(+(el&&el.value)||1),1,5);let n=0;for(const id in META.heroes){const H=META.heroes[id];if(H&&H.owned){H.star=X;n++}}saveMeta();toast(`测试：${n} 位英雄设为 ${X}★`);showSettings()}   // v0.11.1a（用户定）调试：已拥有英雄一键星级
 }
-function beginRun(msg,sub){hideModal();running=true;paused=false;hudEl.hidden=false;speedMul=1;refreshSpeed();resize();refreshCtl();refreshPhaseUI();musicMode('prep');
+function beginRun(msg,sub){spriteFinish();hideModal();running=true;paused=false;hudEl.hidden=false;speedMul=1;refreshSpeed();resize();refreshCtl();refreshPhaseUI();musicMode('prep');   // spriteFinish：P4 加（0.12.2g），开一局前把后台还没画完的士兵 / 亡灵图当场画完（art/art 的 sprLazy / spriteBgStep）
   banner(msg||`${G.hero.d.name}，守住主堡`,sub||(msg?'':`先修筑防线，准备好后点「开始第 ${G.wave+1} 波」`));dragonGreedAsk();if(modal.hidden&&!hhAsk('start')&&!chAsk()&&!oathAsk())zsLawAsk();if(G.banRew)toast('莉莲、冷在阵中：这一局不计入通关记录，结算奖励减半')}   // v0.7.0 德拉贡 5★：开局问拿不拿龙之贪婪   // hhAsk：0.11.4 代理hh 加，黄虎「宏图三略」
 const qCls=q=>q==='curse'?5:q==='myth'?6:q==='abyss'?7:q==='saint'?8:QRANK(q);
 function pickedHTML(list){return list.map(p=>`<span class="q${qCls(p.q)}">${p.n}</span>`).join('')}
@@ -71750,6 +71774,7 @@ function frame(now){
   if(SET&&SET.fps===30){if(now<fpsNext-2)return;fpsNext=now-fpsNext>100?now+1000/30:fpsNext+1000/30}   // v0.4.4 帧率 30：按 33 毫秒的节拍画（逻辑仍按固定步长补足，速度不变）
   const raw=(now-lastT)/1000,dt=Math.min(0.1,raw);lastT=now;
   if(raw>0)PS.fps=PS.fps*0.92+Math.min(240,1/raw)*0.08;
+  if(!SPR_DONE&&!(G&&running)){spriteBgStep(5);const el=document.getElementById('sprBg');if(el)el.textContent=SPR_DONE?'':' · 图像准备中 '+Math.round(spriteProgress()*100)+'%'}   // P4 加（0.12.2g）：不在局里时每帧抽 5 毫秒在后台画士兵 / 亡灵的图（art/art），标题画面版本号后面显示进度
   if(G&&running&&!paused){const t0=performance.now();acc+=dt*speedMul;let n=0;
     // v0.6.01 防卡死（丛林深渊后期、2～3 倍速时手机上逻辑一帧 100+ 毫秒）：原来落后多少就补多少步（最多 12 步），一步越慢补得越多、越补越卡，
     //   「打一秒卡一秒」；现在按最近一步的耗时 stepMs 定这一帧最多补几步（逻辑预算 LOGIC_BUDGET 毫秒），补不完的直接丢掉 = 游戏放慢，不再一卡一卡
@@ -71767,7 +71792,7 @@ function frame(now){
   if(G&&running){IN_DRAW=1;try{hudT-=dt;if(hudT<=0){updateHud();coachTick(0.1);hudT=0.1}updateSkillHud();miniT-=dt;if(miniT<=0){drawMini();miniT=0.12}perfT-=dt;if(perfT<=0){updatePerfHud();perfT=0.25}}finally{IN_DRAW=0}}   // IN_DRAW：v0.8.10 界面刷新期间的随机用特效随机数
 }
 addEventListener('resize',resize);
-try{metaLate();hkCheck();eabBuild();buildSprites();setupGore();packAtlas();initRenderer(/[?&#]canvas2d\b/.test(location.href));buildUI();resize();newGame({});showMenu();requestAnimationFrame(frame);setTimeout(()=>{offCheck().catch(()=>{})},1500)}catch(e){bootFail(e)}   // offCheck：0.11.5 官方渠道（ui/official）
+try{metaLate();hkCheck();eabBuild();buildSprites();setupGore();packAtlas();initRenderer(/[?&#]canvas2d\b/.test(location.href));buildUI();resize();newGame({});showMenu();spriteBgIdle();requestAnimationFrame(frame);setTimeout(()=>{offCheck().catch(()=>{})},1500)}catch(e){bootFail(e)}   // offCheck：0.11.5 官方渠道（ui/official）
 window.__wlwc={get G(){return G},E,PERF,CFG,update,startWave,tryBuild,setBuild,stressSpawn,stressClear,newGame,saveRun,readSave,loadRun,pickCard,
   get R(){return R},get PS(){return PS},get pm(){return pm},get em(){return em},legionMembers,setGlobalMode,get DIFF(){return DIFF},__upg:upgradeCost,__up:upgrade,__rep:repair,pickEnemyCard,
   castSkill,swapWeapon,heroRecalc,get META(){return META},get SET(){return SET},saveMeta,saveSettings,upgradeGroup,repairGroup,repairAll,sell,canUndo,sellValue,wallGroup,groupUpgradePlan,
