@@ -11674,7 +11674,7 @@ CFG.story.regions.push(
      年轻人「四个」→「五个」（马丁、路德、奥托、托比、阿兰）；第二节亚瑟点名加上阿兰；第三节罗宾汉一个人进城（「他们」→「他」）；
      第五节去王都的是路德和阿兰、马丁留下（用户定：马丁想回去，才会喊「路德！！！」），后面出发、轰出来、分享喜悦、骗子几句都按这个改，开打的是奥托、托比、马丁；
      第五节汉斯说的口粮和副官说的对上：副官说够吃三个月，实际只够一个多月；第三节台本写「白天」，但对白是傍晚天黑、晚上开打，按对白做成夜晚
-   Claude 定：首通金币（5 / 10 / 15 / 30 / 40）；剧情精英的等级（第二节 10、第三节 15、第四节 20、第五节 25 级）和兵器（剑盾 = 长剑 + 鸢盾，单手斧盾 = 手斧 + 圆盾，弓 = 猎弓）；
+   Claude 定：首通金币（5 / 10 / 15 / 30 / 40）；剧情精英的等级（用户定：第二节 1 级(都是新兵)、第三节 5 级、第四、五节 10 级）和兵器（剑盾 = 长剑 + 鸢盾，单手斧盾 = 手斧 + 圆盾，弓 = 猎弓）；
      城墙在主堡外 10 × 10 一圈；第四节添的箭塔在四角各 3 座、民兵训练营在主堡两侧各 2 座；找夜鸦的地点（主堡东北林子边）；王都的布局（game/st_new.stRoyalTiles） */
 // 对话框头像（用户定：精英模板 + 职业画的小人）：配角的职业、年龄（Claude 定）；马丁、路德、奥托、托比、阿兰按章节 els 的兵器；enemy = 用这种亡灵的图
 CFG.story.npcLook={'军官':{job:'musketeer', age:42}, '副官':{job:'recruit', age:30}, '汉斯':{job:'engineer', age:66}, '亡灵大法师':{enemy:'lich'}};
@@ -11687,7 +11687,7 @@ Object.assign(CFG.story.plans,{
 });
 {const EL5=lv=>[['马丁','ss',lv],['路德','as',lv],['奥托','bow',lv],['托比','bow',lv],['阿兰','ss',lv]],N=(nm,t)=>['npc',nm,t];
 CFG.story.regions.push(
-  {id:'nwild', nv:1, name:'荒野', map:'wild', seed:61061, hero:'assassin', chapters:[
+  {id:'nwild', nv:1, keepLv:1, name:'荒野', map:'wild', seed:61061, hero:'assassin', chapters:[
     // ===== 第一节 开拓令 =====
     {id:'n1', name:'开拓令', place:'王都', scene:true, stMap:true, waves:1, diff:'easy', lineup:['arthur'], preset:'royal', maxLv:true, fill:true, tod0:0, gold:5,
      desc:'国王下了开拓令。王都城门口的登记处，正在招开拓荒野的人。',
@@ -11706,7 +11706,7 @@ CFG.story.regions.push(
        N('副官','那儿有你们的后勤物资，一共五车粮食，足够你们吃三个月的了。'),N('副官','里面还有一车种子，出了城往西北走就是荒野，等你们扎稳脚跟，王都再派增援来。'),
        ['arthur','好，那我们出发。'],N('副官','不不不，你们出发。我还有其他工作要做，就先走了哈。拜拜。'),['arthur','……'],['n','一行人踏上了前往荒野的路程。']]}},
     // ===== 第二节 开辟荒野 =====
-    {id:'n2', name:'开辟荒野', waves:5, diff:'easy', lineup:['arthur'], els:EL5(10), guide:true, only:true, loadout:['wall','gate'], ringGap:{r:5, gap:0.25, lv:1}, noBoss:true, tod0:3, tod:{1:3, 3:4},
+    {id:'n2', name:'开辟荒野', waves:5, diff:'easy', lineup:['arthur'], els:EL5(1), guide:true, only:true, loadout:['wall','gate'], ringGap:{r:5, gap:0.25, lv:1}, noBoss:true, tod0:3, tod:{1:3, 3:4},
      seq:{2:[{plan:'n2ring', grant:true, gapRocks:3}]}, gold:10,
      desc:'一行人走了三天，来到荒野上一座废弃的城堡。夜里，亡灵来了。',
      say:{start:[['n','众人一路走了三天，路上都没有遇到亡灵。亚瑟也和队伍里的其他人熟络起来。'],['n','一个拄着拐杖，颤颤巍巍地跟在亚瑟身边的老头开了口。'],
@@ -11725,7 +11725,7 @@ CFG.story.regions.push(
         N('路德','糟了！胆小鬼被僵尸啃到了，他待会会变成亡灵的！'),['n','阿兰直挺挺地站了起来。'],N('阿兰','胡说！我好好的呢！'),N('路德','看吧大人，这个胆小鬼就是不想干活。'),
         N('阿兰','可我们走了一天了，还打了一晚上的仗……'),['arthur','你们都先休息吧，事情交代给汉斯，我也要睡了。'],N('汉斯','大人您叫我？'),['arthur','嗯，营地加固的事，就交给你了。'],N('汉斯','好，大人您快去歇着吧。')]}},
     // ===== 第三节 荒野好汉 =====
-    {id:'n3', name:'荒野好汉', from:5, waves:15, diff:'normal', lineup:['arthur'], els:EL5(15), guide:true, inherit:true, only:true, loadout:['wall','gate','arrowTower'], tod0:1, tod:{6:3},
+    {id:'n3', name:'荒野好汉', from:5, waves:15, diff:'normal', lineup:['arthur'], els:EL5(5), guide:true, inherit:true, only:true, loadout:['wall','gate','arrowTower'], tod0:1, tod:{6:3},
      wave:{15:{boss:['baron']}}, joinP:{9:'robin'}, seq:{5:[{plan:'n2ring', lv:2, grant:true}, {say:'s1'}, {plan:'n3tower', grant:true}, {say:'s2'}]}, gold:15,
      desc:'白天把城墙换成石头的，在四角立起箭塔。荒野的亡灵，似乎有首领在指挥。',
      say:{start:[N('汉斯','乡亲们，干活要麻利点，有些人想着偷懒，却不知道偷一分懒，就多一分意外的可能性！'),N('汉斯','都去准备好，我们要把城墙换成石头的。')],
@@ -11745,7 +11745,7 @@ CFG.story.regions.push(
         ['robin','你特么神经病啊！哪个贵族闲着大冬天没事会来荒野上？窝在家里不香吗？'],['arthur','已经开春了。'],['robin','都差不多，纠结这个干什么。'],N('奥托','别聊了！亡灵又来了！'),['robin','那等打完了再说。']],
       win:[N('阿兰','啊，总算结束了。今天晚上没有吐，我进步了！'),['arthur','有进步就是好事，对了，你叫什么名字？我之前还没问你。'],['robin','罗宾汉。'],['arthur','你怎么在荒野上，不回王都吗？'],['robin','找人。']]}},
     // ===== 第四节 法师梅林 =====
-    {id:'n4', name:'法师梅林', from:10, waves:20, diff:'nightmare', lineup:['arthur'], els:[['马丁','ss',20],['路德','as',20],['奥托','bow',20,1],['托比','bow',20],['阿兰','ss',20]],
+    {id:'n4', name:'法师梅林', from:10, waves:20, diff:'nightmare', lineup:['arthur'], els:[['马丁','ss',10],['路德','as',10],['奥托','bow',10,1],['托比','bow',10],['阿兰','ss',10]],
      inherit:true, noBuild:true, upg:{lv:3, add:'n4add'}, tod0:1, tod:{11:3}, wave:{15:{elites:['baron']}}, snipe:{after:15, every:5}, bossE:'lich',
      bossS:[{floor:0.8, drK:2, t:30, say:'b1', act:{prime:'merlin', ignDR:true, join:['robin'], elJoin:['奥托']}}, {floor:0.2, drK:2, t:90, say:'b2', act:{leave:true}}],
      seq:{10:[{wait:'camp'}, {say:'s1'}]}, gold:30,
@@ -11779,7 +11779,7 @@ CFG.story.regions.push(
         ['merlin','我四十岁开始在法师塔苟且偷生三十年，刚刚趁着还有余力，打退了亡灵大法师……下次就没有这么好运了。'],['arthur','原来是这样，您是怎么知道我们需要帮助的？'],
         ['merlin','我一直在看着你们，没想到你们活了下来。'],['merlin','与其在法师塔虚度漫长的人生，不如让自己的余生更有意义。'],['arthur','您是一个智慧的人。'],['merlin','也许吧。']]}},
     // ===== 第五节 刺客夜鸦 =====
-    {id:'n5', name:'刺客夜鸦', from:10, waves:20, diff:'hard', lineup:['arthur','merlin','robin'], els:[['奥托','bow',25],['托比','bow',25],['马丁','ss',25]], inherit:true, tod0:1, tod:{11:3},
+    {id:'n5', name:'刺客夜鸦', from:10, waves:20, diff:'hard', lineup:['arthur','merlin','robin'], els:[['奥托','bow',10],['托比','bow',10],['马丁','ss',10]], inherit:true, tod0:1, tod:{11:3},
      meet:{after:10, at:[13,-4], hero:'assassin', ally:true, tip:'先带亚瑟去城外找画上的人(地图上闪光的地方)'}, bossE:'lich',
      bossS:[{floor:0.01, t:120, aggro:{hp:0.2, hero:'assassin'}, say:'b1', act:{kill:true}}], gold:40,
      desc:'春种的时候到了。一只乌鸦落在城墙边，留下一张画。',
@@ -65814,7 +65814,8 @@ function storySetup(d){const x=stCur();if(!x)return;const{R,C}=x,S=G.story;
     if(C.militia)stMilitia(C.militia);
     if(C.troops)stTroops(C.troops);
     if(C.tod0!=null)S.tod=C.tod0;else if(C.tod){let t=null;for(const k in C.tod)if(+k<=G.wave+1)t=C.tod[k];if(t!=null)S.tod=t}   // 0.12.2 时段：tod0 开局准备阶段的时段，tod {波次: 时段} 开打时换
-    if(C.meet&&C.meet.after===G.wave&&!S.meet)S.meet=stMeetPos(C.meet.at)}   // 0.12.2 开局就去赴约（新剧情第五节找夜鸦）
+    if(C.meet&&C.meet.after===G.wave&&!S.meet)S.meet=stMeetPos(C.meet.at);
+    {const kl=C.keepLv!=null?C.keepLv:R.keepLv;const k=G.base;if(kl&&k&&k.level!==kl){k.level=kl;k.turrets=[];k.maxHp=structMax(k);k.hp=k.maxHp;k.def=structDef(k);onKeepLevel(k,true)}}}   // keepLv：0.12.2 新剧情主堡固定 1 级（继承布局时 settleLoad 会按开拓地的主堡等级抬高）   // 0.12.2 开局就去赴约（新剧情第五节找夜鸦）
   else if(S.plan)stPlanTerrain(d.cleared||[]);
   if(d&&(C.joinAi||C.aiH||C.ally))stAllyAI();
   if(C.els)stElInit(C,d);if(S.tod!=null){G.dayIdx=S.tod;envApply()}if(d&&S.sq){S.sq.on=0;stSqRun(d.cleared||[])}   // 0.12.2 新剧情：剧情精英、时段、没做完的准备步骤（game/st_new）   // 读档：AI 操控的剧情英雄（含中途加入的 joinAi）照旧 AI 操控
@@ -66797,7 +66798,10 @@ function drawOverlayView(vk,V){
   // v0.7.8 剧情民兵（u.mName）：头上写名字
   if(G.story){let on=false;for(let i_3=0,a_3=G.soldiers;i_3<a_3.length;i_3++){const u=a_3[i_3];if(u.dead||!u.mName||!inViewPt(u.x,u.y))continue;
     if(!on){on=true;octx.font=`${Math.round(12*DPR*UI_FK)}px "ZCOOL QingKe HuangYou", sans-serif`;octx.textAlign='center';octx.textBaseline='bottom'}   // v0.10.5 字号乘 UI_FK（设置 → 字体大小）
-    const x=X(u.x),y=Y(u.y-u.elev-20);octx.fillStyle='#0a090d';octx.fillText(u.mName,x+DPR,y+DPR);octx.fillStyle='#d9e8b8';octx.fillText(u.mName,x,y)}if(on)ovUsed=true}
+    const x=X(u.x),y=Y(u.y-u.elev-20);octx.fillStyle='#0a090d';octx.fillText(u.mName,x+DPR,y+DPR);octx.fillStyle='#d9e8b8';octx.fillText(u.mName,x,y)}
+    for(let i_4=0,a_4=G.heroes;i_4<a_4.length;i_4++){const h=a_4[i_4];if(h.dead||!h.stEl||!inViewPt(h.x,h.y))continue;   // 0.12.2（用户定）新剧情的剧情精英头上写名字
+      if(!on){on=true;octx.font=`${Math.round(12*DPR*UI_FK)}px "ZCOOL QingKe HuangYou", sans-serif`;octx.textAlign='center';octx.textBaseline='bottom'}
+      const x=X(h.x),y=Y(h.y-(h.elev||0)-28);octx.fillStyle='#0a090d';octx.fillText(h.stEl,x+DPR,y+DPR);octx.fillStyle='#d9e8b8';octx.fillText(h.stEl,x,y)}if(on)ovUsed=true}
   const m=34*DPR,hw=V.w/2,hh=V.h/2,ox=V.x+hw,oy=V.y+hh;
   const edgeAt=a=>{const c=Math.cos(a),s=Math.sin(a),t=Math.min((hw-m)/Math.abs(c||1e-6),(hh-m)/Math.abs(s||1e-6));return[ox+c*t,oy+s*t]};
   const inV=(sx,sy)=>sx>=V.x&&sx<=V.x+V.w&&sy>=V.y&&sy<=V.y+V.h;
@@ -67233,7 +67237,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.4a',GAME_TAG='测试版',GAME_CODE=175,GAME_BUILD="2e2796b+",GAME_BUILT=1793242971558,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.4a',GAME_TAG='测试版',GAME_CODE=175,GAME_BUILD="675c3e8+",GAME_BUILT=1793243274695,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
