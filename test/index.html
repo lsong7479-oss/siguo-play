@@ -521,7 +521,7 @@ i.rup,i.rdn,i.req{font-style:normal;font-size:.85em}i.rup{color:#7fd17f}i.rdn{co
 #dlg[hidden]{display:none}
 .dlgbox{position:relative;display:flex;gap:14px;align-items:flex-end;width:min(calc(780px * var(--fk,1)),100%);box-sizing:border-box;background:#1a1622;box-shadow:0 0 0 2px var(--rivet),inset 0 0 0 1px var(--iron);padding:14px 16px 16px}
 .dlgpor{flex:none;width:104px;height:138px;margin-top:-64px;object-fit:cover;object-position:50% 8%;background:radial-gradient(ellipse at 50% 70%,#2c2434,#16131b 70%);box-shadow:0 0 0 2px var(--rivet),inset 0 0 0 1px var(--iron-hi)}
-.dlgpor[hidden]{display:none}
+.dlgpor[hidden]{display:none}.dlgpor.spr{object-fit:contain;object-position:50% 85%;image-rendering:pixelated}
 .dlgtx{flex:1;min-width:0;padding-right:62px}.dlgname{display:block;font-family:var(--f-display);font-weight:400;color:var(--brass-hi);font-size:1.05rem;margin-bottom:4px}
 .dlgline{margin:0;font-size:1rem;line-height:1.7;color:var(--bone);min-height:1.7em;white-space:pre-wrap}
 #dlg.fade{background:#000;align-items:center}#dlg.fade .dlgbox{background:none;box-shadow:none}#dlg.fade .dlgline{font-style:normal!important;font-size:1.5rem;color:var(--bone)!important}#dlg.fade .dlgskip{display:none}   /* 0.12.2 新剧情的黑屏转场字幕 */
@@ -11676,6 +11676,8 @@ CFG.story.regions.push(
      第五节汉斯说的口粮和副官说的对上：副官说够吃三个月，实际只够一个多月；第三节台本写「白天」，但对白是傍晚天黑、晚上开打，按对白做成夜晚
    Claude 定：首通金币（5 / 10 / 15 / 30 / 40）；剧情精英的等级（第二节 10、第三节 15、第四节 20、第五节 25 级）和兵器（剑盾 = 长剑 + 鸢盾，单手斧盾 = 手斧 + 圆盾，弓 = 猎弓）；
      城墙在主堡外 10 × 10 一圈；第四节添的箭塔在四角各 3 座、民兵训练营在主堡两侧各 2 座；找夜鸦的地点（主堡东北林子边）；王都的布局（game/st_new.stRoyalTiles） */
+// 对话框头像（用户定：精英模板 + 职业画的小人）：配角的职业、年龄（Claude 定）；马丁、路德、奥托、托比、阿兰按章节 els 的兵器；enemy = 用这种亡灵的图
+CFG.story.npcLook={'军官':{job:'musketeer', age:42}, '副官':{job:'recruit', age:30}, '汉斯':{job:'engineer', age:66}, '亡灵大法师':{enemy:'lich'}};
 Object.assign(CFG.story.plans,{
   // 王都：开拓地大地图（96 × 96）正中，外城 60 × 60 带四座瓮城、内城 28 × 28、王宫 10 × 10；塔楼、兵营、民居按规则排（game/st_new），全部满级（章节 maxLv）
   royal:{ring:30, inner:14, palace:5, barb:{d:3, w:4}, gen:'royal', lv:1, people:1},
@@ -11704,7 +11706,7 @@ CFG.story.regions.push(
        N('副官','那儿有你们的后勤物资，一共五车粮食，足够你们吃三个月的了。'),N('副官','里面还有一车种子，出了城往西北走就是荒野，等你们扎稳脚跟，王都再派增援来。'),
        ['arthur','好，那我们出发。'],N('副官','不不不，你们出发。我还有其他工作要做，就先走了哈。拜拜。'),['arthur','……'],['n','一行人踏上了前往荒野的路程。']]}},
     // ===== 第二节 开辟荒野 =====
-    {id:'n2', name:'开辟荒野', waves:5, diff:'easy', lineup:['arthur'], els:EL5(10), only:true, loadout:['wall','gate'], ringGap:{r:5, gap:0.25, lv:1}, noBoss:true, tod0:3, tod:{1:3, 3:4},
+    {id:'n2', name:'开辟荒野', waves:5, diff:'easy', lineup:['arthur'], els:EL5(10), guide:true, only:true, loadout:['wall','gate'], ringGap:{r:5, gap:0.25, lv:1}, noBoss:true, tod0:3, tod:{1:3, 3:4},
      seq:{2:[{plan:'n2ring', grant:true, gapRocks:3}]}, gold:10,
      desc:'一行人走了三天，来到荒野上一座废弃的城堡。夜里，亡灵来了。',
      say:{start:[['n','众人一路走了三天，路上都没有遇到亡灵。亚瑟也和队伍里的其他人熟络起来。'],['n','一个拄着拐杖，颤颤巍巍地跟在亚瑟身边的老头开了口。'],
@@ -11723,7 +11725,7 @@ CFG.story.regions.push(
         N('路德','糟了！胆小鬼被僵尸啃到了，他待会会变成亡灵的！'),['n','阿兰直挺挺地站了起来。'],N('阿兰','胡说！我好好的呢！'),N('路德','看吧大人，这个胆小鬼就是不想干活。'),
         N('阿兰','可我们走了一天了，还打了一晚上的仗……'),['arthur','你们都先休息吧，事情交代给汉斯，我也要睡了。'],N('汉斯','大人您叫我？'),['arthur','嗯，营地加固的事，就交给你了。'],N('汉斯','好，大人您快去歇着吧。')]}},
     // ===== 第三节 荒野好汉 =====
-    {id:'n3', name:'荒野好汉', from:5, waves:15, diff:'normal', lineup:['arthur'], els:EL5(15), inherit:true, only:true, loadout:['wall','gate','arrowTower'], tod0:1, tod:{6:3},
+    {id:'n3', name:'荒野好汉', from:5, waves:15, diff:'normal', lineup:['arthur'], els:EL5(15), guide:true, inherit:true, only:true, loadout:['wall','gate','arrowTower'], tod0:1, tod:{6:3},
      wave:{15:{boss:['baron']}}, joinP:{9:'robin'}, seq:{5:[{plan:'n2ring', lv:2, grant:true}, {say:'s1'}, {plan:'n3tower', grant:true}, {say:'s2'}]}, gold:15,
      desc:'白天把城墙换成石头的，在四角立起箭塔。荒野的亡灵，似乎有首领在指挥。',
      say:{start:[N('汉斯','乡亲们，干活要麻利点，有些人想着偷懒，却不知道偷一分懒，就多一分意外的可能性！'),N('汉斯','都去准备好，我们要把城墙换成石头的。')],
@@ -65797,7 +65799,7 @@ function startStory(cid){const x=stC(cid);if(!x||!stPlayable(cid))return false;c
   const ask=C.choice&&!C.choice.at,L0=stSay(C,'start'),go0=()=>{if(ask)stAsk(C);if(C.seq&&C.seq[G.wave])stSqGo(G.wave)};if(L0)storySay(L0,go0);else go0();return true}   // seq：0.12.2 开局的准备步骤（game/st_new）   // stSay：v0.10.0 开场也按之前的选择分两线（荒漠第三章 start_escort / start_leave）
 // 开局布置（d = 读档时的存档）
 function storySetup(d){const x=stCur();if(!x)return;const{R,C}=x,S=G.story;
-  G.noBuild=!!(C.noBuild||C.scene);G.stDrF=!!C.dragonFoe;   // dragonFoe：0.12.2 德拉贡传，龙系生物一直是敌人（maps/lava）
+  G.noBuild=!!(C.noBuild||C.scene||C.guide);   // guide：0.12.2 新剧情只有引导的图纸步骤里能建造（game/st_new.stSqRun 打开）G.stDrF=!!C.dragonFoe;   // dragonFoe：0.12.2 德拉贡传，龙系生物一直是敌人（maps/lava）
   G.stImm=!!(C.immune&&S.f.immune);G.stBuf=new Map();G.stWx=C.weather||null;G.stMia=!!C.miasma;if(G.stWx){G.weather=G.stWx;envApply()}
   if(!d){
     if(C.preset){const P=SDY.plans[C.preset];if(P&&P.gen==='royal')stRoyalClear(P);stPreset(C.preset)}   // stRoyalClear：0.12.2 王都城里不长树
@@ -66069,6 +66071,7 @@ feat('story',{ord:600,on:()=>!!G.story,hooks:{
 
 // ---------- 0.12.2 新剧情（用户 2026-10-28 的台本，数据 data/story_n1.js；地区写 nv:1，选章页「新剧情 / 老剧情」切换，SET.stOld = 看老剧情）----------
 // 章节新字段（game/story 在开局、开波、准备阶段、每帧调这里）：
+//   guide 只有引导的图纸步骤里能建造、升级（用户定：剧情除了引导不允许建造）
 //   scene 纯剧情但在地图上演（王都），不打仗：开局放 start 对白，放完算通关 · stMap 用开拓地的大地图（96 × 96）
 //   els [[名字, 兵器, 等级]] 剧情精英（马丁、路德……；兵器 ss 剑盾 / as 单手斧盾 / bow 弓），不进精英名册 · elLeave / elJoin {波次: [名字]} 打完第 N 波离队 / 加入
 //   ringGap {r, gap, rocks} 开局一圈 1 级城墙（边长 2r），随机 gap 比例的缺口；缺口里放 rocks 块石头 / 灌木（清障教程用）
@@ -66081,7 +66084,9 @@ feat('story',{ord:600,on:()=>!!G.story,hooks:{
 // G.story 里另记：els 在队的剧情精英名字、elDn 倒下的、tod 当前时段、sq {w 第几波的步骤, k 第几步}、bp 首领阶段、bpT 这一阶段的秒数
 const STE_W={ss:{job:'shieldGuard',w:'longsword',o:'kiteShield'},as:{job:'shieldGuard',w:'handaxe',o:'buckler',add:'axe'},bow:{job:'marksman',w:'huntbow',o:null}};
 // —— 剧情精英 ——
-function stElMake(nm,kind,lv,k){const W=STE_W[kind]||STE_W.ss,e=elGen('wild',{sex:'m',age:24});e.id=-(100+k);e.given=nm;e.fam='';e.nf=true;e.job=W.job;e.tr=[];e.tt=[];e.sk={};e.ea=[];e.ep=[];e.stLv=lv||10;e.cmd='sortie';ST_EL.set(e.id,e);return e}
+// 同一个名字每次长得一样（按名字做种子生成；对话框头像和战场上的小人是同一个样子）
+function stElGen(nm,o){const M=Math.random;Math.random=trRng('stEl|'+nm);try{return elGen('wild',o)}finally{Math.random=M}}
+function stElMake(nm,kind,lv,k){const W=STE_W[kind]||STE_W.ss,e=stElGen(nm,{sex:'m',age:24});e.id=-(100+k);e.given=nm;e.fam='';e.nf=true;e.job=W.job;e.tr=[];e.tt=[];e.sk={};e.ea=[];e.ep=[];e.stLv=lv||10;e.cmd='sortie';ST_EL.set(e.id,e);return e}
 function stElSpawn(nm){const x=stCur();if(!x)return null;const L=x.C.els||[],k=L.findIndex(r=>r[0]===nm);if(k<0)return null;const S=G.story;if(G.heroes.some(h=>h.stEl===nm&&!h.dead))return null;
   const[,kind,lv]=L[k],W=STE_W[kind]||STE_W.ss,e=stElMake(nm,kind,lv,k),d=elDef(e);if(W.add&&!d.prof.weapon.includes(W.add))d.prof.weapon.push(W.add);
   const sp={id:'el'+e.id,d,el:e.id,star:1,weapons:[{base:W.w,enh:0,q:'common'}],offhand:W.o?{base:W.o,enh:0,q:'common'}:null,armor:[],acc:[],spc:null,spr:elLkSpr(e)};
@@ -66107,13 +66112,13 @@ function stSqGo(w){const x=stCur();if(!x||!x.C.seq||!x.C.seq[w])return;G.story.s
 function stSqRun(cl){const S=G.story,x=stCur(),st=stSqStep();if(!st){S.sq=null;if(UI.ready)refreshPhaseUI();saveRun();return}if(S.sq.on)return;S.sq.on=1;
   const next=()=>{S.sq.k++;S.sq.on=0;stSqRun()};
   if(st.say){storySay(stSay(x.C,st.say)||[],next);return}
-  if(st.plan){stPlanSet(st.plan,st.lv||1,cl||[]);if(st.gapRocks&&S.gap){const T=[3,5];S.rocks=S.gap.filter(i=>!G.structAt[i]).slice(0,st.gapRocks).map((i,k)=>[i,T[k%2]]);stPlanTerrain(cl||[])}
+  if(st.plan){if(x.C.guide){G.noBuild=false;if(UI.ready)refreshPhaseUI()}stPlanSet(st.plan,st.lv||1,cl||[]);if(st.gapRocks&&S.gap){const T=[3,5];S.rocks=S.gap.filter(i=>!G.structAt[i]).slice(0,st.gapRocks).map((i,k)=>[i,T[k%2]]);stPlanTerrain(cl||[])}
     if(st.grant){const add=Math.max(0,stPlanCost()+SDY.grantMargin-G.gold);G.gold+=add;S.grant=add;if(add)toast(`补给到了：铜币 +${add}`)}if(UI.ready)refreshPhaseUI();saveRun();return}
   if(st.wait){saveRun();return}
   next()}
 // 每帧（准备阶段）：图纸造完、兵营设好了就往下走
 function stSqTick(){const S=G.story,st=stSqStep();if(!st||!S.sq.on||dlgOn)return;
-  if(st.plan&&!stPlanLeft(null,st.lv||1).length&&!stRocksLeft().length){S.plan=null;S.rocks=[];S.sq.k++;S.sq.on=0;sfx('build');stSqRun()}
+  if(st.plan&&!stPlanLeft(null,st.lv||1).length&&!stRocksLeft().length){S.plan=null;S.rocks=[];{const x=stCur();if(x&&x.C.guide){G.noBuild=true;tool=null;buildSel=null;if(UI.ready)refreshPhaseUI()}}S.sq.k++;S.sq.on=0;sfx('build');stSqRun()}
   else if(st.wait&&STW[st.wait]&&STW[st.wait]()){S.sq.k++;S.sq.on=0;stSqRun()}}
 const stSqMsg=()=>{const st=stSqStep();return!st?'':st.plan?'先照着图纸把建筑造好(地上半透明的是图纸)':st.wait==='camp'?'先设好兵营：一座练弓手、指令驻守，一座练战士(步兵)、指令出击':'先看完这一段'};
 // —— 时段 ——
@@ -66154,6 +66159,14 @@ function stRoyalTiles(P,L,cx,cy){const used=new Set(L.map(p=>p.y*MAP_W+p.x)),put
   for(let dy=-o+4;dy<=o-5;dy++)for(let dx=-o+4;dx<=o-5;dx++){if(Math.max(Math.abs(dx+0.5),Math.abs(dy+0.5))<n+2||road(dx,dy))continue;const mx=((dx%6)+6)%6,my=((dy%6)+6)%6;if(mx<2&&my<2)put('sHouse',dx,dy)}
   // 瓮城里各 4 座火枪塔
   for(const[sx,sy]of[[0,-1],[0,1],[-1,0],[1,0]])for(const s of[-3,2])for(const k of[1,2]){const a=sx?sx*(o+k)-(sx>0?1:0):s,b=sy?sy*(o+k)-(sy>0?1:0):s;put('musketTower',a,b)}}
+// —— 0.12.2（用户定）对话框里配角的头像：精英模板 + 职业画的小人（CFG.story.npcLook 写职业、年龄；剧情精英按 els 的兵器；亡灵写 enemy）——
+const ST_POR=new Map();
+function stNpcPor(nm){const x=stCur();if(!x||!x.R.nv)return null;if(ST_POR.has(nm))return ST_POR.get(nm);let u=null;
+  try{const L=SDY.npcLook||{},o=L[nm];
+    if(o&&o.enemy){if(EIDX[o.enemy]!==undefined)u=enemyIcon(o.enemy)}
+    else{let job=o&&o.job;if(!job)for(const C of x.R.chapters)for(const r of C.els||[])if(r[0]===nm)job=(STE_W[r[1]]||STE_W.ss).job;
+      if(job){const e=stElGen(nm,{sex:(o&&o.sex)||'m',age:(o&&o.age)||24});e.job=job;e.given=nm;u=elIcon(e)}}}catch(err){console.warn('stNpcPor',err)}
+  ST_POR.set(nm,u);return u}
 
 // ---------- 绘制 ----------
 let VW=0,VH=0,DPR=1,zoom=4,zoomBase=4,zoomDelta=0,zoomMin=1,zoomMax=8,CX=0,CY=0,OX=0,OY=0;
@@ -67220,7 +67233,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.4a',GAME_TAG='测试版',GAME_CODE=175,GAME_BUILD="e5c3173+",GAME_BUILT=1793242724758,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.4a',GAME_TAG='测试版',GAME_CODE=175,GAME_BUILD="2e2796b+",GAME_BUILT=1793242971558,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -70773,7 +70786,7 @@ function storySay(lines,done){if(!lines||!lines.length){if(done)done();return}
 // 0.12.2 新剧情的特殊行：['tod', 时段] 当场换时段（不显示，直接下一句）；['fade', 文字] 黑屏转场字幕（「二日后」）
 function dlgShow(){while(dlgQ[dlgK]&&dlgQ[dlgK][0]==='tod'){if(typeof stTodSet==='function')stTodSet(dlgQ[dlgK][1]);if(++dlgK>=dlgQ.length){dlgEnd();return}}
   const Q=dlgQ[dlgK],npc=Q[0]==='npc',w=Q[0],fd=w==='fade',tx=i18nT(stFmt(npc?Q[2]:Q[1])),n=w==='n'||fd;dlgEl.classList.toggle('fade',fd);   // i18nT：v0.10.0 英文模式先整句翻好再逐字打（原来逐字打的是半截中文，每截各翻一次，闪成中英夹杂的碎片）   // stFmt：v0.7.6 {dead} / {deadR} 换成阵亡数
- dlgEl.classList.toggle('narr',n);dlgPor.hidden=n||npc;if(!n&&!npc)dlgPor.src=heroPortrait(w);dlgName.textContent=npc?Q[1]:dlgWho(w);
+ dlgEl.classList.toggle('narr',n);const pu=npc&&typeof stNpcPor==='function'?stNpcPor(Q[1]):null;dlgPor.hidden=n||(npc&&!pu);dlgPor.classList.toggle('spr',!!pu);if(pu)dlgPor.src=pu;else if(!n&&!npc)dlgPor.src=heroPortrait(w);dlgName.textContent=npc?Q[1]:dlgWho(w);   // pu：0.12.2 新剧情的配角用精英模板画的小人当头像（game/st_new）
   dlgLine.style.minHeight='';dlgLine.textContent=tx;dlgLine.style.minHeight=dlgLine.offsetHeight+'px';   // v0.10.0（用户要）对话框高度按这一句整句的行数定：短句矮、长句高，打字时不再一行一行往上撑
   dlgFull=tx;dlgLine.textContent='';clearInterval(dlgTyping);let i=0;dlgTyping=setInterval(()=>{i+=2;dlgLine.textContent=tx.slice(0,i);if(i>=tx.length){clearInterval(dlgTyping);dlgTyping=null}},30)}
 function dlgNext(){if(!dlgOn)return;if(dlgTyping){clearInterval(dlgTyping);dlgTyping=null;dlgLine.textContent=dlgFull;return}sfx('click');if(++dlgK>=dlgQ.length)dlgEnd();else dlgShow()}
