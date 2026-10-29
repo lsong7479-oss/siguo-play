@@ -19642,7 +19642,7 @@ CFG.btech.towers.campBw={base:CFG.olv.lists.camp.slice(), baseOld:['ctrain','chp
      bjDrg3 {every, range, ang, speed, dmg, stun, r, mul, burn, bt}   三阶「炎龙火炮」：喷火时每 every 秒向前方 ±ang° 发射一枚火焰弹，命中第一个亡灵 dmg 伤害(随攻击倍率成长)、
                          眩晕 stun 秒，r 格内爆炸 mul 倍伤害，灼烧(每秒 burn × 火焰弹伤害，bt 秒) */
 CFG.camps.campBj={name:'边军大营', tier:4, units:['bjTiger','bjPhoenix','bjTortoise','bjDragon'], cost:500, hp:800, train:32, size:2, campSlots:2, cap:[4,5,6,7,8], vision:8, kind:'gunpowder',
-  weapon:{dmg:120, int:1, mag:1, reload:3, range:7, spread:4, proj:'ball', speed:16, pen:10, blast:{r:2.5, mul:0.5, mix:{impact:1}}, mix:{impact:1}},
+  weapon:{dmg:120, int:1, mag:1, reload:3, range:7, spread:4, proj:'ball', speed:16, pen:10, blast:{r:2.5, mul:0.5, mix:{impact:1}}, mix:{impact:1}, techK:{key:'uRanged', k:0.5}},   // techK：0.12.4（用户定）火炮另吃士兵的加伤害科技，折算 50%（Claude 定：用「武器改装」uRanged，远程士兵伤害）
   note:'星阳边军的大营：带一门火炮(攻击 120，命中处 2.5 格爆炸 50% 伤害，射程 7 格，装填 3 秒)；四种兵都占 2 个驻军位'};
 Object.assign(CFG.units,{
   bjTiger:   {name:'星阳白虎骑', tier:4, hp:850, def:25, mdef:10, speed:4, capW:2, melee:{dmg:90, int:1, reach:1.5}, charge:2.5, cavalry:true, hitRun:{back:2.6, t:0.9},
@@ -21164,7 +21164,7 @@ blGaleU blWRU blSpoutU blTideU blVerU blHellU blCycU blShU blUdV blUdN blUdT
 elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elKsN elKsU elFsI elFsN elCapT elCapD elWsW elStT elStX elStY elMaT elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU elSongU elSongR elSongE elWarU elWarR elWarE elThz elRjU elRjN elRjR elRjP spAU spGL spGwv spGb spGd spGrT spDwN spDwU spDwV spDsD spDsM spDsX spDsY spRf npMT npFaU npFaN npFsU npFsN
 obRgU obRgV
 elAcc elCritK elBrk elSpen cmdU coU coF ordU ordF stEl
-gwlR`.trim().split(/\s+/);   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）
+gwlR gwlL`.trim().split(/\s+/);   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -21203,7 +21203,7 @@ isCamp
 obCT obCD obRgT
 gwlCd`.trim().split(/\s+/);   // isCamp：P3 加（0.12.2d 性能），见 structs/structs.makeStruct
 const SOLDIER_NUM='x y hp maxHp baseHp chp def dodge block shield stagMul taunt vision facing dir anim flash stag atkCd shotCd ammo rel think ti tid recoil thrust swing calm chg patrolT px py slot statMul lastHit slA layer elev atkAdd atkMul rgMul critAdd critMulAdd pierceN mvSp kiteK gdTile gdSeen gdV mgA mgK mgU s2Dr s2Chg cv _sx _sy shieldHp shieldMax shieldT critPt cmdU gwlR'.split(' ');   // P2 加（0.12.2d）cv…cmdU：每帧 / 每次受击都写小数、读的地方都是 ||0 或比大小的字段，先填 0 让它一直是数字（原来先装 undefined，之后每写一次小数都新建一个数字对象）   // gwlR：GW 加（0.12.4 长城城墙，structs/gwall）
-const HERO_NUM='star slot x y hp maxHp def dodge block shield facing dx dy dir aimA wi swapT atkCd swing swingA thrust recoil ammo rel shieldHp shieldMax shieldT reflect whirlT whirlTk whirlA dashT dvx dvy inv flash anim respawn aiT aiTi aiTid tgtI tgtId lastHit layer elev calm vision tvNx mdef speed crit regen aspd stnU lastAtk cv gwlR'.split(' ');   // P2 加（0.12.2d）mdef…lastAtk：同上   // gwlR：GW 加（0.12.4 长城城墙，structs/gwall）
+const HERO_NUM='gwlL star slot x y hp maxHp def dodge block shield facing dx dy dir aimA wi swapT atkCd swing swingA thrust recoil ammo rel shieldHp shieldMax shieldT reflect whirlT whirlTk whirlA dashT dvx dvy inv flash anim respawn aiT aiTi aiTid tgtI tgtId lastHit layer elev calm vision tvNx mdef speed crit regen aspd stnU lastAtk cv gwlR'.split(' ');   // P2 加（0.12.2d）mdef…lastAtk：同上   // gwlR：GW 加（0.12.4 长城城墙，structs/gwall）
 const STRUCT_NUM='tx ty x y level flash cd ammo rel aim recoil mgA mgK mgU stEff shcU shcF xgVn xgRgT hp maxHp def rsh gwlCd'.split(' ');   // P2 加（0.12.2d）hp maxHp def rsh：建筑每挨一下都写 hp，同上   // gwlCd：GW 加（0.12.4 长城城墙，structs/gwall）
 const Soldier=shapeCtor(SOLDIER_KEYS,SOLDIER_NUM),Hero=shapeCtor(HERO_KEYS,HERO_NUM),Struct=shapeCtor(STRUCT_KEYS,STRUCT_NUM);
 // P2 加（0.12.2d 性能）：把每个字段预先「写宽」一遍（造几个丢掉的实例：数字字段写一次小数，其它字段先写数字再写对象、字符串、null，最后写回 undefined）。
@@ -52766,7 +52766,7 @@ const heroCdRate=(h,k)=>h.sp[k]&&h.sp[k].noCdr?1:heroCdSpd(h)*(1+rwK(h))*(G.roar
 // 登上城墙：远程射程、视野 +25%（与驻墙士兵相同），射出的箭无视近处阻挡
 const heroRange=h=>(h.ws.range||7)*16*(h.ws.lob&&pm.lobRange>0?1+pm.lobRange:1)*postMul(h,'range')*(1+(h.csRng||0)+(h.wyRng||0)+(h.wdU>G.time?h.wdR:0)+(h.obRgU>G.time?h.obRgV:0)+HH_RA+(h.elRng||0))*OATH_RK*(ENV.rngK||1)*HH_RK;   // rngK：v0.10.0 水元素领主的大雾，所有单位射程 −25%（独立）   // wdU：v0.8.3 魏德曼「御敌千里」   // csRng：v0.8.2 舰长套装   // HH_RK：0.11.4 代理hh 加，御敌之策射程   // obRgU / obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程，gear/fx_ob）
 // v0.2：站在城墙（或塔）上，技能的施法距离也按驻防射程加成（城墙 +25%、塔 +50%）；结果按倍率缓存，不每帧新建对象
-function skP(h,p){const m=postMul(h,'range')*(1+(h.axCast||0)+(h.castK||0)+(h.wyCast||0)+(h.wnCast||0)+(pm&&!h.elite&&pm.castR||0)+HH_CR);   // castR：v0.9.1 卡「运筹帷幄」施法距离，和别的施法距离加成相加   // castK：v0.7.0 张道成「五神之法」施法距离   // HH_CR：0.11.4 代理hh 加，御敌之策施法距离
+function skP(h,p){const m=(postMul(h,'range')-(h.gwlL||0))*(1+(h.axCast||0)+(h.castK||0)+(h.wyCast||0)+(h.wnCast||0)+(pm&&!h.elite&&pm.castR||0)+HH_CR);   // castR：v0.9.1 卡「运筹帷幄」施法距离，和别的施法距离加成相加   // castK：v0.7.0 张道成「五神之法」施法距离   // HH_CR：0.11.4 代理hh 加，御敌之策施法距离
  if(m===1||!p||!p.range)return p;if(p._sm!==m){const r=Object.assign({},p);delete r._sr;delete r._sm;r.range=p.range*m;p._sr=r;p._sm=m}return p._sr}
 // —— 英雄登城：站在城门上按攻击键登墙 / 下墙；在墙上只能沿城墙行走 ——
 function wallTileAt(x,y){const s=G.structAt[tidx(clamp(x,0,MW-1),clamp(y,0,MH-1))];return!!(s&&!s.dead&&isWallT(s.type))}
@@ -60445,7 +60445,7 @@ function towerW(s,add){   // add：v0.8.1 另外加进伤害加成里的（主�
   const kind=keep?'gunpowder':s.cfg.kind,km=kindMod(kind),gun=kind==='gunpowder',bow=kind==='arrow'||kind==='bolt',stone=kind==='stone',mg=kind==='magic';
   // v0.8.1（用户定）卡牌、科技、建筑科技、光环的加成相加后乘一次（原来各自相乘）：卡（这一类建筑、建筑伤害、全体伤害）+ 科技（重装弹药、火药 / 弩箭 / 投石 / 奥术、投石强化、炮楼强化）+ 建筑科技「武备」+ 瞭望塔光环
   const F=CFG.cardFx,arcB=!keep&&pm.arcSeat>0&&(mg||s.cfg.cat==='magic'),xb=bow&&pm.xbowP>0;   // v0.8.23（用户定）奥术阵座：魔法建筑伤害、装填 +50%（原来射程、攻速 +35%）；破甲弩箭：弓弩建筑伤害 +50%、最大穿透数 +50%
-  const bp=km+pm.buildDmg+dmgAllK()+(arcB?F.arcSeat.dmg:0)+(xb?F.xbowP.dmg:0)+TM.bDmg+(gun?TM.gunDmg:0)+(bow?TM.boltDmg:0)+(stone?TM.stoneDmg+(TM.stonePow||0):0)+(mg?TM.arcDmg||0:0)+(keep?TM.kDmg||0:btv(t,'dmg'))+(au?au.dmg:0)+(add||0)+(s.bfV?s.bfV[0]:0);s.udB=1+bp;   // bfV：v0.8.6 统一 buff（engine/buff）的伤害加成；独立乘区 atkI 乘在 dmg 上
+  const bp=km+pm.buildDmg+dmgAllK()+(arcB?F.arcSeat.dmg:0)+(xb?F.xbowP.dmg:0)+TM.bDmg+(gun?TM.gunDmg:0)+(bow?TM.boltDmg:0)+(stone?TM.stoneDmg+(TM.stonePow||0):0)+(mg?TM.arcDmg||0:0)+(keep?TM.kDmg||0:btv(t,'dmg'))+(au?au.dmg:0)+(add||0)+(s.bfV?s.bfV[0]:0)+(!keep&&s.cfg.weapon&&s.cfg.weapon.techK?(TM[s.cfg.weapon.techK.key]||0)*s.cfg.weapon.techK.k:0);s.udB=1+bp;   // techK：0.12.4 边军大营的火炮另吃士兵的加伤害科技（折算）   // bfV：v0.8.6 统一 buff（engine/buff）的伤害加成；独立乘区 atkI 乘在 dmg 上
   const tRange=(gun?TM.gunRange:0)+(bow?TM.stringRange+(G&&G.gwK>0?G.gwK:0):0)+(stone?TM.stoneRange:0)+(mg?TM.arcRange||0:0);   // v0.4.6 投石塔不再吃「筋弦改良」；魔法塔「法阵延展」   // G.gwK：HA 加，v0.12 格文「风羽统帅」弓弩塔射程（heroes/ha_gwen）
   const evm=keep?1:((ev&&(ev.dmgMulSet||ev.dmgMul))||1)*(ev&&ev.dmgI?1+ev.dmgI:1),brt=keep?0:btv(t,'rate'),gx=mg?0:pm.gunDmg,rx=mg?0:pm.blastR+(pm.hiEx>0?F.hiEx.r:0);   // gx / rx：v0.8.23 建筑的爆炸伤害、范围（精制火药 + 高爆炸药）
   return{w:techW(w,bow,stone),hit:100+(keep?0:bbA(t,'hit'))+(au?au.hit:0),critPt:keep?0:bbA(t,'crit'),dmg:(w.dmg+(w.magic&&!keep?mgcA(s):0))*(keep?1:tlAtk(s)*bbM(t,'atk'))*(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*(w.magic&&!keep?mgcK(s):1)*haFgS(s),bp,am:(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*haFgS(s),range:(w.range+(keep?0:s.cfg.lvRange?s.cfg.lvRange[L]:TL.rangeAdd[L]))*(ev&&ev.rangeMul||1)*(1+pm.towerRange+pm.rangeC+(au?au.range:0)+tRange+(G.caRng||0)+HH_RA)*16*(G.zsMu||1)*OATH_RK*(ENV.rngK||1)*HH_RK*(w.lob&&pm.lobRange>0?1+pm.lobRange:1),   // zsMu：v0.7.0 五神法「目」（独立乘区）   // evm：进化写成 × 的伤害倍率、写明独立的 dmgI（单独乘）；写「伤害 +X%」的 dmgAdd 在 bp 里相加（v0.10.11）   // udB：这座建筑伤害加成池子的 1 + 合计（engine/combat.ufAddK 用）   // haFgS：HA 加，v0.12 安德鲁「神锻」攻击（独立乘区）   // HH_RK：0.11.4 代理hh 加，御敌之策射程
@@ -61136,7 +61136,7 @@ function gwlList(){if(GWL_V!==G.structVer||GWL_G!==G){GWL_V=G.structVer;GWL_G=G;
 // 站在这段墙上的守军另加多少：每级 lvR、守望长城每级 gwlWatch（只算 Lv1～5）、御敌之巅 gwlTop（这一座够三阶门槛）；
 //   一阶「紧急加高」postMul_ 只看普通城墙那份（btEvo('wall')），站在长城城墙上换成长城城墙自己选的那份（可能是负数：普通城墙选了、长城城墙没选）
 function gwlRK(s){const e=btEvo('gwWall'),ew=btEvo('wall'),L=Math.min(5,s.level);let k=GWL_LV*L+((e&&e.wallUp)||0)-((ew&&ew.wallUp)||0);if(e&&e.gwlWatch)k+=e.gwlWatch*L;if(evo3On(s)){const e3=btEvo3('gwWall');if(e3&&e3.gwlTop)k+=e3.gwlTop}return k}
-function gwlUnitK(u){if(u.layer!==1||u.dead){if(u.gwlR!==0)u.gwlR=0;return}const st=G.structAt[tidx(u.x,u.y)],v=st&&!st.dead&&st.type==='gwWall'?gwlRK(st):0;if(u.gwlR!==v)u.gwlR=v}
+function gwlUnitK(u){if(u.layer!==1||u.dead){if(u.gwlR!==0)u.gwlR=0;if(u.isHero&&u.gwlL!==0)u.gwlL=0;return}const st=G.structAt[tidx(u.x,u.y)],w=st&&!st.dead&&st.type==='gwWall',v=w?gwlRK(st):0;if(u.gwlR!==v)u.gwlR=v;if(u.isHero){const l=w?GWL_LV*Math.min(5,st.level):0;if(u.gwlL!==l)u.gwlL=l}}   // gwlL：0.12.4（用户定）每级 +5% 只加射程、视野，英雄的施法距离扣掉这一份（heroes/hero.skP）
 function gwlUnits(){const S=G.soldiers;for(let i=0;i<S.length;i++)gwlUnitK(S[i]);const H=G.heroes;for(let i=0;i<H.length;i++)gwlUnitK(H[i])}
 // 墙自己受到的这一下（structs/evo3_tw.twHurtS 末尾：防御、减伤都算完，护盾之前）：拒敌千里骑兵 ×0.5；绝境长城按积分算免伤
 //   免伤 = 已损失的生命比例（至多 max）。扣血过程中免伤跟着涨：dh = −(h ÷ M) dD → h = h0 × e^(−D ÷ M)，降到 M × (1 − max) 以下每点伤害只扣 (1 − max)
@@ -67835,7 +67835,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.4a',GAME_TAG='测试版',GAME_CODE=175,GAME_BUILD="201473e",GAME_BUILT=1793254800393,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.4b',GAME_TAG='测试版',GAME_CODE=176,GAME_BUILD="84228c6+",GAME_BUILT=1793256533552,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
