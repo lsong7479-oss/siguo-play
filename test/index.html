@@ -11300,6 +11300,43 @@ CFG.story.regions.push(
    obRegen:  {name:'再生合金', desc:'战斗中每秒回复 3% 最大生命，受到攻击后 5 秒内改为每秒 1%', obRegen:{v:0.03, cut:{t:5, v:0.01}}},
    obLink:   {name:'众城一体', desc:'相连的、都达到三阶生效条件(Lv5 强化 +3)的黑曜城墙、城门共同承受伤害(平分)；中间隔着没达到的黑曜城墙就断开', obLink:{}}}}}
 
+/* ---------- 0.12.4 新城墙「长城城墙」gwWall（用户 2026-10-29 定；逻辑 structs/gwall.js，样子 art/gwall.js；代理 GW）----------
+   用户定：1×1、造价 10；生命 = 普通城墙的 100%；升级价格 15 / 30 / 60 / 120，每升 1 级生命翻倍；每有 1 级，城墙上的守军视野和射程额外 +5%；我方单位可以直接越过城墙
+     一阶科技：城墙通用的那一套
+     二阶科技：绝境长城（每损失 1% 生命获得 1% 免伤，至多 90%；一下伤害跨过多个百分点时按积分算整段）、
+               守望长城（城墙上的守军射程、视野、施法范围 +5 / 10 / 15 / 20 / 25%，随城墙等级）、
+               火矢长城（城墙附带箭塔：攻击 25、射程 7 格、攻击速度 2 次/秒、命中灼烧 3 秒，每秒 30% 攻击）
+     三阶科技：绝望之峰（生命 ×5）、御敌之巅（城墙上的守军射程、视野、施法范围 +50%）、
+               拒敌千里（受到攻击时把伤害来源强制击退 1 格，首领减半；5×5 格内的亡灵骑兵不能冲锋、造成伤害 ×0.5、移动速度 ×0.5，这段墙受到骑兵的伤害 ×0.5）
+     解锁：通关「守望长城」(地图 id greatWall，还没做)才能研发，现在只有测试模式能造（同边军大营）
+   Claude 定：
+     防御、等级名同普通城墙的写法；生命 Lv1～5 = 普通城墙 Lv1 的 1 / 2 / 4 / 8 / 16 倍；强化级(Lv5 以上)照城墙通用的规则加生命、算价格，不再翻倍
+     没有城门（我方单位本来就能直接走过去）；研发 300 设计点、前置荆棘墙（同黑曜城墙）；建筑科技花费同其它特殊城墙
+     「越过」= 我方单位在地面上把长城城墙当空地走（守军通行表），亡灵照样被挡；远程守军可以从任意一段长城城墙直接登墙 / 下墙（每段长城城墙都当城门用）
+     城墙上的守军 = 站在这段长城城墙上的士兵、英雄(layer 1)；加成和别的城墙加成(城墙 +25%、城体抬高、紧急加高、城楼垛口)相加；
+       等级加成只算 Lv1～5(强化级不算)；英雄的技能施法距离本来就跟着城墙射程加成走，所以等级加成也算进施法距离
+     绝境长城：免伤按这一下扣血前的生命算，扣血过程中生命越低免伤越高 —— 连续积分：生命 h 在 10% 以上时 h → h × e^(−伤害 ÷ 最大生命)，降到 10% 以下每点伤害只扣 0.1；
+       算在建筑自己的防御、减伤之后，护盾之前；持续伤害也吃
+     火矢长城：伤害吃建筑的伤害加成(卡牌的箭类、建筑、全体伤害，科技的建筑伤害、弩箭强化)，攻击速度吃建筑的攻击速度加成；不随城墙等级成长；按「自由」规则选目标(离主堡最近的)
+     拒敌千里：击退只对直接攻击(带攻击者的，近战、远程都算；持续伤害、爆炸波及不算)，按强制击退(无视重型，霸体、控制递减照算)；
+       骑兵 = 亡灵数据带 cavalry 或 charge 的；每 0.25 秒按格子查一次，在范围里的挂一个 0.35 秒的减益(统一 buff：伤害独立 ×0.5、移动速度 ×0.5)并清掉冲锋距离 */
+{const W=CFG.buildings.wall,X={cat:'wall', name:'长城城墙', cost:10, hp:W.hp, def:W.def, lvNames:['夯土长城','青砖长城','垛口长城','敌台长城','万里长城'], lvHp:[1,2,4,8,16], lvDef:W.lvDef.slice(),
+   upgK:[1.5,3,6,12], fPass:true, gwl:{lvR:0.05},
+   note:'生命为普通城墙的 100%，每升 1 级生命翻倍；城墙上的守军每有 1 级，射程、视野额外 +5%；我方单位可以直接越过(亡灵照样被挡)，远程守军可以从任意一段直接登墙'};
+ const B={};for(const k in CFG.buildings){B[k]=CFG.buildings[k];if(k==='obGate')B.gwWall=X}if(!B.gwWall)B.gwWall=X;   // 建造栏里排在黑曜城门后面
+ for(const k in CFG.buildings)delete CFG.buildings[k];Object.assign(CFG.buildings,B);
+ CFG.designTree.push({id:'gwWall', cost:300, req:['thornWall'], map:'greatWall', mapName:'守望长城', note:'通关「守望长城」后才能研发'});
+ const WE=CFG.btech.towers.wall;CFG.btech.towers.gwWall={base:['whp','wdef'], cost:[10,80], evoCost:WE.evoCost.slice(), evo:Object.assign({},WE.evo), evo2Cost:[60,480], evo2:{
+   gwDesp: {name:'绝境长城', desc:'每损失 1% 生命获得 1% 免伤，至多 90%；一下伤害跨过多个百分点时按积分算，每一段吃各自的免伤', gwlDesp:{max:0.9}},
+   gwWatch:{name:'守望长城', desc:'城墙上的守军射程、视野、施法范围额外 +5% × 城墙等级(Lv5 +25%)，和其它加成相加', gwlWatch:0.05},
+   gwFire: {name:'火矢长城', desc:'城墙附带箭塔：攻击 25、射程 7 格、攻击速度 2 次/秒，命中灼烧 3 秒(每秒 30% 攻击)', gwlArrow:{dmg:25, range:7, int:0.5, my:14,
+     w:{dmg:25, proj:'arrow', speed:14, spread:4, mix:{pierce:1}, burn:{dpsP:0.3, t:3}}}}},
+  evo3:{
+   gwPeak: {name:'绝望之峰', desc:'生命上限 ×5，独立乘区', twHpMul:5},
+   gwTop:  {name:'御敌之巅', desc:'城墙上的守军射程、视野、施法范围额外 +50%，和其它加成相加', gwlTop:0.5},
+   gwRej:  {name:'拒敌千里', desc:'受到攻击时把攻击者强制击退 1 格(首领减半)；以这段墙为中心 5×5 格内的亡灵骑兵不能冲锋，造成的伤害 ×0.5、移动速度 ×0.5；这段墙受到骑兵的伤害 ×0.5',
+     gwlRej:{kb:1, boss:0.5, r:2, eff:{atkI:-0.5, mspd:-0.5}, t:0.35, every:0.25, cav:0.5}}}}}
+
 /* ---------- v0.7.5 剧情第四部分（用户 2026-10-07 定的主线：国王既用亚瑟又怕亚瑟，开拓令本是送人出去减口粮）：三阶地区「寒冰极地」「沙漠神殿」「机械工厂」 ----------
    三面镜子（Claude 定、用户认可方向）：亚瑟还在替王国办事，每张图遇见一个先被王国用过、又被扔掉的人，一张图揭一层——
      寒冰极地：二十年前的北方船队（三百一十二个开拓者，开拓令最后一句「不必回报」），鲁滨逊；沙漠神殿：王都饿死四千人、神殿底下的粮仓、十八年前两百个搬粮的开拓者，霍青和无头镖客骑士；
@@ -19576,6 +19613,75 @@ CFG.btech.towers.campBw={base:CFG.olv.lists.camp.slice(), baseOld:['ctrain','chp
     kiri:  {name:'列装切纲', desc:'影武者 / 疾风剑豪造成伤害的 10% 改为真实伤害(无视防御和减伤)，并按这部分伤害削减目标的生命上限', bwKiri:{p:0.1}},
   }};
 
+/* ---------- 0.12.4 新兵营「边军大营」与四种星阳兵（用户 2026-10-29 策划；代理 BJ。逻辑 units/bianjun.js，美术 art/bianjun.js）----------
+   用户定：2×2、造价 500、占 2 个兵营编制、驻军 4（每升 1 级 +1，同造船厂 / 空军基地）、生命 800；带一门火炮（攻击 120、爆炸 2.5 格 50% 伤害、射程 7、攻击速度 1 次/秒、装填 3 秒、弹匣 1）；
+     四种兵都占 2 个驻军位；四种兵、一 / 二 / 三阶科技的数值照原文。通关「守望长城」(地图 id greatWall，还没做)才能研发，现在只有测试模式能造。
+   Claude 定：四阶兵营、训练 32 秒（同空军基地）、研发 300 设计点、前置骑兵营；建筑科技花费同布武阵屋（base 22 / 180、进化 90 / 720，三阶默认一阶的 5 倍）；
+     火炮的弹速 16、偏移 4°、物理穿透 10，兵营视野 8 格（火炮射程 7 格，原来兵营只有 5 格视野）；各兵种没写的数(近战副武器、弹速、偏移……)。
+   兵种字段 bj（units/bianjun.bjBt 读，合进 u.bj）：
+     k 种类：tiger 白虎骑 / phoenix 火凰射 / tortoise 玄武卫 / dragon 火龙车
+     tiger   cut {def, pdr, vuln, t, max}   每次命中叠一层：物理防御 −def(比例，按没吃 buff 的防御)、物理减伤 −pdr、易伤 +vuln，t 秒，最多 max 层（命中刷新时间）
+             fear 冲锋命中的恐惧秒数；leap {r, t, aoe, mul, stun, cd} 技能「虎跃」：r 格内的目标，t 秒跃过去，落地 aoe 格内 mul 倍伤害(无视物理防御和物理减伤)并眩晕 stun 秒，冷却 cd
+     phoenix chg {min, max} 蓄力：攻击间隔可以提前到 min 倍、蓄到 max 倍，伤害 × 间隔倍数；pit {r, t, dps, fr} 命中处留下火坑(每秒 dps × 攻击)，站在里面的亡灵火焰抗性 −fr(不叠加，持续 t 秒)
+             fall {r, pitR, pitT, dps, clrT, mul, cd} 技能「凰落」：射程内的目标，r 格爆炸 mul 倍伤害，留下 pitR 格、pitT 秒的火坑(每秒 dps × 攻击)，站在里面的亡灵火焰抗性清空 clrT 秒；冷却 cd
+     tortoise bkSh {pct, max, t, cd} 格挡时获得 pct 最大生命的护盾(t 秒)，最多 max，冷却 cd；
+             xd {t, cd, bk, ref, icpt} 技能「玄盾」：t 秒内必定格挡、格挡防御 +bk、能格挡法术伤害，受到伤害把原伤害的 ref 以法术伤害反弹，拦截 icpt 格内的亡灵弹道；冷却 cd
+             （替伤用兵种的 share {r, f}：r 格内的友军受到的直接伤害 f 转给玄武卫，units/church 的僧侣替伤；建筑在 units/bianjun 的 dmgInS 里同样转）
+     dragon  fl {arc, len, tick, k, fr, frT, frMax} 喷火：arc° 扇形、len 格，每 tick 秒结算一次 k × 攻击的火焰伤害、目标火焰抗性 −fr(叠层，每层 frT 秒，命中刷新，最多 frMax 层)
+             char {every, max} 焦炭痕迹：喷火时每 every 秒(或喷火方向转过 30°)留下一块和喷火一样大的扇形痕迹，每辆最多 max 块，每波清除
+             blaze {r, mul, burn, bt, cd} 技能「爆炎」：自身 r 格内所有焦炭痕迹里的亡灵受到 mul 倍伤害并灼烧(每秒 burn × 攻击，bt 秒)；冷却 cd
+   进化字段（CFG.btech.towers.campBj；合并后的进化对象里读）：
+     bjCd1 / bjCd2       一阶 / 二阶：兵种技能冷却时间 −X(和将领的相加)
+     bjCap1 / bjCap2     一阶 / 二阶：驻军上限 +X%(和卡牌的驻军加成相加，units/soldiers.campCap)
+     bjElite {w, k}      一阶「羽林精锐」：每名兵多占 w 个驻军位，生命、攻击、物理防御、法术防御、格挡防御 ×(1 + k)(独立)
+     bjGen {k, cd}       二阶「封王拜将」：每座兵营的首个士兵(将领阵亡后，下一名训练出来的)当将领：生命、攻击、双防、格挡防御 ×(1 + k)(独立)，技能冷却 −cd；
+                         将领的目标就是同兵营士兵的目标(同进同退，指挥攻击 / 指挥前往的兵不跟)
+     bjTiger3 {hp, speed, bite {dmg, int, reach}, dash {dist, t, mul, cd}}   三阶「神兽白虎」：生命、移动速度改成这个数；白虎自己攻击身边的亡灵，放技能「冲锋」
+     bjPhx3 {air}        三阶「落凰神弓」：间隔倍数 > 1 时伤害 × 倍数²，< 1 时 ×(0.5 + 倍数 ÷ 2)；对飞行单位 × air
+     bjTort3 {icptR}     三阶「玄武重铠」：一直带着一层「玄盾」(不拦截弹道)；放技能时再叠一层，并拦截 icptR 格内的亡灵弹道
+     bjDrg3 {every, range, ang, speed, dmg, stun, r, mul, burn, bt}   三阶「炎龙火炮」：喷火时每 every 秒向前方 ±ang° 发射一枚火焰弹，命中第一个亡灵 dmg 伤害(随攻击倍率成长)、
+                         眩晕 stun 秒，r 格内爆炸 mul 倍伤害，灼烧(每秒 burn × 火焰弹伤害，bt 秒) */
+CFG.camps.campBj={name:'边军大营', tier:4, units:['bjTiger','bjPhoenix','bjTortoise','bjDragon'], cost:500, hp:800, train:32, size:2, campSlots:2, cap:[4,5,6,7,8], vision:8, kind:'gunpowder',
+  weapon:{dmg:120, int:1, mag:1, reload:3, range:7, spread:4, proj:'ball', speed:16, pen:10, blast:{r:2.5, mul:0.5, mix:{impact:1}}, mix:{impact:1}},
+  note:'星阳边军的大营：带一门火炮(攻击 120，命中处 2.5 格爆炸 50% 伤害，射程 7 格，装填 3 秒)；四种兵都占 2 个驻军位'};
+Object.assign(CFG.units,{
+  bjTiger:   {name:'星阳白虎骑', tier:4, hp:850, def:25, mdef:10, speed:4, capW:2, melee:{dmg:90, int:1, reach:1.5}, charge:2.5, cavalry:true, hitRun:{back:2.6, t:0.9},
+              weapon:'spear', bj:{k:'tiger', cut:{def:0.2, pdr:0.2, vuln:0.1, t:3, max:3}, fear:3, leap:{r:6, t:1, aoe:2.5, mul:2, stun:2, cd:10}},
+              note:'冲锋伤害 ×2.5，冲锋命中时目标恐惧 3 秒；每次命中让目标物理防御 −20%、物理减伤 −0.2、易伤 +10%，持续 3 秒，最多叠 3 层；技能「虎跃」：跃向 6 格内的目标，落地 2.5 格内 200% 伤害(无视物理防御和物理减伤)并眩晕 2 秒，冷却 10 秒'},
+  bjPhoenix: {name:'星阳火凰射', tier:4, hp:650, def:18, mdef:8, speed:2.5, capW:2, melee:{dmg:30, int:1.2, reach:0.8},
+              ranged:{dmg:105, int:1/1.5, range:10, spread:2, mag:0, reload:0, proj:'arrow', speed:20, kb:0.5, blast:{r:1, mul:0.5, mix:{fire:1}}},
+              weapon:'longbow', side:'dagger', rmix:{pierce:1},
+              bj:{k:'phoenix', chg:{min:0.5, max:2}, pit:{r:1, t:3, dps:0.5, fr:0.5}, fall:{r:4, pitR:4, pitT:5, dps:0.5, clrT:3, mul:2, cd:10}},
+              note:'射程 10 格，攻击速度 1.5 次/秒，击退 0.5 格；攻击可以蓄力到 2 倍攻击间隔、也可以提前到 0.5 倍放出，伤害 × 间隔倍数；命中处 1 格爆炸(50% 伤害)并留下 3 秒火坑，每秒灼烧 50% 攻击，火坑里的亡灵火焰抗性 −0.5(不叠加)；技能「凰落」：目标处 4 格爆炸 200% 伤害并留下 5 秒火坑，火坑里的亡灵火焰抗性清空 3 秒(火焰免疫不受影响)，冷却 10 秒'},
+  bjTortoise:{name:'星阳玄武卫', tier:4, hp:1800, def:45, mdef:25, speed:2, capW:2, block:0.75, shield:70, shieldSize:3, melee:{dmg:60, int:1, reach:0.5}, stagMul:0.5,
+              share:{r:4, f:0.8}, weapon:'club',
+              bj:{k:'tortoise', bkSh:{pct:0.1, max:0.5, t:5, cd:1}, xd:{t:4, cd:10, bk:1, ref:0.2, icpt:1}},
+              note:'格挡 75%，格挡防御 70；4 格内的友军单位(含建筑)受到的直接伤害 80% 转给玄武卫；格挡时获得 10% 最大生命的护盾，最多 50%，冷却 1 秒；技能「玄盾」：4 秒内必定格挡、格挡防御 +100%、能格挡法术伤害，受到伤害时把原伤害的 20% 以法术伤害反弹，拦截身边的亡灵弹道，冷却 10 秒'},
+  bjDragon:  {name:'星阳火龙车', tier:4, hp:1000, def:15, mdef:5, speed:1, capW:2, noWall:true, melee:{dmg:20, int:1.5, reach:0.8},
+              ranged:{dmg:80, int:1, range:4.5, spread:0, mag:0, reload:0, proj:'fire', speed:10, magic:true},
+              weapon:null, rmix:{fire:1},
+              bj:{k:'dragon', fl:{arc:90, len:4.5, tick:0.1, k:0.1, fr:0.1, frT:3, frMax:30}, char:{every:1, max:12}, blaze:{r:10, mul:2.5, burn:0.2, bt:3, cd:10}},
+              note:'向前方 90° 扇形、4.5 格内喷火，每秒 100% 火焰伤害(每 0.1 秒结算 10%)，每次让目标火焰抗性 −0.1(可叠加，持续 3 秒)；喷火后留下扇形「焦炭痕迹」，每波清除；技能「爆炎」：自身 10 格内所有焦炭痕迹里的亡灵立刻受到 250% 伤害并灼烧(每秒 20% 攻击，3 秒)，冷却 10 秒'},
+});
+CFG.designTree.push({id:'campBj', cost:300, req:['campC'], map:'greatWall', mapName:'守望长城', note:'通关「守望长城」后才能研发'});
+CFG.btech.towers.campBj={base:CFG.olv.lists.camp.slice(), baseOld:['ctrain','chp','catk'],   // base：本文件排在 data/olv.js 之后，要直接用新的基础加成列表（0.11.2 布武阵屋的教训）
+  cost:[22,180], evoCost:[90,720], evo:{
+    mouShi:  {name:'谋士建言', desc:'边军大营所有兵种的技能冷却时间 −25%', bjCd1:0.25},
+    junShu:  {name:'军书百卷', desc:'边军大营驻军上限 +50%(和卡牌的驻军加成相加)', bjCap1:0.5},
+    yuLin:   {name:'羽林精锐', desc:'边军大营的兵种多占 1 个驻军位；生命、攻击、物理防御、法术防御、格挡防御 +80%(独立)', bjElite:{w:1, k:0.8}},
+  }, evo2:{
+    junShi:  {name:'军师献策', desc:'边军大营所有兵种的技能冷却时间 −25%', bjCd2:0.25},
+    xianYun: {name:'闲云点兵', desc:'边军大营驻军上限 +50%(和卡牌的驻军加成相加)', bjCap2:0.5},
+    fengWang:{name:'封王拜将', desc:'每座边军大营的首个士兵成为「将领」：生命、攻击、物理防御、法术防御、格挡防御 +50%(独立)，技能冷却时间 −25%；同兵营的士兵跟着将领攻击同一个目标(将领阵亡后，下一名训练出来的士兵接任)', bjGen:{k:0.5, cd:0.25}},
+  }, evo3:{
+    tiger:   {name:'神兽白虎', desc:'白虎骑的坐骑换成「白虎」：移动速度 4.5 格/秒、生命 1000；白虎自己攻击身边的亡灵(攻击 180，攻击速度 0.6 次/秒)，并放技能「冲锋」：向前冲刺 5 格，对沿途的亡灵造成白虎 100% 的伤害，冷却 5 秒',
+              bjTiger3:{hp:1000, speed:4.5, bite:{dmg:180, int:1/0.6, reach:1.5}, dash:{dist:5, t:0.5, mul:1, cd:5}}},
+    phoenix: {name:'落凰神弓', desc:'火凰射的弓换成「落凰」：攻击间隔大于 1 倍时伤害 × 间隔倍数的平方，小于 1 倍时伤害 ×(0.5 + 间隔倍数 ÷ 2)；对飞行单位伤害 ×2', bjPhx3:{air:2}},
+    tortoise:{name:'玄武重铠', desc:'玄武卫一直带着一层「玄盾」效果(不拦截弹道)；放技能「玄盾」时再叠一层(格挡防御、反弹都翻倍)，并拦截身边 2.5 格内的亡灵弹道', bjTort3:{icptR:2.5}},
+    dragon:  {name:'炎龙火炮', desc:'火龙车喷火时每 0.2 秒向前方 7 格 ±15° 发射一枚火焰弹(每秒 5 格)，命中第一个亡灵造成 125 伤害并眩晕 1 秒(随攻击倍率成长)，2.5 格内爆炸 50% 伤害并灼烧(每秒 30%，3 秒)',
+              bjDrg3:{every:0.2, range:7, ang:15, speed:5, dmg:125, stun:1, r:2.5, mul:0.5, burn:0.3, bt:3}},
+  }};
+
 // ---------- 0.11.3 英雄战斗力的技能折算（tools/stats/herocp.py 生成，别手改；算法见 game/hero_cp.js）----------
 // rate[英雄][星级−1] = [a, b]：输出 = a + b × 普攻每秒伤害（a 技能的固定部分，b 属性折算系数）；refAtk：有效承伤用的参照攻击；refDef / refMdef：普攻输出用的参照防御（= 木桩的物防 / 法防，约五阶）；dummy / dummyHp：测量用的木桩（亡灵种类、最大生命）
 CFG.heroCP={refAtk:60, refDef:18.5, refMdef:17, dummy:'efMutantBear', dummyHp:10000, rate:{
@@ -20988,7 +21094,9 @@ hbJy hbJyK hbJyN hbBsCd hbBsN hbBsT
 gwRg0 gwRgB gwV0 gwK
 bw deflE bwSpT bwFrU bwUdU bwUdN bwAuT bwDs bwCd bwMo
 visR smXi smXd smXt npFaU npFaN npFsU npFsN
-obRgU obRgV`.trim().split(/\s+/);   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）
+obRgU obRgV
+bj
+gwlR`.trim().split(/\s+/);   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // bj：代理 BJ 加（0.12.4 边军大营的兵，units/bianjun）   // gwlR：GW 加（0.12.4 站在长城城墙上的射程、视野加成，structs/gwall）
 // 英雄的全部字段：前面是 makeHero 字面量、heroRecalc 写的，后面是各技能、装备、地图机制写的
 const HERO_KEYS=`
 id d mnt spr star spec slot isHero ctl x y hp maxHp def dodge block shield resist facing dx dy dir aimA weapons wi ws swapT offhand armorList accList
@@ -21055,7 +21163,8 @@ xlFangV xlFangM xlArmV
 blGaleU blWRU blSpoutU blTideU blVerU blHellU blCycU blShU blUdV blUdN blUdT
 elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elKsN elKsU elFsI elFsN elCapT elCapD elWsW elStT elStX elStY elMaT elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU elSongU elSongR elSongE elWarU elWarR elWarE elThz elRjU elRjN elRjR elRjP spAU spGL spGwv spGb spGd spGrT spDwN spDwU spDwV spDsD spDsM spDsX spDsY spRf npMT npFaU npFaN npFsU npFsN
 obRgU obRgV
-elAcc elCritK elBrk elSpen cmdU coU coF ordU ordF stEl`.trim().split(/\s+/);   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）
+elAcc elCritK elBrk elSpen cmdU coU coF ordU ordF stEl
+gwlR`.trim().split(/\s+/);   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -21091,10 +21200,11 @@ chOcc
 haFg
 visR smXi smXd smXt
 isCamp
-obCT obCD obRgT`.trim().split(/\s+/);   // isCamp：P3 加（0.12.2d 性能），见 structs/structs.makeStruct
-const SOLDIER_NUM='x y hp maxHp baseHp chp def dodge block shield stagMul taunt vision facing dir anim flash stag atkCd shotCd ammo rel think ti tid recoil thrust swing calm chg patrolT px py slot statMul lastHit slA layer elev atkAdd atkMul rgMul critAdd critMulAdd pierceN mvSp kiteK gdTile gdSeen gdV mgA mgK mgU s2Dr s2Chg cv _sx _sy shieldHp shieldMax shieldT critPt cmdU'.split(' ');   // P2 加（0.12.2d）cv…cmdU：每帧 / 每次受击都写小数、读的地方都是 ||0 或比大小的字段，先填 0 让它一直是数字（原来先装 undefined，之后每写一次小数都新建一个数字对象）
-const HERO_NUM='star slot x y hp maxHp def dodge block shield facing dx dy dir aimA wi swapT atkCd swing swingA thrust recoil ammo rel shieldHp shieldMax shieldT reflect whirlT whirlTk whirlA dashT dvx dvy inv flash anim respawn aiT aiTi aiTid tgtI tgtId lastHit layer elev calm vision tvNx mdef speed crit regen aspd stnU lastAtk cv'.split(' ');   // P2 加（0.12.2d）mdef…lastAtk：同上
-const STRUCT_NUM='tx ty x y level flash cd ammo rel aim recoil mgA mgK mgU stEff shcU shcF xgVn xgRgT hp maxHp def rsh'.split(' ');   // P2 加（0.12.2d）hp maxHp def rsh：建筑每挨一下都写 hp，同上
+obCT obCD obRgT
+gwlCd`.trim().split(/\s+/);   // isCamp：P3 加（0.12.2d 性能），见 structs/structs.makeStruct
+const SOLDIER_NUM='x y hp maxHp baseHp chp def dodge block shield stagMul taunt vision facing dir anim flash stag atkCd shotCd ammo rel think ti tid recoil thrust swing calm chg patrolT px py slot statMul lastHit slA layer elev atkAdd atkMul rgMul critAdd critMulAdd pierceN mvSp kiteK gdTile gdSeen gdV mgA mgK mgU s2Dr s2Chg cv _sx _sy shieldHp shieldMax shieldT critPt cmdU gwlR'.split(' ');   // P2 加（0.12.2d）cv…cmdU：每帧 / 每次受击都写小数、读的地方都是 ||0 或比大小的字段，先填 0 让它一直是数字（原来先装 undefined，之后每写一次小数都新建一个数字对象）   // gwlR：GW 加（0.12.4 长城城墙，structs/gwall）
+const HERO_NUM='star slot x y hp maxHp def dodge block shield facing dx dy dir aimA wi swapT atkCd swing swingA thrust recoil ammo rel shieldHp shieldMax shieldT reflect whirlT whirlTk whirlA dashT dvx dvy inv flash anim respawn aiT aiTi aiTid tgtI tgtId lastHit layer elev calm vision tvNx mdef speed crit regen aspd stnU lastAtk cv gwlR'.split(' ');   // P2 加（0.12.2d）mdef…lastAtk：同上   // gwlR：GW 加（0.12.4 长城城墙，structs/gwall）
+const STRUCT_NUM='tx ty x y level flash cd ammo rel aim recoil mgA mgK mgU stEff shcU shcF xgVn xgRgT hp maxHp def rsh gwlCd'.split(' ');   // P2 加（0.12.2d）hp maxHp def rsh：建筑每挨一下都写 hp，同上   // gwlCd：GW 加（0.12.4 长城城墙，structs/gwall）
 const Soldier=shapeCtor(SOLDIER_KEYS,SOLDIER_NUM),Hero=shapeCtor(HERO_KEYS,HERO_NUM),Struct=shapeCtor(STRUCT_KEYS,STRUCT_NUM);
 // P2 加（0.12.2d 性能）：把每个字段预先「写宽」一遍（造几个丢掉的实例：数字字段写一次小数，其它字段先写数字再写对象、字符串、null，最后写回 undefined）。
 //   为什么：几百个字段的构造函数在 V8 里是一条几百层的形状转换链；一局里某个字段第一次被写进小数（原来是整数）、第一次被改写（V8 记字段「从没改过」）、第一次装进别种对象，
@@ -21370,7 +21480,7 @@ function buildSprites(){
   SPR.rock=fromRows(['..kkkk..','.kMMMmk.','kMMMmmmk','kmMmmmmk','.kkkkkk.']);
   SPR.crypt=fromRows(['.kkkkkkkkkk.','kmMMMMMMMMmk','kMkkkkkkkkMk','kMkddddddkMk','kMkddddddkMk','kmkkkkkkkkmk','.kkkkkkkkkk.']);
   SPR.b={};   // 建筑、陷阱、主堡的图都在 art/hd_build 的 hdBuildSprites 里画（v0.9.51 删了旧版画面的建筑像素画）
-  for(const st of WALL_T)for(let lvl=1;lvl<=CFG.maxLevel;lvl++)for(let mask=0;mask<16;mask++)SPR.wall[wkey(st,mask,lvl)]=reg(wallCanvasHD(mask,lvl,st),2);   // 0.5.7 高清墙体（art/hd_build；原来的 wallCanvas 留着备用）
+  for(const st of WALL_T)for(let lvl=1;lvl<=CFG.maxLevel;lvl++)for(let mask=0;mask<16;mask++)SPR.wall[wkey(st,mask,lvl)]=reg(BDEF[st].gwl?gwlWallCanvas(mask,lvl):wallCanvasHD(mask,lvl,st),2);   // 0.5.7 高清墙体（art/hd_build；原来的 wallCanvas 留着备用）   // GW 加：gwlWallCanvas 0.12.4 长城城墙自己的图（art/gwall，按等级变高）
   hdBuildSprites();settleSprites();ktSprites();   // ktSprites：代理 KT，开拓地建造中的图
     // settleSprites：v0.6.2 开拓地建筑、居民（新旧画面都用高清）   // 0.5.7 建筑高清重绘（art/hd_build）：按 1 / 3 / 5 级三档
   SPR.trees=[0,1,2].map(k=>reg(paint(16,24,P=>{
@@ -35995,6 +36105,130 @@ HD_BUILD.campBw=t=>hdFig(64,80,S=>{const M=jpM(),m=hbm(),wall=t===0?M.woodL:M.pl
     const fx=lf?x-6:x+1.6;S.rect(fx,12,6,24,hdMat(t===0?'#d8d0bc':BW_K.red,'cloth'),{R:0.6});for(let k=0;k<3;k++)S.dt(fx+3,16+k*6,1.2,t===0?'#2a2630':t===2?BW_K.gold:'#f4f0e4')}
   if(t===2)for(const x of[19,45]){S.rect(x-1,62,2,6,m.iron,{R:0.4});S.ell(x,61,2.6,1.4,m.iron);hbGlow(S,x,59.4,'#ffd25a','#ff7a2e');S.px(x,58.4,'#fff3c4')}});   // 门口的篝火台
 
+// ---------- 0.12.4 边军大营与四种星阳兵的高清图（代理 BJ；数据 data/build_bianjun.js，逻辑 units/bianjun.js）----------
+// 星阳 = 东方军团：朱红 + 金、黑漆铁甲；零件（Claude 定的样子）：兜鍪（圆钵 + 护颈 + 顶上红缨）、明光铠（胸前两面金护心镜、甲片横线）、星阳纹（金色的日轮 + 中间一颗星）。
+// 朝右画；两帧 0 站 / 1 迈步。长枪、长弓、大盾、骨朵由代码画在手上（兵种的 weapon / shieldSize），这里只画人、马、虎、车。
+// 三阶换样子（units/bianjun.bjBt 设 u.hbJyK）：bjTigerS 骑白虎、bjPhoenixS 背后一对火羽（落凰）；登记进 HB_JY_SPR（art/art.buildSprites 照兵种的画法做成 SPR.units[键]）
+const BJ_K={red:'#b8282a',redD:'#7a1a1c',redL:'#d8483a',gold:'#e8b84a',goldD:'#a87a2a',blk:'#26232c',blkL:'#3e3a48',iron:'#5a606c',teal:'#2a7a6a',tealL:'#4ab8a0',white:'#eeeae2',whiteD:'#b8b4ac'};
+// 星阳纹：金色日轮 + 一圈短光芒 + 中间一颗小星（S 坐标 cx, cy，r 半径）
+function bjSunMark(S,cx,cy,r,col,bg){S.dt(cx,cy,r,col);for(let k=0;k<8;k++){const a=k*Math.PI/4;S.px(cx+Math.cos(a)*(r+1),cy+Math.sin(a)*(r+1),col)}if(bg)S.dt(cx,cy,r*0.5,bg)}
+// 兜鍪：圆钵 + 两侧往后的护颈 + 眉庇；o.tassel 顶上红缨（材质），o.plume 一对往后飘的长羽（材质）
+function bjHelm(S,col,o){o=o||{};const m=hm(col,'metal');
+  S.part(m,{},p=>{p.ell(15.6,8.4,6.6,5.4);p.cut.rect(0,9.8,32,9);p.poly([[8.4,9],[13.4,9],[13.4,14.6],[7.6,14.2]])});   // 圆钵 + 护颈
+  S.ln(9,11.6,13,11.8,[m,1]);S.ln(9,13.4,13,13.6,[m,1]);S.ln(9.2,9.8,22.6,9.8,[m,4]);S.ln(15.6,3.4,15.8,9,[m,4]);   // 护颈的甲片缝、眉庇亮边、钵上的筋
+  S.part(hm(BJ_K.gold,'metal'),{R:0.4},p=>p.rect(14.6,2.2,2.2,1.6,0.6));
+  if(o.tassel)S.part(o.tassel,{},p=>{p.ell(15.2,1.2,2.6,1.6);p.poly([[13,1.4],[9.4,4.4],[10.4,5],[14,2.4]])});
+  if(o.plume)S.part(o.plume,{R:0.6},p=>{p.cap(15.4,2.4,6,-1,0.9,0.5);p.cap(16.4,2.6,8.4,-2.6,0.8,0.4)})}
+// 明光铠（躯干）：甲片横线 + 两面金护心镜；col 甲色、lc 甲片线色
+function bjMg(S,col,lc){const m=hm(col,'metal');S.part(m,{R:2},p=>p.rect(10,15,12,8.6,2.4));for(const y of[17.4,19.6,21.8])S.ln(10.6,y,21.4,y,lc);
+  for(const x of[13.2,18.8]){S.dt(x,17.8,1.6,BJ_K.gold);S.px(x-0.5,17.2,'#fff3c4')}
+  S.part(m,{R:1},p=>{p.rect(9.4,23.4,4.2,4,0.6);p.rect(13.9,23.6,4.2,4.2,0.6);p.rect(18.4,23.4,4.2,4,0.6)});for(const x of[9.8,14.3,18.8])S.ln(x,25.2,x+3.4,25.2,lc)}
+// 护肩（兽面吞口：一块圆甲 + 金边）
+function bjPauld(S,x,y,col,o){o=o||{};S.ell(x,y,o.r||3.4,2.8,hm(col,'metal'));S.ln(x-2.6,y+1.4,x+2.6,y+1.4,o.trim||BJ_K.gold)}
+
+// ===== 白虎骑：朱红明光铠、黑漆兜鍪 + 红缨，骑白马（虎纹鞍毯：白底黑纹），背后一面星阳小旗 =====
+function bjRiderTop(S,fr){const R=hdU_shift(S,8,4),A=hm(BJ_K.red,'metal'),AD=hm(BJ_K.redD,'metal'),skin=hm(SKIN,'skin');
+  hdArmBack(R,{sleeve:AD,hand:AD});bjMg(R,BJ_K.red,'#e8a848');
+  hdU_riderLeg(S,{leg:AD,boot:hm(BJ_K.blk,'leather')});
+  hdArmFront(R,{sleeve:AD,hand:AD});bjPauld(R,10,16,BJ_K.red);bjPauld(R,22,16,BJ_K.red);
+  hdHead(R,{skin});hdFace(R,{skin,ey:11,brow:'#2a1a10'});R.ln(17.4,14.6,21,14.4,'#3a2418');   // 胡子
+  bjHelm(R,BJ_K.blk,{tassel:hm(BJ_K.red,'hair')});return R}
+function bjFlagB(S,x,y0,y1){S.cap(x,y1,x,y0,0.5,0.5,hm('#4a3220','wood'));const f=hm(BJ_K.red,'cloth');S.part(f,{R:0.8},p=>p.poly([[x-0.4,y0+0.6],[x-8,y0+1.6],[x-6.6,y0+5.4],[x-8,y0+9.2],[x-0.4,y0+10]]));bjSunMark(S,x-4,y0+5.2,1.4,BJ_K.gold)}
+function hdU_bjTiger(fr){return hdFig(48,46,S=>{
+  bjFlagB(S,14.6,1,24);
+  hdU_horse(S,fr,{coat:hm(BJ_K.white,'hair'),far:hm(BJ_K.whiteD,'hair'),mane:hm('#3a3a44','hair'),cloth:hm('#f4f0e6','cloth'),trim:[hm(BJ_K.gold,'metal'),3],big:true,crest:hm(BJ_K.red,'hair'),hoof:hm('#2a2024','metal')});
+  for(const[x,y]of[[13,29.6],[16.6,29],[20.4,29],[24.2,29.6],[27.6,30.4]])S.ln(x,y,x+1.6,y+6.4,'#2a2a32');   // 鞍毯上的虎纹
+  bjRiderTop(S,fr)})}
+// ===== 神兽白虎（三阶）：骑手同上，坐骑换成白虎（白毛黑纹、蓝眼、长尾巴往上翘）=====
+function bjTigerBody(S,fr){const W=hm(BJ_K.white,'hair'),WD=hm(BJ_K.whiteD,'hair'),st='#2a2a32',claw=hm('#d8d4cc','bone');
+  const L=fr?[[11,6.6],[29,26],[14,17],[33,38]]:[[10,8.6],[29.6,29.2],[15,15.6],[34,35.6]];
+  S.part(W,{R:1.4},p=>p.poly(fr?[[8,29],[4,26],[1,19],[2.6,17.4],[5.4,22],[9,26.4]]:[[8,29],[3.6,27.4],[0.6,21],[2.4,19.6],[5,23.6],[9,26.6]]));S.ln(1.6,19.4,2.8,21,st);S.ln(3,24.4,4.6,25.6,st);   // 尾巴（往上翘）
+  S.part(WD,{},p=>{for(const[x0,x1]of[L[0],L[1]]){p.cap(x0,34,(x0+x1)/2,39,3.2,2.2);p.cap((x0+x1)/2,39,x1,43.6,2.2,2)}});   // 远侧的两条腿（比马粗、短）
+  S.part(W,{},p=>{p.ell(21,32,14.4,6.4);p.ell(10.6,31.4,6.4,6.2);p.ell(32,30.6,6.8,6.8)});   // 臀、肚子、胸
+  S.part(W,{},p=>{p.ell(39.4,25.6,6.4,5.6);p.ell(44.2,27.6,3.4,2.8)});   // 头 + 口鼻
+  S.part(W,{R:1},p=>{p.poly([[35,21.6],[36,17.6],[38.6,20.4]]);p.poly([[39.6,20],[41.6,17],[42.4,21]])});S.px(37.4,19.6,'#e8a8a0');   // 耳朵
+  S.part(W,{},p=>{for(const[x0,x1]of[L[2],L[3]]){p.cap(x0,34,(x0+x1)/2,39,3.4,2.4);p.cap((x0+x1)/2,39,x1,43.6,2.4,2.2)}});   // 近侧的两条腿
+  S.part(claw,{R:1},p=>{for(const[,x1]of L)p.ell(x1+0.6,44.4,2.6,1.4)});
+  S.ln(40.8,27.4,43,27,st);S.dt(41.6,24.2,0.9,'#4ab0e8');S.px(42,23.8,'#ffffff');S.px(46.6,27.2,HD_INK);S.ln(43.4,29.4,46,29,[W,0]);   // 眉纹、蓝眼、鼻、嘴
+  S.part(hm(BJ_K.red,'cloth'),{R:2},p=>p.poly([[14,26.4],[29.6,25.8],[30.4,33.4],[13.4,33.4]]));S.ln(13.6,33,30.2,33,[hm(BJ_K.gold,'metal'),3]);   // 红鞍毯
+  S.part(hm('#5a3a24','leather'),{R:1},p=>p.poly([[17,24.6],[19,26.8],[25.6,26.8],[28,24.4],[28.4,28],[16.6,28]]));   // 鞍
+  for(const[x0,y0,x1,y1]of[[6.4,27.4,8.4,33.6],[9.6,26.4,11,32.4],[13.6,34,12.6,38.6],[17.4,34.4,16.6,38.8],[21.2,34.4,20.6,38.8],[25,34.2,24.6,38.4],[29.2,33.8,29.6,37.6],[31.6,26.4,33.6,32],[34.4,24.6,36.4,30],[37.2,21.8,38.4,26.4]])S.ln(x0,y0,x1,y1,st,2);   // 黑纹（臀、肚子、肩上，鞍毯盖住的不画）
+  for(const[x0,y0]of[[12,36.6],[15.2,36.6],[30.4,36.4],[33.6,36.4]])S.ln(x0,y0,x0-0.8,y0+3,st,1);S.ln(38.4,24,40.4,23.4,st);S.ln(38.8,26,41,25.8,st)}
+function hdU_bjTigerS(fr){return hdFig(48,46,S=>{bjFlagB(S,14.6,1,24);bjTigerBody(S,fr);bjRiderTop(S,fr)})}
+
+// ===== 火凰射：朱红长袍 + 金边、皮护胸、兜鍪上一对往后飘的赤羽，背后箭囊；长弓由代码画 =====
+function bjArcher(fr,o){return hdFig(32,32,S=>{const robe=hm(BJ_K.red,'cloth'),robeD=hm(BJ_K.redD,'cloth'),gold=hm(BJ_K.gold,'metal'),skin=hm(SKIN,'skin'),lea=hm('#6a4428','leather');
+  hdU_body(S,fr,{pants:hm('#3a2a28','cloth'),boot:hm('#2a1a14','leather'),bootH:3,sleeve:robeD,hand:skin,body:robe,
+    back:S=>{S.part(lea,{R:1},p=>p.poly([[6.6,13.4],[9.6,12.8],[11,23],[8,23.6]]));for(const[x,y]of[[6.4,11],[7.8,10.4],[9.2,10.8]]){S.ln(x+1,y+3.6,x,y,'#5a3a22');S.px(x,y,'#ff9a3c')}   // 箭囊（火红的箭羽）
+      if(o.wings)for(const sg of[0,1])S.part(hm(sg?'#ffb040':'#e85a2a','cloth'),{R:1.2},p=>p.poly(sg?[[10,15],[4,8],[1,9.6],[3,13.4],[0.4,15],[3.6,18],[1.4,20.6],[6,21.4]]:[[10,16],[5.6,6.6],[3.6,7.6],[5,11.6],[2.6,13],[5.4,16.4],[3.6,19],[7.6,20.4]]))},   // 落凰：一对火羽
+    torso:S=>{S.part(lea,{R:1.6},p=>p.poly([[11,15.2],[21,15.2],[21.4,21],[10.6,21]]));S.ln(16,15.6,16,20.6,[lea,1]);bjSunMark(S,16,18,1.3,BJ_K.gold);
+      S.part(robe,{R:1},p=>p.poly([[9.4,22.4],[22.6,22.4],[23.6,27.6],[8.4,27.6]]));S.ln(8.8,27,23.2,27,[gold,3])},
+    belt:hm(BJ_K.blk,'leather'),buckle:[gold,3],beltY:21.6});
+  hdHead(S,{skin});hdFace(S,{skin,ey:11,brow:'#2a1a10'});
+  bjHelm(S,o.helm,{plume:hm(o.wings?'#ffb040':BJ_K.redL,'hair')})})}
+const hdU_bjPhoenix=fr=>bjArcher(fr,{helm:BJ_K.iron});
+const hdU_bjPhoenixS=fr=>bjArcher(fr,{helm:BJ_K.goldD,wings:true});
+
+// ===== 玄武卫：通身黑漆重甲、背上一面龟甲（六角纹）、青色绦带，兜鍪全面甲；大盾和骨朵由代码画 =====
+function hdU_bjTortoise(fr){return hdFig(32,32,S=>{const blk=hm(BJ_K.blk,'metal'),blkL=hm(BJ_K.blkL,'metal'),teal=hm(BJ_K.teal,'metal'),shell=hm('#3a4a3e','metal');
+  hdU_body(S,fr,{pants:blkL,boot:blk,bootH:5,sleeve:blkL,hand:blk,body:blk,
+    back:S=>{S.part(shell,{R:3},p=>p.ell(9.4,19,5.4,7.6));for(const[x,y]of[[9.4,15.4],[7.4,19],[11.4,19],[9.4,22.6]]){S.ln(x-1.4,y-1,x+1.4,y-1,[shell,4]);S.ln(x-1.4,y+1,x+1.4,y+1,[shell,0]);S.px(x-2,y,[shell,4]);S.px(x+2,y,[shell,0])}},   // 背上的龟甲
+    legs:S=>{for(const x of fr?[10.5,21.5]:[12,20])S.ell(x,26.2,2.4,2,blkL)},
+    torso:S=>{S.part(blkL,{R:2.4},p=>p.poly([[10,15],[22,15],[22.6,21],[20,23.6],[12,23.6],[9.6,21]]));for(const y of[17.4,19.8,22])S.ln(10.6,y,21.6,y,[teal,3]);
+      S.part(blk,{R:1},p=>p.poly([[9.4,23.8],[22.6,23.8],[23.2,27.6],[8.8,27.6]]));S.ln(9.2,25.6,22.8,25.6,[teal,3])},
+    belt:hm('#1a1a20','leather'),buckle:[hm(BJ_K.tealL,'gem'),3]});
+  const hl=hm(BJ_K.blkL,'metal');hdU_helm(S,hl,{crest:S=>{S.part(teal,{R:0.6},p=>p.poly([[12.4,3.6],[15.4,1.4],[18.4,1.6],[19.6,3.6]]));S.ln(13,3.4,19,3,[teal,4])}});
+  S.ell(9.4,17.6,4.2,3,blkL);S.ell(22.6,17.6,4.2,3,blkL);for(const x of[9.4,22.6]){S.ln(x-3,18.8,x+3,18.8,[teal,3]);S.px(x,16.6,BJ_K.tealL)}})}   // 大护肩
+
+// ===== 火龙车（60×36）：红漆木车身、车头一只张嘴的金龙头（喷火口），后面一名推车的车兵；两帧：车兵迈步、车轮转 =====
+function hdU_bjDragon(fr){return hdFig(60,36,S=>{const wood=hm('#8a3a2a','wood'),woodD=hm('#5a2418','wood'),iron=hm(BJ_K.iron,'metal'),ironD=hm('#3a404c','metal'),gold=hm(BJ_K.gold,'metal'),goldD=hm(BJ_K.goldD,'metal'),red=hm(BJ_K.red,'cloth');
+  S.part(ironD,{face:1,R:1},p=>p.ell(36,25,6,6));S.part(woodD,{face:1,R:0.6,edge:false},p=>p.ell(36,25,4.6,4.6));   // 远侧的车轮
+  hdU_crew(S,0,6,fr,hm(BJ_K.red,'cloth'),[17,20.6]);
+  S.cap(20,23,12,22,1.4,1.2,woodD);   // 车辕
+  h25Box(S,18,13,26,4,9,wood,wood,{r:1});   // 车身
+  S.part(gold,{face:3,R:0.4,edge:false},p=>{p.rect(18.4,17.6,25,1);p.rect(18.4,25,25,1)});bjSunMark(S,26,21.4,1.8,BJ_K.gold,BJ_K.red);
+  S.part(goldD,{face:'hull',R:1.2},p=>p.rect(25.4,8,9.2,5.4,2));S.ln(25.8,10.4,34.2,10.4,[gold,4]);S.part(iron,{R:0.6},p=>p.rect(29,5.4,2,3,0.6));S.ln(30,5.6,33.4,3.6,'#2a2026');   // 猛火油柜（青铜）+ 泵杆
+  S.part(gold,{face:'hull',R:1.2},p=>{p.cap(42,16,50,13.4,4.6,4);p.ell(51.6,13.2,4.4,3.8)});   // 龙颈 + 龙头
+  S.part(goldD,{R:0.6},p=>{p.poly([[49,10],[52,6.4],[53,10]]);p.poly([[46.4,10.6],[48,6],[50,10.4]])});   // 龙角
+  S.part(hm('#2a0c08','plain'),{R:0.4},p=>p.poly([[53.4,13.6],[58.6,12.4],[58.4,16.8],[53.4,15.4]]));S.ln(54,13.4,58.4,12.4,'#fff3c4');S.ln(54,15.6,58.2,16.6,'#fff3c4');   // 张开的嘴、牙
+  S.dt(51.4,11.4,0.9,'#ff3a1a');S.px(51.8,11,'#fff3c4');S.part(red,{R:0.6},p=>p.poly([[44,10],[40,6.6],[41,11.4]]));   // 眼、鬃
+  S.ell(30,28,6.6,6.6,ironD);S.ell(30,28,5.2,5.2,wood,{flat:0.5});   // 近侧的车轮
+  for(let k=0;k<4;k++){const a=k*Math.PI/4+(fr?Math.PI/8:0);S.ln(30-Math.cos(a)*4.6,28-Math.sin(a)*4.6,30+Math.cos(a)*4.6,28+Math.sin(a)*4.6,[woodD,1])}
+  S.dt(30,28,1.5,[gold,2])})}
+Object.assign(HD_UNIT,{bjTiger:hdU_bjTiger,bjPhoenix:hdU_bjPhoenix,bjTortoise:hdU_bjTortoise,bjDragon:hdU_bjDragon,bjTigerS:hdU_bjTigerS,bjPhoenixS:hdU_bjPhoenixS});
+HB_JY_SPR.push('bjTigerS','bjPhoenixS');   // 不是兵种的样子：art/art.buildSprites 照兵种的画法做成 SPR.units[键]
+
+// ===== 边军大营（2×2）：条石台基上的边关城堡——两座角楼（四角起翘的瓦顶、红柱）夹着中间的城门墙，墙顶炮台上一门青铜炮（炮管由代码画，units/bianjun.bjDrawCamp），
+//   角楼顶插星阳红旗、墙上挂星阳长幡；三档：0 夯土墙 + 草泥顶、1 青砖 + 黑瓦、2 深青砖金边 + 琉璃瓦金脊 + 门口一对火盆 =====
+// 起翘的瓦顶：x0～x1 檐口宽、yt 屋脊、ye 檐口；四角往上翘
+function bjRoof(S,x0,x1,yt,ye,tile,tileD,o){o=o||{};const w=x1-x0,ins=w*0.24,up=o.up||3;
+  const f=S.part(tile,{face:'front',R:0.6},p=>p.poly([[x0-up*0.8,ye-up],[x0+2,ye],[x1-2,ye],[x1+up*0.8,ye-up],[x1-ins,yt],[x0+ins,yt]]));
+  S.part(tileD,{face:1,edge:false,join:f},p=>{for(let x=x0+2.4;x<x1-1.6;x+=2.4){const u=(x-x0)/w,xt=x0+ins+(w-2*ins)*u;p.poly([[xt-0.3,yt+1.2],[xt+0.4,yt+1.2],[x+0.5,ye-0.8],[x-0.4,ye-0.8]])}});   // 瓦垄
+  S.part(tileD,{face:'front',R:0.4},p=>p.poly([[x0-up*0.8-0.6,ye-up-0.6],[x0+2,ye-0.6],[x1-2,ye-0.6],[x1+up*0.8+0.6,ye-up-0.6],[x1+up*0.8,ye-up+1.2],[x1-1.6,ye+1],[x0+1.6,ye+1],[x0-up*0.8,ye-up+1.2]]));   // 檐口
+  S.part(o.ridge||tileD,{face:'front',R:0.6},p=>{p.rect(x0+ins-1.4,yt-2.2,w-2*ins+2.8,2.6,0.8);p.poly([[x0+ins-1.6,yt-2],[x0+ins-3,yt-4.6],[x0+ins,yt-2.6]]);p.poly([[x1-ins+1.6,yt-2],[x1-ins+3,yt-4.6],[x1-ins,yt-2.6]])})}   // 屋脊 + 两头的鸱吻
+HD_BUILD.campBj=t=>hdFig(64,80,S=>{const m=hbm(),wall=t===0?hdMat('#c0a070','plain'):t===1?hdMat('#8e9290','plain'):hdMat('#6a7472','plain'),
+    wallD=t===0?hdMat('#927448','plain'):t===1?hdMat('#6a6e6c','plain'):hdMat('#4a5250','plain'),tile=t===0?hdMat('#8a7050','plain'):t===1?hdMat('#40444c','plain'):hdMat('#2e6a5a','metal'),
+    tileD=t===0?hdMat('#5e4a32','plain'):t===1?hdMat('#2a2c32','plain'):hdMat('#1e4a40','metal'),trim=t===2?m.gold:m.iron,red=hdMat(BJ_K.red,'cloth'),pil=hdMat('#9a2a22','wood');
+  S.ao(32,78,30,3,0.4);
+  b25Box(S,2,64,60,6,10,m.stone,m.stoneD,{br:[4,7]});   // 条石台基
+  b25Box(S,14,36,36,8,20,wallD,wall,{br:t===0?null:[4,6]});b25Cren(S,14,36,36,8,5,wall,3);   // 城门墙 + 垛口
+  if(t===0)S.part(wallD,{face:1,edge:false},p=>{for(let y=47;y<63;y+=3.4)p.rect(15,y,34,0.6)});   // 夯土层
+  S.part(m.stoneD,{face:'front',R:0.6},p=>p.rect(24.6,49,14.8,15,7.4));b25Door(S,32,64,12,13.4,hdMat('#4a2a1e','wood'));S.ln(32,51,32,63.4,'#2a1810');   // 拱门（石券 + 两扇门）
+  if(t>=1)S.part(m.gold,{R:0.3,edge:false},p=>{for(const x of[29.4,34.6])for(const y of[54,57.4,60.8])p.ell(x,y,0.6,0.6)});   // 门钉
+  S.part(red,{face:'front',R:0.6},p=>p.rect(26.6,44.2,10.8,4.4,0.6));S.part(m.gold,{R:0.3,edge:false},p=>p.rect(26.6,44.2,10.8,0.6));bjSunMark(S,32,46.6,1.5,BJ_K.gold);   // 门匾
+  // 炮台：墙顶正中一个木炮架（青铜炮管由代码画，转轴在 (32, 30)）
+  b25Box(S,25,30,14,4,6,m.wood,m.woodD,{});S.part(m.iron,{face:'front',R:0.8},p=>{p.ell(27.4,40,2.2,2.2);p.ell(36.6,40,2.2,2.2)});
+  // 两座角楼：台身 + 红柱 + 起翘的瓦顶；墙上挂长幡
+  for(const x0 of[0,48]){b25Box(S,x0,30,16,7,27,wall,wallD,{br:t===0?null:[4,6]});b25Win(S,x0+6,43,4,5,2);
+    S.part(pil,{face:'front',R:0.3},p=>{p.rect(x0+2,22,1.6,8.4);p.rect(x0+12.4,22,1.6,8.4)});S.part(t===2?m.gold:hdMat('#d8c8a0','plain'),{face:'front',R:0.3,edge:false},p=>p.rect(x0+3.6,23,8.8,1));
+    bjRoof(S,x0+0.6,x0+15.4,12,23,tile,tileD,{ridge:t===2?m.gold:tileD});
+    if(t>=1){const bx=x0+4.6;S.part(red,{face:'front',R:0.8},p=>p.poly([[bx,49],[bx+6.8,49],[bx+6.8,59.4],[bx+3.4,57.6],[bx,59.4]]));bjSunMark(S,bx+3.4,52.6,1.3,BJ_K.gold);S.rect(bx-0.6,48.2,8,1.2,trim,{R:0.4})}}   // 星阳长幡
+  if(t>=1){b25Band(S,14,50,10.6,trim);b25Band(S,39.4,50,10.6,trim)}
+  // 星阳红旗：角楼顶上各一面（t = 0 只有一面）
+  for(const[x,lf]of t===0?[[8,false]]:[[8,false],[56,true]]){S.rect(x,0,1.4,11,m.woodD,{R:0.6});const fx=lf?x-9:x+1.4;S.part(red,{R:0.8},p=>p.poly(lf?[[x,0.6],[fx,1.6],[fx+1.4,4.6],[fx,7.6],[x,8.4]]:[[x+1.4,0.6],[fx+9,1.6],[fx+7.6,4.6],[fx+9,7.6],[x+1.4,8.4]]));
+    bjSunMark(S,lf?x-4.4:x+5.8,4.6,1.4,BJ_K.gold)}
+  if(t===2)for(const x of[21,43]){S.rect(x-1,63,2,6,m.iron,{R:0.4});S.ell(x,62,2.6,1.4,m.iron);hbGlow(S,x,60.4,'#ffd25a','#ff7a2e');S.px(x,59.4,'#fff3c4')}});   // 门口的火盆
+
 // ---------- v0.12 地图徽章（代理 BD；成就「勋章墙」用）----------
 // 每张正式地图一枚：64×64 像素（hdFig 2 倍精度，逻辑 32×32，canvas._k = 2），金属边框 + 中间一块底色 + 地图标志物。
 // 边框按地区阶数换材质和装饰（Claude 定）：一阶铜、二阶铁（铆钉）、三阶银（四个圆钮）、四阶金（光芒）、五阶白金（光芒 + 蓝宝石）、
@@ -36205,6 +36439,44 @@ BD_EMB.obsidianFort={f:'#2a2236',d(S){const st=bdM('#9aa0ac','metal'),ob=bdM('#1
   S.poly([[29.5,16],[34.5,16],[33.5,25],[40,24],[48,29],[48,35],[40,40],[33.5,39],[34.5,48],[29.5,48],[30.5,39],[24,40],[16,35],[16,29],[24,24],[30.5,25]],ob,{R:1.5});
   S.ell(32,32,3.4,3.4,bdM('#8a5ad8','gem'));S.dt(31,31,0.8,'#f0e4ff')}};
 BADGE_ART.obsidianFort=()=>bdBadge('obsidianFort');
+
+// ---------- 0.12.4 长城城墙的样子（代理 GW；数据 data/build_gwall.js，逻辑 structs/gwall.js）----------
+// 1×1 墙体，平涂像素画（同 art/hd_build.wallCanvasHD：花纹按 32 像素循环，相邻的墙拼起来没有接缝）。图 32 × (48 + 4 × (等级 − 1))（逻辑 16 × (24 + 2 × (等级 − 1))）：
+//   墙顶（马道）逻辑 16、正面 8 + 2 × (等级 − 1) —— 等级越高墙越高（ui/draw.drawStructSprite 按图高把底边对齐这一格的底边）
+//   Lv1 夯土：黄土夯层、圆顶矮墙 · Lv2 青砖、矮垛墙 · Lv3 青砖垛口 · Lv4 条石基座、垛口带射孔 · Lv5 白灰勾缝、垛口描金、正面箭窗
+//   北边没有墙：外侧的垛口；南边没有墙：墙顶内侧的女墙 + 正面；东西两端描边。三阶的区别在 structs/gwall.gwlDrawS 里按这一座现画（烽燧 / 红旗 / 拒马）
+const GWL_PAL=[null,
+  {top:'#a8885a',hi:'#cbac7c',lo:'#866a40',face:'#94764a',ln:'#4a361e'},
+  {top:'#8c9092',hi:'#b4b8ba',lo:'#74787a',face:'#7c8084',ln:'#34383c'},
+  {top:'#878b8e',hi:'#b0b4b6',lo:'#6e7275',face:'#75797d',ln:'#2e3236'},
+  {top:'#808487',hi:'#acb0b3',lo:'#676b6f',face:'#6e7276',ln:'#282c30'},
+  {top:'#8a8c8c',hi:'#cacbc6',lo:'#6c6e70',face:'#787a7c',ln:'#24282c'}];
+WALL_PAL.gwWall=GWL_PAL;
+function gwlWallCanvas(mask,lvl){const Cc=GWL_PAL[lvl],N=mask&1,E_=mask&2,S=mask&4,W=mask&8,FH=2*(8+2*(lvl-1)),H=32+FH,earth=lvl===1;
+  const mo=hbMix(Cc.lo,Cc.ln,0.35),sd=hbMix(Cc.top,Cc.lo,0.6),hl=hbMix(Cc.top,Cc.hi,0.6),fM=hbMix(Cc.face,Cc.ln,0.5),fH=hbMix(Cc.face,Cc.hi,0.5),fS=hbMix(Cc.face,Cc.ln,0.25);
+  const mt=lvl===5?'#d8d4c6':mo,mtF=lvl===5?'#cfcabb':fM,gold=lvl===5?'#e8c860':null;   // mt：砖缝（Lv5 白灰勾缝）
+  return paint(32,H,P=>{const R=P.r,D=P.p;
+    // —— 墙顶（马道）：夯土是一道道夯层；砖是方砖错缝铺地 ——
+    R(0,0,32,32,Cc.top);
+    if(earth){for(let y=3;y<32;y+=7){R(0,y,32,1,sd);R(0,y+1,32,1,hl)}}
+    else{const rh=lvl>=4?8:6;for(let r=0,y=0;y<32;r++,y+=rh){R(0,y+rh-1,32,1,mt);R(0,y,32,1,hl);for(let x=r%2?8:0;x<32;x+=16)R(x,y,1,rh-1,mt)}}
+    for(let y=0;y<32;y++)for(let x=0;x<32;x++){const n=hbN(x,y);if(n===0)D(x,y,sd);else if(n===1&&lvl<5)D(x,y,hl)}
+    // —— 北边没有墙：外侧的垛墙（夯土是圆顶矮墙；Lv2 矮垛墙；Lv3 起一个个垛口，Lv4 起垛上开射孔）——
+    if(!N){if(earth){R(0,0,32,7,Cc.lo);R(0,0,32,1,Cc.ln);R(0,1,32,2,Cc.hi);R(0,3,32,2,hl);R(0,7,32,1,sd);for(let x=2;x<32;x+=5)D(x,5,sd)}
+      else if(lvl===2){R(0,0,32,2,Cc.ln);R(0,2,32,6,hl);R(0,2,32,1,Cc.hi);R(0,8,32,1,mo);for(let x=4;x<32;x+=8)R(x,2,1,6,mt);R(0,9,32,1,sd)}
+      else{R(0,0,32,2,Cc.ln);for(let x=0;x<32;x+=8){R(x+1,2,6,8,hl);R(x+1,2,6,1,gold||Cc.hi);R(x+1,2,1,8,Cc.hi);R(x+6,3,1,7,sd);R(x+1,10,6,1,mo);if(lvl>=4){R(x+3,5,2,3,Cc.ln);D(x+3,5,mo)}}R(0,11,32,1,sd)}}
+    // —— 南边没有墙：墙顶内侧的女墙（矮），下面是墙的正面 ——
+    if(!S){R(0,28,32,4,Cc.lo);R(0,28,32,1,Cc.hi);R(0,31,32,1,Cc.ln);
+      const y0=32;R(0,y0,32,FH,Cc.face);R(0,y0,32,2,Cc.hi);R(0,y0+2,32,1,fH);
+      if(earth){for(let y=y0+5;y<H-2;y+=5){R(0,y,32,1,fS);R(0,y+1,32,1,fH)}for(let y=y0+3;y<H-2;y++)for(let x=0;x<32;x++)if(hbN(x,y)===2)D(x,y,fM)}
+      else{const base=lvl>=4?8:0,rh=lvl>=3?6:5;for(let r=0,y=y0+3;y<H-2-base;r++,y+=rh){const h=Math.min(rh,H-2-base-y);R(0,y+h-1,32,1,mtF);if(h>2)R(0,y,32,1,fH);for(let x=r%2?6:0;x<32;x+=12)R(x,y,1,h-1,mtF)}
+        if(base){const y=H-2-base;R(0,y,32,base,hbMix(Cc.face,'#c8c0a8',0.35));R(0,y,32,1,Cc.hi);R(0,y+base-1,32,1,fM);for(let x=lvl===5?4:10;x<32;x+=16)R(x,y,1,base,fM)}
+        if(lvl===5){R(0,y0,32,2,gold);const cx=14,cy=y0+8;R(cx-1,cy-1,6,12,fH);R(cx,cy+1,4,9,'#16131b');R(cx+1,cy,2,1,'#16131b');R(cx+4,cy+1,1,9,Cc.ln)}}   // Lv5：箭窗
+      R(0,H-2,32,2,Cc.ln)}
+    // —— 东西两端 ——
+    const hh=S?32:H;
+    if(!W){R(0,0,2,hh,Cc.ln);R(2,N?0:2,1,hh-(N?0:2)-(S?0:2),Cc.hi)}
+    if(!E_){R(30,0,2,hh,Cc.ln);R(29,N?0:2,1,hh-(N?0:2)-(S?0:2),sd)}})}
 
 // ---------- 0.12.2 纪念勋章（代理 5；成就「勋章墙」的「纪念」页、兑换收获弹窗用）----------
 // 和地图徽章（art/bd_badges.js）同尺寸：64×64 像素（hdFig 2 倍精度，canvas._k = 2），借用那边的 bdM / bdStar / bdRad。
@@ -36687,7 +36959,7 @@ function computeVision(){if(settleOn()){VIS.fill(1);VIS_KN=-1;return}   // v0.6.
     h.visR=rr*16;K[n++]=0;K[n++]=h.x>>4;K[n++]=h.y>>4;K[n++]=Math.round(rr*2);K[n++]=0}}   // visR：SM 加，这个单位自己的视野半径（像素；视野不共享的地图按它判断看不看得见）
   // 士兵：脚下小圆 + 朝向的大扇形（登塔/登墙有视野加成）；v0.3.2 丛林：站在瘴气、树丛里视野减半
   const pv1=postMul(PM_L1,'vision'),pv2=postMul(PM_L2,'vision'),vn=CFG.vision.coneNear*Math.min(1,vm);
-  for(let i_6=0,a_6=G.soldiers;i_6<a_6.length;i_6++){const u=a_6[i_6];if(!u.dead&&!(u.csInk>G.time)){const jv=jungleVis(u)*blindVis(u),pv=u.layer===1?pv1:u.layer===2?pv2:1,zm=u.layer?1:G.zsMu||1,r1_=Math.max(1,vn*pv*jv*zm-vsub),r2_=Math.max(1,u.vision*(u.wdU>G.time?1+u.wdV:1)*pv*vm*jv*zm*(1+POT.vis)-vsub),r1=VCC?VCC(r1_,u.x,u.y,u):r1_,r2=VCC?VCC(r2_,u.x,u.y,u):r2_,b=((Math.round(u.dir/(Math.PI*2)*32)%32)+32)%32;
+  for(let i_6=0,a_6=G.soldiers;i_6<a_6.length;i_6++){const u=a_6[i_6];if(!u.dead&&!(u.csInk>G.time)){const jv=jungleVis(u)*blindVis(u),pv=u.layer===1?(u.gwlR!==0?postMul(u,'vision'):pv1):u.layer===2?pv2:1,zm=u.layer?1:G.zsMu||1,r1_=Math.max(1,vn*pv*jv*zm-vsub),r2_=Math.max(1,u.vision*(u.wdU>G.time?1+u.wdV:1)*pv*vm*jv*zm*(1+POT.vis)-vsub),r1=VCC?VCC(r1_,u.x,u.y,u):r1_,r2=VCC?VCC(r2_,u.x,u.y,u):r2_,b=((Math.round(u.dir/(Math.PI*2)*32)%32)+32)%32;   // GW 加：gwlR 站在长城城墙上另加的视野（structs/gwall）
     u.visR=(r1>r2?r1:r2)*16;K[n++]=2;K[n++]=u.x>>4;K[n++]=u.y>>4;K[n++]=Math.round(r1*2)*4096+Math.round(r2*2);K[n++]=b}}
   if(!sChg&&!dyn&&n===VIS_KN){let q=0;const K0=VIS_K0;while(q<n&&K[q]===K0[q])q++;if(q===n){VIS_STAT.k++;visMini();return}}   // 和上一次一样：VIS 不动
   if(sChg){VIS_SK=sk;VIS_SG=G;VIS_STAT.s++;VIS.fill(0);for(let i_3=0,a_3=G.structs;i_3<a_3.length;i_3++){const s=a_3[i_3];if(!(s.csInk>G.time)){const r=structVision(s)*vb*(G.zsMu||1)*(1+(G.itVis||0)),rr=VCC?VCC(r,s.x,s.y-8,s):r;s.visR=rr*16;stamp(s.x,s.y-8,rr)}}wtLightStamp(VCC);VIS_S.set(VIS.subarray(0,NT))}   // wtLightStamp：v0.7.0 瞭望塔「照明」
@@ -36750,7 +37022,7 @@ function keepHealTick(u,dt){if(u.dead||u.hp>=u.maxHp||G.stMia&&G.phase==='wave')
   if(Math.random()<dt*1.2&&inViewPt(u.x,u.y))pp(u.x+vr(-4,4),u.y-vr(6,14),0,0,0,vr(8,14),0,vr(0.5,0.8),'#8fdc6a',1,0,1)}
 const visAt=(x,y)=>x>=0&&y>=0&&x<MW&&y<MH&&VIS[tidx(x,y)]===1;
 // —— 守军通行：城墙（城门除外）与建筑（兵营、瞭望塔除外）不能通过；树木（v0.2.3）也不能；树丛、岩石可以（会减速） ——
-const friendPassS=s=>!s||!!s.cfg.pass||s.isCamp===true;   // P3 改：同 isCampT(s.type)（见 core/core 的 isCampS）
+const friendPassS=s=>!s||!!s.cfg.pass||s.isCamp===true||s.cfg.fPass===true;   // P3 改：同 isCampT(s.type)（见 core/core 的 isCampS）   // GW 加：cfg.fPass 0.12.4 长城城墙，我方单位能直接越过（亡灵照样被挡，structs/gwall）
 // v0.3.2：猎豹皮衣（treeWalk）能爬树 —— 移动 / 寻路这个单位时 FR_TW = true，树木不挡
 let FR_TW=false,FR_SW=false;   // FR_SW：v0.8.2 黄沙海岸，能下深海的英雄（潮汐套装三件，u.csSw）移动 / 寻路时为 true
 const terrPassF=i=>FR_TW?G.terrain[i]!==T_TWALL&&G.terrain[i]!==T_GEAR:!treeAt(i);   // 爬树（FR_TW）只能爬树木，神殿墙、齿轮照样挡
@@ -50585,7 +50857,7 @@ function hurtF(u,raw,o){eRevealHit(o);
   let bkD=0;   // v0.8.14 格挡：格挡防御加进防御一起扣（原来减完防御、乘完倍率之后再减）
   const imF=u.imU>G.time,bkP=imF?1:Math.min(0.95,u.block*(1+pmNC(u,pm.block)));   // pmNC：v0.8.7 惩戒骑士移除了卡牌效果的士兵不吃减伤卡、格挡卡（maps/fallen）   // imF：v0.6.0「铁令动员」盾阵格挡率 100%、格挡防御 +X%；mBlk：v0.8.0 圣堂骑士、惩戒武士能格挡法术
   const hsP=!!(o.ep&&u.v8&&u.v8.projK<1);if(hsP)dmg*=u.v8.projK;   // v0.8.0 赤血禁卫「赤血屏障」：飞行物一定格挡，只受 50%（ep = 亡灵的飞行物）
-  if((!magic||u.mBlk||hsP)&&!o.dot&&!o.sure&&!tru&&!o.blast&&(hsP||bkP>0&&Math.random()<bkP)){blocked=true;if(u.fxBlockOn)fxBlock(u,o);if(u.v8&&u.v8.hs)v8Block(u);if(u.type==='bigShield')s1Block(u);bkD=u.shield*iwK*(imF?1+u.imB:1)*(!u.isHero&&pm.shieldDef>0?1+pmNC(u,pm.shieldDef):1);if(inViewPt(u.x,u.y))for(let k=0;k<3;k++)pp(u.x+u.facing*4,u.y-7,0,vr(-20,20),vr(-20,5),vr(5,15),120,0.25,'#f3d47c',1,0,0)}   // s1Block：S1 加，v0.10.11 重盾屏障（步兵营三阶）格挡护盾
+  if((!magic||u.mBlk||hsP)&&!o.dot&&!o.sure&&!tru&&!o.blast&&(hsP||bkP>0&&Math.random()<bkP)){blocked=true;if(u.fxBlockOn)fxBlock(u,o);if(u.v8&&u.v8.hs)v8Block(u);if(u.type==='bigShield')s1Block(u);if(u.bj)bjBlock(u);bkD=u.shield*iwK*(imF?1+u.imB:1)*(!u.isHero&&pm.shieldDef>0?1+pmNC(u,pm.shieldDef):1);if(inViewPt(u.x,u.y))for(let k=0;k<3;k++)pp(u.x+u.facing*4,u.y-7,0,vr(-20,20),vr(-20,5),vr(5,15),120,0.25,'#f3d47c',1,0,0)}   // s1Block：S1 加，v0.10.11 重盾屏障（步兵营三阶）格挡护盾   // BJ 加：bjBlock 0.12.4 玄武卫格挡护盾（units/bianjun）
   const mk_=o.mk>1?o.mk:1;   // mk：v0.8.25 亡灵合并的这一下按单发扣防御、格挡，再 × 发数
   if(o.dot||OATH_WRATH||tru){}else if(!magic)dmg=mk_*defF(dmg/mk_,Math.max(0,(bkD+((u.def||0)+(u.isHero?0:TM.uDef||0)+(u.bfV?u.bfV[7]:0)-(u.corU>G.time?u.corN:0))*iwK*(u.wdDU>G.time?1+u.wdDf:1))*(1-Math.min(1,ePenPOf(eSrcT(o))+(G.ePenX&&eSrcT(o)>=0?G.ePenX:0)+(o.igDef||0)))-(o.src>=0&&G.ePen&&!ETC[E.t[o.src]].noMarshal?G.ePen:0)-ePenOf(eSrcT(o)))+(u.adU>G.time?u.adDef:0));else{const md=((u.mdef||0)+(u.isHero?0:TM.uMDef||0))*HH_DFK*(1-(G.eMPenX&&eSrcT(o)>=0?G.eMPenX:0))*(u.mdDU>G.time?1-u.mdDP:1);if(md+bkD>0&&!o.dot)dmg=mk_*defF(dmg/mk_,md+bkD)}   // defF：v0.8.24 防御公式   // uDef / uMDef：v0.8.12 科技「护甲训练」「抗魔训练」（士兵）   // v0.5.7 英雄法防（和亡灵的法术防御一样，持续伤害不算）   // HH_DFK：0.11.4 代理hh 加，黄虎「定四方」法防
   dmg*=hk;   // v0.8.14 命中系数（偏斜 / 暴击）在减完防御之后乘
@@ -51518,7 +51790,7 @@ const uHpWave=u=>{const U=CFG.unitGrowth,k=u&&u.c&&!u.c.ranged?U.hpWaveMelee:U.h
 const uHpMul=(u,chp)=>u&&u.noCard?1+(pm.heroHp||0):uHpMul_(u,chp);   // v0.8.15 张道成的草人：只吃英雄的生命卡
 // v0.8.22 卡「百战老兵」：拿卡之后每波 +3%（最多 +60%）；「淬火战甲」只加重甲士兵（combat.hvArm）
 const vetK=()=>{if(!(pm.veteran>0)||!G)return 0;const F=CFG.cardFx.veteran;return Math.min(F.max,F.per*Math.max(0,G.wave-pm.vetW))};
-const uHpMul_=(u,chp)=>(1+pm.unitHp+TM.uHp+(pm.bodyHp||0)+vetK()+(chp!==undefined?chp:(u&&u.chp)||0)+(G&&G.zsSeal?G.zsSeal.hp:0))*(u&&u.summon?1:uWave('hp')*uHpWave(u))*glassHp()*(u&&u.c&&u.c.ship?shipHpK(u):1)*haFgU(u)*(1+HH_DS);   // v0.8.1 生命加成相加（卡、科技、兵营科技「体魄」chp、将臣印玺），每波成长单独乘   // zsSeal：v0.7.0 将臣印玺   // S5 加：shipHpK 传 u（钢铁合金按这艘船的造船厂算）   // haFgU：HA 加，v0.12 安德鲁「神锻」兵营的士兵生命（独立乘区）   // HH_DS：0.11.4 代理hh 加，黄虎「定四方」士兵生命
+const uHpMul_=(u,chp)=>(1+pm.unitHp+TM.uHp+(pm.bodyHp||0)+vetK()+(chp!==undefined?chp:(u&&u.chp)||0)+(G&&G.zsSeal?G.zsSeal.hp:0))*(u&&u.summon?1:uWave('hp')*uHpWave(u))*glassHp()*(u&&u.c&&u.c.ship?shipHpK(u):1)*haFgU(u)*(1+HH_DS)*bjHpK(u);   // BJ 加：bjHpK 0.12.4 边军大营羽林精锐 / 将领 / 神兽白虎的生命（独立乘区，units/bianjun）   // v0.8.1 生命加成相加（卡、科技、兵营科技「体魄」chp、将臣印玺），每波成长单独乘   // zsSeal：v0.7.0 将臣印玺   // S5 加：shipHpK 传 u（钢铁合金按这艘船的造船厂算）   // haFgU：HA 加，v0.12 安德鲁「神锻」兵营的士兵生命（独立乘区）   // HH_DS：0.11.4 代理hh 加，黄虎「定四方」士兵生命
 // v0.8.1（用户定）伤害加成相加后乘一次（原来各自相乘）：卡（士兵伤害、物理 / 法术攻击、弓箭 / 弩箭 / 火器、全体伤害）+ 建筑科技「武备」+ 傀儡核心 + 力量药水 + 将臣印玺 + add（调用处给的科技：力量训练、法术训练、披坚执锐）；士兵属性倍率、每波成长单独乘
 function unitDmgMul(c,statMul,s,mg,add){const nc=!!s&&(s.noCard||G&&G.fsOn&&fsNoCard(s));let b=nc?(add||0):pm.unitDmg+(mg?pm.spellAtk:pm.physAtk)+dmgAllK()+vetK()+(mg&&s&&pm.manaRes>0?manaResK(s):0)+(add||0);   // nc：v0.8.7 惩戒骑士移除了卡牌效果（maps/fallen）；v0.8.22（用户定）弓箭 / 弩 / 火药的卡改成只加建筑，士兵不再吃；百战老兵、法力共鸣
   if(s){b+=s.atkAdd||0;if(s.gcU>G.time)b+=s.gcV.dmg;if(s.auDmU>G.time)b+=s.auDm;if(s.flgU>G.time)b+=s.flgF;if(s.powU>G.time)b+=TM.potPow;if(s.bfV)b+=s.bfV[0];if(G.wdCav>0&&s.c&&s.c.cavalry)b+=G.wdCav}if(G&&G.zsSeal)b+=G.zsSeal.dmg;if(s)s.udB=1+b;return statMul*(s&&s.summon?1:uWave('atk'))*(1+b)*(s&&s.bfV?1+s.bfV[1]:1)*haFgU(s)}   // bfV：v0.8.6 统一 buff（engine/buff）的伤害加成（相加）、独立乘区   // powU：v0.8.1 科技「力量药水」   // gcU：v0.7.0 傀儡核心   // haFgU：HA 加，v0.12 安德鲁「神锻」兵营的士兵攻击（独立乘区）
@@ -51531,7 +51803,7 @@ function manaResK(s){if(s.mrT>G.time)return s.mrK||0;s.mrT=G.time+0.5;const F=CF
 function soldierVision(c,rg){rg=rg||c.ranged;let v=c.cavalry?CFG.vision.cavalry:CFG.vision.soldier;if(rg)v=Math.max(v,rg.range+CFG.vision.rangedExtra);return v+(c.sight||0)}   // v0.4.6 sight：神射手、盾弩手额外视野
 // 驻防加成：瞭望塔（layer 2）射程/视野 +50%，城墙（layer 1）+25%
 function postMul(u,k){return(G&&G.zsMu>1&&(k==='range'||k==='vision')?G.zsMu:1)*(OATH_RK!==1&&k==='range'&&!u.isHero?OATH_RK:1)*postMul_(u,k)}   // OATH_RK：v0.9.4 誓约「傲慢」回报，射程 ×2（英雄在 heroRange 里乘，技能距离不变）   // zsMu：v0.7.0 道观废墟五神法「目」（独立乘区）
-function postMul_(u,k){return u.layer===2&&u.post&&u.post.mg?(k==='range'?mgcPostR():1):u.layer===2?1+CFG.garrison.tower[k]+(k==='range'?((btEvo('watchtower')||{}).postRange||0):0):u.layer===1?1+CFG.garrison.wall[k]*(1+(TM.wallHigh||0))+((btEvo('wall')||{}).wallUp||0)+(k==='range'&&pm.battlement>0&&!u.isHero?CFG.cardFx.battlement.range:0):1}   // battlement：v0.9.3 流派卡「城楼垛口」城墙上的士兵射程 +5%（相加）   // 科技「城体抬高」（v0.4.0 改成乘：V 级 = 25% × 1.6 = 40%）；v0.6.1 城墙一阶「紧急加高」再 +15%（各种城墙共用的一阶，存在「城墙」名下）
+function postMul_(u,k){return u.layer===2&&u.post&&u.post.mg?(k==='range'?mgcPostR():1):u.layer===2?1+CFG.garrison.tower[k]+(k==='range'?((btEvo('watchtower')||{}).postRange||0):0):u.layer===1?1+CFG.garrison.wall[k]*(1+(TM.wallHigh||0))+((btEvo('wall')||{}).wallUp||0)+(k==='range'&&pm.battlement>0&&!u.isHero?CFG.cardFx.battlement.range:0)+(u.gwlR||0):1}   // battlement：v0.9.3 流派卡「城楼垛口」城墙上的士兵射程 +5%（相加）   // 科技「城体抬高」（v0.4.0 改成乘：V 级 = 25% × 1.6 = 40%）；v0.6.1 城墙一阶「紧急加高」再 +15%（各种城墙共用的一阶，存在「城墙」名下）   // GW 加：gwlR 0.12.4 站在长城城墙上另加的射程、视野（相加，structs/gwall）
 // 地形减速（士兵）：树丛 −30%、岩石 −40%、墓地 −15%（树木走不进去）；科技「越野训练」减轻
 const TERR_SLOW=[1,1,0.7,0.6,0.85,BUSH_SLOW,1,1,1,0.8,1,0.8,1,1];   // v0.5.1 冰湖（加速另算）、管道、传送带、齿轮   // 平地、土路、树木（走不进去）、岩石、墓地、树丛（v0.2.3）、流沙、神殿墙（走不进去）、神殿地砖、碎石（v0.5.0）
 function terrMul(s){const b=TERR_SLOW[G.terrain[tidx(clamp(s.x,0,MW-1),clamp(s.y,0,MH-1))]];return b>=1?1:1-(1-b)*(1-Math.min(1,TM.uTerrain))/terrResK()}   // terrResK：v0.8.23 越野训练
@@ -51571,6 +51843,7 @@ function soldierBt(u){const c=u.c,ct=u.ct,e=ct?btEvoT(ct,evo3On(u.camp)):null;le
   rg=s4Bt(u,e,rg);   // S4 加：v0.10.11 精械工厂、赤血兵营、教廷圣堂的三阶（units/s4_camps）
   rg=s5Bt(u,rg);   // S5 加：v0.10.11 造船厂、空军基地三阶进化（units/s5_fleet）
   rg=bwBt(u,e,rg);   // BW 加：v0.12 布武阵屋的兵（units/bw_camp）
+  rg=bjBt(u,e,rg);   // BJ 加：0.12.4 边军大营的兵（units/bianjun）
   u.rg=rg}
 // v0.6.1 兵营二阶进化：改远程武器、加阵型标记（阵型的行为在 units/formation）
 function soldierBt2(u,e,rg){const c=u.c,t=u.type,has=(Q,f)=>Q&&(!Q.units||Q.units.includes(t))&&(!f||f());
@@ -51654,9 +51927,9 @@ function rebuildPosts(){
   const add=j=>{if(comp[j]>=0)return;const t=SA[j];if(t&&isWallT(t.type)){comp[j]=cid;PST_Q[qn++]=j}};let qn=0;
   for(let i_3=0,a_3=G.structs;i_3<a_3.length;i_3++){const s=a_3[i_3];if(!isWallT(s.type))continue;const i0=s.ty*W+s.tx;if(comp[i0]>=0)continue;
     let tn=0;const gates=[];qn=0;PST_Q[qn++]=i0;comp[i0]=cid;
-    while(qn>0){const i=PST_Q[--qn];PST_T[tn++]=i;if(isGateT(SA[i].type))gates.push(i);const x=i%W,y=(i-x)/W,xl=x>0,xr=x<W-1,yu=y>0,yd=y<H-1;
+    while(qn>0){const i=PST_Q[--qn];PST_T[tn++]=i;if(isGateT(SA[i].type)||SA[i].cfg.fPass)gates.push(i);const x=i%W,y=(i-x)/W,xl=x>0,xr=x<W-1,yu=y>0,yd=y<H-1;   // GW 加：0.12.4 每段长城城墙都当城门用（地面能走到，直接登墙；这一格的驻防点只走自己这一格）
       if(xr)add(i+1);if(xl)add(i-1);if(yd)add(i+W);if(yu)add(i-W);if(xr&&yd)add(i+W+1);if(xr&&yu)add(i-W+1);if(xl&&yd)add(i+W-1);if(xl&&yu)add(i-W-1)}
-    POSTG[cid]=gates;if(gates.length)for(let k=0;k<tn;k++){const i=PST_T[k];if(isGateT(SA[i].type))continue;POSTS.push({kind:1,key:'w'+i,tile:i,x:(i%W)*16+8,y:((i/W)|0)*16+8,comp:cid,gates})}
+    POSTG[cid]=gates;if(gates.length)for(let k=0;k<tn;k++){const i=PST_T[k];if(isGateT(SA[i].type))continue;POSTS.push({kind:1,key:'w'+i,tile:i,x:(i%W)*16+8,y:((i/W)|0)*16+8,comp:cid,gates:SA[i].cfg.fPass?[i]:gates})}
     cid++}
   for(const P of POSTS)POSTK.set(P.key,P);POSTC=comp;
 }
@@ -51719,7 +51992,7 @@ function postMove(s){
   if(s.layer===1)return leaveWall(s);
   return PM_ZERO}
 function leaveWall(s){const t=tidx(s.x,s.y),st=G.structAt[t];
-  if(st&&isGateT(st.type)&&Math.hypot(st.x-s.x,st.y-8-s.y)<5){s.layer=0;s.elev=0;s.nav=null;return PM_ZERO}
+  if(st&&(st.cfg.fPass&&!st.dead||isGateT(st.type)&&Math.hypot(st.x-s.x,st.y-8-s.y)<5)){s.layer=0;s.elev=0;s.nav=null;return PM_ZERO}   // GW 加：站在长城城墙上直接下墙
   const gates=wallGatesOf(t);const g=nearestGate(s,gates);if(g<0){dropDown(s,false);return PM_ZERO}
   return navVec(s,(g%MAP_W)*16+8,((g/MAP_W)|0)*16+8)}
 // 士兵移速（v0.6.1 抽出来；mvK：嗜血屠戮；cavSpd：v0.8.1 科技「战马训练」）
@@ -51823,7 +52096,7 @@ function updateSoldiers(DT){
     else{const cp=elevated?null:campChargePt(home);ax=home.x;ay=home.y+10;cx=home.x;cy=home.y;R_=1e9;if(cp){ax=cp.x;ay=cp.y;cx=s.x;cy=s.y;R_=10*16}   // cp：v0.8.18 指挥面板选的出击方向（刷新点），路上打 10 格内的
       else if(s.guer&&G.phase==='wave'&&!elevated){s.sgT=(s.sgT||0)-dt;if(s.sgT<=0){s.sgT=1;s.sgo=cavSortie(s)}if(s.sgo){ax=s.sgo.x;ay=s.sgo.y}cx=s.x;cy=s.y}}   // v0.4.6 游击骑兵「出击」：像 AI 英雄一样去堵刷新点（cavSortie），目标按离自己最近的挑
     if(s.v8&&s.v8.w)v8Dual(s);   // v0.8.0 精械炮手、赤血砲手按距离换武器
-    const rg=s.rg,RR=rg?(rg.range+(s.steady&&!s.walking?s.steady.range:0))*16*(ENV.rngK||1)*HH_RK*(rg.lob&&pm.lobRange>0?1+pm.lobRange:1)*(s.layer===1?pmR1:s.layer===2?(s.post&&s.post.mg?mgcPostR():pmR2):(G.zsMu||1)*OATH_RK)*(1+(s.wdU>G.time?s.wdR:0)+(s.obRgU>G.time?s.obRgV:0)+HH_RA):0;   // wdU：v0.8.3 魏德曼「御敌千里」   // steady：v0.6.1 屏息瞄准（站定）   // HH_RK：0.11.4 代理hh 加，御敌之策射程   // obRgU / obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程，gear/fx_ob）
+    const rg=s.rg,RR=rg?(rg.range+(s.steady&&!s.walking?s.steady.range:0))*16*(ENV.rngK||1)*HH_RK*(rg.lob&&pm.lobRange>0?1+pm.lobRange:1)*(s.layer===1?(s.gwlR!==0?postMul(s,'range'):pmR1):s.layer===2?(s.post&&s.post.mg?mgcPostR():pmR2):(G.zsMu||1)*OATH_RK)*(1+(s.wdU>G.time?s.wdR:0)+(s.obRgU>G.time?s.obRgV:0)+HH_RA):0;   // wdU：v0.8.3 魏德曼「御敌千里」   // steady：v0.6.1 屏息瞄准（站定）   // HH_RK：0.11.4 代理hh 加，御敌之策射程   // obRgU / obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程，gear/fx_ob）   // GW 加：站在长城城墙上的另算（structs/gwall）
     if(s.ordP&&!elevated){ax=s.ordP.x;ay=s.ordP.y;cx=ax;cy=ay;R_=Math.max(4*16,RR)}   // v0.5.9 指挥前往：守在指定地点，打附近的亡灵
     if(s.ordT){if(eOk(s.ordT.i,s.ordT.id)&&eVis(s.ordT.i)){s.ti=s.ordT.i;s.tid=s.ordT.id;s.think=Math.max(s.think,0.1)}else s.ordT=null}   // v0.5.9 指挥攻击：一直追着这只亡灵打，打死为止
     if(s.imP){if(G.time>=s.imU)s.imP=null;else if(!elevated){ax=s.imP.x;ay=s.imP.y;cx=ax;cy=ay;R_=s.imH}}
@@ -51995,9 +52268,9 @@ function campApply(s,list,what){let nu=0,nm=0,sk=0,dis=0;for(const b of list){if
   toast(nu||nm||sk?`${what}：${nu} 座改练${CFG.units[s.unit].name}${dis?`(遣散 ${dis} 名)`:''}、${nm} 座改成「${SOLD_NAMES[s.mode]}」${sk?`，${sk} 座兵种没换(锁定 / 练不了 / 战斗中)`:''}`:`${what}：没有别的兵营要改`);refreshSel(true)}
 // 一键锁定 / 解锁所有兵营的训练兵种：有没锁的就全锁，否则全解
 function campLockAll(){const C=G.structs.filter(b=>!b.dead&&isCampT(b.type)&&CFG.camps[b.type]),on=C.some(b=>!b.uLock);for(const b of C)b.uLock=on;return{on,n:C.length}}
-const campCap=b=>Math.max(0,Math.round(((b.cfg.cap?b.cfg.cap[b.level-1]:CFG.campLevels.cap[b.level-1])+pm.campCap+((btEvo(b.type)||{}).capAdd||0)+(TM.campCapAdd||0)+s5Cap(b))*(1+Math.min(1,pm.campCapP||0))*campCapK(b))-(b.cvOcc|0));   // cvOcc：入侵战里配给商队的兵占的名额（game/caravan）   // S5 加：s5Cap 船坞增筑
+const campCap=b=>Math.max(0,Math.round(((b.cfg.cap?b.cfg.cap[b.level-1]:CFG.campLevels.cap[b.level-1])+pm.campCap+((btEvo(b.type)||{}).capAdd||0)+(TM.campCapAdd||0)+s5Cap(b))*(1+Math.min(1,pm.campCapP||0)+bjCapP(b))*campCapK(b))-(b.cvOcc|0));   // cvOcc：入侵战里配给商队的兵占的名额（game/caravan）   // S5 加：s5Cap 船坞增筑   // BJ 加：bjCapP 0.12.4 边军大营军书百卷 / 闲云点兵（和卡牌相加，不受卡牌 +100% 的上限）
 const campCapK=b=>{const e=btEvo(b.type);return(e&&e.shipB&&e.shipB.cap?1+e.shipB.cap:1)*(G.stCapK||1)};   // v0.10.0 造船厂「港口扩建」驻军 +50%（独立）   // stCapK：代理 ZL 加，开拓地、入侵战里战争之神的编制倍率
-const unitCapW=u=>u.c.capW||1;   // v0.10.0 舰船占几个驻军位   // campCapP：v0.8.23（用户定）征兵令 / 募兵令 / 战争动员 +10 / 20 / 30%，合计最多 +100%；四舍五入（Claude 定）；campCap 是 0.8.22 及以前每张 +1 人的老卡   // v0.3.4 屯驻
+const unitCapW=u=>(u.c.capW||1)+(u.ct===BJ_CT?bjCW():0);   // BJ 加：bjCW 0.12.4 边军大营羽林精锐多占驻军位   // v0.10.0 舰船占几个驻军位   // campCapP：v0.8.23（用户定）征兵令 / 募兵令 / 战争动员 +10 / 20 / 30%，合计最多 +100%；四舍五入（Claude 定）；campCap 是 0.8.22 及以前每张 +1 人的老卡   // v0.3.4 屯驻
 const campTrain=b=>CFG.camps[b.type].train/(1+CFG.campLevels.trainSpeed[b.level-1]+(TM['train'+CFG.camps[b.type].tier]||0)+btv(b.type,'ctrain')+(G.wdTrain||0)+(pm.trainSpd||0))/Math.max(0.2,1-pm.trainSlow)/((btEvo(b.type)||{}).trainMul||1);   // v0.3.4 操练；征兵（独立乘区）
 // v0.6.6 提速：上限、训练时间只和兵营种类、等级有关（加成都是全局的），同一帧里同种同级的兵营只算一次（结果和原来一样）
 const CAMP_CC=new Map(),PF_CCT=new Map();let PF_CCF=0;   // PF_CCT / PF_CCF：PF 加，见 updateCamps
@@ -52010,7 +52283,7 @@ function updateCamps(dt){
   for(let i_11=0,a_11=G.structs;i_11<a_11.length;i_11++){const b=a_11[i_11];if(!isCampS(b))continue;
     const cnt=b.count;let cc;if(b.cvOcc){const ck=b.type+b.level+'/'+b.cvOcc;cc=CC.get(ck);if(!cc){cc=[campCap(b),0];CC.set(ck,cc)}}   // PF 改（v0.11.2 性能）：常见的（没配给商队）不再每帧拼字符串当键，改查 种类 → [等级] 的固定数组，按帧号判断这一帧算过没有（同一帧同种同级只算一次，和原来一样）
       else{let A=PF_CCT.get(b.type);if(!A)PF_CCT.set(b.type,A=[]);cc=A[b.level];if(!cc)cc=A[b.level]=[0,0,-1];if(cc[2]!==PF_CCF){cc[0]=campCap(b);cc[1]=0;cc[2]=PF_CCF}}
-    if(cnt>=cc[0]||cnt+(CFG.units[campUnit(b)].capW||1)>cc[0]){b.trainT=0;continue}
+    if(cnt>=cc[0]||cnt+(CFG.units[campUnit(b)].capW||1)+(b.type===BJ_CT?bjCW():0)>cc[0]){b.trainT=0;continue}   // BJ 加：bjCW 羽林精锐
     if(b.empU>G.time)continue;   // v0.7.0 秘法工厂：电磁干扰里机械营不训练
     const tt=cc[1]||(cc[1]=campTrain(b));
     b.trainT+=dt;if(b.trainT>=tt){b.trainT=ADVQ?b.trainT-tt:0;G.soldiers.push(makeSoldier(b,campUnit(b)));
@@ -52501,7 +52774,7 @@ function wallOkPt(x,y){if(wallTileAt(x,y))return true;
   // 斜向相接的两段墙：交角附近可以走过去
   const cx=Math.round(x/16)*16,cy=Math.round(y/16)*16;if(Math.abs(x-cx)>4||Math.abs(y-cy)>4)return false;
   return(wallTileAt(cx-8,cy-8)&&wallTileAt(cx+8,cy+8))||(wallTileAt(cx+8,cy-8)&&wallTileAt(cx-8,cy+8))}
-function heroGateHere(h){const st=G.structAt[tidx(h.x,h.y)];return st&&!st.dead&&isGateT(st.type)?st:null}
+function heroGateHere(h){const st=G.structAt[tidx(h.x,h.y)];return st&&!st.dead&&(isGateT(st.type)||st.cfg.fPass)?st:null}   // GW 加：0.12.4 长城城墙每一段都能登墙 / 下墙（structs/gwall）
 function heroMove(h,dx,dy){
   if(h.fly||(h.wing&&h.layer!==1)){h.x=clamp(h.x+dx,4,MW-4);h.y=clamp(h.y+dy,4,MH-4);return true}   // wing：v0.7.0 龙之翼，飞着走   // v0.7.0 德拉贡化身巨龙：飞着走，什么都挡不住
   if(h.layer!==1){const r=moveFriend(h,dx,dy);if(!r&&h.wallClimb)climbWallUp(h,dx,dy);return r}
@@ -53125,7 +53398,7 @@ function heroToPost(h,P){h.wpost=P.key;
   if(Math.hypot(gx-h.x,gy-h.y)<6){heroSetLayer(h,1);h.x=gx;h.y=gy;return MV_ZERO}
   return navVec(h,gx,gy)}
 function heroLeaveWall(h){const t=tidx(h.x,h.y),st=G.structAt[t];h.wpost=null;
-  if(st&&!st.dead&&isGateT(st.type)){heroSetLayer(h,0);h.x=(t%MAP_W)*16+8;h.y=((t/MAP_W)|0)*16+8;return MV_ZERO}
+  if(st&&!st.dead&&(isGateT(st.type)||st.cfg.fPass)){heroSetLayer(h,0);h.x=(t%MAP_W)*16+8;h.y=((t/MAP_W)|0)*16+8;return MV_ZERO}   // GW 加：站在长城城墙上直接下墙
   if(postVer!==G.structVer){rebuildPosts();postVer=G.structVer}
   const ct=wallCompAt(h.x,h.y),gates=ct>=0?POSTG[ct]||[]:[],g=nearestGate(h,gates);
   if(g<0){heroSetLayer(h,0);if(!friendPassPt(h.x,h.y))evictFriendsOne(h,t%MAP_W,(t/MAP_W)|0);return MV_ZERO}   // 这段城墙没有城门：直接跳下去
@@ -56063,6 +56336,266 @@ feat('bwCamp',{on:()=>designUnlocked(BW_CT),hooks:{
   dmgRedF:(u,d)=>u.bw?bwRedF(u,d):d,
   friend:(u,dt,hero)=>{if(!hero&&u.bw&&(u.bw.dash||u.bw.moon||u.bw.oni))bwTick(u,dt)},
   drawUnder:bwDraw}});
+
+// ---------- 0.12.4 边军大营（代理 BJ；数据 data/build_bianjun.js，美术 art/bianjun.js）----------
+// 四种星阳兵（白虎骑 / 火凰射 / 玄武卫 / 火龙车）、一阶二阶三阶科技、大营的火炮（兵营数据带 weapon，走 structs/structs.updateTowers 的塔楼开火，这里只画炮管）。字段说明在数据文件开头。
+// 这名兵的状态放在 u.bj（soldierBt 最后 bjBt 合进来；不是边军大营的兵 = null）；三阶按这名兵所属的兵营够不够门槛（soldierBt 传进来的 e 已经按 evo3On(camp) 合并好，s3Re 跨门槛时重算）。
+// 共享代码的调用点（每处一行，行尾注明 BJ 加）：units/soldiers 的 uHpMul_（bjHpK）、soldierBt（bjBt）、campCap（bjCapP）、unitCapW 和 updateCamps（bjCW）；
+//   engine/combat.hurtF 格挡（bjBlock）；structs/structs 的 muzzle、structVision；ui/draw.drawStruct（bjDrawCamp）；ui/hud 兵营说明（bjCampInfo）
+// 其余都走钩子：afterHitE（叠层、恐惧、火坑、火焰弹）、dmgPreE（物理减伤 −、火焰抗性 −）、dmgBaseE（落凰打飞行 ×2）、dmgInS（建筑替伤）、dmgRedF（玄盾反弹）、
+//   friend（技能、蓄力、喷火、白虎、将领）、tick（反弹队列、玄武卫名单）、waveEnd（清焦炭痕迹）、drawUnder / drawWorld（焦炭痕迹、将领旗、玄盾）
+const BJ_CT='campBj',BJ_E0={};
+// 将领：兵营 → 这座兵营现在的将领（开局清空）
+const BJ_GEN=new Map();
+const bjGenOf=cp=>{const g=BJ_GEN.get(cp);return g&&!g.dead&&g.hp>0&&g.camp===cp?g:null};
+// 白虎骑叠层（按亡灵下标；id 不对 = 换了一只）：到期时间、id、层数、这几层的物理减伤合计
+const BJ_CU=new Float64Array(ECAP),BJ_CI=new Int32Array(ECAP),BJ_CN=new Uint8Array(ECAP),BJ_CV=new Float32Array(ECAP);
+// 火焰抗性削弱：id、火凰射火坑（−fr，不叠加）到期、火龙车叠层到期 + 层数、凰落清空到期
+const BJ_FI=new Int32Array(ECAP),BJ_FP=new Float64Array(ECAP),BJ_FD=new Float64Array(ECAP),BJ_FN=new Uint8Array(ECAP),BJ_FC=new Float64Array(ECAP);
+let BJ_ON=false;   // 这一局有没有边军大营的兵种在用（feat 的 start 设；钩子里先看它）
+
+// —— 共享代码调用：驻军位、驻军上限、生命 ——
+// 羽林精锐：每名兵多占几个驻军位（units/soldiers.unitCapW、updateCamps）
+function bjCW(){const e=btEvo(BJ_CT);return e&&e.bjElite?e.bjElite.w:0}
+// 军书百卷 / 闲云点兵：驻军上限 +X%（units/soldiers.campCap，和卡牌的驻军加成相加）
+function bjCapP(b){if(b.type!==BJ_CT)return 0;const e=btEvo(BJ_CT);return e?(e.bjCap1||0)+(e.bjCap2||0):0}
+// 生命的独立倍率（units/soldiers.uHpMul_）：羽林精锐、将领、神兽白虎（生命改成 1000）。makeSoldier 算生命时传的是 {c, camp}（还没有 u.bj）：按「这座兵营现在没有将领 = 它就是将领」算，紧接着 bjBt 照同样的规则定
+function bjHpK(u){const cp=u&&u.camp;if(!cp||cp.type!==BJ_CT||!u.c||!u.c.bj)return 1;const e=btEvo(BJ_CT);let k=1;
+  if(e&&e.bjElite)k*=1+e.bjElite.k;
+  if(e&&e.bjGen&&(u.bj!==undefined?!!(u.bj&&u.bj.gen):!bjGenOf(cp)))k*=1+e.bjGen.k;
+  if(u.c.bj.k==='tiger'&&evo3On(cp)){const e3=btEvo3(BJ_CT);if(e3&&e3.bjTiger3)k*=e3.bjTiger3.hp/u.c.hp}
+  return k}
+
+// —— soldierBt 最后调：按兵种数据 + 进化写 u.bj，改攻击、双防、格挡防御、移动速度、火凰射的攻击间隔 ——
+const BJ_RG=new Map();   // 火凰射：原武器 → 攻击间隔 × min 的副本（一局里不变）
+function bjPhxRg(rg,k){let r=BJ_RG.get(rg);if(!r||r.__k!==k){r=Object.assign({},rg,{int:rg.int*k,__k:k});BJ_RG.set(rg,r)}return r}
+function bjBt(u,e,rg){const c=u.c,B=c.bj;if(!B){u.bj=null;return rg}const E1=e||BJ_E0,old=u.bj,cp=u.camp;
+  let gen=!!(old&&old.gen);if(!E1.bjGen)gen=false;else if(!gen&&cp&&!bjGenOf(cp))gen=true;
+  if(gen&&cp)BJ_GEN.set(cp,u);
+  let K=1;if(E1.bjElite)K*=1+E1.bjElite.k;if(gen)K*=1+E1.bjGen.k;
+  u.atkMul*=K;u.def=(c.def||0)*K;u.mdef=(c.mdef||0)*K;u.shield=(c.shield||0)*(1+TM.uShield)*K;
+  const T3=B.k==='tiger'?E1.bjTiger3:B.k==='phoenix'?E1.bjPhx3:B.k==='tortoise'?E1.bjTort3:E1.bjDrg3;
+  u.mvK=T3&&B.k==='tiger'?T3.speed/c.speed:1;
+  u.hbJyK=T3&&B.k==='tiger'?'bjTigerS':T3&&B.k==='phoenix'?'bjPhoenixS':null;   // 三阶换样子（ui/draw.drawSoldier 按 hbJyK 取图；图在 art/bianjun）
+  if(B.k==='phoenix'&&rg)rg=bjPhxRg(rg,B.chg.min);
+  const cdK=Math.max(0.05,1-(E1.bjCd1||0)-(E1.bjCd2||0)-(gen?E1.bjGen.cd:0));
+  u.bj={k:B.k,B,gen,t3:T3||null,cdK,cdL:old?old.cdL:Math.random(),act:0,at:0,ax:0,ay:0,bx:0,by:0,tj:-1,tid:0,hit:null,
+    m:B.chg?B.chg.max:1,mShot:1,lastCd:0,dpm:0,rm0:u.rgMul,ft:0,fa:0,fon:0,mkT:0,mkA:9,ballT:0,biteT:0,dcd:old?old.dcd:0,xdU:0,bkU:0,n:0,on:false,hc:null,cmdT:0};
+  return rg}
+const bjBusy=s=>s.stag>0||s.fearT>0||s.frzT>0||s.layer>0||s.disU>G.time||ADVQ;
+// 近战攻击（同 soldierMelee 的伤害，不算冲锋）、远程攻击（同 soldierShoot，1 倍间隔）
+const bjAtkM=s=>{const c=s.c,M=c.melee;return M.dmg*(1+pmNC(s,pm.meleeBase))*unitDmgMul(c,s.statMul,s,false,TM.uMelee+(s.meleeInf?pm.infDmg||0:0))*s.atkMul};
+const bjAtkR=s=>{const c=s.c,rg=s.rg,mg=!!rg.magic;return rg.dmg*unitDmgMul(c,s.statMul,s,mg,mg?TM.uSpell||0:TM.uRanged||0)*s.atkMul*s.bj.rm0};
+// 近战攻击速度倍率（白虎的攻击间隔用）
+const bjMAs=s=>(1+pmNC(s,pm.atkSpd)+TM.uMeleeSpd+drumF(s)+solAspT(s))*ENV.fslow*ENV.ourAtk*fAtkK(s);
+// 统一 buff 的 eff 当常量用：同样的数值用同一个对象
+const BJ_EF=new Map();
+function bjEff(key,mk){let f=BJ_EF.get(key);if(!f){f=mk();BJ_EF.set(key,f)}return f}
+
+// —— 每帧（friend 钩子）——
+function bjTick(s,dt){const Q=s.bj;if(s.dead)return;
+  if(Q.cdL>0)Q.cdL-=dt*(s.bfV?Math.max(0.1,1+s.bfV[9]):1);   // 统一 buff 的冷却速度
+  if(G.phase!=='wave')return;
+  if(Q.k==='tiger')bjTiger(s,Q,dt);else if(Q.k==='phoenix')bjPhx(s,Q,dt);else if(Q.k==='tortoise')bjTort(s,Q,dt);else bjDrg(s,Q,dt);
+  if(Q.gen)bjGenTick(s,Q,dt)}
+
+// ===== 白虎骑 =====
+// 叠层：物理防御 −def（按没吃 buff 的防御）、易伤 +vuln（统一 buff，id bjCut）；物理减伤 −pdr 记在 BJ_CV，dmgPreE 里加进减伤池子
+function bjCut(i,C){const id=E.id[i];let n=BJ_CU[i]>G.time&&BJ_CI[i]===id?BJ_CN[i]:0;n=Math.min(C.max,n+1);BJ_CI[i]=id;BJ_CN[i]=n;BJ_CU[i]=G.time+C.t;BJ_CV[i]=C.pdr*n;
+  const dv=Math.round(Math.max(0,E.def[i]-E.bfK[i*6+3])*C.def*n*10)/10;bfAddE(i,'bjCut',bjEff('c'+dv+'|'+n+'|'+C.vuln,()=>({def:-dv,vuln:C.vuln*n})),C.t,{debuff:true})}
+function bjTiger(s,Q,dt){
+  if(Q.act===1){bjLeapStep(s,Q,dt);return}
+  if(Q.act===2)bjDashStep(s,Q,dt);
+  else if(!bjBusy(s)){if(Q.cdL<=0&&bjLeapTry(s,Q))return;if(Q.t3&&!(Q.dcd>G.time))bjDashTry(s,Q)}
+  if(Q.t3&&Q.act===0)bjBite(s,Q,dt)}
+// 虎跃：目标在 r 格内（不打天上的）；t 秒跃过去（跟着目标走），落地 aoe 格内伤害 + 眩晕
+function bjLeapTry(s,Q){const j=s.ti;if(!(j>=0)||!eOk(j,s.tid)||E.air[j])return false;const L=Q.B.leap,d=Math.hypot(E.x[j]-s.x,E.y[j]-s.y)-E.r[j];if(d>L.r*16)return false;
+  Q.act=1;Q.at=0;Q.ax=s.x;Q.ay=s.y;Q.tj=j;Q.tid=E.id[j];Q.bx=E.x[j];Q.by=E.y[j];Q.cdL=L.cd*Q.cdK;s.facing=E.x[j]>=s.x?1:-1;
+  if(inViewPt(s.x,s.y)){sfx('dash',s.x,s.y);vfx('flare',{x:s.x,y:s.y-6,r:10,c:'#f4f0e4',life:0.3})}return true}
+function bjLeapStep(s,Q,dt){const L=Q.B.leap;Q.at+=dt;s.stag=Math.max(s.stag,1e-4);s.walking=false;s.cv=0;
+  if(eOk(Q.tj,Q.tid)){Q.bx=E.x[Q.tj];Q.by=E.y[Q.tj]}
+  const p=Math.min(1,Q.at/L.t),e=p*p*(3-2*p),nx=Q.ax+(Q.bx-Q.ax)*e,ny=Q.ay+(Q.by-Q.ay)*e,x0=s.x,y0=s.y;moveFriend(s,nx-s.x,ny-s.y);s.elev=Math.sin(p*Math.PI)*14;
+  if(inViewPt(s.x,s.y)&&chance(0.6))pp(x0,y0-s.elev,4,vr(-6,6),vr(-6,2),vr(2,6),0,0.3,vpick(['#f4f0e4','#c8d8e8','#ffffff']),1,2,1);
+  if(p<1)return;
+  s.elev=0;Q.act=0;s.cvFull=false;const R=L.aoe*16,dmg=bjAtkM(s)*L.mul,o={penP:1,t1DrP:99,mix:s.mmix,fu:s,bd:dmg,ua:1,bjX:1},x=s.x,y=s.y;
+  eQuery(x,y,R,j=>{if(E.air[j])return;dealE(j,dmg,o);if(E.alive[j])eStun(j,L.stun)});
+  if(inViewPt(x,y)){vfx('wave',{x,y,r:R,c:'#f4f0e4',c2:'#3a3a48',gnd:1,life:0.45});vfx('crack',{x,y,r:R*0.8,n:6,sd:(G.tick%97)+1,c:'#fff3c4',life:0.6});G.shake=Math.max(G.shake||0,1.5);sfx('thump',x,y)}}
+// 神兽白虎：白虎自己咬身边最近的地面亡灵（攻击间隔按近战攻击速度加成）
+let BJ_NS=null,BJ_NB=-1,BJ_ND=0;
+const pfBjNear=(j,d)=>{if(!E.air[j]&&d<BJ_ND){BJ_ND=d;BJ_NB=j}};
+function bjBite(s,Q,dt){Q.biteT-=dt;if(Q.biteT>0||bjBusy(s))return;const B=Q.t3.bite;BJ_NB=-1;BJ_ND=B.reach*16+4;eQuery(s.x,s.y,BJ_ND,pfBjNear);if(BJ_NB<0){Q.biteT=0.15;return}
+  const j=BJ_NB,dmg=B.dmg*unitDmgMul(s.c,s.statMul,s,false,TM.uMelee)*s.atkMul;dealE(j,dmg,{pen:TM.uPen,mix:BJ_SLASH,fu:s,bd:dmg,ua:1,melee:1,bjM:1});Q.biteT=B.int/bjMAs(s);
+  if(inViewPt(E.x[j],E.y[j])){const a=Math.atan2(E.y[j]-s.y,E.x[j]-s.x);vfx('slash',{x:E.x[j],y:E.y[j]-6,r:7,a0:a-1,a1:a+1,c:'#e8f0ff',c2:'#ffffff',w:2,life:0.18})}}
+const BJ_SLASH={slash:1};
+// 白虎「冲锋」：目标在 1.5～(dist + 1) 格之间时朝它冲 dist 格，沿途的亡灵每只吃一次白虎的伤害 × mul
+function bjDashTry(s,Q){const j=s.ti;if(!(j>=0)||!eOk(j,s.tid)||E.air[j])return;const D=Q.t3.dash,dx=E.x[j]-s.x,dy=E.y[j]-s.y,d=Math.hypot(dx,dy);
+  if(d<24||d>(D.dist+1)*16)return;Q.act=2;Q.at=0;Q.ax=dx/d;Q.ay=dy/d;Q.hit=new Set();Q.dcd=G.time+D.cd*Q.cdK;s.hd=Math.atan2(dy,dx);s.facing=dx>=0?1:-1;
+  if(inViewPt(s.x,s.y)){sfx('dash',s.x,s.y);addFx({k:'ring',x:Math.round(s.x),y:Math.round(s.y-4),r:12,life:0.3,c:'#e8f0ff'})}}
+let BJ_DH=null,BJ_DD=0;   // 冲锋这一帧：撞过的、伤害（固定回调 pfBjDash 读，不在每帧里新建闭包）
+const pfBjDash=j=>{const id=E.id[j],s=BJ_NS;if(E.air[j]||BJ_DH.has(id))return;BJ_DH.add(id);dealE(j,BJ_DD,{pen:TM.uPen,mix:BJ_SLASH,fu:s,bd:BJ_DD,ua:1,melee:1,bjM:1});
+  if(E.alive[j]){const l=Math.hypot(E.x[j]-s.x,E.y[j]-s.y)||1;knockback(j,(E.x[j]-s.x)/l,(E.y[j]-s.y)/l,10,0.15)}};
+function bjDashStep(s,Q,dt){const D=Q.t3.dash,v=D.dist*16/D.t,x0=s.x,y0=s.y;Q.at+=dt;s.stag=Math.max(s.stag,1e-4);s.walking=true;s.anim+=dt*2;
+  const free=moveFriend(s,Q.ax*v*dt,Q.ay*v*dt),H=Q.hit,B=Q.t3.bite,dmg=B.dmg*unitDmgMul(s.c,s.statMul,s,false,TM.uMelee)*s.atkMul*D.mul;s.cv=Math.max(s.cv||0,v*0.6);
+  BJ_NS=s;BJ_DH=H;BJ_DD=dmg;eQuery(s.x,s.y-2,12,pfBjDash);BJ_NS=null;BJ_DH=null;
+  if(inViewPt(s.x,s.y)){pp(s.x+vr(-5,5),s.y,0,vr(-10,10),vr(-4,4),vr(3,8),0,0.4,vpick(['#e8e0d0','#b8b0a0']),2,1,1);if(chance(0.5))vfx('beam',{x0,y0:y0-8,x1:s.x,y1:s.y-8,c:'#c8d8ff',c2:'#ffffff',w:2,life:0.18})}
+  if(Q.at>=D.t||(!free&&Math.hypot(s.x-x0,s.y-y0)<v*dt*0.25)){Q.act=0;Q.hit=null;s.cvFull=true}}
+
+// ===== 火凰射 =====
+// 伤害倍率：间隔倍数 m（落凰：> 1 时 m²，< 1 时 0.5 + m ÷ 2）
+const bjPhxF=(Q,m)=>Q.t3?(m>1?m*m:m<1?0.5+m/2:1):m;
+function bjPhx(s,Q,dt){const C=Q.B.chg;
+  if(s.shotCd>Q.lastCd+1e-6){Q.mShot=Math.max(C.min,Q.m);Q.m=0}   // shotCd 跳上去了 = 上一帧射出去了一箭
+  Q.m=Math.min(C.max,Q.m+dt*uCmdK(s)*C.min/uShotInt(s));   // s.rg.int 是 min 倍的间隔：1 倍间隔 = uShotInt ÷ min
+  if(Q.cdL<=0&&!bjBusy(s))bjFallTry(s,Q);
+  if(s.shotCd<=0.05&&Q.m<C.max){const j=s.ti;   // 能放了：没蓄满就接着蓄，除非这一箭已经够打死目标（按上一箭的实际伤害估）
+    if(j>=0&&eOk(j,s.tid)&&Q.dpm>0&&E.hp[j]<=Q.dpm*bjPhxF(Q,Math.max(C.min,Q.m)))s.shotCd=Math.min(s.shotCd,0);else s.shotCd=0.05}
+  s.rgMul=Q.rm0*bjPhxF(Q,Math.max(C.min,Q.m));Q.lastCd=s.shotCd}
+// 凰落：射程内的目标，0.35 秒后在目标处爆炸
+function bjFallTry(s,Q){const j=s.ti;if(!(j>=0)||!eOk(j,s.tid))return;const d=Math.hypot(E.x[j]-s.x,E.y[j]-s.y)-E.r[j];if(d>s.rg.range*16)return;
+  const F=Q.B.fall,a=bjAtkR(s);Q.cdL=F.cd*Q.cdK;addZone({k:'bjFall',x:E.x[j],y:E.y[j],t:0,delay:0.35,s,id:E.id[j],dmg:a*F.mul,pd:a*F.dps,F,done:false});
+  if(inViewPt(E.x[j],E.y[j])){vfx('dragon',{x0:s.x,y0:s.y-70,x1:E.x[j],y1:E.y[j]-4,arc:-30,c:'#ff8a2e',c2:'#7a1a0a',life:0.4});sfx('zap',s.x,s.y)}
+  s.recoil=0.15}
+zoneDef('bjFall',{tick(z){if(z.done||z.t<z.delay)return;z.done=true;z.dead=true;const F=z.F,R=F.r*16,o={mix:BJ_FIRE,su:z.s,bd:z.dmg,ua:1,bjS:1};
+    eQuery(z.x,z.y,R,j=>{if(E.air[j]&&E.id[j]!==z.id)return;dealE(j,z.dmg,o)});
+    addFirePit(z.x,z.y,{r:F.pitR,dur:F.pitT,dps:z.pd},friendlyFire());addZone({k:'bjFr',x:z.x,y:z.y,r:F.pitR*16,dur:F.pitT,fr:0,clr:F.clrT,tk:0});
+    if(inViewPt(z.x,z.y)){addFx({k:'boom',x:Math.round(z.x),y:Math.round(z.y),r:R,life:0.5});vfx('wave',{x:z.x,y:z.y,r:R,c:'#ff9a3c',c2:'#3a1008',gnd:1,life:0.5});vfx('flare',{x:z.x,y:z.y-8,r:R*0.6,c:'#ffb050',life:0.4});G.shake=Math.max(G.shake||0,2);sfx('boom',z.x,z.y)}}});
+const BJ_FIRE={fire:1};
+// 火坑里的亡灵火焰抗性 −fr（不叠加）/ 清空（clr 秒）：每 0.5 秒看一次谁站在里面（同火坑）
+let BJ_FZ=null;
+function bjFrSlot(j){const id=E.id[j];if(BJ_FI[j]!==id){BJ_FI[j]=id;BJ_FP[j]=0;BJ_FD[j]=0;BJ_FN[j]=0;BJ_FC[j]=0}}
+const pfBjFr=j=>{if(E.air[j])return;bjFrSlot(j);const z=BJ_FZ;if(z.clr>0)BJ_FC[j]=Math.max(BJ_FC[j],G.time+z.clr);else BJ_FP[j]=Math.max(BJ_FP[j],G.time+BJ_PIT_T)};
+let BJ_PIT_T=3,BJ_PIT_FR=0.5;   // 火凰射火坑的削弱：持续、数值（开局按数据设）
+zoneDef('bjFr',{tick(z,dt){z.tk-=dt;if(z.tk<=0){z.tk=0.5;BJ_FZ=z;eQuery(z.x,z.y,z.r,pfBjFr)}if(z.t>=z.dur)z.dead=true}});
+// 这只亡灵现在被削掉多少火焰抗性（清空 = 99）
+function bjFrCut(i){if(BJ_FI[i]!==E.id[i])return 0;const t=G.time;if(BJ_FC[i]>t)return 99;let c=0;if(BJ_FP[i]>t)c+=BJ_PIT_FR;if(BJ_FD[i]>t)c+=BJ_DRG_FR*BJ_FN[i];return c}
+let BJ_DRG_FR=0.1;
+
+// ===== 玄武卫 =====
+const BJ_TL=[];let BJ_TLT=0,BJ_TLR=64;   // 玄武卫名单（每 0.25 秒重列；建筑替伤找最近的）、替伤半径（像素）
+function bjTList(){BJ_TL.length=0;for(let k=0;k<G.soldiers.length;k++){const s=G.soldiers[k];if(!s.dead&&s.bj&&s.bj.k==='tortoise'&&!s.layer&&s.share){BJ_TL.push(s);BJ_TLR=s.share.r*16}}}
+function bjTortNear(x,y){let b=null,bd=BJ_TLR;for(let k=0;k<BJ_TL.length;k++){const m=BJ_TL[k];if(m.dead||m.hp<=0)continue;const d=Math.hypot(m.x-x,m.y-y);if(d<=bd){bd=d;b=m}}return b}
+const BJ_ICPT=new Map();   // 拦截弹道的半径（像素）→ u.icpt 对象（units/formation.icptHit 读 catchR）
+const bjIcpt=r=>{let o=BJ_ICPT.get(r);if(!o){o={catchR:r};BJ_ICPT.set(r,o)}return o};
+function bjTort(s,Q,dt){const X=Q.B.xd,T3=Q.t3;
+  if(Q.cdL<=0&&!bjBusy(s)&&(s.lastHit>G.time-0.5||(s.ti>=0&&eOk(s.ti,s.tid)&&Math.hypot(E.x[s.ti]-s.x,E.y[s.ti]-s.y)<=4*16))){Q.xdU=G.time+X.t;Q.cdL=X.cd*Q.cdK;
+    if(inViewPt(s.x,s.y)){vfx('rune',{x:s.x,y:s.y,r:14,c:'#3ac8a8',c2:'#c8fff0',sides:6,spin:2,life:0.6,grow:1});sfx('zap',s.x,s.y)}}
+  const on=Q.xdU>G.time,n=(on?1:0)+(T3?1:0);Q.n=n;if(s.imP)return;   // 霍恩「铁令动员」接管时不改
+  if(n>0){s.imU=G.time+0.1;s.imB=X.bk*n;s.imR=0;s.mBlk=true;Q.on=true}else if(Q.on){Q.on=false;s.imU=0;s.mBlk=!!s.c.mBlk}
+  s.icpt=on?bjIcpt((T3?T3.icptR:X.icpt)*16):null}
+// 格挡时叠护盾（engine/combat.hurtF 格挡那里调）：pct 最大生命，最多 max，冷却 cd
+function bjBlock(u){const Q=u.bj;if(!Q||Q.k!=='tortoise'||Q.bkU>G.time)return;const W=Q.B.bkSh;Q.bkU=G.time+W.cd;
+  const a=u.maxHp*W.pct,cur=u.shieldT>0&&u.shieldHp>0?u.shieldHp:0;u.shieldHp=Math.max(cur,Math.min(u.maxHp*W.max,cur+a));u.shieldMax=Math.max(u.shieldMax||0,u.shieldHp);u.shieldT=Math.max(u.shieldT||0,W.t);
+  if(inViewPt(u.x,u.y))addFx({k:'ring',x:Math.round(u.x),y:Math.round(u.y-6),r:10,life:0.35,c:'#3ac8a8'})}
+// 玄盾反弹：原伤害 × ref × 层数，法术伤害；排到 tick 里结算（hurtF 里面别直接打亡灵）
+const BJ_RQ=[];
+function bjRefl(u,o,d){const i=o.src;if(!(i>=0)||!E.alive[i])return;BJ_RQ.push({i,id:o.sid!==undefined?o.sid:E.id[i],d,u})}
+function bjReflFlush(){for(let k=0;k<BJ_RQ.length;k++){const q=BJ_RQ[k];if(!eOk(q.i,q.id))continue;dealE(q.i,q.d,{magic:true,mix:BJ_REFM,fu:q.u,bjX:1,noFx:true});
+    if(inViewPt(E.x[q.i],E.y[q.i]))vfx('beam',{x0:q.u.x,y0:q.u.y-8,x1:E.x[q.i],y1:E.y[q.i]-6,c:'#3ac8a8',c2:'#e0fff8',w:2,life:0.18})}BJ_RQ.length=0}
+const BJ_REFM={arcane:1};
+// 建筑替伤（dmgInS）：4 格内有玄武卫，f 转给它（替伤取较小：玄武卫按它自己算的、建筑按建筑算的）
+function bjInS(s,dmg,o){if(o.rd||o.dot||o.exec||!(dmg>0)||!BJ_TL.length)return dmg;const m=bjTortNear(s.x,s.y-8);if(!m)return dmg;const t=dmg*m.share.f;
+  monkTake(m,Math.min(fEst(m,t,o),fEst(s,t,o)),s);return dmg-t}
+
+// ===== 火龙车 =====
+// 喷火：每 tick 秒对前方扇形里的亡灵结算 k × 攻击的火焰伤害，火焰抗性叠一层
+const BJ_FLO={magic:true,noFx:true,mix:BJ_FIRE,su:null,bd:0,ua:1};
+let BJ_FLX=0,BJ_FLY=0,BJ_FLA=0,BJ_FLH=0,BJ_FLD=0,BJ_FLF=null;
+const pfBjFlame=(j,d)=>{if(d>=6&&angDiff(Math.atan2(E.y[j]-BJ_FLY,E.x[j]-BJ_FLX),BJ_FLA)>BJ_FLH)return;dealE(j,BJ_FLD,BJ_FLO);
+  if(E.alive[j]){const F=BJ_FLF;bjFrSlot(j);BJ_FN[j]=BJ_FD[j]>G.time?Math.min(F.frMax,BJ_FN[j]+1):1;BJ_FD[j]=G.time+F.frT}};
+const BJ_CH=[];   // 焦炭痕迹：s 哪辆车、x / y 喷口、a 方向、t 什么时候留下的、p 画的点
+function bjDrg(s,Q,dt){const F=Q.B.fl;if(s.shotCd<0.05)s.shotCd=0.05;   // 不走通用的远程射击（只用来让它走到喷火距离里）
+  if(Q.cdL<=0&&!bjBusy(s)){Q.at-=dt;if(Q.at<=0){Q.at=0.25;bjBlazeTry(s,Q)}}
+  const j=s.ti;let on=false;
+  if(j>=0&&eOk(j,s.tid)&&!bjBusy(s)){const dx=E.x[j]-s.x,dy=E.y[j]-(s.y-4),d=Math.hypot(dx,dy)-E.r[j];if(d<=F.len*16){on=true;Q.fa=Math.atan2(dy,dx)}}
+  if(!on){Q.fon=0;return}
+  Q.fon+=dt;s.facing=Math.cos(Q.fa)>=0?1:-1;s.aim=Q.fa;s.flash=0;
+  const ox=s.x+Math.cos(Q.fa)*7,oy=s.y-4+Math.sin(Q.fa)*3,k=s.rg.int/uShotInt(s)*uCmdK(s);   // 攻击速度加成 = 结算得更快
+  Q.ft-=dt*k;let n=0;while(Q.ft<=0&&n<3){Q.ft+=F.tick;n++;bjFlameTick(s,Q,ox,oy)}
+  Q.mkT-=dt;if(Q.mkT<=0||angDiff(Q.fa,Q.mkA)>30*DEG){Q.mkT=Q.B.char.every;Q.mkA=Q.fa;bjMark(s,ox,oy,Q.fa)}
+  if(Q.t3){Q.ballT-=dt*k;if(Q.ballT<=0){Q.ballT+=Q.t3.every;bjBall(s,Q,ox,oy)}}}
+function bjFlameTick(s,Q,ox,oy){const F=Q.B.fl,dmg=bjAtkR(s)*F.k;BJ_FLO.su=s;BJ_FLO.bd=dmg;BJ_FLX=ox;BJ_FLY=oy;BJ_FLA=Q.fa;BJ_FLH=F.arc/2*DEG;BJ_FLD=dmg;BJ_FLF=F;
+  disbandNear(ox+Math.cos(Q.fa)*F.len*8,oy+Math.sin(Q.fa)*F.len*8,F.len*8);eQuery(ox,oy,F.len*16,pfBjFlame);BJ_FLO.su=null;
+  if(inViewPt(ox,oy)){const h=F.arc/2*DEG,R=F.len*16;for(let q=0;q<3;q++){const a=Q.fa+vr(-h,h)*0.85,v=vr(110,170);pp(ox,oy,4,Math.cos(a)*v,Math.sin(a)*v,vr(-4,6),0,R/v*vr(0.7,1),vpick(['#fff3c4','#ffd25a','#ff9a3c','#ff7a2e','#c4483a']),vpick([1,2]),2,1)}
+    if(chance(0.08))sfx('zap',ox,oy)}}
+// 焦炭痕迹：和喷火一样大的扇形；每辆车最多 max 块（多了去掉它自己最早的）
+function bjMark(s,x,y,a){const C=s.bj.B.char,F=s.bj.B.fl,N=26,p=new Float32Array(N*3),h=F.arc/2*DEG,R=F.len*16;
+  for(let q=0;q<N;q++){const b=a+fvr(-h,h),d=Math.sqrt(fvr(0.04,1))*R;p[q*3]=Math.cos(b)*d;p[q*3+1]=Math.sin(b)*d*VSQ;p[q*3+2]=fvr(0,6.28)}
+  BJ_CH.push({s,x,y,a,t:G.time,p});let c=0;for(let k=BJ_CH.length-1;k>=0;k--)if(BJ_CH[k].s===s&&++c>C.max)BJ_CH.splice(k,1)}
+// 爆炎：自身 r 格内的焦炭痕迹，里面的亡灵（每只一次）受到 mul 倍伤害并灼烧；痕迹里没有亡灵就不放
+const BJ_BSET=new Set();let BJ_BM=null,BJ_BN=0,BJ_BD=0,BJ_BB=0,BJ_BT=0,BJ_BO=null;
+const bjInMark=(j,m)=>Math.hypot(E.x[j]-m.x,E.y[j]-m.y)-E.r[j]<8||angDiff(Math.atan2(E.y[j]-m.y,E.x[j]-m.x),m.a)<=BJ_FLH;
+const pfBjBlN=j=>{if(bjInMark(j,BJ_BM))BJ_BN++};
+const pfBjBlH=j=>{const id=E.id[j];if(BJ_BSET.has(id)||!bjInMark(j,BJ_BM))return;BJ_BSET.add(id);BJ_BN++;dealE(j,BJ_BD,BJ_BO);if(E.alive[j])burnE(j,BJ_BB,BJ_BT)};
+function bjBlazeTry(s,Q){const B=Q.B.blaze,F=Q.B.fl,R2=(B.r*16)**2,R=F.len*16;BJ_FLH=F.arc/2*DEG;BJ_BN=0;
+  for(let k=0;k<BJ_CH.length&&!BJ_BN;k++){const m=BJ_CH[k];if((m.x-s.x)**2+(m.y-s.y)**2>R2)continue;BJ_BM=m;eQuery(m.x,m.y,R,pfBjBlN)}
+  if(!BJ_BN)return;const a=bjAtkR(s);Q.cdL=B.cd*Q.cdK;BJ_BSET.clear();BJ_BN=0;BJ_BD=a*B.mul;BJ_BB=a*B.burn;BJ_BT=B.bt*ENV.burn;BJ_BO={magic:true,mix:BJ_FIRE,su:s,bd:BJ_BD,ua:1};
+  for(let k=0;k<BJ_CH.length;k++){const m=BJ_CH[k];if((m.x-s.x)**2+(m.y-s.y)**2>R2)continue;BJ_BM=m;eQuery(m.x,m.y,R,pfBjBlH);
+    if(inViewPt(m.x,m.y)){for(let q=0;q<10;q++){const i=(q*3)%m.p.length;pp(m.x+m.p[i],m.y+m.p[i+1],2,vr(-8,8),vr(-30,-10),vr(10,26),0,vr(0.4,0.8),vpick(['#fff3c4','#ffd25a','#ff7a2e','#c4483a']),vpick([1,2]),2,1)}
+      vfx('flare',{x:m.x+Math.cos(m.a)*R*0.5,y:m.y+Math.sin(m.a)*R*0.3-4,r:R*0.45,c:'#ff7a2e',life:0.4})}}
+  BJ_BO=null;if(inViewPt(s.x,s.y)){sfx('boom',s.x,s.y);G.shake=Math.max(G.shake||0,1.5)}}
+// 炎龙火炮：向前方 ±ang° 发射火焰弹（直射，命中第一个亡灵）
+const BJ_FBW=new Map();
+function bjFbW(T){let w=BJ_FBW.get(T);if(!w)BJ_FBW.set(T,w={proj:'fire',speed:T.speed,spread:0,blast:{r:T.r,mul:T.mul,mix:BJ_FIRE},mix:BJ_FIRE});return w}
+function bjBall(s,Q,ox,oy){const T=Q.t3,ang=Q.fa+vr(-T.ang,T.ang)*DEG,dmg=T.dmg*bjAtkR(s)/s.rg.dmg,R=T.range*16/CFG.combat.projMaxRange;
+  fireAng(ox,oy-2,ang,R,bjFbW(T),dmg,{mix:BJ_FIRE,su:s,bd:dmg,ua:1,bjFb:T},R,false,1);if(inViewPt(ox,oy)&&chance(0.3))sfx('gunS',ox,oy)}
+
+// ===== 将领：同兵营的兵跟着打将领的目标（借圣骑冲锋跟冲的 hcT：强制目标 0.6 秒，每 0.3 秒续一次）=====
+function bjGenTick(s,Q,dt){Q.cmdT-=dt;if(Q.cmdT>0)return;Q.cmdT=0.3;const j=s.ti;if(!(j>=0)||!eOk(j,s.tid))return;
+  for(let k=0;k<G.soldiers.length;k++){const u=G.soldiers[k];if(u===s||u.dead||u.camp!==s.camp||u.layer||u.ordT||u.ordP||!u.bj)continue;
+    if(!u.rg&&E.air[j])continue;const P=u.bj,H=P.hc||(P.hc={u:0,i:0,id:0});H.u=G.time+0.6;H.i=j;H.id=s.tid;u.hcT=H}}
+
+// —— 命中以后（afterHitE）——
+function bjHitE(i,dmg,o){if(o.dot)return;const u=o.fu||o.su,Q=u&&u.bj;if(!Q)return;
+  if(Q.k==='tiger'){if(o.bjM||!E.alive[i])return;bjCut(i,Q.B.cut);if(o.melee&&!o.bjX&&u.cvFull)fearE(i,u.x,u.y,Q.B.fear);return}
+  if(Q.k==='phoenix'){if(o.boom||o.bjS||o.su!==u)return;if(dmg>0)Q.dpm=dmg/Math.max(0.05,bjPhxF(Q,Q.mShot));   // 直接命中：留下火坑
+    const P=Q.B.pit,x=E.x[i],y=E.y[i];addFirePit(x,y,{r:P.r,dur:P.t,dps:bjAtkR(u)*P.dps},friendlyFire());addZone({k:'bjFr',x,y,r:P.r*16,dur:P.t,fr:P.fr,clr:0,tk:0});return}
+  if(Q.k==='dragon'&&o.bjFb){const T=o.bjFb;if(!o.boom&&E.alive[i])eStun(i,T.stun);if(E.alive[i])burnE(i,o.bd*T.burn,T.bt*ENV.burn)}}
+// —— 伤害（dmgPreE）：白虎骑叠的物理减伤 −；火焰抗性 −（按 engine/enemy.eResMul 的算法补一个比值）——
+function bjPreE(i,d,o){const t=G.time;
+  if(BJ_CU[i]>t&&BJ_CI[i]===E.id[i]&&!o.magic&&!o.dot)ueDrP(o,-BJ_CV[i]);
+  const m=o.mix;if(m&&m.fire>0&&!o.tru&&BJ_FI[i]===E.id[i]){const c=bjFrCut(i);if(c>0){const em_=E.fsNc[i]?EM_NC:em,A=G.afR,f=m.fire;
+    let r=em_.rFire+(A&&o.dot?A.elem:0)+(o.neu?0:G.lvFire||0);if(r>0&&o.resCut&&o.resCut.fire)r=Math.max(0,r-o.resCut.fire);
+    if(r>0){const r2=Math.max(0,r-c);d*=(1-f+f/(1+r2))/(1-f+f/(1+r))}}}
+  return d}
+// —— 落凰神弓：打飞行单位 × air（dmgBaseE）——
+function bjBaseE(i,d,o){const u=o.su,Q=u&&u.bj;if(Q&&Q.k==='phoenix'&&Q.t3&&E.air[i]&&!o.dot)return d*Q.t3.air;return d}
+
+// —— 画面 ——
+// 大营的炮管（ui/draw.drawStruct）：青铜炮，朝目标转，开火后坐
+const BJ_BRZ=C('#b08a3a'),BJ_BRZD=C('#6a4a20'),BJ_BRZH=C('#e8c870');
+function bjDrawCamp(s){const ca=Math.cos(s.aim),sa=Math.sin(s.aim),rc=s.recoil>0?2:0,cx=s.x,cy=s.y-25,L=10-rc;
+  for(const o of[0,1])pline(cx-ca*3,cy-sa*2+o,cx+ca*L,cy+sa*L*0.6+o,o?BJ_BRZD:BJ_BRZ);pline(cx-ca*2,cy-sa*1.4-1,cx+ca*(L-2),cy+sa*(L-2)*0.6-1,BJ_BRZH,0.7);
+  rectW(Math.round(cx+ca*L)-1,Math.round(cy+sa*L*0.6)-1,2,3,BJ_BRZD);rectW(Math.round(cx)-1,cy-1,3,3,BJ_BRZD)}
+// 炮口（structs/structs.muzzle）
+const bjMuzzle=s=>{const ca=Math.cos(s.aim),sa=Math.sin(s.aim);return{x:s.x+Math.round(ca*10),y:s.y-25+Math.round(sa*6)}};
+// 焦炭痕迹（地面层）：一片焦黑的点，里面零星的火星一闪一闪
+const BJ_CHC=C('#1e1814'),BJ_CHE=C('#ff7a2e');
+function bjDrawUnder(cx0,cy0,cx1,cy1){for(let k=0;k<BJ_CH.length;k++){const m=BJ_CH[k];if(m.x<cx0-80||m.x>cx1+80||m.y<cy0-80||m.y>cy1+80)continue;const p=m.p,a=Math.min(1,(G.time-m.t)*3);
+    for(let q=0;q<p.length;q+=3){const x=Math.round(m.x+p[q]),y=Math.round(m.y+p[q+1]);rectW(x-1,y,3,1,BJ_CHC,0.4*a);if(((G.time*3+p[q+2])%6.28)<0.5)rectW(x,y,1,1,BJ_CHE,0.8)}}}
+// 世界层：将领头上的帅旗、玄盾的青色护罩
+const BJ_FLG=C('#c4282a'),BJ_FLGG=C('#e8b84a'),BJ_POLE=C('#5a3a24'),BJ_XDC=C('#3ac8a8');
+function bjDrawWorld(cx0,cy0,cx1,cy1){
+  for(const g of BJ_GEN.values()){if(g.dead||g.x<cx0-40||g.x>cx1+40||g.y<cy0-40||g.y>cy1+40)continue;const cav=g.c.cavalry,x=Math.round(g.x)-g.facing*(cav?7:5),y=Math.round(g.y-g.elev)-(cav?30:22),fx=x+(g.facing>0?-6:1),fl=Math.sin(G.time*4+g.slot)>0?1:0;
+    pline(x,y,x,y+(cav?16:12),BJ_POLE);rectW(fx,y,5,4-fl,BJ_FLG);rectW(fx+2,y+1,1,2,BJ_FLGG)}
+  for(let k=0;k<BJ_TL.length;k++){const s=BJ_TL[k],Q=s.bj;if(s.dead||!Q||!Q.n||s.x<cx0-40||s.x>cx1+40||s.y<cy0-40||s.y>cy1+40)continue;
+    vRing(s.x,s.y-6,10+Q.n*2,BJ_XDC,0.3+0.15*Math.sin(G.time*5+k),0.9,Q.n,G.time*1.5,6)}}
+// 兵营选中时的说明：火炮、将领
+function bjCampInfo(s,note){const T=towerW(s),g=btEvo(BJ_CT)&&btEvo(BJ_CT).bjGen?bjGenOf(s):null,A=[`火炮 ${Math.round(T.dmg)} 伤害 · 射程 ${(T.range/16).toFixed(1)} 格 · 装填 ${(s.cfg.weapon.reload/(1+TM.bReload)).toFixed(1)} 秒`];
+  if(btEvo(BJ_CT)&&btEvo(BJ_CT).bjGen)A.push(g?`将领：${g.c.name}`:'将领：下一名训练出来的士兵');return note?note+' · '+A.join(' · '):A.join(' · ')}
+
+feat('bjCamp',{on:()=>designUnlocked(BJ_CT),hooks:{
+  start:()=>{BJ_GEN.clear();BJ_CH.length=0;BJ_RQ.length=0;BJ_TL.length=0;BJ_CU.fill(0);BJ_CN.fill(0);BJ_FP.fill(0);BJ_FD.fill(0);BJ_FN.fill(0);BJ_FC.fill(0);BJ_FI.fill(-1);BJ_CI.fill(-1);
+    const U=CFG.units;BJ_PIT_T=U.bjPhoenix.bj.pit.t;BJ_PIT_FR=U.bjPhoenix.bj.pit.fr;BJ_DRG_FR=U.bjDragon.bj.fl.fr;BJ_ON=true},
+  tick:dt=>{if(BJ_RQ.length)bjReflFlush();BJ_TLT-=dt;if(BJ_TLT<=0){BJ_TLT=0.25;bjTList()}},
+  waveEnd:()=>{BJ_CH.length=0},
+  afterHitE:bjHitE,
+  dmgPreE:bjPreE,
+  dmgBaseE:bjBaseE,
+  dmgInS:bjInS,
+  dmgRedF:(u,d,o)=>{const Q=u.bj;if(Q&&Q.k==='tortoise'&&Q.n>0&&!o.dot&&o.src>=0&&FR_RAW>0)bjRefl(u,o,FR_RAW*Q.B.xd.ref*Q.n);return d},
+  friend:(u,dt,hero)=>{if(!hero&&u.bj)bjTick(u,dt)},
+  drawUnder:bjDrawUnder,
+  drawWorld:bjDrawWorld}});
 
 // ---------- v0.8.2 黄沙海岸装备的特效（数据见 data/map_coast.js；文字在 CFG.fxText）----------
 Object.assign(GEAR_FX,{
@@ -59937,7 +60470,7 @@ function magEmpty(u,T,w){if(TM.spareMag&&!(u.spareU>G.time)){u.ammo=T.mag;u.spar
 function structVision(s){
   if(s.type==='keep')return CFG.keep.vision;
   if(isWallT(s.type))return CFG.vision.wall;
-  if(isCampT(s.type))return CFG.campLevels.vision;
+  if(isCampT(s.type))return s.cfg.vision||CFG.campLevels.vision;   // BJ 加：cfg.vision 0.12.4 边军大营带火炮，视野 8 格
   if(s.cfg.weapon){const A=CFG.towerLevels.rangeAdd;return(s.cfg.vision+(A[Math.min(A.length-1,Math.max(0,(s.level||1)-1))]||0)+btv(s.type,'vision')+((btEvoS(s)||EVO3_0).visAdd||0))*(G&&G.gwK>0&&(s.cfg.kind==='arrow'||s.cfg.kind==='bolt')?1+G.gwK:1)}   // v0.10.6（用户定：视野不等于射程）塔的视野 = 自己的视野 + 升级（每级同射程的等级加成 +0.25 格，最多 +1）+ 建筑科技「远眺」；原来是 max(视野, 射程 + 0.5)，射程卡、瞭望光环、进化的射程都会把视野带上去   // G.gwK：HA 加，v0.12 格文「风羽统帅」弓弩塔视野
   if(s.type==='watchtower'){const e=btEvo('watchtower');return(s.cfg.vision+btv('watchtower','vision')+((e&&e.vision)||0))*(e&&e.search?e.search.circ:1)}   // search：v0.7.0 二阶「探照」圆形视野 −50%
   if(s.cfg.visLv)return s.cfg.vision+s.cfg.visLv*(s.level-1);   // visLv：v0.11.0 每升 1 级视野 +几格（长明灯）
@@ -60026,7 +60559,7 @@ function upgradeCost(s){
   const c=s.cfg.cost*costMul(s.type)*buildDisc(),L=s.level-1;
   if(isCampT(s.type))return Math.round(c*CFG.campLevels.upgCost[L]);
   if(s.trap)return Math.round(c*CFG.trapLevels.upgCost[L]);
-  if(isWallT(s.type))return Math.round(c*CFG.wallLevels.upgCost[L]);
+  if(isWallT(s.type))return Math.round(c*(s.cfg.upgK||CFG.wallLevels.upgCost)[L]);   // GW 加：cfg.upgK 自己的升级价倍率（0.12.4 长城城墙 15 / 30 / 60 / 120）
   return Math.round(c*CFG.towerLevels.upgCost[L]);
 }
 // 修理：缺失生命比例 × 原价（建造+升级投入）× 50%；主堡按缺失生命 ÷ 6
@@ -60114,7 +60647,7 @@ function muzzle(s){
   const a=s.aim,ca=Math.cos(a),sa=Math.sin(a);
   switch(s.type){case'arrowTower':return{x:s.x+Math.round(ca*4),y:s.y-25+Math.round(sa*3)};case'ballista':return{x:s.x+Math.round(ca*7),y:s.y-17+Math.round(sa*4)};
     case'musketTower':return{x:s.x+Math.round(ca*9),y:s.y-31+Math.round(sa*4)};case'rapidTower':return{x:s.x+Math.round(ca*8),y:s.y-27+Math.round(sa*4)};case'rapidArrow':return{x:s.x+Math.round(ca*7),y:s.y-25+Math.round(sa*3)};case'nailTower':return{x:s.x+Math.round(ca*6),y:s.y-23+Math.round(sa*3)};case'heavyBallista':return{x:s.x+Math.round(ca*12),y:s.y-30+Math.round(sa*5)};case'heavyCatapult':return{x:s.x,y:s.y-34};
-    case'catapult':return{x:s.x,y:s.y-20};case'flameTower':return{x:s.x+Math.round(ca*6),y:s.y-22+Math.round(sa*3)};case'lightningTower':return{x:s.x,y:s.y-28};case'laserTower':return{x:s.x,y:s.y-27};case'cannon':return{x:s.x+Math.round(ca*8),y:s.y-20+Math.round(sa*5)};default:return{x:s.x,y:s.y-30}}
+    case'catapult':return{x:s.x,y:s.y-20};case'flameTower':return{x:s.x+Math.round(ca*6),y:s.y-22+Math.round(sa*3)};case'lightningTower':return{x:s.x,y:s.y-28};case'laserTower':return{x:s.x,y:s.y-27};case'cannon':return{x:s.x+Math.round(ca*8),y:s.y-20+Math.round(sa*5)};case'campBj':return bjMuzzle(s);default:return{x:s.x,y:s.y-30}}   // BJ 加：0.12.4 边军大营的火炮（units/bianjun）
 }
 // 主堡箭塔：Lv2 起每级 1 座，按 Lv1 箭塔的数值（吃所有箭塔/建筑加成）
 const KEEP_TUR=[[-11,-41],[11,-41],[-11,-29],[11,-29]];
@@ -60590,6 +61123,68 @@ function obwLoad(d){G.obFdn=(d&&Array.isArray(d.obFdn)?d.obFdn:[]).map(f=>Object
 feat('obWall',{on:()=>!!G&&(G.map==='obsidianFort'||!!(G.loadout&&G.loadout.includes('obWall'))),
   hooks:{towerIdle:obwIdle,sDie:obwDie,tick:obwTick,afterHurtS:obwAfterS,drawUnder:obwDraw,start:obwStart,save:obwSave,load:obwLoad}});
 
+// ---------- 0.12.4 长城城墙（代理 GW；数据和说明 data/build_gwall.js，样子 art/gwall.js）：守军射程 / 视野加成、我方越过城墙、二阶绝境 / 守望 / 火矢、三阶绝望之峰 / 御敌之巅 / 拒敌千里 ----------
+// 共享代码里的调用点（行尾写「GW 加」）：engine/map.friendPassS 读 cfg.fPass（我方地面能走）、士兵视野；units/soldiers.rebuildPosts（每段长城城墙都当城门用）、leaveWall、postMul_（u.gwlR）、
+//   updateSoldiers 的射程；heroes/hero.heroGateHere、heroLeaveWall；structs/structs.upgradeCost（cfg.upgK）；structs/evo3_tw.twHurtS（gwlHurt）；ui/draw 墙按图高对齐、gwlDrawS；art/art 墙的图
+// 单位身上：gwlR 站在长城城墙上另加的射程、视野比例（战斗中每 0.25 秒按脚下那段墙更新，开波时也更新一次）；建筑身上：gwlCd 火矢长城的开火冷却
+// 绝望之峰的生命 ×5 用城墙三阶通用的 twHpMul（structs/evo3_tw.twHpK）
+const GWL_D=CFG.btech.towers.gwWall,GWL_LV=BDEF.gwWall.gwl.lvR,GWL_DB={debuff:true};
+const GWL_CAV=new Uint8Array(ETYPES.map(k=>{const c=CFG.enemies[k];return c.cavalry||c.charge?1:0}));   // 骑兵：带 cavalry 或 charge 的亡灵
+// 场上的长城城墙（建筑变动才重做）
+let GWL_V=-1,GWL_G=null,GWL_L=[];
+function gwlList(){if(GWL_V!==G.structVer||GWL_G!==G){GWL_V=G.structVer;GWL_G=G;GWL_L=G.structs.filter(s=>s.type==='gwWall'&&!s.dead)}return GWL_L}
+// 站在这段墙上的守军另加多少：每级 lvR、守望长城每级 gwlWatch（只算 Lv1～5）、御敌之巅 gwlTop（这一座够三阶门槛）；
+//   一阶「紧急加高」postMul_ 只看普通城墙那份（btEvo('wall')），站在长城城墙上换成长城城墙自己选的那份（可能是负数：普通城墙选了、长城城墙没选）
+function gwlRK(s){const e=btEvo('gwWall'),ew=btEvo('wall'),L=Math.min(5,s.level);let k=GWL_LV*L+((e&&e.wallUp)||0)-((ew&&ew.wallUp)||0);if(e&&e.gwlWatch)k+=e.gwlWatch*L;if(evo3On(s)){const e3=btEvo3('gwWall');if(e3&&e3.gwlTop)k+=e3.gwlTop}return k}
+function gwlUnitK(u){if(u.layer!==1||u.dead){if(u.gwlR!==0)u.gwlR=0;return}const st=G.structAt[tidx(u.x,u.y)],v=st&&!st.dead&&st.type==='gwWall'?gwlRK(st):0;if(u.gwlR!==v)u.gwlR=v}
+function gwlUnits(){const S=G.soldiers;for(let i=0;i<S.length;i++)gwlUnitK(S[i]);const H=G.heroes;for(let i=0;i<H.length;i++)gwlUnitK(H[i])}
+// 墙自己受到的这一下（structs/evo3_tw.twHurtS 末尾：防御、减伤都算完，护盾之前）：拒敌千里骑兵 ×0.5；绝境长城按积分算免伤
+//   免伤 = 已损失的生命比例（至多 max）。扣血过程中免伤跟着涨：dh = −(h ÷ M) dD → h = h0 × e^(−D ÷ M)，降到 M × (1 − max) 以下每点伤害只扣 (1 − max)
+function gwlHurt(s,d,o){if(!(d>0))return d;
+  if(o.kt!=null&&o.kt>=0&&GWL_CAV[o.kt]&&evo3On(s)){const e3=btEvo3('gwWall');if(e3&&e3.gwlRej)d*=e3.gwlRej.cav}
+  const e=btEvo('gwWall'),F=e&&e.gwlDesp;if(!F)return d;
+  const M=s.maxHp,lo=M*(1-F.max);let h=s.hp,out=0;if(!(M>0)||!(h>0))return d;
+  if(h>M){const a=Math.min(d,h-M);out+=a;d-=a;h-=a;if(!(d>0))return out}   // 超过上限的那部分生命：还没损失，没有免伤
+  if(h<=lo)return out+d*(1-F.max);
+  const D1=M*Math.log(h/lo);if(d<=D1)return out+h*(1-Math.exp(-d/M));
+  return out+(h-lo)+(d-D1)*(1-F.max)}
+// 拒敌千里（afterHurtS）：直接攻击（有攻击者、不是持续伤害）的攻击者被强制击退 1 格，首领减半
+function gwlHit(s,dmg,o){if(s.type!=='gwWall'||o.dot||!evo3On(s))return;const i=o.src;if(!(i>=0)||!E.alive[i]||(o.sid!==undefined&&E.id[i]!==o.sid))return;
+  const e3=btEvo3('gwWall'),R=e3&&e3.gwlRej;if(!R)return;const dx=E.x[i]-s.x,dy=E.y[i]-(s.y-8),l=Math.hypot(dx,dy)||1;forceKb(i,dx/l,dy/l,R.kb*16*(ETBOSS[E.t[i]]?R.boss:1))}
+// 拒敌千里的范围：够三阶门槛的长城城墙周围 (2r+1)×(2r+1) 格记 1；建筑变动或每 1 秒重做（强化跨过门槛不改建筑版本）
+const GWL_M=new Uint8Array(NT_MAX),GWL_Q=[];let GWL_MV=-1,GWL_MG=null,GWL_MT=0,GWL_MN=0,GWL_UT=0;
+function gwlMask(R){GWL_M.fill(0,0,NT);GWL_MN=0;const L=gwlList(),r=R.r;
+  for(let k=0;k<L.length;k++){const s=L[k];if(s.dead||!evo3On(s))continue;GWL_MN++;const y0=Math.max(0,s.ty-r),y1=Math.min(MAP_H-1,s.ty+r),x0=Math.max(0,s.tx-r),x1=Math.min(MAP_W-1,s.tx+r);
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)GWL_M[y*MAP_W+x]=1}}
+// 每 0.25 秒：范围里的敌对亡灵骑兵挂减益（伤害、移动速度），记进 GWL_Q（下标、编号成对），每帧清它们的冲锋距离
+function gwlRejScan(){GWL_Q.length=0;const e3=btEvo3('gwWall'),R=e3&&e3.gwlRej;if(!R)return;
+  if(GWL_MV!==G.structVer||GWL_MG!==G||!(G.time<GWL_MT)){GWL_MV=G.structVer;GWL_MG=G;GWL_MT=G.time+1;gwlMask(R)}if(!GWL_MN)return;
+  for(let j=0;j<E.n;j++){if(!E.alive[j]||!GWL_CAV[E.t[j]]||FAC_HOS[FAC_P<<4|E.fac[j]]!==1||!GWL_M[tidx(E.x[j],E.y[j])])continue;E.chg[j]=0;bfAddE(j,'gwlRej',R.eff,R.t,GWL_DB);GWL_Q.push(j,E.id[j])}}
+// 火矢长城：每段墙自己一张冷却；没有目标 0.25 秒后再找。伤害、攻击速度的加成每帧只算一次
+let GWL_B=-1,GWL_BS=0,GWL_SF=0;
+function gwlPickF(j){const sc=G.dist[tidx(E.x[j],E.y[j])];if(sc<GWL_BS){GWL_BS=sc;GWL_B=j}}   // 同塔楼「自由」：离主堡最近的（固定函数，不每次建闭包）
+function gwlFire(dt){const e=btEvo('gwWall'),A=e&&e.gwlArrow;if(!A)return;const L=gwlList();if(!L.length)return;let on=false,dmg=0,bp=0,itv=0,R=0,acc=0;
+  for(let k=0;k<L.length;k++){const s=L[k];if(s.dead)continue;s.gwlCd-=dt;if(s.gwlCd>0)continue;
+    if(!on){on=true;bp=kindMod('arrow')+pm.buildDmg+dmgAllK()+(TM.bDmg||0)+(TM.boltDmg||0);dmg=A.dmg*(1+bp);
+      itv=A.int/Math.max(0.2,1+(TM.bRate||0)-(TM.bRateMinus||0)+(pm.bRateC||0)+(TM.boltRate||0))/ENV.ourAtk;R=A.range*16*(ENV.rngK||1);acc=(pm.accuracy||0)+(TM.bAcc||0)}
+    if(HK.towerOff.length&&hkAny('towerOff',s)){s.gwlCd=0.25;continue}   // 地图让建筑停火的（电磁干扰……）也停
+    GWL_B=-1;GWL_BS=Infinity;const my=s.y-A.my-2*(Math.min(5,s.level)-1);eQuery(s.x,my,R,gwlPickF,true);
+    if(GWL_B<0){s.gwlCd=0.25;continue}
+    const j=GWL_B,dc=DS_CUR;DS_CUR=s;s.aim=Math.atan2(E.y[j]-my,E.x[j]-s.x);
+    fireAt(s.x,my,j,A.w,dmg,{pen:0,crit:TM.bCrit||0,critMul:bCritMul(),mix:A.w.mix,aoeAdd:0,pitMul:1,dotMul:1,psn:0,hd:dmg,penP:0,first:0,am:1+bp,hit:100,critPt:0,bx:1,bxR:0,frg:0},acc,R,true);
+    DS_CUR=dc;s.gwlCd=itv;if(G.time>GWL_SF&&inViewPt(s.x,s.y)){GWL_SF=G.time+0.12;sfx('bolt',s.x,s.y)}}}   // 音效：同时开火的墙很多，全场 0.12 秒最多一声
+function gwlTick(dt){GWL_UT-=dt;if(GWL_UT<=0){GWL_UT=GWL_D.evo3.gwRej.gwlRej.every;gwlUnits();gwlRejScan()}
+  for(let k=0;k<GWL_Q.length;k+=2){const j=GWL_Q[k];if(E.alive[j]&&E.id[j]===GWL_Q[k+1])E.chg[j]=0}   // 不能冲锋：冲锋看连续跑出的距离，每帧清零
+  gwlFire(dt)}
+function gwlStart(){GWL_UT=0;GWL_Q.length=0;GWL_MV=-1;GWL_SF=0}
+// 三阶的样子（ui/draw.drawStruct 画完墙之后）：绝望之峰 墙顶一座小烽燧、御敌之巅 一面红旗、拒敌千里 墙根一排拒马
+const K_GWB=C('#5e5852'),K_GWB2=C('#9a948a'),K_GWF=C('#ff8a3a'),K_GWF2=C('#ffd27a'),K_GWP=C('#4e3424'),K_GWR=C('#b0242a'),K_GWR2=C('#e0504a'),K_GWS=C('#7a5a36'),K_GWS2=C('#c8a070');
+function gwlDrawS(s){if(!evo3On(s))return;const e=btEvo3('gwWall');if(!e)return;const top=s.y-16-2*(Math.min(5,s.level)-1),x=s.x;   // top：墙顶正中
+  if(e.twHpMul){rectW(x-3,top-6,7,7,K_GWB);rectW(x-3,top-6,7,1,K_GWB2);rectW(x-2,top-8,5,2,K_GWB2);const f=((G.time*5+s.tx*0.37)%1)<0.5;rectW(x-1,top-10,3,2,f?K_GWF:K_GWF2);rectW(x,top-11,1,1,K_GWF2)}
+  else if(e.gwlTop){rectW(x+2,top-13,1,13,K_GWP);const w=Math.sin(G.time*4+s.tx)>0?1:0;rectW(x+3,top-13,5,3,K_GWR);rectW(x+3,top-13,5,1,K_GWR2);rectW(x+8,top-12+w,1,2,K_GWR)}
+  else if(e.gwlRej){const y=s.y+1;for(let q=-1;q<=1;q++){const cx=x+q*5;pline(cx-3,y,cx+2,y-6,K_GWS);pline(cx+3,y,cx-2,y-6,K_GWS);rectW(cx-1,y-3,3,1,K_GWS);rectW(cx-2,y-7,1,1,K_GWS2);rectW(cx+2,y-7,1,1,K_GWS2)}}}
+feat('gwWall',{on:()=>!!G&&!!(G.loadout&&G.loadout.includes('gwWall')),hooks:{tick:gwlTick,afterHurtS:gwlHit,start:gwlStart,waveStart:gwlUnits}});
+
 // ---------- v0.11.0 城墙三阶进化（数据 data/evo3_tw.js）、城墙 / 主堡 / 建筑的新科技（data/techs.js：硬化城墙、支撑结构、紧急加固）----------
 // 建筑身上：twCT 间层材料这一秒从什么时候开始算、twCD 这一秒里已经受到的伤害
 // 共享代码里的调用点：structs.structMax_（twHpK）、structDef_ 和 engine/combat 的建筑法术防御（twDefK）、combat.ufDrS（twDrS）、hurtS 铁血叠层（twIronK）、hurtS 扣护盾之前（twHurtS）、structs/xgwall 反伤比例（twReflP）
@@ -60622,7 +61217,7 @@ function twHurtS(s,dmg,raw,o){
     if(!isWallT(s.type)){const w=twBarFor(s);if(w){const t=dmg*btEvo3('xgWall').twBarrier.f;dmg-=t;twTake(w,t*fShK(w,s,raw,o),o)}dmg=obwBar(s,dmg,raw,o)}   // obwBar：代理 1 加（0.12.2 黑曜城墙二阶「黑曜屏障」，structs/obwall）
     else if(TM.wallShare>0&&!(pm.wallLink>0)){const L=[];for(const[dx,dy]of TW_D4){const x=s.tx+dx,y=s.ty+dy;if(x<0||y<0||x>=MAP_W||y>=MAP_H)continue;const b=G.structAt[y*MAP_W+x];if(b&&b!==s&&!b.dead&&b.hp>0&&isWallT(b.type))L.push(b)}
       if(L.length){const t=dmg*TM.wallShare;dmg-=t*L.length;for(const b of L)twTake(b,t*fShK(b,s,raw,o),o)}}}
-  return isWallT(s.type)?twCap(s,s.cfg.obCap?obwHurt(s,dmg,o):dmg):dmg}   // obwHurt：代理 1 加（0.12.2 黑曜城墙每秒上限、三阶「众城一体」，structs/obwall）
+  return isWallT(s.type)?twCap(s,s.cfg.obCap?obwHurt(s,dmg,o):s.cfg.gwl?gwlHurt(s,dmg,o):dmg):dmg}   // obwHurt：代理 1 加（0.12.2 黑曜城墙每秒上限、三阶「众城一体」，structs/obwall）   // GW 加：gwlHurt 0.12.4 长城城墙「绝境长城」免伤、「拒敌千里」骑兵伤害减半（structs/gwall）
 // 科技「紧急加固」：每波开始主堡的护盾（同工程师 / 城墙紧急加固的 rsh）补到最大生命 × kShield
 feat('twKeepShield',{on:()=>TM.kShield>0,hooks:{waveStart:()=>{const b=G.base;if(b&&!b.dead)b.rsh=Math.max(b.rsh||0,b.maxHp*TM.kShield)}}});
 // 选中城墙 / 城门时的说明前面加上带着的三阶：够门槛写【名字】，不够写要升到几级
@@ -66228,7 +66823,7 @@ function drawTree(t){if(t.spr){sprW(t.spr,Math.round(t.x-t.spr.w/2),t.y-t.spr.h)
 function wallMask(tx,ty){const W=(x,y)=>{if(x<0||y<0||x>=MAP_W||y>=MAP_H)return 0;const s=G.structAt[y*MAP_W+x];return s&&isWallT(s.type)?1:0};
   return W(tx,ty-1)|W(tx+1,ty)<<1|W(tx,ty+1)<<2|W(tx-1,ty)<<3}
 function drawStructSprite(type,lvl,tx,ty,flash,mask,a){
-  if(isWallT(type)){sprW(SPR.wall[wkey(type,mask,lvl)],tx*16,ty*16-8,false,flash,a);return}
+  if(isWallT(type)){const sp=SPR.wall[wkey(type,mask,lvl)];sprW(sp,tx*16,ty*16+16-sp.h,false,flash,a);return}   // GW 加：按图高把底边对齐这一格的底边（普通墙图高 24，和原来的 ty*16-8 一样；长城城墙越高级图越高）
   if(isTrapT(type)){const sp=bSpr(type,lvl);sprW(sp,tx*16+8-(sp.w>>1),ty*16+12-sp.h,false,false,a);return}
   const n=bSize(type);if(n>1){const L=SPR.sL&&SPR.sL[type],sp=L?L[stLookT(lvl||1)]:bSpr(type,lvl);sprW(sp,Math.round((tx+n/2)*16-sp.w/2),(ty+n)*16-sp.h,false,flash,a);return}   // v0.6.33 修复：开拓地 2 × 2 / 3 × 3 建筑的虚影按整块占地画（锚点和 drawSettleB 一样），原来按 1 格画、放下去就往下跳
   const sp=bSpr(type,lvl),x=tx*16+8,y=ty*16+16;sprW(sp,x-8,y-sp.h,false,flash,a);   // 0.5.7 按等级取三档外观
@@ -66399,11 +66994,12 @@ function drawStruct(s){
     if(s.level>1){const n=s.level-1,x0=Math.round(s.x-(n*4-2)/2);for(let i=0;i<n;i++)rectW(x0+i*4,s.y-KS.h-3,2,2,K.brassHi)}return}
   if(s.cfg&&s.cfg.cat==='settle'){drawSettleB(s,fl);return}   // v0.6.2 开拓地建筑（占 2 × 2 / 3 × 3 / 1 × 1）
   if(isWallT(s.type)){drawStructSprite(s.type,s.level,s.tx,s.ty,fl,wallMask(s.tx,s.ty));
-    if(s.cfg&&s.cfg.shock&&s.cd>s.cfg.shock.cd-0.2)rectW(s.x-1,s.y-14,2,2,K.zap,0.8);return}
+    if(s.cfg&&s.cfg.shock&&s.cd>s.cfg.shock.cd-0.2)rectW(s.x-1,s.y-14,2,2,K.zap,0.8);if(s.cfg.gwl)gwlDrawS(s);return}   // GW 加：gwlDrawS 长城城墙三阶的样子（structs/gwall）
   shadow(s.x,s.y,14*(s.fs||1));if(s.type==='trapFac'&&s.recoil>0){const sp=bSpr('trapFacOpen',s.level);sprW(sp,Math.round(s.x-sp.w/2),s.y-sp.h,false,fl)}else drawStructSprite(s.type,s.level,s.tx,s.ty,fl);   // v0.10.2 陷阱工厂放陷阱那一下：开盖帧   // fs：v0.8.0 2×2 兵营
   if(s.boostT>0&&Math.floor(G.time*10+s.tx)%3===0)rectW(s.x+Math.round(vr(-6,6)),s.y-Math.round(vr(10,26)),1,1,K.flY,0.9);
   const rc=s.recoil>0?1:0,ca=Math.cos(s.aim),sa=Math.sin(s.aim),sp=bSpr(s.type,s.level);
   switch(s.type){
+    case'campBj':bjDrawCamp(s);break;   // BJ 加：0.12.4 边军大营的炮管（units/bianjun）
     case'repairCenter':m3DrawS(s);break;   // v0.10.11 维修中心：工作灯、吊钩（M3 加，structs/repaircenter）
     case'bloodPool':blpDrawLv(s);break;   // v0.11.0 血池：储蓄罐里的液面（structs/bloodpool）
     case'holyFlameTower':hfDrawS(s);break;   // v0.11.0 圣焰塔：投臂 + 圣焰瓶 / 圣焰喷射的喷口（structs/holyflame）
@@ -67239,7 +67835,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.4a',GAME_TAG='测试版',GAME_CODE=175,GAME_BUILD="dca7c58+",GAME_BUILT=1793249514931,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.4a',GAME_TAG='测试版',GAME_CODE=175,GAME_BUILD="201473e",GAME_BUILT=1793254800393,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -67423,6 +68019,7 @@ function refreshSel(force){
   if(wall)note=twInfo(s,note);   // v0.11.0 城墙三阶生效没有（structs/evo3_tw）
   if(isCampT(s.type))note=s1CampInfo(s,note);   // S1 加：v0.10.11 兵营三阶生效没有（units/s1_evo3）
   if(s.type==='campBw')note=bwCampInfo(s,note);   // BW 加：v0.12 布武阵屋的进化、这一级的削防（units/bw_camp）
+  if(s.type==='campBj')note=bjCampInfo(s,note);   // BJ 加：0.12.4 边军大营的火炮、将领（units/bianjun）
   if(G.noBuild)note=(note?note+' · ':'')+(G.invade?'入侵战：沿用开拓地的布置，不能修理，战后建筑恢复原样':'入侵战：沿用开拓地的布置，战后建筑恢复原样');
   setT(selNote,'sno',note);
   const up=upgradeCost(s),rep=repairCost(s);
