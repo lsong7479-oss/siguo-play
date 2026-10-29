@@ -1649,7 +1649,8 @@ let CFG={   // P3 改（0.12.2d 性能）：let——数据文件都拼完后 co
   // growth（v0.5.7）：英雄属性每波成长 = 1★ 数值 × 比例（生命 3%、物攻 / 法攻 5%；物防、法防见 data/herostats 的 defG / mdefG），再 × 星级成长倍率
   // skill（v0.5.7，用户定）：技能伤害 = 基础[星级] × 局内倍率 + AD（或 AP）× 加成比例[星级]
   //   局内倍率 = (1 + 卡牌英雄伤害) × (1 + 科技) × 主堡等级 × (1 + 饰品伤害) × (1 + wave × (波次 − 1))；法术、治疗再 × (1 + 法术伤害卡)
-  heroBase:{respawn:10, swapTime:0.4, growth:{hp:0.03, atk:0.05}, aiLeash:8, skill:{wave:0.02},   // aiLeash（v0.4.1）：托管 / AI 英雄优先保护的范围 = 领地 + 几格
+  heroBase:{respawn:10, swapTime:0.4, growth:{hp:0.03, atk:0.05}, aiLeash:8, skill:{wave:0.02, fixLow:0.2},   // fixLow：0.12.4（用户定）技能固定值随等级——英雄等级低于设计等级时 F = r 的 fixLow 次方（只略微削弱），见 heroes/hero.fixK
+    // aiLeash（v0.4.1）：托管 / AI 英雄优先保护的范围 = 领地 + 几格
     respawnPerWave:3, respawnMax:60, respawnCardCap:0.5, reviveGuard:3},   // v0.4.2 复活时间：10 秒 + 每波 3 秒，最多 60 秒；局内卡牌减免最多 50%（科技另算）；复活后 3 秒不受伤、也不造成伤害
   // 主堡回血（v0.2.3）：英雄只在主堡周围 ring 格内回血（不再有全图慢回血），每秒 base + perLevel × (主堡等级 − 1)；
   // 城墙、城门围起来的区域 = 「城内」：主堡在城内时，回血范围扩展到整个城内；士兵在回血范围里同样回血
@@ -21636,7 +21637,7 @@ blGaleU blWRU blSpoutU blTideU blVerU blHellU blCycU blShU blUdV blUdN blUdT
 elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elKsN elKsU elFsI elFsN elCapT elCapD elWsW elStT elStX elStY elMaT elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU elSongU elSongR elSongE elWarU elWarR elWarE elThz elRjU elRjN elRjR elRjP spAU spGL spGwv spGb spGd spGrT spDwN spDwU spDwV spDsD spDsM spDsX spDsY spRf npMT npFaU npFaN npFsU npFsN
 obRgU obRgV
 elAcc elCritK elBrk elSpen cmdU coU coF ordU ordF stEl
-hh2Rq hh2Ru hh2SvU hh2SvP hh2UdU hh2UdC hh2Tg hh2Tid hh2RsD hh2PoN hh2PoT hh2PoP hh2Sb hh2SW
+hh2Rq hh2Ru hh2SvU hh2SvP hh2UdU hh2UdC hh2Tg hh2Tid hh2RsD hh2PoN hh2PoT hh2PoP hh2Sb hh2SW fxK
 drTg drTid drSD drRf drEcU drEcP
 gwlR gwlL
 deflE`.trim().split(/\s+/);   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）
@@ -54138,6 +54139,7 @@ function makeHero(spec,slot){
 // v0.4.3：护甲三件（防御 / 闪避 / 移速惩罚按件加；不熟练按部位占比罚）、套装效果（gear/gear 的 gearAgg）、饰品词条、盾牌浮动与强化
 function heroRecalc(h,fill){
   if(h.elite)elBondCalc(h);   // 0.12.0 精英亲人同队（game/el_battle）
+  h.fxK=fixK(h);   // 0.12.4 技能固定值随等级（skM 乘）
   const d=h.d,AP=CFG.proficiency.armor,GA=gearAgg(h),A=GA.af,S=GA.set;h.gA=A;h.gAcc=GA.acc;h.gfx=GA.fx;h.gSet=S;
   h.gDmg=(A.dmg||0)+(S.dmgPct||0)+(h.spec&&h.spec.prime?CFG.story.prime.dmg:0)+(h.spec&&h.spec.xDmg||0);   // prime：v0.6.3 剧情里的全盛英雄   // dmgPct：v0.6.0 征服套装
  h.gAtk=A.atkSpd||0;h.gCdr=A.cdr||0;h.gCritDmg=A.critDmg||0;
@@ -54214,14 +54216,25 @@ function heroWallCheck(h){if(h.layer===1&&!wallOkPt(h.x,h.y)){heroSetLayer(h,0);
 // 主堡等级加成（v0.2.1）：每升 1 级英雄生命 +25%、伤害 +5%
 const keepLvBonus=k=>1+CFG.keepLevels[k]*(((G&&G.base)?G.base.level:1)-1);
 // v0.5.7 技能的局内倍率 skM：局内倍率 × (1 + 2% × (波次 − 1))，法术、治疗（mag）再 × (1 + 法术伤害卡)
-const skM=(h,mag)=>heroDmgM(h,mag,mag?'ap':'atk')*(1+CFG.heroBase.skill.wave*heroWaveN());   // v0.8.1 法术伤害卡和别的加成相加
+const skM0=(h,mag)=>heroDmgM(h,mag,mag?'ap':'atk')*(1+CFG.heroBase.skill.wave*heroWaveN());   // v0.8.1 法术伤害卡和别的加成相加
+// 0.12.4（用户定，《数值策划-英雄技能固定值随等级》）技能的固定值（伤害、治疗、护盾）再 × h.fxK（heroRecalc 里按 fixK 算好存着）；装备特效、召唤物属性用 skM0 不乘
+const skM=(h,mag)=>skM0(h,mag)*(h.fxK||1);
+// R(等级)：各阶封顶等级（20、30……100）取装备阶数倍率 CFG.gearTier.mul，中间按等级线性过渡，20 级以下 ×1
+const fixR=L=>{const M=CFG.gearTier.mul,x=(L-20)/10;if(x<=0)return M[0];const k=Math.floor(x);return k>=M.length-1?M[M.length-1]:M[k]+(M[k+1]-M[k])*(x-k)};
+// 设计阶：英雄之魄掉落的地图那一阶、商店解锁的阶（进阶英雄按原英雄）；都没有 = 一阶
+const FIX_T=new Map();
+function fixTier(id){let t=FIX_T.get(id);if(t!==undefined)return t;const H=CFG.heroes[id]||{},B=(H.advOf&&CFG.heroes[H.advOf])||H,sd=B.soulDrop,sr=B.shopReq;t=1;
+  if(sd&&sd.map&&CFG.maps[sd.map])t=mapTierOf(sd.map)+1;else if(sr&&sr.tier)t=sr.tier;else if(sr&&sr.map&&CFG.maps[sr.map])t=mapTierOf(sr.map)+1;FIX_T.set(id,t);return t}
+// F：r = R(英雄等级) ÷ R(设计等级 = 10 ×（设计阶 + 1））；r ≥ 1 → F = r（前期英雄到后期跟上）；r < 1 → F = r^fixLow（后期英雄在低等级只略微削弱）
+const fixKL=(id,L)=>{const r=fixR(L)/fixR(10*(fixTier(id)+1));return r>=1?r:Math.pow(r,CFG.heroBase.skill.fixLow)};
+const fixK=h=>h.elite||(G&&G.story)?1:fixKL(h.id,heroLv(h));   // 精英、剧情（第二卷主角固定等级）不乘（用户定）
 // AD（v0.6.0 用户定）= (英雄物攻 + 武器伤害 ÷ 这把武器的物攻加成比例 adR) × 局内倍率——不同武器的技能加成基本一致（拿法杖 / 书时 = 物攻 × 局内倍率）
 // AP = 拿法杖 / 书时一次普攻（拿别的武器时 = 法攻 × 局内倍率），× 法术伤害卡
 const heroAD=h=>h.ws.cls==='magic'?heroStatG(h,'atk')*heroDmgM(h,false,'atk'):h.ws.adR>0?h.ws.wdmg/h.ws.adR+h.ws.adb:h.ws.dmg;
 const heroAP=h=>h.ws.cls==='magic'?h.ws.dmg*heroDmgM(h,true,'ap')/heroDmgM(h,false,'ap'):heroStatG(h,'ap')*heroDmgM(h,true,'ap');   // v0.8.1 法术伤害卡和别的加成相加
 // 装备特效、召唤物、毒层等「随英雄成长」的倍率：星级 × skM
-const physMul=h=>starMul(h.star)*skM(h,false);
-const spellMul=h=>starMul(h.star)*skM(h,true);
+const physMul=h=>starMul(h.star)*skM0(h,false);
+const spellMul=h=>starMul(h.star)*skM0(h,true);
 // v0.5.7 技能伤害（用户定）：基础 × skM + AD × 比例（mag = 法术、治疗：按 AP）；skV 直接给基础 b、比例 ad；skD 读技能参数里的 b / ad / mag
 const bldHealK=(h,s)=>(1+(h&&h.jbBH||0))*(G.caH?caHealK(s,h):1);   // v0.9.0 工程套装：英雄对建筑的治疗效果（gear/fx_cliff）；s = 被治疗的建筑，v0.10.0 卡罗琳「圣莺号角」（heroes/caroline）
 const skV=(h,b,ad,mag)=>(b||0)*skM(h,mag)+(ad||0)*(mag?heroAP(h):heroAD(h));
@@ -58378,11 +58391,11 @@ function xgVnPrune(){const A=new Set();for(let j=0;j<E.n;j++)if(E.alive[j])A.add
 const gxVeh=h=>!!(h.mnt||h.d.ship||h.d.fly||h.d.camel||h.d.camelRide||h.d.balloon||skFlyF(h));   // 骑乘、载具、飞着
 Object.assign(GEAR_FX,{
   // 天基武器：攻击时在目标那里预警 warn 秒，然后落激光，每 tick 秒打 r 格内的亡灵，持续 dur 秒，冷却 cd 秒
-  gsOrbital:{hit(h,i,dmg,o,v,m){if(!o.atk||G.time<(h.gxOrT||0))return;h.gxOrT=G.time+v.cd;const d=(v.b*skM(h,false)+v.ad*heroAD(h)+v.ap*heroAP(h))*(m||1);
+  gsOrbital:{hit(h,i,dmg,o,v,m){if(!o.atk||G.time<(h.gxOrT||0))return;h.gxOrT=G.time+v.cd;const d=(v.b*skM0(h,false)+v.ad*heroAD(h)+v.ap*heroAP(h))*(m||1);
     addZone({k:'gsOrbF',x:E.x[i],y:E.y[i],r:v.r*16,warn:v.warn,dur:v.dur,tick:v.tick,tk:0,dmg:d,h,t:0})}},
   // 导弹舰炮：每 int 秒朝 range 格内最近的亡灵发一枚导弹，落点的吃整发、r 格内吃 splash 倍
   gsMslTur:{tick(h,dt,v,m){if(G.phase!=='wave'||ADVQ||h.dead)return;h.gxMtT=(h.gxMtT??1)-dt;if(h.gxMtT>0)return;const j=nearestEnemy(h.x,h.y,v.range*16,true);if(j<0){h.gxMtT=0.3;return}h.gxMtT=v.int;
-    const d=(v.b*skM(h,false)+v.ad*heroAD(h))*(m||1),dist=Math.hypot(E.x[j]-h.x,E.y[j]-h.y);addZone({k:'gsMslF',x0:h.x,y0:h.y-14,j,id:E.id[j],x:E.x[j],y:E.y[j],dur:0.5+dist/(16*14),h:Math.min(50,16+dist*0.2),dmg:d,r:v.r*16,sp:v.splash,hk:h,t:0});if(inViewPt(h.x,h.y))sfx('dash',h.x,h.y)}},
+    const d=(v.b*skM0(h,false)+v.ad*heroAD(h))*(m||1),dist=Math.hypot(E.x[j]-h.x,E.y[j]-h.y);addZone({k:'gsMslF',x0:h.x,y0:h.y-14,j,id:E.id[j],x:E.x[j],y:E.y[j],dur:0.5+dist/(16*14),h:Math.min(50,16+dist*0.2),dmg:d,r:v.r*16,sp:v.splash,hk:h,t:0});if(inViewPt(h.x,h.y))sfx('dash',h.x,h.y)}},
   // 幽灵号角：n 个海盗火枪手跟着英雄打；倒下的那一个过 英雄复活时间 × summonRespawnK 再来（每波结束跟召唤物一起散掉，下一波一开始就回来）
   gsPirateAlly:{tick(h,dt,v,m){if(G.phase!=='wave'&&!G.adv)return;const A=h.gxPA||(h.gxPA=[]),RT=h.gxPR||(h.gxPR=[]);
     for(let k=0;k<v.n;k++){const p=A[k];if(p&&!p.dead)continue;if(p&&p.dead&&(p.hp<=0||p.petW===G.wave)&&!(RT[k]>0)){RT[k]=heroRespawn()*CFG.summonRespawnK;A[k]=null}
@@ -59653,7 +59666,7 @@ heroFx('dreadKnight',{ampX:(h,i)=>h.dkP&&E.fearT[i]>0?h.dkP.amp:0,dealtE:(h,i,d)
 // ---------- v0.9.0 骆驼商人·阿里巴巴（数据见 data/heroes_090.js）：驼铃悠悠（召驼队）、香料贸易（每波铜币）、贸易天平（结算换资源）----------
 // 驼队 = 召唤物（summon + pet + keepW：跟着英雄、波次结束不散、不能换阵营）；读档时按存下的人数重新召（game.js 存档里的 cv）
 const alCvN=(h,t)=>{let n=0;for(let i=0;i<G.soldiers.length;i++){const s=G.soldiers[i];if(!s.dead&&s.owner===h&&s.keepW&&s.type===t)n++}return n};
-function alCvSpawn(h,p,t,n){const m=p.k*skM(h,false);
+function alCvSpawn(h,p,t,n){const m=p.k*skM0(h,false);   // 驼队是召唤物：不乘技能固定值的等级倍率
   for(let q=0;q<n;q++){const a=rng()*Math.PI*2;let x=clamp(h.x+Math.cos(a)*16,8,MW-8),y=clamp(h.y+Math.sin(a)*12,8,MH-8);if(!friendPassPt(x,y)){x=h.x;y=h.y}
     const u=makeSoldier({level:1,x,y,slots:0},t);u.camp=null;u.owner=h;u.summon=true;u.pet=true;u.keepW=true;u.x=x;u.y=y;
     u.statMul=m;u.baseHp=u.c.hp*m;u.maxHp=u.baseHp*(1+pm.unitHp+TM.uHp);u.hp=u.maxHp;G.soldiers.push(u);
@@ -60113,7 +60126,8 @@ function caTick(h,dt){G.caH=h;
   h.caUT-=dt;if(h.caUT<=0){h.caUT=(h.psv2&&h.psv2.every)||0.5;caUnityTick(h)}
   const vw=h.caVwU>G.time,oa=h.caOaU>G.time,da=h.caDaU>G.time;if(!vw&&!oa&&!da)return;
   // 不败之约：每秒一次护盾（叠加，护盾跟着技能一起到期）
-  if(vw&&G.time>=h.caVwS){const P=h.caVwP;h.caVwS+=1;const a=P.sb+h.maxHp*P.sp;h.shieldHp=(h.shieldHp>0?h.shieldHp:0)+a;h.shieldMax=Math.max(h.shieldMax||0,h.shieldHp);h.shieldT=Math.max(h.shieldT||0,h.caVwU-G.time)}
+  if(vw&&G.time>=h.caVwS){const P=h.caVwP;h.caVwS+=1;const a=P.sb*(h.fxK||1)+h.maxHp*P.sp;   // 0.12.4 固定护盾也随等级（用户定）
+   h.shieldHp=(h.shieldHp>0?h.shieldHp:0)+a;h.shieldMax=Math.max(h.shieldMax||0,h.shieldHp);h.shieldT=Math.max(h.shieldT||0,h.caVwU-G.time)}
   h.caTk-=dt;if(h.caTk<=0){h.caTk=0.25;caAreaTick(h,vw,oa)}
   if(da){h.caDaT-=dt;if(h.caDaT<=0){h.caDaT+=h.caDaP.tick;caDawnTick(h)}}}
 // 不败之约的独立减伤、征伐之誓的增伤 / 攻速：统一 buff（eff 按数值缓存，当常量用）；每 0.25 秒给方形里的单位 0.35 秒，离开范围很快就没了
@@ -69574,7 +69588,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.4e',GAME_TAG='测试版',GAME_CODE=179,GAME_BUILD="229345f+",GAME_BUILT=1793305797510,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.4e',GAME_TAG='测试版',GAME_CODE=179,GAME_BUILD="e4581bd+",GAME_BUILT=1793308569231,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -71715,8 +71729,10 @@ function heroInfoHTML(id){const f=heroForm(id),H=CFG.heroes[f],MH=META.heroes[id
       ${advCan(id)?`<button class="px on" type="button" data-act="hadv" data-v="${id}">进阶为${CFG.heroes[ADV_ID[id]].name}<em>从 1 星开始</em></button>`:''}
       ${testOn()?`<button class="px" type="button" data-act="hsoul" data-v="${f}">测试：英雄之魄 +50</button>`:''}</div>
     ${advLine(id)}
-    <h4 class="sh">技能${helpBtn('hero-skill')}</h4><div class="hskr">${hskList(f).map(([s,k],i)=>{const p=skillParams(f,star,s),un=k<0||skillUnlocked(f,star,k%3);
+    <h4 class="sh">技能${helpBtn('hero-skill')}</h4>${fixLine(f)}<div class="hskr">${hskList(f).map(([s,k],i)=>{const p=skillParams(f,star,s),un=k<0||skillUnlocked(f,star,k%3);
       return`<button class="hskb${un?'':' no'}" type="button" data-act="hskp" data-v="${i}">${skIcoH(s)}<b>${hskName(H,p,k)}</b><span>${k<0||p.passive?'被动':p.chan?'按住':`冷却 ${p.cd}s`}${un?'':' · 3★'}</span></button>`}).join('')}</div>${attr}`}
+// 0.12.4 技能固定值随等级（heroes/hero.fixKL）：显示这位英雄现在的倍率
+const fixLine=f=>{const L=olvUse('h',f),k=fixKL(f,L);return`<div class="meta">技能固定值 ×${k.toFixed(2)}（${'一二三四五六七八九'[fixTier(f)-1]||''}阶英雄，当前 Lv${L}；高于本阶封顶等级时随等级提高，低于时略降）</div>`};
 // 0.12.2 技能横排：[技能键, 序号]（被动在前，序号 −1；主动按 H.skills + 狐形 formSk 的顺序）
 const hskList=f=>{const H=CFG.heroes[f];return[H.passiveSk,H.passiveSk2,H.passiveSk3].filter(Boolean).map(s=>[s,-1]).concat(H.skills.concat(H.formSk||[]).map((s,k)=>[s,k]))};
 const hskName=(H,p,k)=>(H.formSk&&k>=0?(k<3?'人形 · ':'狐形 · '):'')+p.name;
