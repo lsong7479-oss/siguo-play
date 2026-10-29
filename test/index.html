@@ -11539,6 +11539,7 @@ CFG.story.regions.push(
    三张地图第 5 / 10 / 15 波是地图自己的小首领，所以前三章 noBoss（最后一波不换成大首领）、bossE 指定小首领；德拉贡传第四章的首领换成法夫纳（data/story_lava）
    Claude 定的：难度（困难、困难、噩梦、噩梦）、首通金币（40 / 50 / 60 / 80）；特斯拉家的三个精英做成满级的有名字的民兵（台本只给了莉娜的名字）；
      德拉贡传第三章的削弱 = 德拉贡不加强、亡灵数量 ×1.3、生命 ×1.3、伤害 ×1.2（用户：幅度实现时定）；第四章铁血要塞的精锐 = 满级赤血禁卫、赤血砲手各 10、赤血铁骑 8，倒下的 15 秒后从主堡补上；坎传德雷克家的三个精英 = 北湾的三条船（满级炮艇、楼船、斗舰民兵），法里斯带来的火枪兵 = 满级赤血砲手 8；坎传德雷克家的三个精英 = 北湾的三条船（满级炮艇、楼船、斗舰民兵），法里斯带来的火枪兵 = 满级赤血砲手 8；格拉传第四章麦克劳德家、比索斯家的人做成满级民兵（用户：用民兵、换高级一点的兵种；赤血禁卫 4、赤血铁骑 2、赤血砲手 4，倒下不补） */
+CFG.story.leadLv=[0,0,0,0,50,50,50,50,50];   // 0.12.4（玩家反馈、用户定）第二卷主角的等级下限，按地区的阶（下标 = 阶 − 1）：五阶起至少 50 级（game/story.stLeadSpec → spec.minLv，game/olv.heroLv）
 CFG.story.regions.push(
   // ================= 幽影高原 · 格拉传 =================
   {id:'graveTale', name:'幽影高原', bio:'格拉传', vol:2, map:'shadowHigh', seed:61091, req:'homeWild', chapters:[
@@ -63159,7 +63160,8 @@ function bbA(t,k){const n=bbE(t,k);return n?n*(OL().items[k].per||0):0}
 function olvSnap(){const o={b:{},h:{}},M=olvM();for(const t in M.b||{})o.b[t]=olvUse('b',t);for(const id in M.h||{})o.h[id]=olvUse('h',id);return o}
 // 英雄这一局的使用等级（营地里没开局时直接读存档）
 function heroLv(h){if(h&&h.elite)return elLv(elById(h.elite));const id=advBase(h.id||h);   // elite：v0.11.4 精英的等级
-  if(G&&G.olv&&G.olv.h&&G.heroes&&G.heroes.indexOf(h)>=0)return G.olv.h[id]||1;return META?olvUse('h',id):1}
+  const mv=h&&h.spec&&h.spec.minLv||0;   // minLv：0.12.4 第二卷主角的等级下限（game/story.stLeadSpec）
+  if(G&&G.olv&&G.olv.h&&G.heroes&&G.heroes.indexOf(h)>=0)return Math.max(mv,G.olv.h[id]||1);return Math.max(mv,META?olvUse('h',id):1)}
 // —— 结算：一局的经验（建筑一份、英雄一份），玩家自己分 ——
 // 能分到经验的建筑：这一局造过的、有基础加成的种类（矿山没有）
 const olvOkB=t=>!!(BTT[t]&&BTT[t].base&&BTT[t].base.length);
@@ -65771,7 +65773,7 @@ function stPrimeSpec(id){const P=SDY.prime;return Object.assign(stBareSpec(id,P.
 // v0.7.3 助战英雄（圣堂墓园的奥薇尔、牧师）：五星、AI 操控、不能切换操控，不加强（不是全盛）；开局就在场
 function stAllySpec(id){return Object.assign(stBareSpec(id,SDY.allyStar),{called:true,noCtl:true,ally:true})}
 // 0.12.2 第二卷传记的主角（lead，用户定：0 号位固定是当地英雄的五星版本，由玩家操控）：有这位英雄就用你的装备，没有只拿开局武器；星级按五星，属性照全盛英雄加强（SDY.prime），能切换操控
-function stLeadSpec(id,plain){const H=META.heroes[id];return Object.assign(H&&H.owned?currentHeroSpec(id):stBareSpec(id,SDY.prime.star),{star:SDY.prime.star,prime:!plain})}   // plain：不加强（德拉贡传第三章「被削弱」）
+function stLeadSpec(id,plain,R){const H=META.heroes[id],L=SDY.leadLv||[],t=R&&R.map&&CFG.maps[R.map]?mapTierOf(R.map):-1,mv=t>=0?L[Math.min(L.length-1,t)]||0:0;return Object.assign(H&&H.owned?currentHeroSpec(id):stBareSpec(id,SDY.prime.star),{star:SDY.prime.star,prime:!plain},mv>0?{minLv:mv}:{})}   // minLv：0.12.4 第二卷主角的等级下限（SDY.leadLv，按地区的阶）   // plain：不加强（德拉贡传第三章「被削弱」）
 // 0.12.2 AI 操控的剧情英雄（aiH，德拉贡传第四章的霍恩）：用你的英雄（没有就派一星），由 AI 操控、不能切换
 const stAiSpec=id=>Object.assign(stHeroSpec(id),{called:true,noCtl:true,ally:true});
 function stAllyAI(){for(let i_1=0,a_1=G.heroes;i_1<a_1.length;i_1++){const h=a_1[i_1];if(h.spec&&h.spec.ally){h.ai=true;G.heroModes[h.id]='sortie'}}}
@@ -65789,7 +65791,7 @@ function stFreePt(x,y){for(let r=0;r<12;r++)for(let k=0;k<Math.max(1,r*8);k++){c
 // —— 开新的一章 ——
 function startStory(cid){const x=stC(cid);if(!x||!stPlayable(cid))return false;const{R,C}=x;
   if(C.cutscene){storyCutscene(x);return true}
-  const lineup=C.lineup==='all'?currentLineup().map(sp=>Object.assign(sp,{called:true})):stLineupIds(C).map((id,k)=>!k&&C.lead?stLeadSpec(id,C.leadPlain):Object.assign(stHeroSpec(id),k?{called:true}:{}));for(const id of C.ally||[])lineup.push(stAllySpec(id));for(const id of C.aiH||[])lineup.push(stAiSpec(id));
+  const lineup=C.lineup==='all'?currentLineup().map(sp=>Object.assign(sp,{called:true})):stLineupIds(C).map((id,k)=>!k&&C.lead?stLeadSpec(id,C.leadPlain,R):Object.assign(stHeroSpec(id),k?{called:true}:{}));for(const id of C.ally||[])lineup.push(stAllySpec(id));for(const id of C.aiH||[])lineup.push(stAiSpec(id));
   const load=C.own?stOwnLoad():C.only?C.loadout.slice():[...new Set(SDY.base.concat(stUnlocks(C.id),C.loadout||[]))];   // v0.7.0（用户定）剧情只能造城墙、城门、民兵训练营、箭塔、瞭望塔 + 剧情解锁的
   newGame(Object.assign({mode:'regular',diff:C.diff,seed:R.seed,heroes:lineup,loadout:load,total:C.waves,story:{c:C.id,r:R.id,f:{}}},stMapOpts({c:C.id})));
   if(C.from){G.wave=C.from;envFor(G.wave+1,true);G.nextPlan=planWave(G.wave+1)}   // v0.7.0 从第 from + 1 波打起（继承上一章的城，接着打 11–20 波）
@@ -67237,7 +67239,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.4a',GAME_TAG='测试版',GAME_CODE=175,GAME_BUILD="675c3e8+",GAME_BUILT=1793243274695,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.4a',GAME_TAG='测试版',GAME_CODE=175,GAME_BUILD="dca7c58+",GAME_BUILT=1793249514931,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
