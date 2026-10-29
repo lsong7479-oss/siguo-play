@@ -13949,15 +13949,15 @@ Object.assign(CFG.heroes.nightPrincess,CFG.heroStats.nightPrincess);
    技能逻辑在 heroes/huhan.js；小人、技能图标、立绘由代理 A 画（art/portraits/huHan.png），没画好之前用 art/nb_stub_h.js 的占位
    用户定：品质金色；擅长斧、锤；板甲；四个技能的效果和 1★～5★ 的数值、冷却；技能损失的生命不会让生命低于最大生命的 5%（floor）；受到任何伤害都先扣护盾；英雄之魄来源守望长城 greatWall 的首领
    Claude 定：基础属性（同品质的近战日轮王子·永、圣莺公主·卡罗琳，偏坦克）；四个技能 1★ 就都有（allSkills）；
-     不屈之血的免死每次触发后冷却 ucd 秒（策划没写，不加冷却会一直不死）；「受到治疗 / 恢复效果 +X%」加进受到治疗的加成（h.healIn，和装备的相加）；
-     损失生命转化的回复走普通的治疗（吃上面的 +X%、禁疗）；增伤按损失的整百分比算（损失 37.6% 按 37%），独立乘区；
-     单兵救主：替伤者自己受到的伤害不变，只有替过来的那份 × (1 − red)；建筑也替（陷阱除外）；持续伤害、斩杀、已经被别人替过的不替（同别的替伤）；
+     不屈之血的免死每次触发后冷却 ucd 秒（用户定 10 秒：太长后期防御跟不上）；「受到治疗 / 恢复效果 +X%」加进受到治疗的加成（h.healIn，和装备的相加）；
+     损失生命转化的回复直接加生命，不吃任何治疗加成（用户定）；增伤按损失的整百分比算（损失 37.6% 按 37%），独立乘区；
+     单兵救主：替伤者自己受到的伤害不变（用户确认），只有替过来的那份 × (1 − red)；建筑也替（陷阱除外）；持续伤害、斩杀、已经被别人替过的不替（同别的替伤）；
      殊死一搏：施法点 1.5 格内最近的地面亡灵为目标（没有 = 无目标释放，只转化护盾）；冲刺每秒 spd 格、期间无敌（同别的冲刺），追着目标跑；在城墙上不冲刺；
      不屈潜能：施放时立即结算第一次，之后每秒一次，共 dur 次；生命已经到 5% 时不再损失生命，但照常获得护盾；
-     永久护盾 = 不随时间消失的护盾（同猎豹勇士的标枪护盾 jsHp，存档里保留），阵亡时清空、没有上限。其余细节见 heroes/huhan.js 开头 */
+     永久护盾 = 不随时间消失的护盾（同猎豹勇士的标枪护盾 jsHp，存档里保留），阵亡时清空；用户定：每一波获得的护盾只保留 shW 波（获得的那一波算第 1 波），挨打先扣最早的。其余细节见 heroes/huhan.js 开头 */
 Object.assign(CFG.skills,{
   // 被动：濒死时 undy 秒内不会阵亡（冷却 ucd 秒）；受到的治疗 +heal；损失生命的 conv 在随后 convT 秒内回复；每损失 1% 生命独立增伤 +amp
-  huHBlood:{name:'不屈之血', passive:true, cd:0, aim:'self', ucd:30,
+  huHBlood:{name:'不屈之血', passive:true, cd:0, aim:'self', ucd:10, shW:3,
     byStar:{undy:[1,1.5,2,2.5,3], heal:[0.2,0.4,0.6,0.8,1], conv:[0.5,0.55,0.6,0.7,0.8], convT:[5,4.5,4,3.5,3], amp:[0.005,0.0075,0.01,0.0125,0.015]},
     desc:p=>`被动：濒死时 ${p.undy} 秒内不会阵亡(冷却 ${p.ucd} 秒)；受到的治疗和生命回复效果 +${pc_(p.heal)}；损失生命的 ${pc_(p.conv)} 在随后 ${p.convT} 秒内转化为生命回复；每损失 1% 生命，获得 ${ufPc2(p.amp)} 的独立增伤。技能损失生命时，生命不会低于最大生命的 5%；受到伤害时优先扣除护盾`},
   // 主动：dur 秒内，r 格内的友军英雄、士兵、建筑受到的伤害由自身承担 f（替伤取较小），自身承担的这部分最终伤害 × (1 − red)
@@ -13967,11 +13967,11 @@ Object.assign(CFG.skills,{
   // 主动：损失最大生命的 cost（生命不低于 floor），损失量的 conv 转为永久护盾；施法点 pick 格内有亡灵就以每秒 spd 格冲过去，b(+ad×AD) 伤害、眩晕 stun 秒
   huHRush:{name:'殊死一搏', cd:10, aim:'area', cost:0.2, floor:0.05, ad:1.2, spd:20, pick:1.5,
     byStar:{range:[5,6,7,8.5,10], conv:[0.6,0.8,1,1.25,1.5], b:[250,350,500,750,1000], stun:[2,2.5,3,3.5,4]},
-    desc:p=>`施法距离 ${p.range} 格(可无目标释放)：损失 ${pc_(p.cost)} 最大生命，并将损失量的 ${pc_(p.conv)} 转化为永久护盾；若选中亡灵，冲向该亡灵，造成 ${sv_(p.b,p.ad)} 伤害并使其眩晕 ${p.stun} 秒；冷却 ${p.cd} 秒`},
+    desc:p=>`施法距离 ${p.range} 格(可无目标释放)：损失 ${pc_(p.cost)} 最大生命，并将损失量的 ${pc_(p.conv)} 转化为护盾(持续 ${CFG.skills.huHBlood.shW} 波)；若选中亡灵，冲向该亡灵，造成 ${sv_(p.b,p.ad)} 伤害并使其眩晕 ${p.stun} 秒；冷却 ${p.cd} 秒`},
   // 主动：dur 秒内每秒损失 loss 最大生命（不低于 floor），并获得最大生命 v 的永久护盾
   huHWill:{name:'不屈潜能', cd:15, aim:'self', dur:5, loss:0.1, floor:0.05,
     byStar:{v:[0.06,0.08,0.1,0.125,0.15]},
-    desc:p=>`${p.dur} 秒内，每秒损失 ${pc_(p.loss)} 最大生命，并获得 ${pc_(p.v)} 最大生命的永久护盾；冷却 ${p.cd} 秒`},
+    desc:p=>`${p.dur} 秒内，每秒损失 ${pc_(p.loss)} 最大生命，并获得 ${pc_(p.v)} 最大生命的护盾(持续 ${CFG.skills.huHBlood.shW} 波)；冷却 ${p.cd} 秒`},
 });
 CFG.heroes.huHan={name:'胡寒', title:'北境守将', quality:'gold', look:'huHan', recruit:true, allSkills:true, soulDrop:{map:'greatWall', minDiff:'hard', chance:0.3},
   hp:700, def:8.5, dodge:0.02, crit:0.06, speed:4.3, vision:9, tough:125,
@@ -21587,7 +21587,7 @@ blGaleU blWRU blSpoutU blTideU blVerU blHellU blCycU blShU blUdV blUdN blUdT
 elite elRng elHit elHitK elP elDgT elHP elHPon elUndT elT elSs elXdN elXdU elBlkV elBlkU elChgK elChgU unlE elRel elGrief elAtkK elKsN elKsU elFsI elFsN elCapT elCapD elWsW elStT elStX elStY elMaT elSlowR elStkN elStkU elT2 elWdU elJvU elImU elDcU elTpX elTpY elTpM elBuN elBuU elEmN elBwU elBwP elCvU elNwU elAlone elCrowdDR elFormDR elAdU elVis0 nEye0 elHsU elSongU elSongR elSongE elWarU elWarR elWarE elThz elRjU elRjN elRjR elRjP spAU spGL spGwv spGb spGd spGrT spDwN spDwU spDwV spDsD spDsM spDsX spDsY spRf npMT npFaU npFaN npFsU npFsN
 obRgU obRgV
 elAcc elCritK elBrk elSpen cmdU coU coF ordU ordF stEl
-hh2Rq hh2Ru hh2SvU hh2SvP hh2UdU hh2UdC hh2Tg hh2Tid hh2RsD hh2PoN hh2PoT hh2PoP
+hh2Rq hh2Ru hh2SvU hh2SvP hh2UdU hh2UdC hh2Tg hh2Tid hh2RsD hh2PoN hh2PoT hh2PoP hh2Sb hh2SW
 gwlR gwlL
 deflE`.trim().split(/\s+/);   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
@@ -61673,7 +61673,8 @@ SKFX.spDescend=(h,p,a,ox,oy)=>{vfx('rune',{x:ox,y:oy,r:18,c:SP_GOLD,c2:SP_WHITE,
 //   受到的治疗 +heal：加进 h.healIn（heroRecalc 里 fxCollect 先清零、之后 init 再加，不会越加越多）
 //   损失生命的回复：afterHurtF 记真正扣掉的生命（护盾挡下的不算）、技能自己扣的生命也记；h.hh2Rq 还没回的量、h.hh2Ru 几时回完（新的损失并进去、时间重算），每帧按「还剩多少 ÷ 还剩几秒」直接加生命（用户定：不吃任何治疗加成，也不走 healF）
 //   增伤：HERO_FX.ampE（独立乘区），按损失的整百分比
-// 技能损失生命（hh2Cost）：直接扣生命、不扣护盾，生命不低于最大生命 × floor；永久护盾（hh2Shield）：加进 shieldHp，同时记进 jsHp（限时护盾到期时留下的那部分，存档保留）
+// 技能损失生命（hh2Cost）：直接扣生命、不扣护盾，生命不低于最大生命 × floor；永久护盾（hh2Shield）：加进 shieldHp，同时记进 jsHp（限时护盾到期时留下的那部分，存档保留）；
+//   用户定只保留 shW 波：h.hh2Sb[k] = k 波前获得、还剩的量，h.hh2SW = 桶对应的波数（-1 还没开始记）；换波时先按现有 jsHp 从最早的桶扣掉挨打用掉的，再把最老的一桶从护盾里拿走（存档 hs）
 // 单兵救主：h.hh2SvU 到期、h.hh2SvP 参数；HH2_SV = 正在救主的胡寒（feat 的 tick 每帧重列，施放时立即加入）
 //   英雄、士兵：dmgRedF 里分走 f（替伤取较小 fShK），建筑：dmgInS 里分走 f（取较小：两边各按自己估一遍）；分过来的那份 × (1 − red) 后走 hurtF 的 ufPre（只扣护盾、免死、扣血，afterHurtF 照跑）
 // 殊死一搏：h.hh2Tg / hh2Tid 冲向的亡灵、h.hh2RsD 这次的伤害；冲刺 DASH.huHRush 每帧朝亡灵现在的位置转向，贴身就停
@@ -61684,10 +61685,11 @@ const HH2_PO={ufPre:1,rd:1,noFx:true,hh2:1,src:-1,sid:undefined,magic:false};   
 let HH2_TX=0,HH2_TY=0,HH2_TB=-1,HH2_TD=0,HH2_AIR=false;   // 殊死一搏找目标（固定回调 + 模块变量）
 const hh2Is=u=>u.isHero===true&&u.id==='huHan';
 heroFx('huHan',{g:83,
-  init(h){const P=h.psv;if(P&&P.heal>0)h.healIn=(h.healIn||0)+P.heal;if(!(h.hh2Rq>=0))h.hh2Rq=0;if(!(h.hh2Ru>=0))h.hh2Ru=0;if(!(h.hh2PoN>=0))h.hh2PoN=0;if(!(h.hh2SvU>=0))h.hh2SvU=0;if(!(h.hh2UdU>=0))h.hh2UdU=0;if(!(h.hh2UdC>=0))h.hh2UdC=0},
+  init(h){const P=h.psv;if(P&&P.heal>0)h.healIn=(h.healIn||0)+P.heal;if(!(h.hh2Rq>=0))h.hh2Rq=0;if(!(h.hh2Ru>=0))h.hh2Ru=0;if(!(h.hh2PoN>=0))h.hh2PoN=0;if(!(h.hh2SvU>=0))h.hh2SvU=0;if(!(h.hh2UdU>=0))h.hh2UdU=0;if(!(h.hh2UdC>=0))h.hh2UdC=0;const W=CFG.skills.huHBlood.shW|0||3;if(!h.hh2Sb||h.hh2Sb.length!==W){h.hh2Sb=new Array(W).fill(0);h.hh2SW=-1}if(typeof h.hh2SW!=='number')h.hh2SW=-1},
   tick(h,dt){hh2Tick(h,dt)},
   ampE(h,i,dmg){const P=h.psv;if(!P||!(P.amp>0)||!(h.maxHp>0))return dmg;const n=Math.floor((1-h.hp/h.maxHp)*100+1e-6);return n>0?dmg*(1+n*P.amp):dmg}});
 function hh2Tick(h,dt){
+  if(h.hh2SW!==G.wave)hh2SRoll(h);
   if(h.hh2Rq>0){const r=h.hh2Ru-G.time,a=r<=0?h.hh2Rq:h.hh2Rq*dt/(r+dt);h.hh2Rq-=a;if(h.hh2Rq<1e-6)h.hh2Rq=0;if(h.hp<h.maxHp&&a>0&&!h.dead)h.hp=Math.min(h.maxHp,h.hp+a)}
   if(h.hh2PoN>0&&G.time>=h.hh2PoT){h.hh2PoN--;h.hh2PoT+=1;hh2WillTick(h)}}
 // 记一次生命损失（转化成之后的回复）
@@ -61695,7 +61697,11 @@ function hh2Lost(h,a){const P=h.psv;if(!P||!(a>0)||!(P.conv>0))return;h.hh2Rq+=a
 // 技能损失生命：最大生命 × frac，生命不低于最大生命 × floor；返回真正损失的量
 function hh2Cost(h,frac,floor){const a=Math.max(0,Math.min(h.maxHp*frac,h.hp-h.maxHp*floor));if(a>0){h.hp-=a;hh2Lost(h,a);if(inViewPt(h.x,h.y))for(let k=0;k<4;k++)pp(h.x+vr(-4,4),h.y-vr(4,14),2,vr(-14,14),vr(-20,-4),vr(4,9),160,vr(0.3,0.5),HH2_RED,1,0,0)}return a}
 // 永久护盾：shieldHp 和 jsHp 一起加（jsHp 是护盾里不随时间消失的部分）
-function hh2Shield(h,a){if(!(a>0)||h.dead)return;const cur=h.shieldHp>0?h.shieldHp:0,js=Math.min(Math.max(0,h.jsHp||0),cur);h.shieldHp=cur+a;h.jsHp=js+a;h.shieldMax=Math.max(h.shieldMax||0,h.shieldHp)}
+function hh2Shield(h,a){if(!(a>0)||h.dead)return;if(h.hh2SW!==G.wave)hh2SRoll(h);if(h.hh2Sb)h.hh2Sb[0]+=a;const cur=h.shieldHp>0?h.shieldHp:0,js=Math.min(Math.max(0,h.jsHp||0),cur);h.shieldHp=cur+a;h.jsHp=js+a;h.shieldMax=Math.max(h.shieldMax||0,h.shieldHp)}
+// 护盾按波分桶：桶里的总量对上现有的 jsHp（多了从最早的扣、少了算这一波的）
+function hh2SFix(h){const B=h.hh2Sb;let ex=-Math.min(Math.max(0,h.jsHp||0),h.shieldHp>0?h.shieldHp:0);for(let k=0;k<B.length;k++)ex+=B[k];if(ex<0){B[0]-=ex;return}for(let k=B.length-1;k>=0&&ex>1e-6;k--){const d=Math.min(B[k],ex);B[k]-=d;ex-=d}}
+function hh2SRoll(h){const B=h.hh2Sb,w=G.wave;if(!B)return;if(!(h.hh2SW>=0)||h.hh2SW>w){B.fill(0);h.hh2SW=w;hh2SFix(h);return}
+  hh2SFix(h);for(let n=Math.min(B.length,w-h.hh2SW);n>0;n--){const x=B[B.length-1];if(x>0){h.jsHp=Math.max(0,(h.jsHp||0)-x);h.shieldHp=Math.max(0,(h.shieldHp||0)-x)}for(let k=B.length-1;k>0;k--)B[k]=B[k-1];B[0]=0}h.hh2SW=w}
 // ================= 不屈之血 =================
 function hh2Save(u,dmg,o){if(!hh2Is(u)||o.exec)return dmg;
   if(u.hh2UdU>G.time)return Math.max(0,u.hp-1);
@@ -64085,7 +64091,7 @@ function saveRun(){
     for(const r of structs)if(r.icO&&typeof r.icO==='object'){const k=sidx.get(r.icO);r.icO=k>=0?k:undefined}
     const data={v:5,pv:1,seed:G.seed,RS,mode:MODE,diff:DIFF.id,wave:G.wave,gold:G.gold,kills:G.kills,kE:G.kE||0,kB:G.kB||0,picked:G.picked,epicked:G.epicked,pm,em,pmRaw:G.pmRaw,emRaw:G.emRaw,seen:G.seen,seenF:G.seenF,ds:DSK,heroCmd:G.heroCmd||{},globalMode:G.globalMode,towerMode:G.towerMode,heroMode:G.heroMode,heroModes:G.heroModes,autoNext:G.autoNext,meta:G.meta,
       prepId:G.prepId,btech:G.btech,olv:G.olv,expPool:G.expPool,usedB:G.usedB,map:G.map,weather:G.weather,cleared:G.cleared,pickN:G.pickN,epickN:G.epickN,loot:G.loot,souls:G.souls,skinFrag:G.skinFrag,mats:G.mats,heroSpec:G.heroSpec,lineup:G.lineup,twoP:G.twoP,loadout:G.loadout,tech:G.tech,total:G.total<1e9?G.total:0,expand:G.expand,expandR:G.expandR,
-      elites:elSave(),heroes:G.heroes.map(h=>({slot:h.slot,hp:h.dead?h.maxHp:h.hp,x:h.dead?G.base.x:h.x,y:h.dead?G.base.y+20:h.y,wi:h.wi,ai:h.ai,ctl:h.ctl,layer:h.dead?0:h.layer,dead:h.dead?1:0,rs:h.dead?Math.round(h.respawn*10)/10:0,js:h.dead?0:Math.round(Math.min(h.jsHp||0,h.shieldHp||0)),el:h.elem||undefined,dr:wattDroneN(h)||undefined,cv:(c=>c&&c[0]+c[1]>0?c:undefined)(alCvSave(h))})),   // cv：v0.9.0 阿里巴巴的驼队几人（读档时重新召）   // dr：v0.8.4 瓦特跟着的无人机几架（读档时重新放出来）   // el：v0.6.02 艾琳当前的元素
+      elites:elSave(),heroes:G.heroes.map(h=>({slot:h.slot,hp:h.dead?h.maxHp:h.hp,x:h.dead?G.base.x:h.x,y:h.dead?G.base.y+20:h.y,wi:h.wi,ai:h.ai,ctl:h.ctl,layer:h.dead?0:h.layer,dead:h.dead?1:0,rs:h.dead?Math.round(h.respawn*10)/10:0,js:h.dead?0:Math.round(Math.min(h.jsHp||0,h.shieldHp||0)),hs:!h.dead&&h.hh2Sb&&h.jsHp>0?[h.hh2SW].concat(h.hh2Sb.map(Math.round)):0,el:h.elem||undefined,dr:wattDroneN(h)||undefined,cv:(c=>c&&c[0]+c[1]>0?c:undefined)(alCvSave(h))})),   // cv：v0.9.0 阿里巴巴的驼队几人（读档时重新召）   // dr：v0.8.4 瓦特跟着的无人机几架（读档时重新放出来）   // el：v0.6.02 艾琳当前的元素
       banRew:G.banRew?1:0,   // v0.7.0 莉莲、冷参战过
       dgAsked:G.dgAsked?1:0,tun:G.zones.filter(z=>z.k==='h7tun'&&!z.dead&&z.h).map(z=>({s:z.h.slot,m:z.m})),   // v0.7.0 修复：龙之贪婪问过了、格拉挖的地道，读档后还在
       tombs:(()=>{const L=[];for(let j=0;j<E.n;j++)if(E.alive[j]&&ETOMB[E.t[j]])L.push({x:Math.round(E.x[j]),y:Math.round(E.y[j]),hp:Math.round(E.hp[j]),t:ETC[E.t[j]].key});return L})(),   // v0.4.2 墓园墓碑（波次之间留在场上）
@@ -64143,7 +64149,7 @@ function loadRun(d){
     u.hp=Math.min(u.maxHp,r.hp);if(r.nm)u.mName=r.nm;if(r.tr)u.stTr=r.tr;if(r.ow)u.orpW=r.ow;G.soldiers.push(u);if(r.dr>0&&u.v8&&u.v8.k==='me')for(let k=0;k<Math.min(r.dr,u.v8.max);k++)droneSpawn(u)}
   const B=G.base;B.level=d.base.level||1;B.invested=d.base.invested||0;B.maxHp=structMax(B);syncHeroes(true);elLoad(d);
   rescaleStructs();
-  for(const r of d.heroes||[]){const h=G.heroes.find(x=>x.slot===r.slot);if(!h)continue;h.wi=r.wi&&h.weapons.length>1?1:0;if(r.el)h.elem=r.el;heroRecalc(h,true);h.hp=Math.min(h.maxHp,r.hp);h.x=r.x;h.y=r.y;h.ai=!!r.ai;h.ammo=h.ws.mag;h.ctl=r.ctl||null;if(r.js>0){h.jsHp=h.shieldHp=r.js;h.shieldMax=Math.max(h.shieldMax||0,r.js)}if(r.dead&&r.rs>0){h.dead=true;h.respawn=r.rs}if(r.layer===1&&wallOkPt(h.x,h.y))heroSetLayer(h,1)}   // v0.4.2 r.dead / r.rs：倒下的英雄读档后照样等复活（以前读档直接满血站起来）
+  for(const r of d.heroes||[]){const h=G.heroes.find(x=>x.slot===r.slot);if(!h)continue;h.wi=r.wi&&h.weapons.length>1?1:0;if(r.el)h.elem=r.el;heroRecalc(h,true);h.hp=Math.min(h.maxHp,r.hp);h.x=r.x;h.y=r.y;h.ai=!!r.ai;h.ammo=h.ws.mag;h.ctl=r.ctl||null;if(r.js>0){h.jsHp=h.shieldHp=r.js;h.shieldMax=Math.max(h.shieldMax||0,r.js)}if(r.hs&&h.hh2Sb){h.hh2SW=r.hs[0];for(let k=0;k<h.hh2Sb.length;k++)h.hh2Sb[k]=+r.hs[k+1]||0}if(r.dead&&r.rs>0){h.dead=true;h.respawn=r.rs}if(r.layer===1&&wallOkPt(h.x,h.y))heroSetLayer(h,1)}   // v0.4.2 r.dead / r.rs：倒下的英雄读档后照样等复活（以前读档直接满血站起来）
   facLoad(d.fac);   // v0.8.6 亡灵换过来的兵（engine/faction）
   for(const r of d.heroes||[])if(r.dr>0){const h=G.heroes.find(x=>x.slot===r.slot),k=h?h.skills.indexOf('droneSwarm'):-1;if(k>=0&&h.sp[k])wattDrones(h,h.sp[k],Math.min(r.dr,h.sp[k].max||r.dr))}   // v0.8.4 瓦特的无人机
   for(const r of d.heroes||[])if(r.cv){const h=G.heroes.find(x=>x.slot===r.slot);if(h)alCvLoad(h,r.cv)}   // v0.9.0 阿里巴巴的驼队
@@ -69287,7 +69293,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.4c',GAME_TAG='测试版',GAME_CODE=177,GAME_BUILD="5503c8a+",GAME_BUILT=1793280000083,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.4c',GAME_TAG='测试版',GAME_CODE=177,GAME_BUILD="8c6677d+",GAME_BUILT=1793280186588,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
