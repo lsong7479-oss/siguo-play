@@ -62364,7 +62364,7 @@ function pickTarget(x,y,range,minR,nm){let best=-1,bs=Infinity;   // 站在树�
 //   cont = 连续（目标死了、出了射程才换）；否则离散（每发都重新挑，原来的做法）。locked = 锁定：「指令 → 塔楼」的统一指令不改它（同兵营的锁定）
 const TWR_MODES=['free','near','hp','back'],TWR_NAMES={free:'自由',near:'最近',hp:'血量最高',back:'后排'};
 const ETC_BACK=ETC.map(c=>c&&(c.range>0||c.summon||c.heal||c.siege)?1:0);
-const isTowerS=s=>!!(s&&!s.dead&&s.cfg&&s.cfg.weapon&&s.type!=='keep'&&!s.temp&&!s.cfg.weapon.nail&&!s.cfg.weapon.heal&&!s.cfg.weapon.tfac&&!s.cfg.weapon.lava&&!s.cfg.weapon.blp);   // nail / heal：v0.9.0 钉刺塔自己挑落点、光明阵塔治疗友军，没有选目标
+const isTowerS=s=>!!(s&&!s.dead&&s.cfg&&s.cfg.weapon&&s.type!=='keep'&&!s.temp&&!isCampT(s.type)&&!s.cfg.weapon.nail&&!s.cfg.weapon.heal&&!s.cfg.weapon.tfac&&!s.cfg.weapon.lava&&!s.cfg.weapon.blp);   // nail / heal：v0.9.0 钉刺塔自己挑落点、光明阵塔治疗友军，没有选目标   // isCampT：0.12.4（用户报：边军大营的按钮无效）带炮的兵营（边军大营）本质是兵营——不算塔楼：选中时的按钮走兵营那一套，「指令 → 塔楼」也不管它（原来点按钮会进塔楼的分支、锁定字段两边共用）
 function towerPick(s,x,y,range,minR){const m=s.tgt||'free',k0=s.tgI,nm=SW_MS.has(s.type);
   if(s.cont&&k0>=0&&eOk(k0,s.tgId)&&eVis(k0)&&!(E.ug[k0]>0)&&!(nm&&ENOMT[E.t[k0]])){const dx=E.x[k0]-x,dy=E.y[k0]-y,dc=Math.hypot(dx,dy);if(dc-E.r[k0]<=range&&!(minR&&dc<minR))return k0}
   let j=-1;
@@ -69588,7 +69588,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.4e',GAME_TAG='测试版',GAME_CODE=179,GAME_BUILD="e4581bd+",GAME_BUILT=1793308569231,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.4e',GAME_TAG='测试版',GAME_CODE=179,GAME_BUILD="6e48dc6+",GAME_BUILT=1793321727914,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
