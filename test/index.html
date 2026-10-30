@@ -9894,6 +9894,7 @@ Object.assign(CFG.enemies,{
 // 闪电射线、电磁干扰、画法的公共参数（maps/yn_ray、maps/yn_units 读）
 CFG.ynU={
   ray:{r:1.5, n:3, decay:0.8, cap:40},   // 闪电射线（用户定）：命中后连锁 r 格内至多 n 个别的单位，弹射 X 次，每次 ×decay（叠乘）；cap = 一发最多打多少个（Claude 定，防止扎堆时一发打几百个）
+  fx:{rate:240, cap:48},   // 0.12.5（用户报：怪多了卡）闪电的画面预算（Claude 定）：每秒最多新画 rate 道（攒着最多 cap 道，大约同屏 50 道）；主线超出预算还能再欠 cap/2 道，连锁的细线没预算就不画。只省画面，伤害、连锁照算
   gunRetry:0.25,                          // 武器冷却好了但射程里没目标：隔多久再找
   ammoRetry:0.3,
 };
@@ -53689,8 +53690,13 @@ const YNR_SEEN=new Set(),YNR_FA=[],YNR_FB=[],YNR_CU=[],YNR_CD=[],YNR_JA=[],YNR_J
 let YNR_FORCE=false;   // 测试用：在别的地图上也挂上电磁干扰的停火、画电火花（tools/tests/t_ynu.py）
 const K_YNR1=C('#eaf6ff'),K_YNR2=C('#6fc8ff'),K_YNRH=C('#9fb4ff');
 // 闪电线：主线粗、连锁的细；只画画面里的
-function ynRBolt(x0,y0,x1,y1,heavy,hop){if(FXK<=0||!(inViewPt(x0,y0)||inViewPt(x1,y1)))return;
-  vfx('bolt',{x:x1,y:y1,x0,y0,life:hop?0.16:0.22,c:'#f4fbff',c2:heavy?'#8fa8ff':'#6fd0ff',jag:hop?4:heavy?7:5,br:hop?0:heavy?2:1,gr:hop?5:heavy?11:8,sd:(fxr()*1e4)|0})}   // 画面用的随机数走 fxr（不动逻辑的随机序列）
+// 0.12.5（用户报：电能塔、闪电装置多了卡）画面预算：令牌桶（CFG.ynU.fx），只管画不画，逻辑照算；原来一屏几百道闪电、每道带三层光晕，画面一帧几十毫秒
+let YNR_TK=0,YNR_TT=-1;const YNR_FX=CFG.ynU.fx;
+function ynRFxOk(hop){const t=G.time;if(t<YNR_TT||YNR_TT<0)YNR_TK=YNR_FX.cap;else if(t>YNR_TT)YNR_TK=Math.min(YNR_FX.cap,YNR_TK+(t-YNR_TT)*YNR_FX.rate);YNR_TT=t;YNR_SD=1+((t|0)%997);
+  if(YNR_TK>=1||(!hop&&YNR_TK>-YNR_FX.cap*0.5)){YNR_TK--;return true}return false}
+let YNR_SD=1;   // 全场共用的闪电形状种子（ynRFxOk 里按秒换）
+function ynRBolt(x0,y0,x1,y1,heavy,hop){if(FXK<=0||!(inViewPt(x0,y0)||inViewPt(x1,y1))||!ynRFxOk(hop))return;
+  vfx('bolt',{x:x1,y:y1,x0,y0,life:hop?0.16:0.22,c:'#f4fbff',c2:heavy?'#8fa8ff':'#6fd0ff',jag:hop?4:heavy?7:5,br:hop?1:heavy?2:1,gr:heavy?11:8,ng:hop,fl:false,sd:YNR_SD+(hop?7:0)})}   // 0.12.5（用户提的）连锁 = 只画连线 + 一根短分叉（突触），不画光晕；形状的种子全场共用、每秒换一次（不再每 0.06 秒闪一下）
 const ynRBlock=(x0,y0,x1,y1,side)=>typeof ynWallBlockLine==='function'?ynWallBlockLine(x0,y0,x1,y1,side):null;   // 代理 K 的源能城墙
 function ynRay(src,x0,y0,tgt,dmg,X,o){if(tgt==null||!(dmg>0))return 0;
   const foe=typeof src==='number'||!!(src&&src.foe);X=Math.max(0,X|0);
@@ -55258,7 +55264,7 @@ VFX.pillar={a(f,u){const e=vEnv(u,0.1,0.5),x=fxX(f),y=fxY(f),w=Math.max(1,Math.r
 VFX.flare={a(f,u){const e=1-u,x=fxX(f),y=fxY(f);vGlow(x,y,f.r*(1+u*0.5),vc(f.c),e*(f.k2??1),f.sq||1);vDisc(x,y,Math.max(1,f.r*0.18*e),vc(f.c2||'#ffffff'),e,f.sq||1)}};
 // 闪电：x0 y0 → x1 y1（从天上落：x0 不给就从正上方 140 像素），seed 每 0.06 秒换一次（闪烁）
 VFX.bolt={a(f,u){const e=1-u,fl=((f.t/0.06)|0),x1=fxX(f),y1=fxY(f),x0=f.x0??x1+(hash2(f.sd||1,1,3)-0.5)*30,y0=f.y0??y1-(f.hh||150),c=vc(f.c||'#ffffff'),c2=vc(f.c2||'#7fe0ff');
-  vBolt(x0,y0,x1,y1,(f.sd||1)*31+fl*(f.fl===false?0:1),c,c2,e,f.jag||9,f.br??3,true);if(u<0.35)vGlow(x1,y1,f.gr||14,c2,(0.35-u)/0.35)}};
+  vBolt(x0,y0,x1,y1,(f.sd||1)*31+fl*(f.fl===false?0:1),c,c2,e,f.jag||9,f.br??3,!f.ng);if(!f.ng&&u<0.35)vGlow(x1,y1,f.gr||14,c2,(0.35-u)/0.35)}};   // ng：0.12.5 不画光晕（闪电射线连锁的细线，maps/yn_ray）
 // 光束：x0 y0 → x1 y1，w 宽
 VFX.beam={a(f,u){const e=vEnv(u,0.1,0.5),w=Math.max(1,Math.round((f.w||3)*e));vLine(f.x0,f.y0,f.x1,f.y1,vc(f.c),0.4*e,w+2);vLine(f.x0,f.y0,f.x1,f.y1,vc(f.c2||'#ffffff'),0.9*e,Math.max(1,w-1))}};
 // 刀光：x y 圆心，r 半径，a0 → a1，w 粗
@@ -72376,7 +72382,8 @@ function drawFx(f){
     case'tracer':pline(f.x0,f.y0,f.x1,f.y1,K.flY,(1-u)*0.8);break;
     case'jret':pline(f.x0,f.y0,f.x1,f.y1,K_MIA2,(1-u)*0.8);break;   // v0.3.2 腐化猎豹勇士的标枪飞回
     case'vine':{const a=u>0.8?(1-u)/0.2:1;for(let k=0;k<5;k++){const xx=f.x-4+k*2;pline(xx,f.y,xx+((k&1)?1:-1),f.y-3-(k%3),k&1?K_VINE:K_VINED,a)}break}   // 被藤蔓缠住的亡灵
-    case'bolt':{const a=1-u;let x=f.x,y=f.y-140;for(let k=0;k<7;k++){const nx=f.x+(k<6?(hash2(f.seed,k,5)-0.5)*16:0),ny=f.y-140+(k+1)*20;pline(x,y,nx,ny,K.flW,a);pline(x+1,y,nx+1,ny,K.zap,a*0.7);x=nx;y=ny}
+    case'bolt':{if(f.v)break;const a=1-u;let x=f.x,y=f.y-140;   // 0.12.5 修（用户报：电能塔、闪电装置会出现天降的闪电）华丽特效 vfx('bolt') 和落雷 addFx({k:'bolt'}) 同名，原来每道 vfx 闪电都在这里多画一道从天上落下的雷；vfx 的 bolt 没有普通层
+     for(let k=0;k<7;k++){const nx=f.x+(k<6?(hash2(f.seed,k,5)-0.5)*16:0),ny=f.y-140+(k+1)*20;pline(x,y,nx,ny,K.flW,a);pline(x+1,y,nx+1,ny,K.zap,a*0.7);x=nx;y=ny}
       if(u<0.5){const r=6+u*20;dotRing(f.x,f.y,r,K.zap,1-u*2,20,0.6)}break}
     case'zap':{const a=1-u,mx=(f.x0+f.x1)/2+vr(-3,3),my=(f.y0+f.y1)/2+vr(-3,3);pline(f.x0,f.y0,mx,my,K.zap,a);pline(mx,my,f.x1,f.y1,K.zap,a);break}
     default:if(f.v&&f.v.n&&f.t>=0)f.v.n(f,f.t/f.life);   // v0.7.2 华丽特效的普通层（engine/vfx）
@@ -72966,7 +72973,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.5d',GAME_TAG='测试版',GAME_CODE=184,GAME_BUILD="86e93a1+",GAME_BUILT=1793377233094,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.5d',GAME_TAG='测试版',GAME_CODE=184,GAME_BUILD="fc41355+",GAME_BUILT=1793381711218,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
