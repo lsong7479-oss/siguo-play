@@ -2189,7 +2189,7 @@ Object.assign(CFG,{
         {unlock:2, desc:'解锁第三技能「瞬杀」：15(+250%AD)+ 目标最大生命 8%；隐身可攻击 2 次；三叶矢：冷却 3 → 2 秒、每枚 17(+80%AD)'},
         {desc:'瞬杀：25(+270%AD)；三叶矢：每枚 21(+100%AD)、贯穿 3 个目标'},
         {skill:'blink', set:{chain:3}, also:{stealth:{allBack:true}}, q:true, desc:'【质变 · 影舞】瞬杀：40(+300%AD)，击杀后自动连斩 4 格内的下一个亡灵，最多连斩 3 次；隐身可攻击 3 次，期间的攻击均视为背刺；三叶矢：冷却 1 秒、每枚 26(+125%AD)'}],
-      lore:'从影子里出手：隐身、背刺、斩首。需要英雄之魄招募：击败困难及以上的荒野首领有概率掉落。',tough:100},   // v0.10.2 数值第一轮
+      lore:'从影子里出手：隐身、背刺、斩首。需要英雄之魄招募：击败困难及以上在荒野每轮结束固定掉落。',tough:100},   // v0.10.2 数值第一轮
     poisoner:{name:'帕拉塞尔苏斯', title:'绝命毒师', quality:'green', look:'poisoner', poisoner:true, recruit:true, soulDrop:{map:'corrupt', minDiff:'hard', chance:0.35},
       hp:240, def:0.6, dodge:0.05, crit:0.05, speed:4.5, vision:7.5,   // v0.10.2 数值第一轮
       prof:{weapon:['flask','dagger','staff'], armor:['cloth','leather']},
@@ -2200,7 +2200,7 @@ Object.assign(CFG,{
         {unlock:2, desc:'解锁第三技能「绝命毒爆」：每层 10(+3%AP)；酸液池：2 格、4 秒、每秒 11(+45%AP)、每次叠 3 层；群体治疗：55(+70%AP)+ 14%；被动：自身 15 格内的士兵和英雄的攻击也叠加毒层，毒层每秒 1.6'},
         {desc:'群体治疗：75(+85%AP)+ 17%，随后 4 秒内受到的伤害 −20%；酸液池：2.4 格、5 秒、每秒 15(+60%AP)；绝命毒爆：每层 12(+4%AP)；毒层每秒 1.9'},
         {skill:'toxicBurst', set:{chain:true}, q:true, desc:'【质变 · 连锁毒爆】绝命毒爆：每层 15(+5%AP)，被毒爆击杀的亡灵将剩余毒层的一半传递给周围亡灵并留下酸液；被动范围扩大至全图：所有士兵、英雄、塔的攻击均叠加毒层，毒层每秒 2.3；酸液池：3 格、6 秒、每秒 20(+80%AP)；群体治疗：100(+100%AP)+ 20%'}],
-      lore:'「剂量决定毒性。」被动：他在场时，他的攻击给亡灵叠毒，每层每秒 1.2 剧毒伤害，最多 20 层；3★ 起他 15 格内的友军也叠，5★ 全图的士兵、英雄、塔都叠。需要英雄之魄招募：击败困难及以上的腐化之地首领有概率掉落。',tough:100},   // v0.10.2 数值第一轮
+      lore:'「剂量决定毒性。」被动：他在场时，他的攻击给亡灵叠毒，每层每秒 1.2 剧毒伤害，最多 20 层；3★ 起他 15 格内的友军也叠，5★ 全图的士兵、英雄、塔都叠。需要英雄之魄招募：击败困难及以上在腐化之地每轮结束固定掉落。',tough:100},   // v0.10.2 数值第一轮
   },
   // 英雄之魄来源（暂定）：每击退 2 波获得 1 个出战英雄的英雄之魄（× 难度结算倍率）
   // v8：英雄之魄改由首领掉落（见 00b drops.bossSouls）
@@ -2994,7 +2994,7 @@ CFG.heroes.hunter={name:'范海辛', title:'猎魔人', quality:'green', look:'h
     {unlock:2, desc:'解锁第三技能「猎魔钩锁」：炸弹 40(+100%AD)；猎魔狙击：160(+120%AD)；震慑领域：3.5 格、物理防御和法术防御 −20%，展开时为范围内的亡灵施加猎魔标记，6 秒内其受到的伤害 +30%'},
     {desc:'震慑领域：4 格、物理防御和法术防御 −25%；猎魔狙击：180(+135%AD)；钩锁炸弹：55(+125%AD)'},
     {skill:'hunterSnipe', set:{stack:0.5}, also:{grapple:{stunR:3.3, stun:1.5}, dreadField:{markCdr:0.1, markCap:0.5}}, q:true, desc:'【质变 · 银弹】猎魔狙击：220(+150%AD)，击杀刷新后下一发伤害 +50%，最多叠加 3 次；钩锁炸弹：75(+160%AD)、范围 +50%、眩晕 1.5 秒；震慑领域：5 格、物理防御和法术防御 −30%，被标记的亡灵死亡时冷却 −10%，每轮冷却最多减少 50%'}],
-  lore:'冰原上的猎魔人：银弩、钩锁与炸弹。需要英雄之魄招募：击败困难及以上的冰原首领有概率掉落。',tough:102};   // v0.10.2 数值第一轮
+  lore:'冰原上的猎魔人：银弩、钩锁与炸弹。需要英雄之魄招募：击败困难及以上在冰原每轮结束固定掉落。',tough:102};   // v0.10.2 数值第一轮
 
 /* ---------- 荒漠（v0.3.0）：地图、亡灵、荒漠装备、火枪镖客 ----------
    用户（Song）的策划见《荒漠雨林策划.md》第 1 节。和冰原同档难度：本地亡灵 ≈ 荒野同位 ×1.1 写进基础值；通关腐化之地开放。
@@ -3112,7 +3112,7 @@ CFG.heroes.gunslinger={name:'霍青', title:'火枪镖客', quality:'green', loo
     {unlock:2, desc:'解锁第三技能「枪林弹雨」：5 格、每秒 10(+30%AD)；连发：7 发、每发 9(+45%AD)；诱捕网：3 秒、2.5 格'},
     {desc:'连发：8 发、每发 12(+50%AD)；诱捕网：4 秒、3 格；枪林弹雨：6 格、每秒 16(+40%AD)'},
     {q:true, desc:'【质变 · 枪林】连发：10 发、每发 16(+55%AD)；诱捕网：5 秒、4 格；枪林弹雨：8 格、每秒 26(+60%AD)'}],
-  lore:'丝路驼队的镖师，一杆火绳枪护送商队穿过死国的荒漠。擅长火枪。需要英雄之魄招募：击败困难及以上的荒漠首领有概率掉落。',tough:102};   // v0.10.2 数值第一轮
+  lore:'丝路驼队的镖师，一杆火绳枪护送商队穿过死国的荒漠。擅长火枪。需要英雄之魄招募：击败困难及以上在荒漠每轮结束固定掉落。',tough:102};   // v0.10.2 数值第一轮
 
 /* ---------- 丛林（v0.3.2）：地图、亡灵、丛林装备、猎豹勇士 ----------
    用户（Song）的策划见《荒漠雨林策划.md》第 2 节。和冰原、荒漠同档难度；通关腐化之地开放。
@@ -3224,7 +3224,7 @@ CFG.heroes.jaguar={name:'奥塞洛特', title:'猎豹勇士', quality:'green', l
     {unlock:2, desc:'解锁第三技能「猎豹之魂」：额外 1 支、飞回 6(+100%AD)；标枪：存 4 支、飞 5 格、6(+100%AD)；猛进：冲 4 格、22(+100%AD)'},
     {desc:'标枪：穿透 2 个、飞 6 格、8(+120%AD)；猛进：冲 5 格、30(+110%AD)；猎豹之魂：额外 2 支、飞回 9(+120%AD)'},
     {q:true, desc:'【质变 · 豹王】标枪：存 5 支、飞 8 格、11(+150%AD)；猛进：冲 7 格、42(+120%AD)；猎豹之魂：额外 3 支、飞回 14(+150%AD)'}],
-  lore:'雨林部落的猎豹勇士，披着豹皮、带着一捆标枪在树冠间穿行。擅长长枪、投石索。需要英雄之魄招募：击败困难及以上的丛林首领有概率掉落。',tough:107};   // v0.10.2 数值第一轮
+  lore:'雨林部落的猎豹勇士，披着豹皮、带着一捆标枪在树冠间穿行。擅长长枪、投石索。需要英雄之魄招募：击败困难及以上在丛林每轮结束固定掉落。',tough:107};   // v0.10.2 数值第一轮
 
 /* ---------- 圣堂墓园（v0.4.0）：三阶地图、腐化圣堂亡灵、圣堂装备、圣骑士罗兰与牧师希尔德加德 ----------
    用户（Song）2026-10-03 的策划：三阶难度；通关任意一张二阶地图（冰原 / 荒漠 / 丛林）开放。
@@ -3356,7 +3356,7 @@ Object.assign(CFG.heroes,{
       {unlock:2, desc:'解锁第三技能「圣光裁决」：4 格长、2.5 格宽、15(+170%AD)；圣光护盾：免疫 2 次、护盾 50%；圣光屏障：范围 3 → 5 格、受到的伤害 −30%'},
       {desc:'圣光护盾：护盾 75%；圣光屏障：受到的伤害 −45%；圣光裁决：4.5 格 × 2.75 格、25(+190%AD)'},
       {q:true, desc:'【质变 · 圣光化身】圣光护盾：免疫 3 次、护盾 120%；圣光屏障：受到的伤害 −70%；圣光裁决：5 格 × 3 格、40(+210%AD)'}],
-    lore:'查理曼麾下的圣骑士之首，剑、盾、长枪都使得。替身边的人挡下一切。擅长剑、盾、枪，穿板甲。需要英雄之魄招募：击败困难及以上的圣堂墓园首领有概率掉落。',tough:119},   // v0.10.2 数值第一轮
+    lore:'查理曼麾下的圣骑士之首，剑、盾、长枪都使得。替身边的人挡下一切。擅长剑、盾、枪，穿板甲。需要英雄之魄招募：击败困难及以上在圣堂墓园每轮结束固定掉落。',tough:119},   // v0.10.2 数值第一轮
   priest:{name:'希尔德加德', title:'牧师', quality:'blue', look:'priest', recruit:true, soulDrop:{map:'sanctum', minDiff:'hard', chance:0.35},
     hp:310, def:1.1, dodge:0.05, crit:0.05, speed:4.4, vision:8, holyMix:1,   // v0.10.2 数值第一轮
     prof:{weapon:['staff','tome'], armor:['cloth']},
@@ -3367,7 +3367,7 @@ Object.assign(CFG.heroes,{
       {unlock:2, desc:'解锁第三技能「神恩之赐」：冷却 75 秒、回复 50(+100%AP)+ 30%；复苏之风：7 格、每秒 7(+12%AP)+ 4%；真言之盾：5 格、24(+60%AP)+ 10%'},
       {desc:'复苏之风：10 格、每秒 9(+15%AP)+ 4.5%；真言之盾：7 格、34(+75%AP)+ 13%；神恩之赐：冷却 60 秒、80(+125%AP)+ 35%'},
       {q:true, desc:'【质变 · 神恩】复苏之风：15 格、每秒 12(+18%AP)+ 5%；真言之盾：10 格、48(+90%AP)+ 18%；神恩之赐：冷却 45 秒、120(+150%AP)+ 40%'}],
-    lore:'莱茵河畔修道院的女院长，懂草药也懂祈祷。治疗、护盾、复活。擅长法杖、书，穿布甲。需要英雄之魄招募：击败困难及以上的圣堂墓园首领有概率掉落。',tough:104},   // v0.10.2 数值第一轮
+    lore:'莱茵河畔修道院的女院长，懂草药也懂祈祷。治疗、护盾、复活。擅长法杖、书，穿布甲。需要英雄之魄招募：击败困难及以上在圣堂墓园每轮结束固定掉落。',tough:104},   // v0.10.2 数值第一轮
 });
 // —— v0.4.1 教堂（通关圣堂墓园后才能在设计院研发）：圣骑士、牧师、僧侣（行为见 units/church.js）——
 //   healer 治疗：每 int 秒为 range 格内最缺血的一名友军（士兵或英雄）回复 flat × 士兵属性倍率 + pct × 它的最大生命（兵营科技「武备」同样加成）
@@ -3539,7 +3539,7 @@ CFG.heroes.camelKnight={name:'法里斯', title:'骆驼骑士', quality:'blue', 
     {unlock:2, desc:'解锁第三技能「马力全开」：4 秒、6(+45%AD)；横冲直撞：宽 2 格、22(+160%AD)；泰山压顶：2 格、眩晕 1.3 秒、26(+160%AD)'},
     {desc:'横冲直撞：宽 2.5 格、30(+180%AD)；泰山压顶：2.5 格、眩晕 1.6 秒、36(+185%AD)；马力全开：5 秒、9(+55%AD)'},
     {q:true, desc:'【质变 · 沙海狂飙】横冲直撞：宽 3 格、40(+200%AD)；泰山压顶：3 格、眩晕 2 秒、50(+200%AD)；马力全开：7 秒、14(+70%AD)'}],
-  lore:'骆驼背上长大的沙漠骑手，弓、弩、火枪都使得。骆驼跑起来要一点时间，可一旦跑满就谁也拦不住。擅长弓、弩、火枪，穿皮甲、链甲。需要英雄之魄招募：击败困难及以上的沙漠神殿首领有概率掉落。',tough:104};   // v0.10.2 数值第一轮
+  lore:'骆驼背上长大的沙漠骑手，弓、弩、火枪都使得。骆驼跑起来要一点时间，可一旦跑满就谁也拦不住。擅长弓、弩、火枪，穿皮甲、链甲。需要英雄之魄招募：击败困难及以上在沙漠神殿每轮结束固定掉落。',tough:104};   // v0.10.2 数值第一轮
 
 /* ---------- 寒冰极地（v0.5.1）：三阶地图（96×96）、极昼极夜、寒冰旋风、冰湖、极地亡灵、极地装备、多面手鲁滨逊 ----------
    用户（Song）2026-10-04 的策划：三阶难度，八条路；通关任意一张二阶地图开放（同沙漠神殿）。
@@ -3685,7 +3685,7 @@ CFG.heroes.versatile={name:'鲁滨逊', title:'多面手', quality:'blue', look:
     {unlock:2, desc:'解锁第三技能「武器大师」：4 格、每发 3(+25%–60%AD)；器无虚发：5 格、最多 9 个、9(+50%AD)、异常 70%；连环爆炸：32(+160%AD)、连环 2 次'},
     {desc:'器无虚发：5.5 格、最多 12 个、12(+60%AD)、异常 85%；连环爆炸：48(+190%AD)、每次 2 个、连环 3 次；武器大师：5 格、每发 5'},
     {q:true, desc:'【质变 · 十八般武艺】器无虚发：6 格、最多 15 个、16(+70%AD)、必定附带异常；连环爆炸：70(+220%AD)、每次 3 个、连环 4 次；武器大师：7 格、每发 8'}],
-  lore:'流落荒岛多年的冒险家，什么武器都会用：飞镖、弓、弩、火枪、炸弹……身上总挂着一堆。擅长所有武器，什么护甲都能穿。需要英雄之魄招募：击败困难及以上的寒冰极地首领有概率掉落。',tough:109};   // v0.10.2 数值第一轮
+  lore:'流落荒岛多年的冒险家，什么武器都会用：飞镖、弓、弩、火枪、炸弹……身上总挂着一堆。擅长所有武器，什么护甲都能穿。需要英雄之魄招募：击败困难及以上在寒冰极地每轮结束固定掉落。',tough:109};   // v0.10.2 数值第一轮
 
 /* ---------- 机械工厂（v0.5.1）：三阶地图（96×96）、蒸汽管道泄露、传送带、齿轮、腐化机械与傀儡、拿破仑 ----------
    用户（Song）2026-10-04 的策划：三阶难度，八条路；通关任意一张二阶地图开放（同沙漠神殿）。
@@ -3799,7 +3799,7 @@ CFG.heroes.napoleon={name:'拿破仑', title:'炮兵统帅', quality:'blue', loo
     {unlock:2, desc:'解锁第三技能「统御全军」：7 格、冷却 30 秒；炮火支援：8 发、每发 18(+85%AD)、7 格、冷却 9 秒；火炮齐射：20 门'},
     {desc:'炮火支援：10 发、每发 24(+100%AD)、7.5 格、冷却 8 秒；火炮齐射：35 门；统御全军：8.5 格、冷却 25 秒'},
     {q:true, desc:'【质变 · 帝国炮兵】炮火支援：13 发、每发 30(+120%AD)、8 格、冷却 7 秒；火炮齐射：50 门；统御全军：10 格、冷却 20 秒'}],
-  lore:'出身炮兵的统帅，最懂得把火炮集中在一处。擅长火枪、手炮和剑，穿布甲、皮甲、链甲。解锁后自带一把手炮。需要英雄之魄招募：击败困难及以上的机械工厂首领有概率掉落。',tough:104};   // v0.10.2 数值第一轮
+  lore:'出身炮兵的统帅，最懂得把火炮集中在一处。擅长火枪、手炮和剑，穿布甲、皮甲、链甲。解锁后自带一把手炮。需要英雄之魄招募：击败困难及以上在机械工厂每轮结束固定掉落。',tough:104};   // v0.10.2 数值第一轮
 // —— v0.5.2 机械工厂装备（用户定；打造书由机械工厂的精英 / 首领掉落，同一个亡灵最多掉一本）——
 CFG.weaponTypes.ammobox={name:'炮匣', cls:'offhand', hands:1};   // 副手：只配合火器（火枪、手炮）生效
 CFG.weapons.handCannon.cat='gun';
@@ -3981,7 +3981,7 @@ Object.assign(CFG.heroes,{
       {unlock:2, desc:'解锁第三技能「元素爆发」：8 秒内三种元素同时生效、元素箭雨冷却 −50%，冷却 30 秒；元素切换：效果作用于命中点 0.5 格内，普通攻击额外 0(+15%AP)；元素箭雨：6 格、每秒 30(+80%AD)(+80%AP)、连续命中 4 次冰冻 2 秒'},
       {desc:'元素切换：1 格内，普通攻击额外 0(+20%AP)，击退 1.25 格、减速 / 灼烧 45%，4 秒；元素箭雨：6.5 格、每秒 35(+80%AD)(+80%AP)、冰冻 2.5 秒；元素爆发：冷却 25 秒'},
       {q:true, desc:'【质变 · 元素归一】元素切换：2 格内，普通攻击额外 0(+25%AP)，击退 1.5 格、减速 / 灼烧 50%，5 秒；元素箭雨：7 格、每秒 40(+80%AD)(+80%AP)、4 秒，连续命中 3 次冰冻 3 秒，破甲 50%，灼烧加深 40%；元素爆发：冷却 20 秒'}],
-    lore:'林地精灵的射手，能把风、冰、火三种元素灌进箭矢里。擅长弓，穿布甲、皮甲。英雄之魄：噩梦及以上的丛林首领有概率掉落，英雄奖池里也有。',tough:106},   // v0.10.2 数值第一轮
+    lore:'林地精灵的射手，能把风、冰、火三种元素灌进箭矢里。擅长弓，穿布甲、皮甲。英雄之魄：噩梦及以上在丛林每轮结束固定掉落，英雄奖池里也有。',tough:106},   // v0.10.2 数值第一轮
   saintKnight:{name:'奥薇尔', title:'圣女骑士', quality:'purple', look:'saintKnight', mount:true, recruit:true, soulDrop:{map:'wild', minDiff:'nightmare', chance:0.3},
     hp:450, def:3.7, dodge:0.03, crit:0.06, speed:6.2, vision:8, holyMix:1,   // holyMix：v0.10.6（用户定）普攻、圣骑冲锋 100% 神圣；v0.10.2 数值第一轮
     prof:{weapon:['sword','spear','shield'], armor:['chain','plate']},
@@ -3993,7 +3993,7 @@ Object.assign(CFG.heroes,{
       {unlock:2, desc:'解锁第三技能「圣骑冲锋」：6 格、125(+150%AD)，连续最多 3 次；冲锋号角、统御号令：15 格，攻击速度 +75%'},
       {desc:'冲锋号角、统御号令：20 格，攻击速度 +90%；圣骑冲锋：160(+150%AD)，连续最多 4 次'},
       {q:true, desc:'【质变 · 圣女旌旗】冲锋号角、统御号令：全图，攻击速度 +120%；圣骑冲锋：200(+150%AD)，连续最多 5 次，落地时周围 6 格内的骑兵向落点方向的第一个亡灵发起冲锋'}],
-    lore:'举着百合战旗的圣女，骑着白马冲在骑兵的最前面。擅长剑、长枪和骑枪、盾，穿锁甲、板甲；骑马，不上城墙。英雄之魄：噩梦及以上的荒野首领有概率掉落，英雄奖池里也有。',tough:111},   // v0.10.2 数值第一轮
+    lore:'举着百合战旗的圣女，骑着白马冲在骑兵的最前面。擅长剑、长枪和骑枪、盾，穿锁甲、板甲；骑马，不上城墙。英雄之魄：噩梦及以上在荒野每轮结束固定掉落，英雄奖池里也有。',tough:111},   // v0.10.2 数值第一轮
   judgeKnight:{name:'瑟塔洛斯', title:'惩戒骑士', quality:'purple', look:'judgeKnight', recruit:true, soulDrop:{map:'sanctum', minDiff:'nightmare', chance:0.3},
     hp:510, def:6.7, dodge:0.02, crit:0.05, speed:4.4, vision:7, holyMix:1,   // holyMix：v0.10.6（用户定）普攻、以神之名、圣剑裁决 100% 神圣；v0.10.2 数值第一轮
     prof:{weapon:['sword','hammer','shield'], armor:['chain','plate']},
@@ -4005,7 +4005,7 @@ Object.assign(CFG.heroes,{
       {unlock:2, desc:'解锁第三技能「圣剑裁决」：5 格内 0(+100%AD) 并削减生命上限，冷却 20 秒；断绝之力：削减生命上限 5%；信仰屏障：护盾 400%，复活 25%；以神之名：宽 1.5 格、180(+180%AD)、移除减伤 25%'},
       {desc:'断绝之力：10%；信仰屏障：护盾 450%，复活 35%；以神之名：宽 1.75 格、240(+180%AD)、移除减伤 50%；圣剑裁决：6 格，冷却 15 秒'},
       {q:true, desc:'【质变 · 神罚】断绝之力：20%；信仰屏障：护盾 500%，复活 50%；以神之名：宽 2 格、300(+180%AD)、移除全部减伤；圣剑裁决：7.5 格，冷却 10 秒'}],
-    lore:'执行神罚的骑士，剑上的圣光能斩断亡灵与生命的联系。擅长单手剑、单手锤、盾，穿锁甲、板甲。英雄之魄：噩梦及以上的圣堂墓园首领有概率掉落，英雄奖池里也有。',tough:121},   // v0.10.2 数值第一轮
+    lore:'执行神罚的骑士，剑上的圣光能斩断亡灵与生命的联系。擅长单手剑、单手锤、盾，穿锁甲、板甲。英雄之魄：噩梦及以上在圣堂墓园每轮结束固定掉落，英雄奖池里也有。',tough:121},   // v0.10.2 数值第一轮
 });
 
 // ===== 第二批：荒漠隐者 瑟菲斯、铁血统帅 霍恩（用户 2026-10-04 19:28 的策划）=====
@@ -4044,7 +4044,7 @@ Object.assign(CFG.heroes,{
       {unlock:2, desc:'解锁第三技能「疾风斩击」：移动速度 +100%，每个目标 40(+120%AD)，击杀后持续时间 +0.5 秒、最多 10 秒；隐秘之术：4 格；金蝉脱壳：假身 120%，烟雾弹 60(+80%AD)'},
       {desc:'隐秘之术：5 格；金蝉脱壳：假身 160%，烟雾弹 90(+80%AD)；疾风斩击：每个目标 60(+120%AD)'},
       {q:true, desc:'【质变 · 沙影无踪】隐秘之术：7.5 格；金蝉脱壳：假身 200%，烟雾弹 150(+80%AD)；疾风斩击：每个目标 90(+120%AD)，击杀后持续时间 +1 秒、最多 20 秒'}],
-    lore:'在沙海里独来独往的隐者，烟雾一起人就不见了。擅长匕首、剑、弓、弩，穿布甲、皮甲。英雄之魄：困难及以上的荒漠首领有概率掉落，英雄奖池里也有。',tough:106},   // v0.10.2 数值第一轮
+    lore:'在沙海里独来独往的隐者，烟雾一起人就不见了。擅长匕首、剑、弓、弩，穿布甲、皮甲。英雄之魄：困难及以上在荒漠每轮结束固定掉落，英雄奖池里也有。',tough:106},   // v0.10.2 数值第一轮
   ironMarshal:{name:'霍恩', title:'铁血统帅', quality:'blue', look:'ironMarshal', recruit:true, soulDrop:{map:'tundra', minDiff:'hard', chance:0.35},
     hp:510, def:7.1, dodge:0.02, crit:0.04, speed:4.0, vision:7,   // v0.10.2 数值第一轮
     prof:{weapon:['sword','shield'], armor:['chain','plate']},
@@ -4056,7 +4056,7 @@ Object.assign(CFG.heroes,{
       {unlock:2, desc:'解锁第三技能「战争壁垒」：10 格内的板甲步兵获得盾击，受到的伤害 −10%，冷却 30 秒；铜墙铁壁：40%；铁令动员：格挡防御 +100%，受到的伤害 −10%；绝对防御：10 格、15%'},
       {desc:'铜墙铁壁：60%；铁令动员：格挡防御 +150%，受到的伤害 −15%；绝对防御：12.5 格、20%；战争壁垒：15 格，受到的伤害 −25%'},
       {q:true, desc:'【质变 · 铁血军魂】铜墙铁壁：80%；铁令动员：格挡防御 +200%，受到的伤害 −25%；绝对防御：15 格、30%；战争壁垒：全图，受到的伤害 −40%'}],
-    lore:'守过无数座城的老统帅，一声令下，板甲步兵就在他身前结成铁墙。擅长剑、盾，穿锁甲、板甲。英雄之魄：困难及以上的冰原首领有概率掉落，英雄奖池里也有。',tough:121},   // v0.10.2 数值第一轮
+    lore:'守过无数座城的老统帅，一声令下，板甲步兵就在他身前结成铁墙。擅长剑、盾，穿锁甲、板甲。英雄之魄：困难及以上在冰原每轮结束固定掉落，英雄奖池里也有。',tough:121},   // v0.10.2 数值第一轮
 });
 // ---------- v0.6.0 大德鲁伊 艾伦尼塔（用户策划；数值按策划，品质、属性、狼的数值 Claude 定）----------
 Object.assign(CFG.skills,{
@@ -4078,7 +4078,7 @@ CFG.heroes.archDruid={name:'艾伦尼塔', title:'大德鲁伊', quality:'purple
     {unlock:2, desc:'解锁第三技能「自然之怒」：5 格内选择一处区域，2.5 格内的亡灵受到 150(+150%AP) 伤害，中毒每秒 20%、禁锢 2 秒，冷却 15 秒；振奋之风：6 格，回复 65(+80%AP)，冷却、装填、攻击速度 +10%，3 秒；召唤狼群：每次 2 只，最多 5 只'},
     {desc:'振奋之风：7 格，回复 90(+80%AP)，速度 +15%，5 秒；召唤狼群：最多 7 只；自然之怒：7.5 格内、3 格范围，240(+150%AP)，中毒每秒 30%、禁锢 3 秒'},
     {q:true, desc:'【质变 · 万物共鸣】振奋之风：8 格，回复 130(+80%AP)，速度 +25%，8 秒；召唤狼群：每次 3 只，最多 9 只；自然之怒：10 格内、3.5 格范围，360(+150%AP)，中毒每秒 40%、禁锢 5 秒'}],
-  lore:'元素森林里最年长的德鲁伊，身边总跟着一群森林狼。擅长法杖，穿布甲。英雄之魄：元素森林的首领伊拉有概率掉落，英雄奖池里也有。',tough:106};   // v0.10.2 数值第一轮
+  lore:'元素森林里最年长的德鲁伊，身边总跟着一群森林狼。擅长法杖，穿布甲。英雄之魄：困难及以上在元素森林每轮结束固定掉落，英雄奖池里也有。',tough:106};   // v0.10.2 数值第一轮
 
 /* ---------- v0.6.0 四阶地区「腐化圣堂」（用户 2026-10-04 的策划第三部分）----------
    96×96 大地图，中心 32×32 是教堂（主堡在教堂里）。逻辑见 maps/cathedral.js，亡灵的样子见 art/hd_cathedral.js。
@@ -4244,9 +4244,9 @@ Object.assign(CFG.drops.books,{
 // 瑟塔洛斯的英雄之魄改由教皇掉落（用户定）
 CFG.heroes.judgeKnight.soulDrop={map:'cathedral', minDiff:'normal', chance:0.3};   // 覆盖
 CFG.heroes.saintKnight.soulDrop={map:'cathedral', minDiff:'normal', chance:0.3};   // 覆盖：奥薇尔之魄只由腐化圣堂的教皇掉，荒野不掉（用户定）
-CFG.heroes.saintKnight.lore=CFG.heroes.saintKnight.lore.replace('噩梦及以上的荒野首领有概率掉落','腐化圣堂的首领教皇有概率掉落');   // 覆盖
+CFG.heroes.saintKnight.lore=CFG.heroes.saintKnight.lore.replace('噩梦及以上在荒野每轮结束固定掉落','在腐化圣堂每轮结束固定掉落');   // 覆盖
 CFG.heroes.judgeKnight.lore=CFG.heroes.judgeKnight.lore.replace(   // 覆盖
-  '噩梦及以上的圣堂墓园首领有概率掉落','腐化圣堂的首领教皇约恩有概率掉落');
+  '噩梦及以上在圣堂墓园每轮结束固定掉落','在腐化圣堂每轮结束固定掉落');
 
 /* ---------- v0.6.0 四阶地区「绝影沙漠」（用户策划）----------
    96×96 大沙漠，有流沙。逻辑见 maps/shadowdesert.js，亡灵的样子见 art/hd_tier4.js。
@@ -4399,7 +4399,7 @@ Object.assign(CFG.drops.books,{
 // 瑟菲斯的英雄之魄改由绝影大法师掉落（用户定）
 CFG.heroes.desertHermit.soulDrop={map:'shadowDesert', minDiff:'normal', chance:0.3};   // 覆盖
 CFG.heroes.desertHermit.lore=CFG.heroes.desertHermit.lore.replace(   // 覆盖
-  '困难及以上的荒漠首领有概率掉落','绝影沙漠的首领绝影大法师有概率掉落');
+  '困难及以上在荒漠每轮结束固定掉落','在绝影沙漠每轮结束固定掉落');
 
 /* ---------- v0.6.0 四阶地区「元素森林」（用户策划）----------
    96×96 森林。逻辑见 maps/elemforest.js，亡灵的样子见 art/hd_tier4.js。数据名一律 ef 开头。
@@ -4558,7 +4558,7 @@ CFG.drops.items=Object.assign(CFG.drops.items||{},{
 // 艾琳、艾伦尼塔的英雄之魄由伊拉掉落（用户定）
 CFG.heroes.elemArcher.soulDrop={map:'elemForest', minDiff:'normal', chance:0.3};   // 覆盖
 CFG.heroes.elemArcher.lore=CFG.heroes.elemArcher.lore.replace(   // 覆盖
-  '噩梦及以上的丛林首领有概率掉落','元素森林的首领伊拉有概率掉落');
+  '噩梦及以上在丛林每轮结束固定掉落','在元素森林每轮结束固定掉落');
 
 /* ---------- v0.6.0 四阶地区「铁血要塞」（用户策划）----------
    112×112，玩家在地图南部，开局自带一座 48×24（宽 × 高）的要塞（城墙 + 城门，maps.start.fort）；亡灵只从北面、西面、东面的六个出怪点进攻。
@@ -4691,7 +4691,7 @@ CFG.drops.items=Object.assign(CFG.drops.items||{},{irHeavyGun:[{w:'irChampCannon
 // 霍恩的英雄之魄改由铁血统帅·威廉掉落（用户定）
 CFG.heroes.ironMarshal.soulDrop={map:'ironFort', minDiff:'normal', chance:0.3};   // 覆盖
 CFG.heroes.ironMarshal.lore=CFG.heroes.ironMarshal.lore.replace(   // 覆盖
-  '困难及以上的冰原首领有概率掉落','铁血要塞的首领铁血统帅·威廉有概率掉落');
+  '困难及以上在冰原每轮结束固定掉落','困难及以上在铁血要塞每轮结束固定掉落');
 
 /* ---------- v0.7.0 五阶地区「幽影高原」（用户 2026-10-07 的策划第三部分）----------
    96×96。逻辑见 maps/shadowhigh.js（装备特效在 gear/fx_shadowhigh.js），亡灵的样子见 art/hd_shadowhigh.js。数据名一律 yy 开头（用户：名字建表查表不重复）
@@ -13496,7 +13496,7 @@ CFG.heroes.alibaba={name:'阿里巴巴', title:'骆驼商人', quality:'blue', l
     {desc:'驼铃悠悠：2 + 2 名、属性 100%；香料贸易 ×7；贸易天平：每 20 / 200 铜币，流浪商人处一次最多可购买 5 件道具'},
     {desc:'驼铃悠悠：2 + 2 名、属性 110%；香料贸易 ×8；贸易天平：每 15 / 150 铜币'},
     {q:true, desc:'【质变 · 驼铃满载】驼铃悠悠：3 + 3 名、属性 120%；香料贸易 ×10；贸易天平：每 10 / 100 铜币，流浪商人的道具商店可刷新 1 次'}],
-  lore:'走沙海商路的骆驼商人，手里的天平从不缺斤短两。驼铃一响，他的驼队就从沙丘后面赶来。擅长弓、火枪、弩，穿布甲、皮甲。英雄之魄：困难及以上的无尽沙漠首领有概率掉落。',tough:110};   // v0.10.2 数值第一轮
+  lore:'走沙海商路的骆驼商人，手里的天平从不缺斤短两。驼铃一响，他的驼队就从沙丘后面赶来。擅长弓、火枪、弩，穿布甲、皮甲。英雄之魄：困难及以上在无尽沙漠每轮结束固定掉落。',tough:110};   // v0.10.2 数值第一轮
 CFG.heroStats.alibaba={atk:11, ap:4.2, mdef:0, defG:0.1, mdefG:0.06, aspd:0, prec:1};   // v0.10.2 数值第一轮
 Object.assign(CFG.heroes.alibaba,CFG.heroStats.alibaba);   // 生命、防御、物攻、法攻、法防：原始值取射手的平均（数值第一轮按「和同定位平均比」做个人修正，取平均就不会带动别的射手变），实际值（v0.10.2 数值第一轮）写在本文件的 heroStats
 
@@ -13529,7 +13529,7 @@ CFG.heroes.wolfSon={name:'雪狼之子', title:'狼神后裔', quality:'purple',
     {desc:'冰雪之魂 60%；狼神号角 3 头、最多 6 头；狼神之矛 180(+100%AD)，爆炸 200%；狼神咆哮 80(+40%AD)'},
     {desc:'冰雪之魂 80%；狼神号角 3 头、最多 6 头；狼神之矛 240(+100%AD)，爆炸 225%；狼神咆哮 100(+40%AD)'},
     {q:true, desc:'【质变 · 狼神降世】冰雪之魂 100%，完全免疫冰霜伤害和异常状态；狼神号角 5 头、最多 10 头；狼神之矛 300(+100%AD)，爆炸 250%；狼神咆哮 150(+40%AD)'}],
-  lore:'北方苔原上被白狼养大的猎人，身披狼神的白皮，吹响号角就有狼群应答。擅长枪，穿皮甲、锁甲。英雄之魄：困难及以上的北极苔原首领有概率掉落。',tough:115};   // v0.10.2 数值第一轮
+  lore:'北方苔原上被白狼养大的猎人，身披狼神的白皮，吹响号角就有狼群应答。擅长枪，穿皮甲、锁甲。英雄之魄：困难及以上在北极苔原每轮结束固定掉落。',tough:115};   // v0.10.2 数值第一轮
 CFG.heroStats.wolfSon={atk:18.5, ap:7, mdef:2.6, defG:0.12, mdefG:0.08, aspd:0, prec:1};   // v0.10.2 数值第一轮
 Object.assign(CFG.heroes.wolfSon,CFG.heroStats.wolfSon);   // 生命、防御、物攻、法攻、法防：原始值取战士的平均（数值第一轮按「和同定位平均比」做个人修正，取平均就不会带动别的战士变），实际值（v0.10.2 数值第一轮）写在本文件的 heroStats
 
@@ -13560,7 +13560,7 @@ CFG.heroes.vanessa={name:'温妮莎', title:'瘟疫医师', quality:'gold', look
     {unlock:2, desc:'解锁第三技能「起死回生」：2.5 格；获得「净化之力」：每 3 秒净化 5 格内至多 5 名友军；瘟毒免疫：+75%，10 格内 +30%；生命之泉：8.5 格、3 格、4 秒、每秒 75(+50%AP)，移除 2 个负面状态；净化圣水：长 6 格、160(+150%AP)，移除 / 延长 2 个，30%'},
     {desc:'瘟毒免疫：+100%，15 格内 +40%；净化之力：至多 10 名；生命之泉：9 格、3.25 格、4.5 秒、每秒 100(+50%AP)；净化圣水：长 6.5 格、200(+150%AP)，40%；起死回生：3.5 格'},
     {q:true, desc:'【质变 · 瘟疫终结】瘟毒免疫：免疫中毒，全场友军中毒抗性 +50%；净化之力：至多 20 名；生命之泉：10 格、3.5 格、5 秒、每秒 150(+50%AP)，移除 3 个；净化圣水：长 7 格、250(+150%AP)，移除 / 延长 3 个，50%；起死回生：5 格'}],
-  lore:'走遍瘟疫村镇的医师，白袍上绣满草药，腰间挂着鸟嘴面具和一排药瓶。她能把毒变成药，也能把药变成毒。擅长药瓶、法杖、书，穿布甲、皮甲。英雄之魄：困难及以上的灰褐沼泽首领有概率掉落。',tough:110};   // v0.10.2 数值第一轮
+  lore:'走遍瘟疫村镇的医师，白袍上绣满草药，腰间挂着鸟嘴面具和一排药瓶。她能把毒变成药，也能把药变成毒。擅长药瓶、法杖、书，穿布甲、皮甲。英雄之魄：困难及以上在灰褐沼泽每轮结束固定掉落。',tough:110};   // v0.10.2 数值第一轮
 CFG.heroStats.vanessa={atk:4.4, ap:9.7, mdef:4.1, defG:0.06, mdefG:0.12, aspd:0, prec:1};   // v0.10.2 数值第一轮
 Object.assign(CFG.heroes.vanessa,CFG.heroStats.vanessa);   // 生命、防御、物攻、法攻、法防：原始值取辅助的平均（数值第一轮按「和同定位平均比」做个人修正，取平均就不会带动别的辅助变），实际值（v0.10.2 数值第一轮）写在本文件的 heroStats
 
@@ -13593,7 +13593,7 @@ CFG.heroes.anyang={name:'安洋', title:'虎鲸骑士', quality:'purple', look:'
     {unlock:2, desc:'解锁第三技能「惊涛骇浪」：宽 3 格、长 6 格，300(+150%AD)；鲸突猛进 250(+150%AD)；震海鲸波 每次 50(+40%AD)，每次 +5%'},
     {desc:'鲸突猛进 300(+150%AD)；震海鲸波 每次 60(+40%AD)，每次 +10%；惊涛骇浪 宽 4 格、长 8 格，400(+150%AD)'},
     {q:true, desc:'【质变 · 怒海狂鲸】鲸突猛进 400(+150%AD)；震海鲸波 每次 80(+40%AD)，每次 +20%；惊涛骇浪 宽 5 格、长 10 格，500(+150%AD)'}],
-  lore:'在绝望孤岛的浅海里长大的少年，驯服了一头虎鲸当坐骑，手持三叉戟巡游在亡灵舰队之间。擅长枪，穿皮甲、锁甲、板甲。英雄之魄：困难及以上的绝望孤岛首领有概率掉落。',tough:115};   // v0.10.2 数值第一轮
+  lore:'在绝望孤岛的浅海里长大的少年，驯服了一头虎鲸当坐骑，手持三叉戟巡游在亡灵舰队之间。擅长枪，穿皮甲、锁甲、板甲。英雄之魄：困难及以上在绝望孤岛每轮结束固定掉落。',tough:115};   // v0.10.2 数值第一轮
 CFG.heroStats.anyang={atk:18.5, ap:7, mdef:2.6, defG:0.12, mdefG:0.08, aspd:0, prec:1};   // v0.10.2 数值第一轮
 Object.assign(CFG.heroes.anyang,CFG.heroStats.anyang);   // 生命、防御、物攻、法攻、法防：原始值取战士的平均（同雪狼之子，取平均就不会带动别的战士变），实际值（v0.10.2 数值第一轮）写在本文件的 heroStats
 
@@ -13625,7 +13625,7 @@ CFG.heroes.liko={name:'莉可', title:'炸弹熊娃', quality:'gold', look:'liko
     {desc:'熊娃护甲 75%；爆破专家：在场时友军所有爆炸伤害 +15%；连环炸弹 5 格、180(+120%AD)、2 格；炸弹跳跃 7 格、90(+150%AD)；炸弹雨 6 枚、半径 3 格、90(+150%AD)、2 格'},
     {desc:'熊娃护甲 100%；爆破专家 +30%；连环炸弹 6 格、240(+120%AD)、2.5 格；炸弹跳跃 8 格、120(+150%AD)；炸弹雨 8 枚、半径 2.75 格、120(+150%AD)、2.5 格'},
     {q:true, desc:'【质变 · 熊熊连爆】熊娃护甲：免疫爆炸伤害和击退；爆破专家 +50%；连环炸弹 7.5 格、300(+120%AD)、3 格，爆炸后再向前弹出一半距离，以 50% 伤害再次爆炸；炸弹跳跃 10 格、150(+150%AD)；炸弹雨 10 枚、半径 2.5 格、150(+150%AD)、3 格'}],
-  lore:'穿着熊熊外套的爆破小能手，背着熊熊背包，里面塞满了印着小熊的炸弹。擅长火枪，穿布甲、皮甲。英雄之魄：困难及以上的绝壁峭崖首领有概率掉落。',tough:110};   // v0.10.2 数值第一轮
+  lore:'穿着熊熊外套的爆破小能手，背着熊熊背包，里面塞满了印着小熊的炸弹。擅长火枪，穿布甲、皮甲。英雄之魄：困难及以上在绝壁峭崖每轮结束固定掉落。',tough:110};   // v0.10.2 数值第一轮
 CFG.heroStats.liko={atk:11.5, ap:4.3, mdef:0, defG:0.1, mdefG:0.06, aspd:0, prec:1};   // v0.10.2 数值第一轮
 Object.assign(CFG.heroes.liko,CFG.heroStats.liko);   // 生命、防御、物攻、法攻、法防：原始值取射手的平均（同阿里巴巴，取平均就不会带动别的射手变），实际值（v0.10.2 数值第一轮）写在本文件的 heroStats
 
@@ -13665,7 +13665,7 @@ CFG.heroes.ashna={name:'阿什娜', title:'银辉骑士', quality:'gold', look:'
     {unlock:2, desc:'解锁第三技能「银月之溯」：记录 5 格内的建筑、35 秒冷却；月华：每秒 2%、攻击速度 +20%；银月 70%；破暗之矢：冷却 8 秒、穿透 3 个目标、85(+100%AD)，命中带有标记的亡灵时冷却 −0.25 秒；银月箭雨：半径 3 格、60(+40%AD)'},
     {desc:'月华：每秒 2.5%、攻击速度 +25%；银月 85%；破暗之矢：冷却 7 秒、120(+100%AD)；银月箭雨：半径 3.25 格、90(+40%AD)；银月之溯：10 格、30 秒冷却'},
     {q:true, desc:'【质变 · 银月满辉】月华：每秒 3%、攻击速度 +30%；银月：普通攻击必定施加标记；破暗之矢：冷却 6 秒、穿透 5 个目标、150(+100%AD)，命中带有标记的亡灵时冷却 −1 秒；银月箭雨：半径 3.5 格、120(+40%AD)；银月之溯：15 格、25 秒冷却'}],
-  lore:'银发的月之骑士，白袍上绣着金色的月牙，银甲下藏着一张月牙长弓。月光照到的地方，亡灵无处躲藏。擅长弓，穿皮甲、锁甲。英雄之魄：困难及以上的回声墓城首领有概率掉落。',tough:110};   // v0.10.2 数值第一轮
+  lore:'银发的月之骑士，白袍上绣着金色的月牙，银甲下藏着一张月牙长弓。月光照到的地方，亡灵无处躲藏。擅长弓，穿皮甲、锁甲。英雄之魄：困难及以上在回声墓城每轮结束固定掉落。',tough:110};   // v0.10.2 数值第一轮
 CFG.heroStats.ashna={atk:11.5, ap:4.3, mdef:1.2, defG:0.1, mdefG:0.06, aspd:0, prec:1};   // v0.10.2 数值第一轮
 Object.assign(CFG.heroes.ashna,CFG.heroStats.ashna);   // 生命、防御、物攻、法攻、法防：原始值取射手的平均（同阿里巴巴、莉可），实际值（v0.10.2 数值第一轮）写在本文件的 heroStats
 
@@ -13835,7 +13835,7 @@ CFG.heroes.jack={name:'杰克', title:'幽灵船长', quality:'gold', look:'jack
     {unlock:2, desc:'解锁第三技能「全域打击」：2 秒内每 0.5 秒 15(+10%AD)；幽灵潜行：8 秒、3 秒内 +35%、射程 +20%；致命勾锁：7 格、360(+120%AD)，斩杀 15%；幽灵突袭：15 格、4 秒、伤害不变，1 秒后再追加一次'},
     {desc:'幽灵潜行：6.5 秒、4 秒内 +60%、射程 +25%；致命勾锁：8 格、500(+120%AD)，斩杀 20%；幽灵突袭：17.5 格、4.5 秒、伤害 +20%；全域打击：2.5 秒、30(+15%AD)'},
     {q:true, desc:'【质变 · 幽灵舰队】幽灵潜行：5 秒、5 秒内 +100%、射程 +30%；致命勾锁：10 格、650(+120%AD)，斩杀 25%；幽灵突袭：20 格、5 秒、伤害 +40%，2 秒后再追加一次；全域打击：3 秒、60(+20%AD)'}],
-  lore:'黑幽灵船的船长，戴着插青羽的三角帽，外套下摆早已化成幽灵的青烟。左手一条带锚钩的铁链，右手一把燧发枪，神出鬼没。擅长火枪，穿布甲、皮甲。英雄之魄：困难及以上的黑幽灵船首领有概率掉落。',tough:112};   // v0.10.2 数值第一轮
+  lore:'黑幽灵船的船长，戴着插青羽的三角帽，外套下摆早已化成幽灵的青烟。左手一条带锚钩的铁链，右手一把燧发枪，神出鬼没。擅长火枪，穿布甲、皮甲。英雄之魄：困难及以上在黑幽灵船每轮结束固定掉落。',tough:112};   // v0.10.2 数值第一轮
 CFG.heroStats.jack={atk:13, ap:4.5, mdef:1.2, defG:0.06, mdefG:0.1, aspd:0, prec:1.1};   // v0.10.2 数值第一轮
 Object.assign(CFG.heroes.jack,CFG.heroStats.jack);
 
@@ -13875,7 +13875,7 @@ CFG.heroes.akagiJiro={name:'赤木二郎', title:'赤焰行者', quality:'gold',
     {desc:'赤焰行者：60%，灼烧 35% 3 秒，爆炸范围 +10%，卡池新增【赤焰行者】；赤炼之火：7 格、240(+150%AD)，路径 60；魔炎爆弹：生命 30%、900；炽阳之轮：9 格、生命 150%、4 格、每秒 120、5 秒'},
     {desc:'赤焰行者：80%，灼烧 65% 4 秒，爆炸范围 +25%；赤炼之火：8 格、360，路径 80；魔炎爆弹：生命 40%、1400；炽阳之轮：9.5 格、生命 200%、4.5 格、每秒 180、6 秒'},
     {q:true, desc:'【质变 · 炎魔】赤焰行者：火焰伤害全部转化为生命、完全免疫，灼烧 100% 5 秒，爆炸范围 +40%，卡池新增【炎魔】；赤炼之火：10 格、500，路径 100；魔炎爆弹：生命 50%、2000；炽阳之轮：10 格、生命 250%、5 格、每秒 250、7 秒'}],
-  lore:'赤木正一的弟弟。红衣、红头带，一把裂纹里流着熔岩的太刀。他从地狱的火海里走出来，火焰烧不伤他，反倒成了他的力气。擅长双手剑，穿皮甲。英雄之魄：困难及以上的熔岩深渊首领有概率掉落。',tough:110};   // v0.10.2 数值第一轮
+  lore:'赤木正一的弟弟。红衣、红头带，一把裂纹里流着熔岩的太刀。他从地狱的火海里走出来，火焰烧不伤他，反倒成了他的力气。擅长双手剑，穿皮甲。英雄之魄：困难及以上在熔岩深渊每轮结束固定掉落。',tough:110};   // v0.10.2 数值第一轮
 CFG.heroStats.akagiJiro={atk:17, ap:3.5, mdef:2.6, defG:0.12, mdefG:0.08, aspd:0, prec:1};
 Object.assign(CFG.heroes.akagiJiro,CFG.heroStats.akagiJiro);
 // —— 在场时新增的卡（用户定；唯一）——
@@ -13928,7 +13928,7 @@ CFG.heroes.kazamiYuki={name:'风见雪姬', title:'冰雪巫女', quality:'gold'
     {unlock:2, desc:'解锁冰花雪月(10 格内、护盾 15%、每秒回复 50(+50%AP)，击破时 1 格内 100(+100%AP) 并冰冻 1 秒，冷却 25 秒)；清平乐铃：10 格、+60%；雪之诗唱：10 格、+60%，对冰冻状态的亡灵 +100%；吹风为寒：105°、7 格、120、冰冻 4 秒；化雨为雪：10 格内、半径 3.5 格、150、受到 4 次伤害后冰冻、减速 50%、4 秒'},
     {desc:'冰花雪月：20 格内、护盾 30%、每秒 75，击破时 1.5 格内 200(+125%AP) 并冰冻 1.5 秒，冷却 20 秒；清平乐铃：15 格、控制抗性 +80%；雪之诗唱：15 格、+80%，对冰冻状态的亡灵 +140%；吹风为寒：120°、8 格、180、4.5 秒；化雨为雪：11 格内、半径 4 格、210、减速 60%'},
     {q:true, desc:'【质变 · 冰花雪月】冰花雪月：全场、护盾 50%、每秒 100，击破时 2 格内 400(+150%AP) 并冰冻 2 秒，冷却 15 秒；清平乐铃：20 格、控制抗性 +100%；雪之诗唱：20 格、+100%，对冰冻状态的亡灵 +200%；吹风为寒：135°、9 格、250、5 秒；化雨为雪：12 格内、半径 5 格、300、受到 3 次伤害后冰冻、减速 70%、5 秒'}],
-  lore:'风见家的巫女，白发白衣，衣摆上绣着雪花，手里一把挂满金铃的神乐铃。铃声响起的地方，风会变冷，雨会变成雪。擅长双手杖，穿布甲。英雄之魄：困难及以上的冰刺之地首领有概率掉落。',tough:108};   // v0.10.2 数值第一轮
+  lore:'风见家的巫女，白发白衣，衣摆上绣着雪花，手里一把挂满金铃的神乐铃。铃声响起的地方，风会变冷，雨会变成雪。擅长双手杖，穿布甲。英雄之魄：困难及以上在冰刺之地每轮结束固定掉落。',tough:108};   // v0.10.2 数值第一轮
 CFG.heroStats.kazamiYuki={atk:3.5, ap:14, mdef:4.5, defG:0.06, mdefG:0.13, aspd:0, prec:1};
 Object.assign(CFG.heroes.kazamiYuki,CFG.heroStats.kazamiYuki);
 
@@ -13969,7 +13969,7 @@ CFG.heroes.dracula={name:'德古拉', title:'吸血鬼伯爵', quality:'gold', l
     {desc:'血族伯爵：吸血 60%，血盾最多 60%；众生血契：士兵吸血 50%，血池 15 倍，每秒 15%；血之诱导：6 格、120(+100%AD)、回池 60%；血之引爆：8 格、回池 30%'},
     {desc:'血族伯爵：吸血 80%，血盾最多 80%；众生血契：士兵吸血 75%，血池 17.5 倍，每秒 17.5%；血之诱导：6.5 格、180(+100%AD)、回池 80%；血之引爆：10 格、回池 40%；百蝠夜行：80 只、60(+17.5%AD)、冷却 22.5 秒'},
     {q:true, desc:'【质变 · 血之君王】血族伯爵：吸血 100%，血盾最多 100% 最大生命(增伤、减伤最多 +50%)；众生血契：士兵吸血 100%，血池 20 倍，每秒 20%；血之诱导：7 格、250(+100%AD)、回池 100%；血之引爆：12.5 格、回池 50%；百蝠夜行：100 只、100(+20%AD)、冷却 20 秒'}],
-  lore:'血族城堡的主人。黑色长发里垂着一缕白发，血红的眼睛，黑色高领长外套绣着银色的荆棘纹，红色的内衬像流动的血。他手心托着一颗血球，身边总绕着蝙蝠。和他立下血契的士兵受的伤，都由他的血池替他们偿还。擅长剑和匕首，穿布甲、皮甲。英雄之魄：困难及以上的血族城堡首领有概率掉落。'};
+  lore:'血族城堡的主人。黑色长发里垂着一缕白发，血红的眼睛，黑色高领长外套绣着银色的荆棘纹，红色的内衬像流动的血。他手心托着一颗血球，身边总绕着蝙蝠。和他立下血契的士兵受的伤，都由他的血池替他们偿还。擅长剑和匕首，穿布甲、皮甲。英雄之魄：困难及以上在血族城堡每轮结束固定掉落。'};
 CFG.heroStats.dracula={atk:18, ap:8, mdef:6, defG:0.12, mdefG:0.14, aspd:0, prec:1.05};
 Object.assign(CFG.heroes.dracula,CFG.heroStats.dracula);
 
@@ -14006,7 +14006,7 @@ CFG.heroes.xuanzang={name:'玄奘', title:'万法唯识', quality:'red', look:'x
     {desc:'万法唯识：每层 +3%，最多 +60%；唯识无境：周围 2 格、60% 转化；所受皆妄、所执皆虚：9 格、半径 4 格、降低 60%、3 秒'},
     {desc:'万法唯识：每层 +4%，最多 +80%；唯识无境：周围 3 格、80% 转化；所受皆妄、所执皆虚：9.5 格、半径 4.5 格、降低 75%、4 秒；所念皆无：700(+225%AP)、冷却 25 秒'},
     {q:true, desc:'【质变 · 五蕴皆空】万法唯识：每层 +5%，最多 +100%；唯识无境：周围 5 格、伤害全部转化；所受皆妄、所执皆虚：10 格、半径 5 格、降低 90%、5 秒；所念皆无：半径 5 格、1000(+250%AP)、冷却 20 秒'}],
-  lore:'西行求法的僧人，光头，红底金格的袈裟搭在杏黄的僧衣上，手持金色锡杖，腕上挂着一串念珠。他说，所受、所执、所念，都是心里生出来的——在他身边作战的人，刀落下去，伤的是那亡灵本身，而不是它披着的甲。擅长法杖和书，穿布甲。英雄之魄：困难及以上的废弃佛窟首领有概率掉落。'};
+  lore:'西行求法的僧人，光头，红底金格的袈裟搭在杏黄的僧衣上，手持金色锡杖，腕上挂着一串念珠。他说，所受、所执、所念，都是心里生出来的——在他身边作战的人，刀落下去，伤的是那亡灵本身，而不是它披着的甲。擅长法杖和书，穿布甲。英雄之魄：困难及以上在废弃佛窟每轮结束固定掉落。'};
 CFG.heroStats.xuanzang={atk:8, ap:15, mdef:8, defG:0.1, mdefG:0.16, aspd:0, prec:1.1};
 Object.assign(CFG.heroes.xuanzang,CFG.heroStats.xuanzang);
 
@@ -14107,7 +14107,7 @@ CFG.heroes.tamamo={name:'玉藻前', title:'九尾白狐', quality:'red', look:'
     {desc:'灵狐幻化：每层减伤 15%、增伤 10%，叠满 10 层后另一形态技能一、二冷却重置并强化(无视 50% 减伤 / 25% 减伤，灵狐突袭吸收 15%)；灵焰绞杀：150(+80%AP)、4 秒；爆焰灵珠：7 格、900(+450%AP)；魅惑众生：10 格、20 个；灵狐突袭：400(+80%AP)；妖狐异火：5 团、175(+100%AP)；杀伐众生：10 格、每次 2%'},
     {desc:'灵狐幻化：每层减伤 20%、增伤 12.5%，强化无视 75% 减伤 / 妖狐异火 50%，灵狐突袭吸收 30%、护盾 20 秒；灵焰绞杀：240(+90%AP)；爆焰灵珠：8.5 格、1350(+450%AP)；魅惑众生：12.5 格、25 个；灵狐突袭：650(+90%AP)；妖狐异火：6 团、275(+100%AP)；杀伐众生：12.5 格、每次 2.5%'},
     {q:true, desc:'【质变 · 倾国九尾】灵狐幻化：每层减伤 25%、增伤 15%，强化无视 100% 减伤，灵狐突袭吸收 50%、护盾 30 秒；灵焰绞杀：7 格、半径 3.5 格、350(+100%AP)、5 秒；爆焰灵珠：10 格、半径 5 格、2000(+450%AP)；魅惑众生：15 格、30 个；灵狐突袭：7 格、扇形 135°、1000(+100%AP)、易伤 25%；妖狐异火：8 团、半径 2 格、400(+100%AP)；杀伐众生：15 格、每次 3%'}],
-  lore:'雪夜神社里供着的九尾白狐，白发金眸，狐耳上簪着红绳和金花，穿红白两色的巫女服，袖上绣着金色的狐纹，身后九条雪白的尾巴。人形时手持金杖、掌中托着灵火，狐形时是一只比马还大的白狐。她自己说，迷人心窍和取人性命，在她看来是同一件事的两面。擅长法杖(双手杖、牧师杖)，穿布甲。英雄之魄：困难及以上的雪夜神社首领有概率掉落。'};
+  lore:'雪夜神社里供着的九尾白狐，白发金眸，狐耳上簪着红绳和金花，穿红白两色的巫女服，袖上绣着金色的狐纹，身后九条雪白的尾巴。人形时手持金杖、掌中托着灵火，狐形时是一只比马还大的白狐。她自己说，迷人心窍和取人性命，在她看来是同一件事的两面。擅长法杖(双手杖、牧师杖)，穿布甲。英雄之魄：困难及以上在雪夜神社每轮结束固定掉落。'};
 CFG.heroStats.tamamo={atk:10, ap:15, mdef:8, defG:0.1, mdefG:0.16, aspd:0, prec:1.1};
 Object.assign(CFG.heroes.tamamo,CFG.heroStats.tamamo);
 
@@ -14211,7 +14211,7 @@ CFG.heroes.marshall={name:'马歇尔', title:'黄衣宰相', quality:'red', look
     {desc:'经济循环：30% 返还；市场调节：+50%；经济激励：10 格、每单位 4 铜币、+50%；生产标准：10 格、每座 4 铜币、+30%'},
     {desc:'经济循环：40% 返还；市场调节：+75%；经济激励：12.5 格、每单位 3.5 铜币、+75%；生产标准：12.5 格、每座 3.5 铜币、+45%；绩效指标：25 格、+75%'},
     {q:true, desc:'【质变 · 经世济民】经济循环：50% 返还；市场调节：+100%；经济激励：15 格、每单位 3 铜币、+100%；生产标准：15 格、每座 3 铜币、+60%；绩效指标：全场、+100%'}],
-  lore:'王国的宰相，一身明黄的官袍，头戴黑色的展脚官帽，左手捧着账本，腰间挂着一把算盘。在他眼里，每一枚铜币都该有它的去处：花出去的会以别的方式回来，省下来的会变成下一笔更大的收入。擅长法杖和书，穿布甲。英雄之魄：困难及以上的教廷王宫首领有概率掉落。'};
+  lore:'王国的宰相，一身明黄的官袍，头戴黑色的展脚官帽，左手捧着账本，腰间挂着一把算盘。在他眼里，每一枚铜币都该有它的去处：花出去的会以别的方式回来，省下来的会变成下一笔更大的收入。擅长法杖和书，穿布甲。英雄之魄：困难及以上在教廷王宫每轮结束固定掉落。'};
 CFG.heroStats.marshall={atk:8, ap:14, mdef:7, defG:0.1, mdefG:0.15, aspd:0, prec:1.1};
 Object.assign(CFG.heroes.marshall,CFG.heroStats.marshall);
 
@@ -14256,7 +14256,7 @@ CFG.heroes.sunPrince={name:'永', title:'日轮王子', quality:'gold', look:'su
     {desc:'神光曜日生效：20 格内的亡灵每秒受到 1% 当前生命的伤害；圣焰辉光：每层 +2%、持续 2 波；破邪永昼：7 格、1050(+150%AD)、扇形 60° 4 格、每层增伤 +3%、冷却 13 秒；圣光犁庭：扇形 150° 4 格、800(+150%AD)；日轮圣临：施法距离 15 格、1500(+200%AD)、至多刷新 8 次、冷却 25 秒'},
     {desc:'神光曜日：30 格内、每秒 1.5%；圣焰辉光：每层 +2.5%、持续 2 波；破邪永昼：8 格、1200(+150%AD)、扇形 75° 4.5 格、每层增伤 +4%、冷却 12 秒；圣光犁庭：扇形 165° 4.5 格、1050(+150%AD)；日轮圣临：施法距离 17.5 格、1750(+200%AD)、至多刷新 11 次、冷却 22.5 秒'},
     {q:true, desc:'【质变 · 永昼日轮】神光曜日：全场、每秒 2.5%；圣焰辉光：每层 +3%、持续 3 波；破邪永昼：10 格、1600(+150%AD)、扇形 90° 5 格、每层增伤 +5%、冷却 10 秒；圣光犁庭：扇形 180° 5 格、1200(+150%AD)；日轮圣临：施法距离 20 格、2000(+200%AD)、至多刷新 14 次、冷却 20 秒'}],
-  lore:'金发蓝眼的王子，白金板甲上錾着金色的日轮纹，蓝底白面的披风拖到脚边，双手拄着一柄长剑。他的剑气和冲锋会在亡灵身上留下「日轮」印记，印记被他的圣临一一点燃。擅长剑和枪(含骑枪)，穿板甲。英雄之魄：困难及以上的黑曜要塞首领有概率掉落。'};
+  lore:'金发蓝眼的王子，白金板甲上錾着金色的日轮纹，蓝底白面的披风拖到脚边，双手拄着一柄长剑。他的剑气和冲锋会在亡灵身上留下「日轮」印记，印记被他的圣临一一点燃。擅长剑和枪(含骑枪)，穿板甲。英雄之魄：困难及以上在黑曜要塞每轮结束固定掉落。'};
 CFG.heroStats.sunPrince={atk:18, ap:5, mdef:6, defG:0.12, mdefG:0.12, aspd:0, prec:1.05};
 Object.assign(CFG.heroes.sunPrince,CFG.heroStats.sunPrince);
 
@@ -14299,7 +14299,7 @@ CFG.heroes.nightPrincess={name:'堇', title:'冥夜公主', quality:'gold', look
     {desc:'冥夜月华生效：20 格内每秒恢复 2% 最大生命、无视 20% 禁疗；葬神冥焰：禁疗 75%、+70%；安魂之歌：20 格、10(+20%AP)、4 秒；觉醒之歌：20 格、700(+100%AP)、+70%；信仰之歌：20 格、4 秒、1.5 秒、恢复至 70%、低于 30% 倒戈'},
     {desc:'冥夜月华：30 格内、3%、无视 30% 禁疗；葬神冥焰：禁疗 100%、+85%；安魂之歌：25 格、10(+25%AP)、4.5 秒；觉醒之歌：25 格、850(+100%AP)、+85%；信仰之歌：25 格、4.5 秒、1.75 秒、恢复至 85%、低于 40% 倒戈'},
     {q:true, desc:'【质变 · 冥夜圣咏】冥夜月华：全场、5%、无视 50% 禁疗；葬神冥焰：完全禁疗(跳过一切恢复效果)、+100%；安魂之歌：30 格、10(+30%AP)、5 秒；觉醒之歌：30 格、1000(+100%AP)、+100%；信仰之歌：30 格、5 秒、2 秒、恢复至 100%、低于 50% 倒戈'}],
-  lore:'冥夜之国的公主。粉色长发，双眼蒙着白布，穿一身黑底红纹的长裙，坐在银黑色的轮椅上，身边总飘着几簇紫色的冥焰。她唱安魂之歌时亡灵会睡去；唱信仰之歌时，倒下的人会重新站起来，残破的亡灵会转身替她作战。擅长圣典、双手杖和牧师杖，穿布甲。英雄之魄：困难及以上的黑曜要塞首领有概率掉落。'};
+  lore:'冥夜之国的公主。粉色长发，双眼蒙着白布，穿一身黑底红纹的长裙，坐在银黑色的轮椅上，身边总飘着几簇紫色的冥焰。她唱安魂之歌时亡灵会睡去；唱信仰之歌时，倒下的人会重新站起来，残破的亡灵会转身替她作战。擅长圣典、双手杖和牧师杖，穿布甲。英雄之魄：困难及以上在黑曜要塞每轮结束固定掉落。'};
 CFG.heroStats.nightPrincess={atk:4, ap:11, mdef:4.5, defG:0.06, mdefG:0.13, aspd:0, prec:1};
 Object.assign(CFG.heroes.nightPrincess,CFG.heroStats.nightPrincess);
 
@@ -14342,7 +14342,7 @@ CFG.heroes.huHan={name:'胡寒', title:'北境守将', quality:'gold', look:'huH
     {desc:'不屈之血：免死 2 秒、受到的治疗 +60%、60% 损失生命在 4 秒内回复、每损失 1% 生命增伤 +1%；单兵救主：7 格、替伤 90%；殊死一搏：7 格、护盾 100%、500(+120%AD)、眩晕 3 秒；不屈潜能：每秒护盾 10%'},
     {desc:'不屈之血：免死 2.5 秒、受到的治疗 +80%、70% 损失生命在 3.5 秒内回复、每损失 1% 生命增伤 +1.25%；单兵救主：8.5 格、替伤 95%；殊死一搏：8.5 格、护盾 125%、750(+120%AD)、眩晕 3.5 秒；不屈潜能：每秒护盾 12.5%'},
     {q:true, desc:'【质变 · 不屈战魂】不屈之血：免死 3 秒、受到的治疗 +100%、80% 损失生命在 3 秒内回复、每损失 1% 生命增伤 +1.5%；单兵救主：10 格、替伤 100%；殊死一搏：10 格、护盾 150%、1000(+120%AD)、眩晕 4 秒；不屈潜能：每秒护盾 15%'}],
-  lore:'镇守长城的边将，满脸络腮胡，皮毛领子压在板甲的肩头，腰下垂着一片红布裙甲，手里一柄双刃战斧。他伤得越重，斧子挥得越狠；身后的同袍和城墙，他都替他们挡着。擅长斧、锤，穿板甲。英雄之魄：困难及以上的守望长城首领有概率掉落。'};
+  lore:'镇守长城的边将，满脸络腮胡，皮毛领子压在板甲的肩头，腰下垂着一片红布裙甲，手里一柄双刃战斧。他伤得越重，斧子挥得越狠；身后的同袍和城墙，他都替他们挡着。擅长斧、锤，穿板甲。英雄之魄：困难及以上在守望长城每轮结束固定掉落。'};
 CFG.heroStats.huHan={atk:17.5, ap:3, mdef:5.5, defG:0.14, mdefG:0.1, aspd:0, prec:1};
 Object.assign(CFG.heroes.huHan,CFG.heroStats.huHan);
 
@@ -14439,7 +14439,7 @@ CFG.heroes.ais={name:'艾斯', title:'议会元老', quality:'red', look:'ais', 
     {desc:'源能核心：5 格、每秒回复 2%、增伤减伤 +70%；磁暴干扰：3.5 格、700(+150%AD)、7 秒；源能潮汐：15 格、+140%、回复 14%、减伤 +70%；天幕屏障：20 格、3000、单位数 ×0.02、冷却 18 秒'},
     {desc:'源能核心：7 格、每秒回复 2.5%、增伤减伤 +85%；磁暴干扰：4 格、850(+150%AD)、8.5 秒；源能潮汐：17.5 格、+170%、回复 17%、减伤 +85%；天幕屏障：30 格、4000、单位数 ×0.025、冷却 16.5 秒'},
     {q:true, desc:'【质变 · 源能主宰】源能核心：10 格、每秒回复 3%、增伤减伤 +100%；磁暴干扰：5 格、1000(+150%AD)、10 秒，电磁干扰改为骇入(三阶以下的亡灵转变为我方单位)；源能潮汐：20 格、+200%、回复 20%、减伤 +100%；天幕屏障：全局、5000、单位数 ×0.03、冷却 15 秒'}],
-  lore:'源能议会的元老。一身嵌着青色能量管的链甲，手里一支源能火枪；他走到哪里，身边的机械就跟着运转得更快、更稳。擅长火枪、火炮，穿链甲。英雄之魄：困难及以上的源能王城首领有概率掉落。'};
+  lore:'源能议会的元老。一身嵌着青色能量管的链甲，手里一支源能火枪；他走到哪里，身边的机械就跟着运转得更快、更稳。擅长火枪、火炮，穿链甲。英雄之魄：困难及以上在源能王城每轮结束固定掉落。'};
 CFG.heroStats.ais={atk:17, ap:5, mdef:5, defG:0.12, mdefG:0.12, aspd:0, prec:1.15};
 Object.assign(CFG.heroes.ais,CFG.heroStats.ais);
 
@@ -15044,6 +15044,17 @@ CFG.shop.skin={hours:24, slots:[0.5,0.4,0.3], qty:[1,3]};   // 每 24 小时刷�
 // 0.12.5（代理 H 加，用户定名字；碎片数、单价按红色英雄 20 / 150，样子描述、特效配色 Claude 定：青蓝的源能光）
 CFG.skins.aisArmor={hero:'ais', name:'源能装甲', frag:20, gold:150, spr:'aisArmor', desc:'一身厚重的源能动力装甲，肩甲和胸口嵌着发光的青色能量核心，手持源能长枪',
   fx:{tint:'#2ab8f0', tint2:'#c8f4ff', split:0.7}};
+
+// ---------- 0.12.5（用户定）英雄之魄改成「培养值」：首领不再按号位随机掉英雄之魄（机制 game/soul_pt.js）----------
+//   diff：每轮结束（打完第 R、2R……波，R = 这张图一轮几波；无尽同样）给的培养值，全部给出战前选的「培养英雄」（没选 = 1 号位）；简单 3 是 Claude 定，其余用户采用 Claude 的方案
+//   cost：每 1 个英雄之魄要多少培养值（按这位英雄的品质）；没攒满的留着，下一局接着攒
+//   dbl：每轮翻倍（丰收）的概率；cap / capK：每日软上限——当天累计的前 cap[0] 全额、到 cap[1] 之前 × capK[1]、之后 × capK[2]（按翻倍前的数算）
+//   剧情、入侵战、扩张战不给（同皮肤碎片）
+CFG.soulPt={diff:{easy:3, normal:4, hard:6, nightmare:8, inferno:10, abyss:12},
+  cost:{white:2, green:3, blue:4, purple:5, gold:6, red:8, ancient:10},
+  dbl:0.1, cap:[300,600], capK:[1,0.5,0.25]};
+// 来源地图的专属英雄（soulDrop.map）：每轮结束固定给几个英雄之魄（用户定：困难 1、噩梦 1.5、炼狱 2、深渊 2.5；小数攒着），不再按概率；仍按 soulDrop.minDiff、dayCap
+CFG.soulSrc={easy:0, normal:0, hard:1, nightmare:1.5, inferno:2, abyss:2.5};
 
 // ---------- v0.9.5 地区物资图标的序号（tools/worldmap/gen_wares.py 生成，别手改；图在 art/wares/icons.png，build.py 内嵌成 WARE_IMG）----------
 CFG.wareIcon={oak:0, ironOre:1, linen:2, boarHide:3, amber:4, blightResin:5, jungleWood:6, yellowSand:7, hemp:8, snowWolfHide:9, snowGold:10, queenSting:11, camelHide:12, cypress:13, steelIngot:14, templeLinen:15, sealHide:16, holySilver:17, pharaohGold:18, frostCore:19, brassGear:20, spiritWood:21, bloodSteel:22, robeSilk:23, shadeHide:24, blightWater:25, shadeSand:26, elemEssence:27, saltpeter:28, peachWood:29, lavaIron:30, canvas:31, nightWolfHide:32, shadeStone:33, arcaneCore:34, dragonScale:35, cinnabar:36, pearl:37, bogWood:38, redIron:39, mirageSilk:40, seaBeastHide:41, boilerBrass:42, bannerSilk:43, obsidianRelic:44, mirageGlass:45, mammothTusk:46, whaleBone:47, frogVenom:48, eagleFeather:49, cryptEbony:50, netherIron:51, shroud:52, boneScaleHide:53, letheWater:54, tidePearl:55, warGodBronze:56, floatStone:57, xuanSteel:58, ghostLamp:59, abyssEmber:60, iceThorn:61, bloodEbony:62, darkSilver:63, crimsonVelvet:64, batHide:65, bloodChalice:66, sarira:67, holyKey:68, tamahagane:69, blPeachWood:70, blJadeOre:71, blSharkGauze:72, blDeerHide:73, blJadeDew:74, pgCloth0:75, pgOre0:76, pgHide0:77, pgWood0:78, pgCloth1:79, pgOre1:80, pgHide1:81, pgWood1:82, pgCloth2:83, pgOre2:84, pgHide2:85, pgWood2:86, pgCloth3:87, pgOre3:88, pgHide3:89, pgWood3:90, pgCloth4:91, pgOre4:92, pgHide4:93, pgWood4:94, pgCloth5:95, pgOre5:96, pgHide5:97, pgWood5:98, pgCloth6:99, pgOre6:100, pgHide6:101, pgWood6:102, pgCloth7:103, pgOre7:104, pgHide7:105, pgWood7:106, pgCloth8:107, pgOre8:108, pgHide8:109, pgWood8:110, obSteel:111, nbmKumis:112, ynmCore:113};
@@ -22596,7 +22607,8 @@ obMap obFdn
 drSh
 esN esAt esVer esR
 esOn hkL esTr esDR ynKDR
-ynm`.trim().split(/\s+/);   // stDrF：0.12.2 德拉贡传（game/story），tools/perfcheck.py 查出来漏登记的；esN esAt esVer esR：代理 ES 加，亡灵阵营的建筑（structs/estruct）；ynm：0.12.5 代理 M 加，源能王城的进攻战（maps/ynm_city）；esOn hkL esTr esDR ynKDR：0.12.5 代理 K 加（骇入、亡灵建筑）
+ynm
+soulTgt soulPt soulPtRaw soulDbl soulSrcF`.trim().split(/\s+/);   // stDrF：0.12.2 德拉贡传（game/story），tools/perfcheck.py 查出来漏登记的；esN esAt esVer esR：代理 ES 加，亡灵阵营的建筑（structs/estruct）；ynm：0.12.5 代理 M 加，源能王城的进攻战（maps/ynm_city）；esOn hkL esTr esDR ynKDR：0.12.5 代理 K 加（骇入、亡灵建筑）
 const G_NUM='time tick wave prepId kills legionSeq corpses waveT flowT flowVer structVer navVer flowCool sdistVer visT night shake dayIdx flashT tA wA tunnelN tombN lowT oAsk oBupo mcP gold gdT sqT frT drumT bfT esN esVer'.split(' ');   // P2 加（0.12.2d）gold gdT sqT frT drumT bfT：每帧 / 每次击杀都写的数字（原来先装 undefined，每写一次小数都新建一个数字对象）
 const GState=shapeCtor(G_KEYS,G_NUM);
 shapeWarm(GState,G_KEYS,G_NUM);   // P2 加（0.12.2d 性能）：预先写宽，见 core/shape.js 的 shapeWarm / shapeWarmAll
@@ -67231,7 +67243,7 @@ function newGame(opts){if(typeof pickReset==='function')pickReset();
   {const md=CFG.maps[opts.map]||CFG.maps.wild,sz=md.size||64;const own=opts.stMap&&stMapOwn(opts.map);if(opts.stMap&&!own)setMapSize(CFG.settlement.mapSize,CFG.settlement.mapSize);else setMapSize(md.w||sz,md.h||sz);if(md.center&&(!opts.stMap||own)){const[cx,cy]=md.center;BASE_TX=cx-1;BASE_TY=cy-1;TERR_CX=cx;TERR_CY=cy}}   // v0.5.0 地图大小；center：v0.6.0 主堡不在正中（铁血要塞在南边）
   pm=zeroMods(PM_KEYS);em=zeroMods(EM_KEYS);eReset();ptClear();dsReset();   // dsReset：v0.8.13 数据详情
   TM=fastObj(Object.assign(techMods(true),opts.tech||techMods(opts.noTech)));pm.reroll=TM.rerollStart||0;   // rerollStart：v0.8.24 科技「运筹帷幄」初始刷新次数
-  G=Object.assign(new GState(),{seed,mode:MODE,diff:DIFF.id,map:CFG.maps[opts.map]?opts.map:'wild',pickN:{},epickN:{},pmRaw:{},emRaw:{},seenF:{},seen:{},vaultDone:false,loot:[],souls:{},skinFrag:{},mats:{},time:0,tick:0,gold:Math.round((DIFF.startCopper||CFG.run.startCopper)*(1+TM.startCopper)+(TM.startFlat||0)),tech:TM,btech:opts.btech||(opts.noTech?{}:btSnapshot()),expand:opts.expand??null,expandR:opts.expand!=null?(opts.expandR||'wild'):null,invade:opts.invade||null,story:opts.story||null,wave:0,phase:'prep',prepId:1,kills:0,picked:[],epicked:[],
+  G=Object.assign(new GState(),{seed,mode:MODE,diff:DIFF.id,map:CFG.maps[opts.map]?opts.map:'wild',pickN:{},epickN:{},pmRaw:{},emRaw:{},seenF:{},seen:{},vaultDone:false,loot:[],souls:{},soulTgt:'',soulPt:0,soulPtRaw:0,soulDbl:0,soulSrcF:{},skinFrag:{},mats:{},time:0,tick:0,gold:Math.round((DIFF.startCopper||CFG.run.startCopper)*(1+TM.startCopper)+(TM.startFlat||0)),tech:TM,btech:opts.btech||(opts.noTech?{}:btSnapshot()),expand:opts.expand??null,expandR:opts.expand!=null?(opts.expandR||'wild'):null,invade:opts.invade||null,story:opts.story||null,wave:0,phase:'prep',prepId:1,kills:0,picked:[],epicked:[],
     terrain:new Uint8Array(NT),structAt:new Array(NT).fill(null),trapAt:new Array(NT).fill(null),dist:new Float32Array(NT),sdist:new Uint8Array(NT),
     structs:[],traps:[],soldiers:[],proj:[],eproj:[],zones:[],fx:[],miasma:[],jret:[],javs:[],trees:[],spawns:[],friends:[],legions:[],legionSeq:0,corpses:0,bosses:[],hotS:null,
     queue:[],waveT:0,nextPlan:null,lastPlan:null,curSides:[],flowDirty:true,flowT:0,flowVer:0,structVer:1,navVer:0,flowCool:0,sdistVer:0,visT:0,visDirty:true,night:0,shake:0,dayIdx:0,weather:'sunny',flashT:0,boltT:null,tA:0,wA:0,cleared:[],
@@ -67240,7 +67252,7 @@ function newGame(opts){if(typeof pickReset==='function')pickReset();
     total:MODE==='regular'?(opts.total||regWavesOf(DIFF,opts.map)):Infinity,stMap:!!opts.stMap,oathOn:!!opts.oath,oaths:[],oAsk:-1,oBupo:0,prepEvOn:!!opts.prepEv,mcP:0,mc:null,mcOwn:[],mcN:{},pots:{},wares:{}});   // GState：PF 加（v0.11.2）先按字段表 core/gshape 建好全部字段（undefined），再填字面量的值   // prepEvOn：v0.9.4 准备阶段事件（商人，game/merchant094）   // oathOn：v0.9.4 誓约（出征设置的开关，game/oath094）
   {const t=mapTierOf(G.map),C=CFG.combat,dt=CFG.diffTier&&CFG.diffTier[DIFF.id];G.ePenB=((C.ePenTier&&C.ePenTier[t])||0)*((C.ePenDiff&&C.ePenDiff[DIFF.id])||1);G.ePenD=(C.ePenDiff&&C.ePenDiff[DIFF.id])||1;G.eTough=C.regTough[t]||100;G.eDefl=C.regDefl[t]||0;G.eDflD=null;G.eDflE=null;G.dHp=dt?dt.hp[t]:DIFF.stat;G.dDmg=dt?dt.dmg[t]:DIFF.stat}   // dHp / dDmg：v0.8.14 难度倍率按地区阶（CFG.diffTier，数值第二轮）
   G.olv=opts.olv||olvSnap();G.expPool=opts.expPool||0;G.usedB=opts.usedB||{};   // v0.8.14 局外等级快照、这一局的经验池、用过的建筑种类（game/olv）   // v0.8.14 亡灵的韧性、偏斜按地区阶（engine/enemy.dealE）
-  postVer=-1;POSTS=[];
+  postVer=-1;POSTS=[];soulPtInit();   // soulPtInit：0.12.5 培养英雄（game/soul_pt）
   // 出战阵容：1 号开局，2 号主堡 Lv3 加入，3 号主堡 Lv5 加入
   G.lineup=(opts.heroes||(opts.hero?[opts.hero]:currentLineup())).filter(Boolean).slice(0,24);G.heroSpec=G.lineup[0];   // v0.6.02 修复：原来这里截到 3 + 英雄支援，科技「城堡加固」II 给的 5 号位从来没带进局内（主堡 Lv7 也不上阵）；currentLineup 已经按 lineupSize 截好；   // 出战阵容最多 3 位；存档里可能还有「英雄动员」召来的（called）
   hhLineFix();   // 0.11.4 代理hh 加：1 号位不能是黄虎（heroes/hh_huanghu）
@@ -67688,7 +67700,7 @@ function saveRun(){
     for(let i_18=0,a_18=G.structs;i_18<a_18.length;i_18++){const s=a_18[i_18];if(s.type==='keep'||s.temp)continue;sidx.set(s,structs.length);structs.push({type:s.type,tx:s.tx,ty:s.ty,level:s.level,xlv:s.xlv||undefined,hp:s.hp,invested:s.invested,unit:s.unit,mode:s.mode,cmd:s.cmd||undefined,locked:s.locked,ul:s.uLock?1:undefined,pid:s.pid,tgt:s.tgt,cont:s.cont,tfK:s.tfK||undefined,ydvM:s.ydvM||undefined,nu:s.noUpg?1:undefined,icM:s.icMax||undefined,icO:s.icOwner&&!s.icOwner.dead?s.icOwner:undefined})}   // nu：v0.10.0 不能升级（玄钢山城废墟的木城墙）；icM / icO：v0.10.2 永冻冰墙的生命上限、属于哪座塔（下一行换成下标）   // ydvM：0.12.5 第二轮代理 T，源能装置的模式
     for(const r of structs)if(r.icO&&typeof r.icO==='object'){const k=sidx.get(r.icO);r.icO=k>=0?k:undefined}
     const data={v:5,pv:1,seed:G.seed,RS,mode:MODE,diff:DIFF.id,wave:G.wave,gold:G.gold,kills:G.kills,kE:G.kE||0,kB:G.kB||0,picked:G.picked,epicked:G.epicked,pm,em,pmRaw:G.pmRaw,emRaw:G.emRaw,seen:G.seen,seenF:G.seenF,ds:DSK,heroCmd:G.heroCmd||{},globalMode:G.globalMode,towerMode:G.towerMode,heroMode:G.heroMode,heroModes:G.heroModes,autoNext:G.autoNext,meta:G.meta,
-      prepId:G.prepId,btech:G.btech,olv:G.olv,expPool:G.expPool,usedB:G.usedB,map:G.map,weather:G.weather,cleared:G.cleared,pickN:G.pickN,epickN:G.epickN,loot:G.loot,souls:G.souls,skinFrag:G.skinFrag,mats:G.mats,heroSpec:G.heroSpec,lineup:G.lineup,twoP:G.twoP,loadout:G.loadout,tech:G.tech,total:G.total<1e9?G.total:0,expand:G.expand,expandR:G.expandR,
+      prepId:G.prepId,btech:G.btech,olv:G.olv,expPool:G.expPool,usedB:G.usedB,map:G.map,weather:G.weather,cleared:G.cleared,pickN:G.pickN,epickN:G.epickN,loot:G.loot,souls:G.souls,soulTgt:G.soulTgt,soulPt:G.soulPt,soulPtRaw:G.soulPtRaw,soulDbl:G.soulDbl,soulSrcF:G.soulSrcF,skinFrag:G.skinFrag,mats:G.mats,heroSpec:G.heroSpec,lineup:G.lineup,twoP:G.twoP,loadout:G.loadout,tech:G.tech,total:G.total<1e9?G.total:0,expand:G.expand,expandR:G.expandR,
       elites:elSave(),heroes:G.heroes.map(h=>({slot:h.slot,hp:h.dead?h.maxHp:h.hp,x:h.dead?G.base.x:h.x,y:h.dead?G.base.y+20:h.y,wi:h.wi,ai:h.ai,ctl:h.ctl,layer:h.dead?0:h.layer,dead:h.dead?1:0,rs:h.dead?Math.round(h.respawn*10)/10:0,js:h.dead?0:Math.round(Math.min(h.jsHp||0,h.shieldHp||0)),hs:!h.dead&&h.hh2Sb&&h.jsHp>0?[h.hh2SW].concat(h.hh2Sb.map(Math.round)):0,el:h.elem||undefined,dr:wattDroneN(h)||undefined,cv:(c=>c&&c[0]+c[1]>0?c:undefined)(alCvSave(h))})),   // cv：v0.9.0 阿里巴巴的驼队几人（读档时重新召）   // dr：v0.8.4 瓦特跟着的无人机几架（读档时重新放出来）   // el：v0.6.02 艾琳当前的元素
       banRew:G.banRew?1:0,   // v0.7.0 莉莲、冷参战过
       dgAsked:G.dgAsked?1:0,tun:G.zones.filter(z=>z.k==='h7tun'&&!z.dead&&z.h).map(z=>({s:z.h.slot,m:z.m})),   // v0.7.0 修复：龙之贪婪问过了、格拉挖的地道，读档后还在
@@ -67727,7 +67739,7 @@ function loadRun(d){
   Object.assign(pm,d.pm);Object.assign(em,d.em);G.seen=d.seen||{};G.seenF=d.seenF||{};if(d.ds&&typeof d.ds==='object'){DSK=Object.create(null);for(const k in d.ds){const r=d.ds[k];if(r&&r.k)DSK[k]=r}}   // seenF：v0.8.23 我方受到过的伤害种类（抗性药水卡）   // ds：v0.8.24 修——读档后「数据详情」清空了：存档带上这一局的数据详情（按键记的合计；DSM 是单位 → 记录的缓存，读档后按键重新挂上）   // P3 改：读档填进 newGame 建好的 pm / em（原来 fastObj 重建一份，理由同 applyCard）
   if(d.pmRaw&&typeof d.pmRaw==='object'){G.pmRaw=d.pmRaw;G.emRaw=d.emRaw||{}}else{G.pmRaw=dimMigrate(pm);G.emRaw=dimMigrate(em)}   // v0.8.22 卡牌折算：老存档的合计当成卡面合计再折算
   G.weather=WX[d.weather]?d.weather:'sunny';G.dayIdx=dayIdxFor(d.wave+1);envApply();
-  Object.assign(G,{heroCmd:d.heroCmd&&typeof d.heroCmd==='object'?d.heroCmd:{},wave:d.wave,gold:d.gold,kills:d.kills,kE:d.kE||0,kB:d.kB||0,picked:d.picked||[],epicked:d.epicked||[],globalMode:d.globalMode||'guard',towerMode:TWR_NAMES[d.towerMode]?d.towerMode:'free',heroMode:d.heroMode||(d.globalMode&&d.globalMode!=='guard'?'sortie':'guard'),heroModes:d.heroModes||{},autoNext:!!d.autoNext,meta:d.meta||G.meta,prepId:d.prepId||1,pickN:d.pickN||{},epickN:d.epickN||{},loot:d.loot||[],souls:d.souls||{},skinFrag:d.skinFrag||{},mats:d.mats||{}});
+  Object.assign(G,{heroCmd:d.heroCmd&&typeof d.heroCmd==='object'?d.heroCmd:{},wave:d.wave,gold:d.gold,kills:d.kills,kE:d.kE||0,kB:d.kB||0,picked:d.picked||[],epicked:d.epicked||[],globalMode:d.globalMode||'guard',towerMode:TWR_NAMES[d.towerMode]?d.towerMode:'free',heroMode:d.heroMode||(d.globalMode&&d.globalMode!=='guard'?'sortie':'guard'),heroModes:d.heroModes||{},autoNext:!!d.autoNext,meta:d.meta||G.meta,prepId:d.prepId||1,pickN:d.pickN||{},epickN:d.epickN||{},loot:d.loot||[],souls:d.souls||{},soulTgt:typeof d.soulTgt==='string'?d.soulTgt:G.soulTgt,soulPt:+d.soulPt||0,soulPtRaw:+d.soulPtRaw||0,soulDbl:d.soulDbl|0,soulSrcF:d.soulSrcF&&typeof d.soulSrcF==='object'?d.soulSrcF:{},skinFrag:d.skinFrag||{},mats:d.mats||{}});
   const list=[];   // v0.6.02 存档里有已经不存在的建筑 / 陷阱种类就跳过（原来读档直接报错）；list 占位，士兵的兵营下标不错位
   for(const r of d.structs){if(r&&r.fu&&(r.type==='wall'||r.type==='gate'))r.type=r.type==='gate'?'taoGate':'taoWall';   // v0.7.3 老存档：道观废墟带标记的普通城墙 → 符墙
     if(!r||!BDEF[r.type]){list.push(null);continue}const s=makeStruct(r.type,r.tx,r.ty);s.level=r.level;s.xlv=r.xlv>0?r.xlv|0:0;s.maxHp=structMax(s);s.def=structDef(s);s.hp=Math.min(s.maxHp*1.2,r.hp);s.invested=r.invested;s.pid=r.pid||0;if(r.nu)s.noUpg=1;
@@ -68624,7 +68636,7 @@ function goldDaySum(){const ms=Object.keys(CFG.maps).filter(m=>mapOpen(m)),dm=go
 // —— 结算 ——
 function awardMeta(win,settle){for(const k in G.souls||{})if(!CFG.heroes[k])delete G.souls[k];if(META.souls)for(const k in META.souls)if(!CFG.heroes[k])delete META.souls[k];   // 0.12.0 修复：清掉不是英雄的英雄之魄（老版本精英抽到的）
     // settle：无尽「直接结算」（准备阶段结算 = 这一波也算击退）
-  const ban=!!G.banRew;if(ban){const m=CFG.run.noRewardMul,h=v=>Math.floor((v||0)*m);for(const k in G.meta)G.meta[k]=h(G.meta[k]);for(const k in G.souls)G.souls[k]=h(G.souls[k]);for(const k in G.skinFrag||{})G.skinFrag[k]=h(G.skinFrag[k]);for(const k in G.mats||{})G.mats[k]=h(G.mats[k]);G.loot=G.loot.filter((_,i)=>i%2===1)}   // v0.7.0（用户定）莉莲、冷参战过：不计通关记录；v0.7.7（用户定）奖励由 0 改成减半（noRewardMul；装备隔一件留一件）
+  const ban=!!G.banRew;if(ban){const m=CFG.run.noRewardMul,h=v=>Math.floor((v||0)*m);for(const k in G.meta)G.meta[k]=h(G.meta[k]);for(const k in G.souls)G.souls[k]=h(G.souls[k]);G.soulPt=Math.floor((G.soulPt||0)*m);for(const k in G.skinFrag||{})G.skinFrag[k]=h(G.skinFrag[k]);for(const k in G.mats||{})G.mats[k]=h(G.mats[k]);G.loot=G.loot.filter((_,i)=>i%2===1)}   // v0.7.0（用户定）莉莲、冷参战过：不计通关记录；v0.7.7（用户定）奖励由 0 改成减半（noRewardMul；装备隔一件留一件）
   const tr=heroPassive('treasure')+hhRes(),got={banned:ban};   // hhRes：0.11.4 代理hh 加，黄虎「筹万物」
   for(const k in G.meta)got[k]=Math.round(G.meta[k]*(k==='银币'||k==='建材'?1+pm.scav:k==='科研点'||k==='设计点'?1+pm.inspire:1)*(k==='金币'?1:1+tr));   // 卡「拾荒搜刮」「科研灵感」；tr：v0.4.2 商人「搜山检海」
   {const td=alTrade();if(td){got.trade=td;for(const k of['银币','建材','科研点','设计点'])if(td[k])got[k]=(got[k]||0)+td[k]}}   // v0.9.0 阿里巴巴「贸易天平」：剩下的铜币换资源（每种总量最多基础结算奖励的 300%）
@@ -68633,7 +68645,8 @@ function awardMeta(win,settle){for(const k in G.souls||{})if(!CFG.heroes[k])dele
   {const ex=Math.round(waveRewSum(cleared)*olvMapExp(G.map||'wild')*(DIFF.reward||1)*(ban?CFG.run.noRewardMul:1));   // v0.10.2 每波 × waveRewK（方案 D）
   got.exp=ex;if(ex>0)olvPend(ex,Object.keys(G.usedB||{}),got.heroes,G.map||'wild',elOlvKeys())}   // v0.8.18（用户定）经验 = 波数 × 结算倍率 × 地图基础经验，只能升到这张地图那一阶的上限   // v0.8.14 局外经验：结算时玩家自己分（game/olv、ui/menus.showResult）
   if(!META.heroUse)META.heroUse={};for(const id of got.heroes)META.heroUse[advBase(id)]=(META.heroUse[advBase(id)]||0)+1;   // v0.7.3 进阶形态出战算原版的次数   // v0.3.3 英雄使用次数（英雄列表按它排序）
-  for(const k in got)if(k in META.wallet)META.wallet[k]+=got[k]||0;for(const id in got.soulMap)META.souls[id]=(META.souls[id]||0)+got.soulMap[id];{const SK=skinState();got.skinFrag={};for(const k in G.skinFrag||{})if(G.skinFrag[k]>0&&CFG.skins[k]){SK.frag[k]=(SK.frag[k]||0)+G.skinFrag[k];got.skinFrag[k]=G.skinFrag[k]}}for(const k in got.mats)META.mats[k]=(META.mats[k]||0)+got.mats[k];if(!META.wares)META.wares={};for(const k in got.wares)META.wares[k]=(META.wares[k]||0)+got.wares[k];META.runs=(META.runs||0)+1;   // wares：v0.9.4 商人那里买的地区物资
+  for(const k in got)if(k in META.wallet)META.wallet[k]+=got[k]||0;for(const id in got.soulMap)META.souls[id]=(META.souls[id]||0)+got.soulMap[id];got.soulPt=soulPtSettle();   // 0.12.5 培养值（game/soul_pt）
+  {const SK=skinState();got.skinFrag={};for(const k in G.skinFrag||{})if(G.skinFrag[k]>0&&CFG.skins[k]){SK.frag[k]=(SK.frag[k]||0)+G.skinFrag[k];got.skinFrag[k]=G.skinFrag[k]}}for(const k in got.mats)META.mats[k]=(META.mats[k]||0)+got.mats[k];if(!META.wares)META.wares={};for(const k in got.wares)META.wares[k]=(META.wares[k]||0)+got.wares[k];META.runs=(META.runs||0)+1;   // wares：v0.9.4 商人那里买的地区物资
   v5fEarnGot(got);   // 0.12.5 代理 F：合计赚取资源（game/v5f_rec）
   try{elAward(got)}catch(e){console.error('elAward',e);dbgErr('elAward: '+((e&&e.message)||e),'awardMeta',e&&e.stack);got.elErr=String((e&&e.message)||e)}   // v0.11.4 精英：战报、功勋（game/el_battle）；0.12.0 出错也不挡结算（用户报：最后一波打完不结算）
   if(G.elPill&&META.el){for(const k in G.elPill)elPillAdd(k,G.elPill[k]);got.elPill=Object.assign({},G.elPill)}   // 0.12.0 丹药入库
@@ -69005,14 +69018,13 @@ function soulPick(L){if(!L.length)return null;const w=soulSlotW(L.length);let r=
 function onBossKill(rb){const D=CFG.drops,night=diffAtLeast(D.nightmare),eq=rb?D.randBoss.gear:1,gl=k=>{if(!rb||Math.random()<eq)addLoot(k)};   // rb：v0.6.7 两轮后随机出的首领——装备、打造书各按 ×0.25 的概率掉，不掉英雄之魄
   gl('w');gl('b');if(night){gl('w');gl('b')}matDrop('boss');
   // 按号位权重抽一位上阵英雄，给他的英雄之魄（v0.8.11）
-  if(!rb){const n=soulRoll(),lucky=soulPick(G.heroes.filter(h=>!h.npc&&!h.elite&&CFG.heroes[h.id]));if(lucky){G.souls[lucky.id]=(G.souls[lucky.id]||0)+n;sayT(`掉落：${lucky.d.name}的英雄之魄 ×${n}`)}}   // v0.7.3 进阶形态出战掉进阶版的英雄之魄（两种各算各的）   // elite：0.12.0 修复——精英不掉英雄之魄（原来会抽到精英，记成「el+编号」的英雄之魄，最后一波结算时找不到这位英雄报错、卡在结算前）
+  // 0.12.5（用户定）首领不再按号位掉英雄之魄，改成每轮结束给培养英雄培养值（game/soul_pt.soulRoundAward）；soulRoll / soulPick 留着没人调   // v0.7.3 进阶形态出战掉进阶版的英雄之魄（两种各算各的）   // elite：0.12.0 修复——精英不掉英雄之魄（原来会抽到精英，记成「el+编号」的英雄之魄，最后一波结算时找不到这位英雄报错、卡在结算前）
   G.meta.金币=(G.meta.金币||0)+D.bossGold*DIFF.reward*(night?2:1);   // v0.8.18 金币按结算倍率
   if(G.tmp&&Math.random()<CFG.temple.pearl.p*(DIFF.drop||DIFF.reward)*dropMul()*eq)addLoot('w','nightPearl');   // v0.5.0 沙漠神殿首领：夜明珠
   if(!rb)elPillDrop();   // 0.12.0 丹药（game/el_mar）
   {const BI=D.bossItems&&D.bossItems[G.map];if(BI&&Math.random()<BI.p*(DIFF.drop||DIFF.reward)*dropMul()*eq)addLoot('w',BI.w)}   // v0.5.9 地图首领专属装备（腐化之地：酸蚀瓶）
   // 招募型英雄的专属来源（荒野困难+ → 夜鸦；腐化之地困难+ → 绝命毒师）
-  if(!rb)for(const id of HIDS){const S=soulSrcs(id).find(s=>s.map===G.map);if(!S||!diffAtLeast(S.minDiff||'normal')||Math.random()>=S.chance*dropMul())continue;
-    const m=soulRoll();G.souls[id]=(G.souls[id]||0)+m;sayT(`掉落：${CFG.heroes[id].name}的英雄之魄 ×${m}`)}
+  // 来源地图的专属英雄：0.12.5（用户定）改成每轮结束固定给（game/soul_pt，CFG.soulSrc），不再按 soulDrop.chance 判定
 }   // 皮肤碎片：0.12.5（用户定）改成每轮结束时掉（game/skins.skinRoundDrop），首领不再掉
 // 结算：把局内战利品放进背包（工艺这时才定）
 function materializeLoot(){return(G.loot||[]).map(l=>addGear(makeGear(l.base,{book:l.kind==='b',mp:l.mp})))}
@@ -69368,6 +69380,38 @@ function skinShopRoll(force){const S=shopState(),C=CFG.shop.skin,slot=shopSlot(C
   S.skin={slot,offers,pn:P.length};saveMeta();return S.skin}
 function skinShopBuy(i,slot){const L=skinShopRoll();if(slot!==undefined&&L.slot!==slot)return'商品刚刚刷新了，请重新选';const o=L.offers[i];if(!o||o.done)return'已经买过了';
   if((META.wallet.金币||0)<o.price)return`金币不够(需要 ${o.price})`;META.wallet.金币-=o.price;const S=skinState();S.frag[o.k]=(S.frag[o.k]||0)+o.q;o.done=true;saveMeta();return null}
+
+// ---------- 0.12.5（用户定）英雄之魄培养值、来源地图固定给（数据 data/soul_pt.js）----------
+// 局内：G.soulTgt 培养英雄（开局定，出战前在阵容里选 META.soulTgt，不在阵容里 = 1 号位）、G.soulPt 这局拿到的培养值（已经过每日软上限）、G.soulPtRaw 计入每日上限的量、G.soulDbl 丰收几次、
+//   G.soulSrcF 来源英雄的小数部分（从 META.soulSrcF 接着攒，整数部分随时进 G.souls）
+// 结算（game/meta.awardMeta → soulPtSettle）：培养值并进 META.soulPts[英雄]，满 cost 换 1 个英雄之魄；META.soulPtDay = {d 哪天, n 当天累计}；META.soulSrcF 存回小数
+function soulPtDay(){const d=dayKey();if(!META.soulPtDay||META.soulPtDay.d!==d)META.soulPtDay={d,n:0};return META.soulPtDay}
+// 当天已经算了 used，再来 v（翻倍前）：软上限后实际给多少
+function soulPtCapped(used,v){const C=CFG.soulPt,c0=C.cap[0],c1=C.cap[1],K=C.capK;let out=0,u=used,left=v;
+  for(const[hi,k]of[[c0,K[0]],[c1,K[1]],[Infinity,K[2]]]){if(left<=0)break;const room=Math.max(0,hi-u),t=Math.min(room,left);out+=t*k;u+=t;left-=t}return out}
+const soulPtCost=id=>CFG.soulPt.cost[(CFG.heroes[id]||{}).quality]||CFG.soulPt.cost.red;
+// 开局：定培养英雄（newGame 里调）
+function soulPtInit(){const t=soulTgtOf();G.soulTgt=t&&CFG.heroes[t]?currentHeroSpec(t).id:'';G.soulPt=0;G.soulPtRaw=0;G.soulDbl=0;G.soulSrcF={}}
+// 一轮结束
+function soulRoundAward(){if(!G||!G.map||G.story||G.invade||G.expand!=null)return;
+  const C=CFG.soulPt,base=C.diff[DIFF&&DIFF.id]||0;
+  if(base>0&&G.soulTgt&&CFG.heroes[G.soulTgt]){let v=soulPtCapped(soulPtDay().n+(G.soulPtRaw||0),base);G.soulPtRaw=(G.soulPtRaw||0)+base;
+    const dbl=Math.random()<C.dbl;if(dbl){v*=2;G.soulDbl=(G.soulDbl||0)+1}v=Math.round(v*10)/10;G.soulPt=(G.soulPt||0)+v;
+    if(v>0)sayT(`${dbl?'丰收！':''}${CFG.heroes[G.soulTgt].name}的培养值 +${v}`)}
+  const s=CFG.soulSrc[DIFF&&DIFF.id]||0;if(s<=0)return;if(!G.soulSrcF)G.soulSrcF={};
+  for(const id of HIDS){const S=soulSrcs(id).find(x=>x.map===G.map);if(!S||!diffAtLeast(S.minDiff||'normal'))continue;
+    const f=(G.soulSrcF[id]!=null?G.soulSrcF[id]:((META.soulSrcF||{})[id]||0))+s,n=Math.floor(f+1e-9);G.soulSrcF[id]=Math.round((f-n)*100)/100;
+    if(n>0){G.souls[id]=(G.souls[id]||0)+n;sayT(`掉落：${CFG.heroes[id].name}的英雄之魄 ×${n}`)}}}
+feat('soulPt',{hooks:{waveEnd:n=>{if(skinRoundEnd(n))soulRoundAward()}}});
+// 结算：返回给结算画面的 {id, pt 这局, n 换成几个, have 还剩, c 每个要多少, dbl}
+function soulPtSettle(){if(!META.soulSrcF)META.soulSrcF={};for(const id in G.soulSrcF||{})META.soulSrcF[id]=G.soulSrcF[id];
+  const D=soulPtDay();D.n+=G.soulPtRaw||0;const id=G.soulTgt,pt=G.soulPt||0;if(!id||!CFG.heroes[id]||!(pt>0))return null;
+  if(!META.soulPts)META.soulPts={};const c=soulPtCost(id);let have=(META.soulPts[id]||0)+pt;const n=Math.floor(have/c+1e-9);have=Math.round((have-n*c)*10)/10;META.soulPts[id]=have;
+  if(n>0)META.souls[id]=(META.souls[id]||0)+n;return{id,pt,n,have,c,dbl:G.soulDbl||0}}
+// 阵容里显示：这位的培养进度
+function soulPtTxt(id){const f=currentHeroSpec(id).id,c=soulPtCost(f),h=(META.soulPts||{})[f]||0;return`培养值 ${h}/${c}`}
+// 阵容里现在的培养英雄（没选或不在阵容里 = 1 号位）
+const soulTgtOf=()=>{const L=(META.lineup||[]).slice(0,typeof lineupSize==='function'?lineupSize():3);return META.soulTgt&&L.includes(META.soulTgt)?META.soulTgt:L[0]};
 
 // ---------- v0.5.1 日常：每月签到、日常任务（数据见 data/daily.js；界面见 ui/daily.js）----------
 // META.sign = {m:'2026-10', days:[签过的日子], got:{累计档位:1}}；META.daily = {d:dayKey, ref:今天换过几批, tasks:[{kind,cat,map,diff,hero,n,p,r,done}]}
@@ -72980,7 +73024,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.5e',GAME_TAG='测试版',GAME_CODE=185,GAME_BUILD="51dbaf4+",GAME_BUILT=1793395130866,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.5e',GAME_TAG='测试版',GAME_CODE=185,GAME_BUILD="66c8c84+",GAME_BUILT=1793397621803,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -73724,7 +73768,7 @@ function slotJoin(k){const H=CFG.keepLevels.heroes,add=techLv('heroSupT')>0&&tec
 function lineupRows(){return META.lineup.slice(0,lineupSize()).map((id,k)=>{const sp=currentHeroSpec(id),H=CFG.heroes[sp.id];   // sp.id：v0.7.3 进阶形态
   return`<div class="lr"><span class="lk"><b>${k+1}</b>号<small>${slotJoin(k)}</small></span><img alt="" src="${heroIconS(sp.id,3)}">
     <span class="ln"><b>${H.name}</b>${starsHTML(sp.star)}<span class="meta">${sp.weapons.map(w=>`<span style="color:${itemQ(w).color}">${CFG.weapons[w.base].name}${w.enh?' +'+w.enh:''}</span>`).join(' / ')||'徒手'}</span></span>
-    <button class="px" type="button" data-act="lpick" data-v="${k}">换人</button></div>`}).join('')+Array.from({length:Math.max(0,lineupSize()-META.lineup.length)},(_,q)=>{const k=META.lineup.length+q;   // 还没人的位置（刚研究「英雄支援」、招募了新英雄）
+    <span class="row2"><button class="px${soulTgtOf()===id?' on':''}" type="button" data-act="ltgt" data-v="${id}" title="每轮结束的培养值都给这位">${soulTgtOf()===id?'培养中':'培养'}<em>${soulPtTxt(id)}</em></button><button class="px" type="button" data-act="lpick" data-v="${k}">换人</button></span></div>`}).join('')+Array.from({length:Math.max(0,lineupSize()-META.lineup.length)},(_,q)=>{const k=META.lineup.length+q;   // 还没人的位置（刚研究「英雄支援」、招募了新英雄）
     return`<div class="lr empty"><span class="lk"><b>${k+1}</b>号<small>${slotJoin(k)}</small></span><span></span><span class="ln"><b class="meta">(空)</b></span><button class="px" type="button" data-act="lpick" data-v="${k}">选人</button></div>`}).join('')}
 function lineupBox(){return`<div class="box lineup"><h4>出战阵容</h4><p class="meta">主堡升级后陆续上阵；没被玩家操控的英雄由 AI 控制${SET.twoP?'；双人模式：2 号由玩家 2 操控':''}</p>
     <div class="lrs">${lineupRows()}</div>
@@ -73814,7 +73858,7 @@ function mapInfo(k){const M=CFG.maps[k],EN=CFG.enemies,W=Object.entries(M.weathe
   return`<div class="box minfo"><h4>${M.name}<span class="meta">${M.desc}</span></h4>
     <div class="mi"><span>精英</span><b>${M.elites.map(e=>EN[e].name).join('、')}</b></div>${M.minis?`<div class="mi"><span>小首领</span><b>${M.minis.map(e=>EN[e].name).join('、')}：${M.miniNote||`每 ${M.miniEvery||5} 波一位`}</b></div>`:''}<div class="mi"><span>${M.minis?'大首领':'首领'}</span><b>${M.boss.map(e=>EN[e].name).join('、')}${M.round?`：第 ${M.round} 波`:''}</b></div>
     <div class="mi"><span>天气</span><b>${W.map(([w])=>CFG.weather[w].name).join('、')}${M.moveMul?` · 所有单位移速 −${Math.round((1-M.moveMul)*100)}%`:''}</b></div>${M.countMul?`<div class="mi"><span>兵力</span><b>每波亡灵数量 ×${M.countMul}</b></div>`:''}
-    ${hs.length?`<div class="mi"><span>英雄之魄</span><b>${hs.map(id=>CFG.heroes[id].name+'('+CFG.heroes[id].title+')').join('、')}：困难及以上击败首领有概率掉落</b></div>`:''}
+    ${hs.length?`<div class="mi"><span>英雄之魄</span><b>${hs.map(id=>CFG.heroes[id].name+'('+CFG.heroes[id].title+')').join('、')}：困难及以上每轮结束固定掉落(困难 1、噩梦 1.5、炼狱 2、深渊 2.5 个，小数攒着)</b></div>`:''}
     ${BI?`<div class="mi"><span>首领掉落</span><b>${bookDef(BI.w).name}：击败首领有概率掉落</b></div>`:''}</div>`}   // v0.5.9 地图首领专属装备
 // 地图分页：滑动时同步页签；点页签滑过去
 function pagerSync(el){const i=Math.round(el.scrollLeft/Math.max(1,el.clientWidth));sheet.querySelectorAll('.ptabs:not(.rtabs) .px').forEach((b,k)=>b.classList.toggle('on',k===i));tabIntoView(sheet.querySelector('.ptabs:not(.rtabs)'))}
@@ -74155,6 +74199,7 @@ function onSheetClick(e){
   else if(a==='resetno'){resetAsk=false;showSettings()}
   else if(a==='resetok'){const el=$('#resetIn'),t=el?el.value.normalize('NFKC').trim().toUpperCase():'';if(t==='OK')resetAllSaves();else{toast('请在框里输入 OK 再点确认');if(el)el.focus()}}   // 全角「ＯＫ」也认
   else if(a==='lpick')showPicker(+v);
+  else if(a==='ltgt'){META.soulTgt=v;saveMeta();showHub('go')}   // 0.12.5 培养英雄（game/soul_pt）
   else if(a==='hsub'){heroSub=v;eqMsg='';HSK_POP=null;showHub('hero')}
   else if(a==='hform'){toggleForm(v);sfx('pick');toast(`${CFG.heroes[v].name}：出战时用${CFG.heroes[heroForm(v)].name}`);showHub('hero')}   // v0.7.3 进阶形态切换
   else if(a==='hadv'){const r=advanceHero(v);if(r)toast(r);else{sfx('horn');toast(`${CFG.heroes[v].name}进阶为${CFG.heroes[ADV_ID[v]].name}(1★)`)}showHub('hero')}
@@ -74442,7 +74487,7 @@ function showResult(win,got){
     ${got.banned?'<p class="warn">莉莲、冷参战过：这一局不计入通关记录，结算奖励减半</p>':''}${tutResultTip()}${got.autoExp?`<p class="newmap">${got.autoExp}</p>`:''}${(got.newMaps||[]).map(k=>`<p class="newmap">解锁新地图：<b>${CFG.maps[k].name}</b><span class="meta">(出征 → 常规 / 无尽模式里选择)</span></p>`).join('')}${(got.newDesign||[]).map(id=>`<p class="newmap">可以研发新建筑：<b>${BDEF[id].name}</b><span class="meta">(营地 → 建筑，花设计点和银币解锁)</span></p>`).join('')}
     <div class="stats"><div><b>${got.cleared??(win?G.wave:Math.max(0,G.wave-1))}</b><span>击退波次</span></div><div><b>${G.kills}</b><span>击杀</span></div><div><b>${DIFF.name}</b><span>${iv?'入侵战':G.expand!=null?'扩张战':MODE==='regular'?'常规':'无尽'}</span></div></div>
     <div class="rule"></div><p class="meta">结算奖励(×${DIFF.reward})：银币 <b>${got.银币||0}</b> · 建材 <b>${got.建材}</b> · 科研点 <b>${got.科研点}</b> · 设计点 <b>${got.设计点}</b>${got.金币||got.goldCut?` · 金币 <b>${got.金币}</b>(${mapDef().name}今日 ${got.goldDay}${got.goldCut?`，已到上限，少拿 ${got.goldCut}`:''})`:''}${got.trade?`<br>贸易天平(剩余 ${got.trade.g} 铜币)：${['银币','建材','科研点','设计点'].filter(k=>got.trade[k]).map(k=>`${k} +${got.trade[k]}`).join(' · ')}(已算进上面)`:''}</p>
-    <p class="meta">英雄之魄：${Object.keys(got.soulMap||{}).length?Object.entries(got.soulMap).filter(([id])=>CFG.heroes[id]).map(([id,n])=>`${CFG.heroes[id].name} <b>+${n}</b>`).join(' · '):'本局没有击败首领(英雄之魄、金币由首领掉落)'}${got.soulCut?`<br><span class="warn">今日上限(每位英雄在别的地图每天最多 ${CFG.drops.soulDay} 个)：${Object.entries(got.soulCut).filter(([id])=>CFG.heroes[id]).map(([id,n])=>`${CFG.heroes[id].name} 少拿 ${n}`).join('、')}</span>`:''}${Object.keys(got.skinFrag||{}).length?`<br>皮肤碎片：${Object.entries(got.skinFrag).map(([k,n])=>`${CFG.heroes[CFG.skins[k].hero].name}「${CFG.skins[k].name}」 <b>+${n}</b>`).join(' · ')}`:''}</p>
+    <p class="meta">${got.soulPt?`培养值：${CFG.heroes[got.soulPt.id].name} <b>+${got.soulPt.pt}</b>${got.soulPt.dbl?`(丰收 ×${got.soulPt.dbl})`:''}${got.soulPt.n?`，换成英雄之魄 <b>×${got.soulPt.n}</b>`:''}(还攒着 ${got.soulPt.have}/${got.soulPt.c})<br>`:''}英雄之魄：${Object.keys(got.soulMap||{}).length?Object.entries(got.soulMap).filter(([id])=>CFG.heroes[id]).map(([id,n])=>`${CFG.heroes[id].name} <b>+${n}</b>`).join(' · '):'本局没有(培养值每轮结束给培养英雄；来源地图的英雄每轮固定掉)'}${got.soulCut?`<br><span class="warn">今日上限(每位英雄在别的地图每天最多 ${CFG.drops.soulDay} 个)：${Object.entries(got.soulCut).filter(([id])=>CFG.heroes[id]).map(([id,n])=>`${CFG.heroes[id].name} 少拿 ${n}`).join('、')}</span>`:''}${Object.keys(got.skinFrag||{}).length?`<br>皮肤碎片：${Object.entries(got.skinFrag).map(([k,n])=>`${CFG.heroes[CFG.skins[k].hero].name}「${CFG.skins[k].name}」 <b>+${n}</b>`).join(' · ')}`:''}</p>
     ${Object.keys(got.wares||{}).length?`<p class="meta">地区物资：${Object.entries(got.wares).filter(([k])=>CFG.wares.items[k]).map(([k,n])=>`${CFG.wares.items[k].name} <b>+${n}</b>`).join(' · ')}</p>`:''}
     ${Object.keys(got.mats||{}).length?`<p class="meta">强化材料：${Object.entries(got.mats).map(([k,n])=>`${matName(k.replace(/\d+$/,''),+k.replace(/^\D+/,''))} <b>+${n}</b>`).join(' · ')}</p>`:''}
     ${got.drops&&got.drops.length?dropsHTML(got.drops):`<p class="meta">战利品：这次没有掉落(武器、打造书由精英和首领掉落)</p>`}
