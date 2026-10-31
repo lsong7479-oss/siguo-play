@@ -10064,7 +10064,7 @@ Object.assign(CFG.enemies,{
                tdodge:0.3, bldMul:2, lyK:{stun:1}, mix:{slash:1}, note:'龙系。移动速度、攻速极快；闪避 30%(全类型)；攻击会让守军眩晕 1 秒；对建筑伤害 ×2'},
   lyForest:   {name:'自然森龙', tier:3, cls:'inf', lyU:true, lyDrg:true, armor:'plate', hp:18000, def:40, mdef:24, dmg:225, int:1.5, range:0, speed:0.6, dodge:0, aggro:3, bounty:16, cost:12, size:12, noLegion:true,
                lyK:{aura:{r:5, mdr:0.5}}, mix:{blunt:1},
-               note:'龙系。移速较慢，血高防厚；5 格内的龙系单位(含自己)每秒恢复 5% 最大生命(噩梦 6%、炼狱 8%、深渊 10%)并获得 50% 法术减伤(和龙神侍卫的光环不叠加，取高的)'},
+               note:'龙系。移速较慢，血高防厚；5 格内的龙系单位(含自己；首领、小首领除外)每秒恢复 5% 最大生命(噩梦 6%、炼狱 8%、深渊 10%)并获得 50% 法术减伤(和龙神侍卫的光环不叠加，取高的)'},
   lyBlade:    {name:'利刃刀龙', tier:3, cls:'inf', lyU:true, lyDrg:true, lyNoTun:true, hp:15500, def:22, mdef:12, dmg:102, int:0.7, range:0, speed:1.8, dodge:0, aggro:4, bounty:16, cost:12, size:9, noLegion:true,
                lyDodge:{p:0.2}, lyK:{cut:{cur:0.05, bld:0.05}}, mix:{slash:1},
                note:'龙系。移速、攻速高；闪避 20%(法术不能闪)；攻击额外附带目标当前生命 5% 的伤害，打建筑改为 5% 最大生命(主堡不算)。无法使用地道'},
@@ -10086,7 +10086,7 @@ Object.assign(CFG.enemies,{
                  '4 自身伤害 +200%；5 自身减伤 +200%；6 自身移速、攻速 +200%；7 自身生命上限 +200%(群体效果含自己，对首领无效)'},
   lyGuard:    {name:'龙神侍卫', tier:4, cls:'inf', lyU:true, lyDrg:true, lyNoTun:true, armor:'plate', heavy:true, hp:70000, def:50, mdef:40, dmg:160, int:1.5, range:0, speed:0.6, dodge:0, aggro:3.5, bounty:45, cost:24, size:14,
                noLegion:true, lyK:{aura:{r:10, mdr:1}}, guard:{r:5, share:0.9, rank:2}, mix:{blunt:1},
-               note:'精英，龙系，大型。移速较慢，血高防厚；10 格内的龙系单位(含自己)每秒恢复 5% 最大生命(噩梦 6%、炼狱 8%、深渊 10%)并获得 100% 法术减伤(和自然森龙的光环不叠加，取高的)；替 5 格内的其他亡灵承受 90% 伤害。无法使用地道'},
+               note:'精英，龙系，大型。移速较慢，血高防厚；10 格内的龙系单位(含自己；首领、小首领除外)每秒恢复 5% 最大生命(噩梦 6%、炼狱 8%、深渊 10%)并获得 100% 法术减伤(和自然森龙的光环不叠加，取高的)；替 5 格内的其他亡灵承受 90% 伤害。无法使用地道'},
   // —— 盗墓僵尸挖出来的地道口（同冰原「掘墓僵尸」的 tunnel，生命按八阶 Claude 定）——
   lyTunnel:   {name:'地道口', tier:0, tunnel:true, hp:6000, def:20, mdef:10, dmg:0, int:9, range:0, speed:0, dodge:0, aggro:0, bounty:3, cost:0, size:7, heavy:true, noLegion:true, mix:{blunt:1},
                note:'盗墓僵尸挖的地道：入口进、出口出；拆掉任一端，整条地道就塌了'},
@@ -10668,7 +10668,8 @@ Object.assign(CFG.armors,{
                    note:'受到伤害时叠加 2% 减伤，至多 100%，每层各持续 15 秒'},
   lyStormLeather:{name:'迅雷皮铠', type:'leather', def:9.5, dodge:0.07, speed:1, special:true, q:'red', tier:LY_GT, fx:{lybGStormDg:{per:0.01, max:50, t:15}},
                    note:'受到伤害时叠加 1% 闪避，至多 50%，每层各持续 15 秒'},
-  lyRedRobe:     {name:'赤龙法袍', type:'cloth', def:6, dodge:0.04, speed:1, special:true, q:'ancient', tier:LY_GT, fx:{lybGRedRobe:{fire:0.5}},
+  lyRedRobe:     {name:'赤龙法袍', type:'cloth', profFor:['dragonLord'],   // profFor：0.12.6c（用户定）德拉贡穿赤龙法袍系列不算不熟练
+                 def:6, dodge:0.04, speed:1, special:true, q:'ancient', tier:LY_GT, fx:{lybGRedRobe:{fire:0.5}},
                    note:'火焰减伤 +50%(德拉贡改为免疫火焰伤害，并转化为等量的治疗)'},
   lyXinaRobe:    {name:'龙神法袍', type:'cloth', def:6, dodge:0.04, speed:1, special:true, q:'ancient', tier:LY_GT, fx:{lybGXinaRobe:{hp:1}},
                    note:'造成的治疗无视禁疗效果；生命上限 +100%'},
@@ -14851,10 +14852,10 @@ Object.assign(CFG.skills,{
     byStar:{r:[0,1.5,3,5,10], f:[0.15,0.2,0.25,0.35,0.5], ig:[0.1,0.15,0.2,0.25,0.3]},
     desc:p=>`被动：${p.r>0?`自身和半径 ${p.r} 格内的士兵`:'自身'}造成伤害的 ${pc_(p.f)} 转化为神圣伤害(法术)，且无视 ${pc_(p.ig)} 的减伤`},
   // 按住释放：每 tick 秒，自身和半径 r 格内的物理近战士兵各转一圈，对身边 wr 格内的地面亡灵造成自己 AD × k 的伤害；自身另外造成 b(+sad × AD)
-  // 0.12.6c（用户改）自身另外的伤害 100～400 → 125 / 150 / 175 / 200 / 250(+50%AD)；士兵改成各自 AD × sk（25%）；补「命中回盾」：每次转圈打到亡灵，护盾 + 最大生命 × sh，至多 shMax（士兵减半），护盾持续 shT 秒（Claude 定，每次打到刷新）
-  ar3Wind:{name:'战意之风', cd:0, aim:'self', chan:true, req:'melee', tick:0.25, wr:3, sad:0.5, sk:0.25, sh:0.05, shMax:0.5, shSol:0.5, shT:5,
-    byStar:{r:[0,1.5,3,5,10], k:[0.3,0.35,0.4,0.45,0.5], b:[125,150,175,200,250]},
-    desc:p=>`按住时持续施放：${p.r>0?`自身和半径 ${p.r} 格内的物理近战士兵`:'自身'}一起施放旋风斩，每 ${p.tick} 秒对身边 ${p.wr} 格内的亡灵造成伤害：自身 ${pc_(p.k)}AD + ${sv_(p.b,p.sad)}${p.r>0?`，士兵 ${pc_(p.sk)}AD`:''}；每次打到亡灵获得最大生命 ${pc_(p.sh)} 的护盾，至多 ${pc_(p.shMax)}${p.r>0?`(士兵减半)`:''}`},
+  // 0.12.6c（用户改）自身另外的伤害 100～400 → 125 / 150 / 175 / 200 / 250(+50%AD)；士兵和自身一样各自 AD × k（20～30%）；补「命中回盾」：每次转圈打到亡灵，护盾 + 最大生命 × sh，至多 shMax（士兵减半），护盾持续 shT 秒（Claude 定，每次打到刷新）
+  ar3Wind:{name:'战意之风', cd:0, aim:'self', chan:true, req:'melee', tick:0.25, wr:3, sad:0.5, sh:0.05, shMax:0.5, shSol:0.5, shT:5,
+    byStar:{r:[0,1.5,3,5,10], k:[0.2,0.225,0.25,0.275,0.3], b:[125,150,175,200,250]},   // k：0.12.6c（用户改）30～50% → 20 / 22.5 / 25 / 27.5 / 30%，自身和士兵都是这个值
+    desc:p=>`按住时持续施放：${p.r>0?`自身和半径 ${p.r} 格内的物理近战士兵`:'自身'}一起施放旋风斩，每 ${p.tick} 秒对身边 ${p.wr} 格内的亡灵造成 ${pc_(p.k)}AD 伤害，自身另外造成 ${sv_(p.b,p.sad)}；每次打到亡灵获得最大生命 ${pc_(p.sh)} 的护盾，至多 ${pc_(p.shMax)}${p.r>0?`(士兵减半)`:''}`},
   // 准备阶段选一项（只对下一波有效），选过的那一项冷却 cdW 波；j* 正义、f* 公平、g* 守护
   ar3Oath:{name:'胜利誓约', cd:0, aim:'self', cdW:3,
     byStar:{jd:[0.2,0.25,0.3,0.4,0.5], jr:[0.5,0.75,1,1.25,1.5], jk:[0.3,0.35,0.4,0.45,0.5], ff:[0.1,0.15,0.2,0.25,0.3], gd:[0.2,0.25,0.3,0.4,0.5], gv:[1,0.9,0.8,0.65,0.5]},
@@ -14872,10 +14873,10 @@ CFG.heroes.arthur3={name:'联盟共主-亚瑟', title:'骑士', quality:'gold', 
   passiveSk:'ar3Heart',
   skills:['ar3Wind','ar3Oath','ar3Will'],
   stars:[null,
-    {desc:'正义之心：半径 1.5 格、转化 20%、无视 15% 减伤；战意之风：半径 1.5 格、35%AD，自身另外 150(+50%AD)；胜利誓约：正义 +25%、震荡波 0.75 格 35%，公平反弹 15%，守护减伤 +25%、承受 +90%；决死意志：半径 1.5 格、每 1% +0.75%、免死 1.25 秒、持续 3.5 秒'},
-    {desc:'正义之心：半径 3 格、转化 25%、无视 20% 减伤；战意之风：半径 3 格、40%AD，自身另外 225(+50%AD)；胜利誓约：正义 +30%、震荡波 1 格 40%，公平反弹 20%，守护减伤 +30%、承受 +80%；决死意志：半径 3 格、每 1% +1%、免死 1.5 秒、持续 4 秒'},
-    {desc:'正义之心：半径 5 格、转化 35%、无视 25% 减伤；战意之风：半径 5 格、45%AD，自身另外 300(+50%AD)；胜利誓约：正义 +40%、震荡波 1.25 格 45%，公平反弹 25%，守护减伤 +40%、承受 +65%；决死意志：半径 5 格、每 1% +1.25%、免死 1.75 秒、持续 4.5 秒'},
-    {q:true, desc:'【质变 · 王者之誓】正义之心：半径 10 格、转化 50%、无视 30% 减伤；战意之风：半径 10 格、50%AD，自身另外 400(+50%AD)；胜利誓约：正义 +50%、震荡波 1.5 格 50%，公平反弹 30%，守护减伤 +50%、承受 +50%；决死意志：半径 10 格、每 1% +1.5%、免死 2 秒、持续 5 秒'}],
+    {desc:'正义之心：半径 1.5 格、转化 20%、无视 15% 减伤；战意之风：半径 1.5 格、22.5%AD，自身另外 150(+50%AD)；胜利誓约：正义 +25%、震荡波 0.75 格 35%，公平反弹 15%，守护减伤 +25%、承受 +90%；决死意志：半径 1.5 格、每 1% +0.75%、免死 1.25 秒、持续 3.5 秒'},
+    {desc:'正义之心：半径 3 格、转化 25%、无视 20% 减伤；战意之风：半径 3 格、25%AD，自身另外 175(+50%AD)；胜利誓约：正义 +30%、震荡波 1 格 40%，公平反弹 20%，守护减伤 +30%、承受 +80%；决死意志：半径 3 格、每 1% +1%、免死 1.5 秒、持续 4 秒'},
+    {desc:'正义之心：半径 5 格、转化 35%、无视 25% 减伤；战意之风：半径 5 格、27.5%AD，自身另外 200(+50%AD)；胜利誓约：正义 +40%、震荡波 1.25 格 45%，公平反弹 25%，守护减伤 +40%、承受 +65%；决死意志：半径 5 格、每 1% +1.25%、免死 1.75 秒、持续 4.5 秒'},
+    {q:true, desc:'【质变 · 王者之誓】正义之心：半径 10 格、转化 50%、无视 30% 减伤；战意之风：半径 10 格、30%AD，自身另外 250(+50%AD)；胜利誓约：正义 +50%、震荡波 1.5 格 50%，公平反弹 30%，守护减伤 +50%、承受 +50%；决死意志：半径 10 格、每 1% +1.5%、免死 2 秒、持续 5 秒'}],
   lore:'走完第一卷的亚瑟，被各方推为联盟共主。金冠上嵌着蓝宝石，白金板甲胸前一道金十字，肩头一对金狮，红披风镶着金纹；剑举起来的时候，身边的士兵都跟着他一起挥剑。擅长单手剑、单手枪、盾，穿板甲。和亚瑟、进阶-亚瑟不能同时上阵；通关第一卷剧情、进阶-亚瑟 5 星、四阶及以下所有地区的家族声望都到「忠诚」后，在英雄页再次进阶获得。'};
 CFG.heroStats.arthur3={atk:19, ap:4, mdef:4.5, defG:0.14, mdefG:0.09, aspd:0, prec:1.05};   // Claude 定：进阶-亚瑟（17.5 / 3.1 / 2.1）往上提一档，同金色近战（永 18、胡寒 17.5）
 Object.assign(CFG.heroes.arthur3,CFG.heroStats.arthur3);
@@ -14936,9 +14937,9 @@ Object.assign(CFG.skills,{
     byStar:{range:[4,4.5,5,5.5,6], n2:[2,2,3,3,4], b:[200,240,280,340,400], k2:[0.5,0.55,0.6,0.65,0.7], ck2:[0.3,0.35,0.4,0.45,0.5], maxN:[6,6,7,7,8]},
     desc:p=>`在 ${p.range} 格内的目标位置安置 1 个高爆地雷，并在半径 ${p.sr} 格内随机安置 ${p.n2} 个爆破地雷，${p.arm} 秒后生效：亡灵碰到就爆炸。高爆地雷对半径 ${p.aoe} 格造成 ${sv_(p.b,p.ad)} 伤害，爆炸后分裂出 ${p.cn} 枚子雷(各 ${pc_(p.ck)} 爆炸半径和伤害)；爆破地雷继承 ${pc_(p.k2)} 伤害、半径 ${p.aoe2} 格，爆炸后分裂出 ${p.cn2} 枚子雷(各 ${pc_(p.ck2)} 爆炸半径和伤害)。场上最多存在 ${p.maxN} 波地雷(超出时移除最早的一波)，持续整波`},
   // 自身 radius 格内的建筑恢复 amount 最大生命；溢出的转成护盾（至多 cap 最大生命，dur 秒）；护盾存在期间：免疫电磁干扰、攻速和装填 ×(1 + aspd)、攻击时另加英雄 AD × adk 的伤害
-  en2Opt:{name:'机械优化', cd:15, aim:'self', aspd:1,
+  en2Opt:{name:'机械优化', cd:15, aim:'self', aspd:1, noSh:0.5,   // noSh：0.12.6c（用户定）没有护盾的建筑拿 50% 的效果
     byStar:{radius:[4,4.5,5,5.5,6], amount:[0.3,0.35,0.4,0.45,0.5], cap:[0.6,0.7,0.8,0.9,1], dur:[6,7,8,9,10], adk:[0.1,0.15,0.2,0.25,0.3]},
-    desc:p=>`自身 ${p.radius} 格内的建筑恢复 ${pc_(p.amount)} 最大生命，溢出的生命转化为至多 ${pc_(p.cap)} 最大生命的护盾，持续 ${p.dur} 秒；护盾存在期间免疫「电磁干扰」，攻击速度和装填速度 +${pc_(p.aspd)}，攻击时额外造成英雄自身 ${pc_(p.adk)}AD 的伤害`},
+    desc:p=>`自身 ${p.radius} 格内的建筑恢复 ${pc_(p.amount)} 最大生命，溢出的生命转化为至多 ${pc_(p.cap)} 最大生命的护盾，持续 ${p.dur} 秒；护盾存在期间免疫「电磁干扰」，攻击速度和装填速度 +${pc_(p.aspd)}，攻击时额外造成英雄自身 ${pc_(p.adk)}AD 的伤害；没有溢出、没有护盾的建筑获得 ${pc_(p.noSh)} 的效果(攻速装填、附带伤害，免疫电磁干扰的时间减半)`},
   // 所有城墙（含城门）这一波生命上限 +hpK，并获得 sh × 生命上限的护盾（不可叠加：再放一次补满，不累加）
   en2Wall:{name:'城墙加固', cd:30, noCdr:true, aim:'self',
     byStar:{hpK:[0.1,0.125,0.15,0.175,0.2], sh:[0.1,0.15,0.2,0.25,0.3]},
@@ -41607,6 +41608,22 @@ Object.assign(ICT,{
     S.poly([[9,21],[11,12],[16,7],[19,9],[16,14],[19,19],[14,21],[16,25],[11,25]],'#ff6a1e');S.poly([[11,20],[13,14],[16,11],[14,17],[16,21],[12,23]],'#ffd25a');   // 里面烧着的圣焰
     S.line(8,20,10,11,'#ff9a6a',1);S.r(13,15,2,3,'#fff6d0',1);S.glow(13,15,'#ffffff');S.glow(14,14,'#fff3c4');
     spark(S,25,6,'#ffe8a0');spark(S,26,24,'#ff8a2a');spark(S,5,8,'#fff3c4')},
+  // 圣焰龙珠（0.12.6c 主会话补画；合成出来的整颗，原来借的是念珠的图）：一颗完整的火红宝珠，里面金白的圣焰盘成龙形，外面一圈金色龙爪托着，顶上冒圣焰
+  lyPearl:S=>{S.poly([[8,26],[5,29],[27,29],[24,26]],'#7a4a12');S.poly([[9,26],[23,26],[21,24],[11,24]],'#d8a838');   // 金色底座
+    S.line(9,24,7,18,'#e8b84a',1);S.line(23,24,25,18,'#e8b84a',1);S.line(16,25,16,22,'#c89030',1);   // 托着珠子的龙爪
+    S.disc(16,15,9,'#8a1408');S.disc(16,15,8,'#c42a1a');S.disc(15,14,6,'#ff5a1e');S.disc(15,13,4,'#ff9a3c');   // 珠子：外壳火红、往里越来越亮
+    S.diag(10,20,(u,v)=>u>2&&u<14&&Math.abs(v-Math.sin(u*0.75)*2.2)<0.6?'#ffd25a':null);   // 里面盘着的金色圣焰（龙形）
+    S.disc(13,11,1.6,'#fff6d0');S.glow(13,11,'#ffffff');S.glow(19,17,'#fff3c4');   // 高光
+    S.poly([[12,6],[14,2],[16,5],[18,1],[20,6],[17,8],[15,8]],'#ffb030');S.poly([[14,6],[16,3],[18,6],[16,7]],'#fff3c4');   // 顶上的圣焰
+    spark(S,26,8,'#ffe8a0');spark(S,6,9,'#fff3c4');spark(S,27,20,'#ff8a2a')},
+});
+// —— 技能图标：圣焰爆弹（0.12.6c 主会话补画；德拉贡戴圣焰龙珠时的第三技能，原来借的是天降火劫）：两颗燃着圣焰的爆弹一前一后飞出去，拖着金红的尾焰，前面那颗外圈白金的圣光
+Object.assign(SKI,{
+  lybHolyBomb:S=>{S.poly([[3,27],[9,19],[13,21],[6,29]],'#c4483a');S.poly([[5,26],[10,20],[12,21],[7,27]],'#ff8a2a');   // 后一颗的尾焰
+    S.poly([[10,17],[17,9],[21,12],[13,20]],'#c4483a');S.poly([[12,17],[18,10],[20,12],[14,18]],'#ffb030');   // 前一颗的尾焰
+    S.disc(12,20,4,'#8a1408');S.disc(12,20,3,'#ff6a1e');S.disc(11,19,1.6,'#ffe8a0');   // 后一颗
+    S.disc(22,10,5.5,'#c42a1a');spark(S,22,2,'#fff3c4');spark(S,29,10,'#fff3c4');S.disc(22,10,4.2,'#ff6a1e');S.disc(21,9,2.6,'#ffd25a');S.disc(20,8,1.3,'#ffffff');S.glow(20,8,'#ffffff');   // 前一颗：火红壳、金白芯，周围闪着白金的圣光
+    spark(S,28,4,'#fff3c4');spark(S,28,17,'#ffe8a0');spark(S,15,5,'#ff8a2a')},
 });
 
 // ---------- 0.11.4 精英士兵的小人（代理 EA）：局内精英是 AI 操控的英雄对象，小人用 SPR.heroes['el_<职业>'] ----------
@@ -55800,7 +55817,7 @@ function lyuRichInit(i,K){let m=0;for(let q=0;q<K.n;q++){let p=1+Math.floor(vr(0
 function lyuRichTick(e){const i=e.i,m=LYA.rk[i],R=LYU_RK.r*16;for(let b=1;b<=3;b++)if(m&(1<<b))bfAuraE(E.x[i],E.y[i],R,undefined,'lyRich'+b,LYU_RE[b],LYU_RO)}
 // ================= 森龙 / 侍卫：龙系光环（回血、法术减伤；不叠加，取高的）=================
 let LYU_AS=1,LYU_AR=0,LYU_AF=0,LYU_TN=0,LYU_AT=0;const LYU_TCH=new Int32Array(ECAP);
-const lyuAuraCb=j=>{if(!LYU_DRG[E.t[j]]||E.fac[j]!==LYU_AF)return;if(LYA.hs[j]!==LYU_AS){LYA.hs[j]=LYU_AS;LYU_TCH[LYU_TN++]=j;LYA.mdr[j]=0}
+const lyuAuraCb=j=>{if(!LYU_DRG[E.t[j]]||E.fac[j]!==LYU_AF||!LYU_RO.only(j))return;if(LYA.hs[j]!==LYU_AS){LYA.hs[j]=LYU_AS;LYU_TCH[LYU_TN++]=j;LYA.mdr[j]=0}   // LYU_RO.only：0.12.6c（用户定）龙系光环（回血、法术减伤）对首领、小首领无效
   if(LYU_AR>LYA.mdr[j])LYA.mdr[j]=LYU_AR;LYA.mdI[j]=E.id[j];LYA.mdU[j]=G.time+LYUC.auraT*1.6};
 const lyuHealK=()=>{const H=LYUC.heal,d=DIFF&&DIFF.id;return H[d]!==undefined?H[d]:H.base};
 function lyuAuraTick(){LYU_AS++;LYU_TN=0;
@@ -59703,7 +59720,7 @@ function armorPiece(p){const a=CFG.armors[p.base],R=p.roll||{},e=p.enh||0,EN=CFG
 function gearAgg(h){const d=h.d,P=CFG.armorParts,EN=CFG.armorEnh,g={def:0,dodge:0,slow:0,move:0,dodgeMul:1,hpPct:0,unprof:0,sets:{},af:{},fx:{},set:{},ax:{},acc:{atk:0,ap:0,hp:0,def:0,mdef:0}};
   for(const p of h.armorList||[]){const a=CFG.armors[p.base];if(!a)continue;const Q=armorPiece(p);
     g.def+=Q.def;g.dodge+=Q.dodge;g.slow+=Q.slow;g.move+=Q.move;axAddItem(g.ax,p,tierMul(p.base));if(a.dodgeMul)g.dodgeMul*=a.dodgeMul;   // axAddItem：v0.5.9 护甲词条（生命、物防、法防 × 阶数；v0.8.24 用户定：不再 × 强化）
-    if(!a.anyType&&!d.prof.armor.includes(a.type))g.unprof+=(P[a.part]||P.body).share;if(a.set)g.sets[a.set]=(g.sets[a.set]||0)+1}
+    if(!a.anyType&&!d.prof.armor.includes(a.type)&&!(a.profFor&&a.profFor.includes(h.id)))g.unprof+=(P[a.part]||P.body).share;if(a.set)g.sets[a.set]=(g.sets[a.set]||0)+1}
   // 套装：2 件给 two、3 件给 three（不同套装的效果种类不重复）
   for(const k in g.sets){const D=CFG.armorSets[k],n=g.sets[k];if(!D||n<2)continue;Object.assign(g.set,n>=3?D.three:D.two)}
   // 饰品：词条相加（v0.6.01 生命、防御词条 × 阶数倍率）；特效同种取较高的
@@ -64001,6 +64018,8 @@ Object.assign(GEAR_FX,{
     hurt(h,dmg,o,v){if(!lybGDrg(h)&&dmg>0&&o.mix&&o.mix.fire>0)UF_DR+=v.fireDr*Math.min(1,o.mix.fire);return dmg}},
 });
 // 圣焰龙珠：德拉贡的第三技能换成圣焰爆弹（摘下来换回去）；heroRecalc → h70Init 每次都调 HERO_FX.dragonLord.init
+// 0.12.6c 英雄页（ui/hero.hskList）：德拉贡在营地里装着圣焰龙珠时，第三技能显示成圣焰爆弹（技能、描述、图标一起换）
+function lybGSkUi(f,s,k){if(f!=='dragonLord'||k!==2||!META||!META.gear)return s;const g=META.gear[f],it=g&&g.spc?itemByUid(g.spc):null;return it&&it.base==='lyPearl'?'lybHolyBomb':s}
 function lybGSkSwap(h){if(!lybGDrg(h)||h.elite||!h.skills||!h.d||!h.d.skills)return;const e=lybGFx(h,GEAR_FX.lybGPearl),want=e?e[1].sk:h.d.skills[2];if(!want||h.skills[2]===want)return;
   h.skills[2]=want;if(h.sp)h.sp[2]=skillParams(h.id,h.star,want);h.cds[2]=Math.min(h.cds[2]||0,(CFG.skills[want]||{}).cd||0)}
 {const F=HERO_FX.dragonLord;if(F){const i0=F.init;F.init=function(h){if(i0)i0(h);lybGSkSwap(h)}}}
@@ -67450,8 +67469,8 @@ function ar3Spin(u,d,R,hero){if(!(d>0))return false;const n0=AR3_Q.length;AR3_QI
 function ar3WindTick(h,p){const R=p.wr*16;AR3_WT=G.time;if(ar3WHit(h.x,h.y-4,R))ar3WShield(h,p.sh,p.shMax,p.shT);   // 0.12.6c 命中回盾
   const P=AR3_WP;P.crit=h.crit;P.pen=h.ws.pen;P.mix=h.ws.mix;P.gnd=!h.hitAir;AR3_WSH.r=p.wr;bkCast(AR3_WSH,P,bkCH(h,heroAD(h)*p.k+skV(h,p.b,p.sad),h.x,h.y-4,0));P.mix=null;
   AR3_WS.length=0;const r=p.r*16;if(!(r>0))return;const r2=r*r,L=G.soldiers;
-  for(let k=0;k<L.length;k++){const s=L[k];if(s.dead||!ar3MeleeS(s))continue;const dx=s.x-h.x,dy=s.y-h.y;if(dx*dx+dy*dy>r2)continue;AR3_WS.push(s);if(ar3Spin(s,ar3SolAD(s)*p.sk,R,false))ar3WShield(s,p.sh*p.shSol,p.shMax*p.shSol,p.shT)}   // sk / shSol：0.12.6c 士兵 25%AD、回盾减半
-  for(let k=0;k<G.heroes.length;k++){const e=G.heroes[k];if(!e.elite||e.dead||!e.ws||e.ws.cls!=='melee'||e.ws.magic)continue;const dx=e.x-h.x,dy=e.y-h.y;if(dx*dx+dy*dy>r2)continue;AR3_WS.push(e);if(ar3Spin(e,heroAD(e)*p.sk,R,true))ar3WShield(e,p.sh*p.shSol,p.shMax*p.shSol,p.shT)}
+  for(let k=0;k<L.length;k++){const s=L[k];if(s.dead||!ar3MeleeS(s))continue;const dx=s.x-h.x,dy=s.y-h.y;if(dx*dx+dy*dy>r2)continue;AR3_WS.push(s);if(ar3Spin(s,ar3SolAD(s)*p.k,R,false))ar3WShield(s,p.sh*p.shSol,p.shMax*p.shSol,p.shT)}   // shSol：0.12.6c 士兵回盾减半
+  for(let k=0;k<G.heroes.length;k++){const e=G.heroes[k];if(!e.elite||e.dead||!e.ws||e.ws.cls!=='melee'||e.ws.magic)continue;const dx=e.x-h.x,dy=e.y-h.y;if(dx*dx+dy*dy>r2)continue;AR3_WS.push(e);if(ar3Spin(e,heroAD(e)*p.k,R,true))ar3WShield(e,p.sh*p.shSol,p.shMax*p.shSol,p.shT)}
   if(inViewPt(h.x,h.y)&&chance(0.5))sfx('swing',h.x,h.y)}
 // ================= 胜利誓约 =================
 const ar3OS=()=>G.ar3O||(G.ar3O={cur:'',cd:[0,0,0],ask:-1});
@@ -67653,14 +67672,15 @@ SKFX.mr3Thunder=h=>{vfx('flare',{x:h.x,y:h.y-14,r:12,c:MR3_BOLT,life:0.3})};
 //   和身上还没到期的这种护盾相加、至多 cap 最大生命，持续 dur 秒（再放刷新时间）；护盾挂在 EN2_OSH（不占建筑字段），engine/combat.hurtS 的 dmgDefS 钩子里先扣
 //   护盾在的时候：免疫电磁干扰（emImU 设到护盾到期，已有的干扰立刻解除；护盾被打破就提前结束）、统一 buff aspd +100%（建筑的 aspd 同时管攻速和装填）、
 //   这座建筑打出去的每一下（dmgBaseE：DS_CUR = 这座建筑；持续伤害不算）另加英雄施放时的 AD × adk（Claude 定：爆炸波及到的每只都加，伤害类型跟着这一下）
-//   Claude 定：没有溢出（建筑缺的血比回复量多）就没有护盾，也就没有后面三项（原文「护盾存在期间」）
+//   没有溢出（建筑缺的血比回复量多）就没有护盾：0.12.6c 用户定，这些建筑拿 50% 的效果（攻速装填 +50%、附带 50% 的 AD 伤害、免疫电磁干扰的时间减半）
 // 城墙加固：所有城墙（isWallT，含城门）这一波生命上限 +hpK（G.en2WK，structs/structs.structMax 乘），加上来的上限同时加进生命（同升级）；
 //   护盾 sh × 生命上限，挂在 EN2_WSH，不可叠加 = 再放一次补满、不累加；这一波结束时上限还原（生命超出新上限的部分去掉，原来就超出上限的溢出生命留着）、护盾清掉
 //   Claude 定：护盾先扣机械优化的、再扣城墙加固的；之后造的城墙也吃上限加成，护盾只给施放时在场的
 const EN2_BLUE='#5ad8f0',K_EN2B=C('#5ad8f0'),K_EN2Y=C('#d8a040');
 const EN2_GR=[];   // 场上的地雷：每波一项（h 英雄、zs 这一波的地雷区域）
 const EN2_OSH=new Map(),EN2_WSH=new Map();   // 机械优化：建筑 → 记录（v 护盾、u 到期、ad 附带伤害、im 设下的 emImU）；城墙加固：建筑 → 记录（v 护盾）
-const EN2_EFF={aspd:CFG.skills.en2Opt.aspd};
+const EN2_EFF={aspd:CFG.skills.en2Opt.aspd},EN2_EFFH={aspd:CFG.skills.en2Opt.aspd*CFG.skills.en2Opt.noSh};   // EN2_EFFH：0.12.6c（用户定）没有护盾的建筑拿 noSh（50%）的效果
+const EN2_OH=new Map();   // 0.12.6c 没有护盾的那些：建筑 → 记录（u 到期、ad 附带伤害（已乘 noSh）、im 设下的 emImU）
 let EN2_TH=false,EN2_BZ=null,EN2_CL=0,EN2_WS0=0,EN2_WAI=0;
 // ================= 进阶条件 =================
 function en2AdvReq(b){const a=ADV_ID[b],R=a&&CFG.heroes[a].advReq;return R&&R.clear?R:null}   // 合并时主会话改：只认这种写法（clear / rep 两段）；进阶-夜鸦的 advReq 是 {map, diff, rep}，走 heroes/assassin2
@@ -67701,12 +67721,13 @@ function en2OptCast(h,p){const R=p.radius*16,R2=R*R,U=G.time+p.dur,ad=heroAD(h)*
   for(let k=0;k<G.structs.length;k++){const s=G.structs[k];if(s.dead||s.temp)continue;const dx=s.x-h.x,dy=s.y-8-h.y;if(dx*dx+dy*dy>R2)continue;n++;
     const add=s.maxHp*p.amount*bldHealK(h,s),miss=Math.max(0,s.maxHp-s.hp);if(miss>0)s.hp=Math.min(s.maxHp,s.hp+add*sHealK(s));
     let w=EN2_OSH.get(s);const v=Math.min(s.maxHp*p.cap,(w!==undefined&&w.u>G.time?w.v:0)+Math.max(0,add-miss));
-    if(v>0.5){if(w===undefined){w={v:0,u:0,ad:0,im:0};EN2_OSH.set(s,w)}w.v=v;w.u=U;w.ad=ad;bfAdd(s,'en2Opt',EN2_EFF,p.dur);s.empU=0;s.empH=0;s.emImU=Math.max(s.emImU||0,U);w.im=s.emImU;m++}
+    if(v>0.5){if(w===undefined){w={v:0,u:0,ad:0,im:0};EN2_OSH.set(s,w)}w.v=v;w.u=U;w.ad=ad;bfAdd(s,'en2Opt',EN2_EFF,p.dur);bfDel(s,'en2OptH');EN2_OH.delete(s);s.empU=0;s.empH=0;s.emImU=Math.max(s.emImU||0,U);w.im=s.emImU;m++}
+    else if(!(w!==undefined&&w.u>G.time&&w.v>0)){const k=p.noSh,Uh=G.time+p.dur*k;let q=EN2_OH.get(s);if(q===undefined){q={u:0,ad:0,im:0};EN2_OH.set(s,q)}q.u=U;q.ad=ad*k;bfAdd(s,'en2OptH',EN2_EFFH,p.dur);s.empU=0;s.empH=0;s.emImU=Math.max(s.emImU||0,Uh);q.im=s.emImU}   // 0.12.6c（用户定）没溢出、没护盾的建筑：攻速装填、附带伤害各 50%，免疫电磁干扰的时间也减半
     if(inViewPt(s.x,s.y))for(let q=0;q<4;q++)pp(s.x+vr(-6,6),s.y-vr(4,18),0,0,0,vr(8,18),0,vr(0.5,0.8),vpick(['#8fbf5a','#d6f0b0',EN2_BLUE]),1,0,1)}
   G.flowDirty=true;sfx('build',h.x,h.y);if(h.ctl)sayT(n?`机械优化：${n} 座建筑回复生命${m?`，${m} 座获得护盾`:''}`:'附近没有建筑');return true}
 const en2OptAI=(h,p)=>SK.repair.ai(h,p)||overclockAI(h,p);   // 托管：有建筑缺血（同范围维修）或塔在开火（同超频）就放
 // 这座建筑打出去的每一下（不算持续伤害）另加施放时英雄的 AD × adk
-function en2BaseE(i,d,o){if(EN2_OSH.size===0||o.dot||o.hk||o.fu)return d;const w=EN2_OSH.get(DS_CUR);if(w===undefined||!(w.v>0)||!(w.u>G.time))return d;return d+w.ad}
+function en2BaseE(i,d,o){if((EN2_OSH.size===0&&EN2_OH.size===0)||o.dot||o.hk||o.fu)return d;const w=EN2_OSH.get(DS_CUR);if(w!==undefined&&w.v>0&&w.u>G.time)return d+w.ad;const q=EN2_OH.get(DS_CUR);return q!==undefined&&q.u>G.time?d+q.ad:d}   // EN2_OH：0.12.6c 没护盾的 50%
 // 建筑受伤（防御之后）：先扣机械优化的护盾，再扣城墙加固的
 function en2DefS(s,d,o){if(!(d>0))return d;
   if(EN2_OSH.size){const w=EN2_OSH.get(s);if(w!==undefined&&w.u>G.time&&w.v>0){const ab=Math.min(w.v,d);w.v-=ab;d-=ab;if(w.v<=0.5)en2OptOff(s,w)}}
@@ -67729,8 +67750,8 @@ function en2WallAI(h,p){if(G.time<EN2_WAI)return null;EN2_WAI=G.time+0.5;if(G.ph
 // ================= 每帧、开局、波次 =================
 const en2OF=(w,s,M)=>{if(s.dead||!(w.u>G.time)||!(w.v>0))M.delete(s)};
 function en2Tick(dt){if(EN2_OSH.size&&(EN2_CL-=dt)<=0){EN2_CL=0.5;EN2_OSH.forEach(en2OF)}}   // 到期的从表里拿掉（buff、免疫自己到期）
-function en2Clear(){for(const g of EN2_GR)for(const z of g.zs)z.dead=true;EN2_GR.length=0;EN2_OSH.forEach((w,s)=>{bfDel(s,'en2Opt');if(s.emImU===w.im)s.emImU=G.time});EN2_OSH.clear();EN2_WSH.clear();EN2_WS0=0;en2WallOff()}
-function en2Reset(){EN2_GR.length=0;EN2_OSH.clear();EN2_WSH.clear();EN2_TH=false;EN2_BZ=null;EN2_CL=0;EN2_WS0=0;EN2_WAI=0;if(G)G.en2WK=0}
+function en2Clear(){for(const g of EN2_GR)for(const z of g.zs)z.dead=true;EN2_GR.length=0;EN2_OSH.forEach((w,s)=>{bfDel(s,'en2Opt');if(s.emImU===w.im)s.emImU=G.time});EN2_OSH.clear();EN2_OH.forEach((q,s)=>{bfDel(s,'en2OptH');if(s.emImU===q.im)s.emImU=G.time});EN2_OH.clear();EN2_WSH.clear();EN2_WS0=0;en2WallOff()}
+function en2Reset(){EN2_GR.length=0;EN2_OSH.clear();EN2_OH.clear();EN2_WSH.clear();EN2_TH=false;EN2_BZ=null;EN2_CL=0;EN2_WS0=0;EN2_WAI=0;if(G)G.en2WK=0}
 feat('engineer2',{ord:120,on:()=>{const b=heroEver('engineer2');if(!b)en2Reset();return b},hooks:{
   start:en2Reset,loadAfter:en2Reset,tick:en2Tick,waveEnd:en2Clear,
   dmgBaseE:en2BaseE,dmgDefS:en2DefS}});
@@ -76267,7 +76288,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.6b',GAME_TAG='测试版',GAME_CODE=188,GAME_BUILD="e99d380+",GAME_BUILT=1793455000856,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.6b',GAME_TAG='测试版',GAME_CODE=188,GAME_BUILD="7ba208b+",GAME_BUILT=1793456193169,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -78376,7 +78397,7 @@ const bookCol=it=>baseQ(it.base)!=='common'?CFG.itemQ[baseQ(it.base)].color:'#c9
 function profOk(hid,it){const P=CFG.heroes[hid].prof,b=it.base,k=gearKindOf(b);
   if(k==='w')return P.weapon.includes(CFG.weapons[b].type);
   if(k==='s')return CFG.weapons[b].type==='shield'?P.weapon.includes('shield'):P.weapon.includes('bow');
-  if(k==='a')return P.armor.includes(CFG.armors[b].type);return true}
+  if(k==='a')return P.armor.includes(CFG.armors[b].type)||!!(CFG.armors[b].profFor&&CFG.armors[b].profFor.includes(hid));return true}   // profFor：0.12.6c 赤龙法袍对德拉贡算熟练
 // v0.6.02（用户要求）穿戴中的格子换底色（worn），右上角英雄名改成亮底深字
 function itemCell(it,cls,act,v){const Q=itemQ(it),own=itemOwner(it.uid),C=craftOf(it),ci=CRK.indexOf(it.craft||'plain');
   return`<button class="it${own?' worn':''}${cls||''}" type="button" data-act="${act}" data-v="${v}" style="--qc:${it.book?bookCol(it):Q.color}" title="${itemName(it)}"><img alt="" src="${itemIcon(it)}">${it.enh?`<i class="en">+${it.enh}</i>`:''}${it.bound?'<i class="bd">绑</i>':it.lock?'<i class="bd lk">锁</i>':''}${own?`<i class="ow">${CFG.heroes[own].name[0]}</i>`:''}${BOOK_N.get(it.uid)>1?`<i class="en">×${BOOK_N.get(it.uid)}</i>`:''}${ci>=2?`<i class="cr" style="color:${C.color}">${C.name[0]}</i>`:''}${gearTier(it.base)>1?`<i class="tr">${TIER_RN[gearTier(it.base)]||gearTier(it.base)}</i>`:''}</button>`}
@@ -78407,7 +78428,7 @@ function weaponLine(it,prof){if(typeof it==='string')it={base:it,enh:0,q:'common
   return`<div><b>${b.name}</b>${hands===1?'单手':'双手'}${T.name}${ok?'':' <span class="warn">不熟练</span>'}${stNote(b.note)}${statRows(rows)}</div>`}
 function setLine(set,hid){const S=CFG.armorSets[set];if(!S)return'';const g=META.gear[hid]||emptyGear(),n=['head','body','feet'].map(s=>itemByUid(g[s])).filter(x=>x&&CFG.armors[x.base].set===set).length;
   return`<div class="stn"><span style="color:var(--brass-hi)">套装「${S.name}」</span>(${CFG.heroes[hid].name}穿着 ${n}/3 件)</div><span class="${n>=2?'sok':'meta'}">2 件：${CFG.setFxText(S.two)}</span><br><span class="${n>=3?'sok':'meta'}">3 件：${CFG.setFxText(S.three)}</span>`}
-function armorLine(it,hid){const a=CFG.armors[it.base],R=it.roll||{},Q=armorPiece(it),ok=a.anyType||CFG.heroes[hid].prof.armor.includes(a.type);
+function armorLine(it,hid){const a=CFG.armors[it.base],R=it.roll||{},Q=armorPiece(it),ok=a.anyType||CFG.heroes[hid].prof.armor.includes(a.type)||!!(a.profFor&&a.profFor.includes(hid));
   return`<div><b>${CFG.armorParts[a.part].name}</b>${a.anyType?'不分护甲类型':CFG.armorTypes[a.type]}${ok?'':' <span class="warn">不熟练</span>'}${a.note?stNote(a.note):''}${statRows([['物理防御',f1g(Q.def)+rp(R.def)],Q.dodge&&['偏斜率','+'+pc1(Q.dodge)+rp(R.dodge)],Q.slow&&['移动速度','−'+pc1(Q.slow)],Q.move&&['移动速度','+'+pc1(Q.move)],a.dodgeMul&&['偏斜倍率','×'+a.dodgeMul]])}${a.set?setLine(a.set,hid):''}</div>`}   // note：v0.9.51 修——护甲的特效说明（炼毒尸袍等）原来不显示
 const afLV=(x,tm)=>{const A=CFG.affixes[x.k],v=x.v*(tm&&AF_TIER[x.k]?tm:1);return A?[A.name,`${A.neg?'−':'+'}${A.pct?pc1(v):f1g(v)}${A.suf?' '+A.suf:''}`]:null};   // tm：v0.6.01 饰品的阶数倍率（生命、防御词条）
 const afText=x=>{const r=afLV(x);return r?r[0]+' '+r[1]:''};
@@ -78437,7 +78458,7 @@ function dollHTML(hid){const g=META.gear[hid]||emptyGear(),pid=heroForm(hid),cel
 function heroWarn(id){const sp=currentHeroSpec(id),H=CFG.heroes[sp.id],prof=H.prof,P=CFG.proficiency,warn=[];
   for(const w of sp.weapons){const b=CFG.weapons[w.base];if(!prof.weapon.includes(b.type))warn.push(`${b.name}不熟练：攻速 ×${P.weapon.spd}、暴击率 −${Math.round((1-P.weapon.crit)*100)}%、偏移 ×${P.weapon.spread}`)}
   if(sp.offhand){const b=CFG.weapons[sp.offhand.base];if(b&&b.type==='shield'&&!prof.weapon.includes('shield'))warn.push(`${b.name}不熟练：格挡率 ×${P.weapon.block}`)}   // v0.5.8
-  const bad=sp.armor.filter(a=>!CFG.armors[a.base].anyType&&!prof.armor.includes(CFG.armors[a.base].type));if(bad.length){const sh=bad.reduce((s,a)=>s+CFG.armorParts[CFG.armors[a.base].part].share,0);warn.push(`护甲不熟练：${bad.map(a=>CFG.armors[a.base].name).join('、')}，移速 −${pc1((1-P.armor.speed)*sh)}、技能冷却 +${pc1((P.armor.cd-1)*sh)}`)}
+  const bad=sp.armor.filter(a=>{const A=CFG.armors[a.base];return!A.anyType&&!prof.armor.includes(A.type)&&!(A.profFor&&A.profFor.includes(sp.id))});if(bad.length){const sh=bad.reduce((s,a)=>s+CFG.armorParts[CFG.armors[a.base].part].share,0);warn.push(`护甲不熟练：${bad.map(a=>CFG.armors[a.base].name).join('、')}，移速 −${pc1((1-P.armor.speed)*sh)}、技能冷却 +${pc1((P.armor.cd-1)*sh)}`)}
   const ob=sp.offhand&&CFG.weapons[sp.offhand.base];
   if(ob&&ob.type==='shield'&&!sp.weapons.some(w=>{const b=CFG.weapons[w.base];return(b.hands||CFG.weaponTypes[b.type].hands)===1}))warn.push('盾牌只在使用单手武器时生效');
   if(ob&&ob.type==='quiver'&&!sp.weapons.some(w=>CFG.weapons[w.base].type==='bow'))warn.push('箭袋只在使用弓时生效');
@@ -78481,7 +78502,7 @@ function heroInfoHTML(id){const f=heroForm(id),H=CFG.heroes[f],MH=META.heroes[id
 // 0.12.4 技能固定值随等级（heroes/hero.fixKL）：显示这位英雄现在的倍率
 const fixLine=f=>{const L=olvUse('h',f),k=fixKL(f,L);return`<div class="meta">技能固定值 ×${k.toFixed(2)}（${'一二三四五六七八九'[fixTier(f)-1]||''}阶英雄，当前 Lv${L}；高于本阶封顶等级时随等级提高，低于时略降）</div>`};
 // 0.12.2 技能横排：[技能键, 序号]（被动在前，序号 −1；主动按 H.skills + 狐形 formSk 的顺序）
-const hskList=f=>{const H=CFG.heroes[f];return[H.passiveSk,H.passiveSk2,H.passiveSk3].filter(Boolean).map(s=>[s,-1]).concat(H.skills.concat(H.formSk||[]).map((s,k)=>[s,k]))};
+const hskList=f=>{const H=CFG.heroes[f];return[H.passiveSk,H.passiveSk2,H.passiveSk3].filter(Boolean).map(s=>[s,-1]).concat(H.skills.concat(H.formSk||[]).map((s,k)=>[lybGSkUi(f,s,k),k]))};   // lybGSkUi：0.12.6c 德拉贡戴圣焰龙珠时英雄页的第三技能换成圣焰爆弹（gear/fx_ly）
 const hskName=(H,p,k)=>(H.formSk&&k>=0?(k<3?'人形 · ':'狐形 · '):'')+p.name;
 const hskType=(p,k)=>k<0||p.passive?'被动':(p.chan?(p.cd?`按住释放 · 冷却 ${p.cd} 秒`:'按住释放 · 无冷却'):`冷却 ${p.cd} 秒`)+(p.req?(p.req==='melee'?' · 需要近战武器':' · 需要远程武器'):'');   // 0.12.5（翻译报）整句写出来：原来三段拼起来，英文成了「MeleeWeapon」
 // 技能弹窗：HSK_POP = {i 第几个技能, p 停在第几星}；一星一页横着排，滑动或点 ‹ › 换星级
