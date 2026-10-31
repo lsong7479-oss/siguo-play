@@ -22695,6 +22695,46 @@ Object.assign(CFG.techs,{
   es2CdT:  {cat:'elite', name:'精英战术', max:5, cost:[250,2500], key:'es2Cd',   per:0.03, first:0, fmt:'%', desc:'精英技能冷却速度', req:['es2AtkT',3], tier:3},   // Claude 定：前置精英武艺 Ⅲ、通关三阶地区
 });
 
+// ---------- 0.12.7 精英技能第四批：参照蓝色、紫色英雄的技能（用户 2026-11-01「技能你也可以参照之前的英雄技能给(紫色英雄和蓝色英雄补一部分合适的技能)」；挑哪些、名字、数值 Claude 定）----------
+// 精英在局内就是英雄对象（game/el_battle：h 同一套字段、同一张 SK 表），所以直接借英雄技能的 cast / ai：sk = 那个英雄技能的键
+// 参数：那个技能 1★ 的数 + 这里的 o 覆盖 = 1 级、削弱前；之后照精英的规矩削弱（固定值 ×0.5、比例超出 100% 的部分减半）、按等级系数乘（data/el_skills2）
+//   o 把伤害、范围、冷却压到精英技能的档位（比英雄 1★ 再低一档），不是原样搬
+// 不写 need = 进技能池（教官、升级、训练所都能学到）；图标 ico 借原英雄技能的
+// 挑的标准：单体 / 小范围、不依赖英雄专属的机制或形态（夜鸦的手里剑、狄龙的飞链、雪狼之子的长矛这类要英雄自己的特性每帧推进，没挑）
+{const M=['sword','axe','hammer','club','spear','dagger'];
+Object.assign(CFG.elite.skills,{
+  el_es3word:     {name:'真言之盾', fam:['mage','bard'], sk:'wordShield', ico:'wordShield', o:{pct:0.04, cd:18}},   // 参照 希尔德加德(蓝)「真言之盾」：护盾比例 5% → 4%，冷却 15 → 18
+  el_es3rally:    {name:'振奋之风', fam:['druid','alch'], sk:'rallyWind', ico:'rallyWind', o:{r:4, mhp:0.03, cd:18}},   // 参照 艾伦尼塔(紫)「振奋之风」：范围 5 → 4 格，按生命上限的回复 5% → 3%，冷却 15 → 18
+  el_es3wrath:    {name:'自然之怒', fam:['druid'], sk:'natureWrath', ico:'natureWrath', o:{radius:1.5, b:60, ad:1.2, root:1.5, cd:16}},   // 参照 艾伦尼塔(紫)「自然之怒」：半径 2.5 → 1.5 格，150(+150%AP) → 60(+120%AP)，禁锢 2 → 1.5 秒
+  el_es3chain:    {name:'连锁闪电', fam:['mage'], sk:'chainLight', ico:'chainLight', o:{range:7, b:60, ad:1, cd:12}},   // 参照 进阶-梅林(蓝)「连锁闪电」：120(+120%AP) → 60(+100%AP)，施法距离 10 → 7 格
+  el_es3pierce:   {name:'贯穿射击', fam:['archer'], sk:'pierceShot', ico:'pierceShot', o:{len:6, b:30, ad:1, cd:10}},   // 参照 威廉·退尔(蓝)「贯穿射击」：长 7 → 6 格，冷却 5 → 10(精英不按星级涨长度)
+  el_es3snipe:    {name:'毙命狙击', fam:['archer'], sk:'es3Snipe', ico:'gwSnipe', o:{b:60, ad:1.6, cd:14, killP:0.02, killTier:2}},   // 参照 格文(紫)「毙命狙击」：150(+300%AD) → 60(+160%AD)，秒杀改成二阶及以下 2%；说明另写(英雄版写死了三阶)
+  el_es3gods:     {name:'以神之名', fam:['warrior','shield'], sk:'es3GodsName', ico:'godsName', o:{b:45, ad:1.3, cd:12}},   // 参照 瑟塔洛斯(紫)「以神之名」：75(+180%AD) → 45(+130%AD)；说明另写(英雄版写着 3★ 起的效果)
+  el_es3stand:    {name:'破釜沉舟', fam:['warrior'], sk:'lastStand', ico:'lastStand', o:{b:80, ad:1.5, stun:1, heal:0.05, cd:22}},   // 参照 进阶-亚瑟(蓝)「破釜沉舟」：300(+200%AD) → 80(+150%AD)，眩晕 1.5 → 1 秒，每命中回复 10% → 5%
+  el_es3charge:   {name:'无前陷阵', fam:['cav','warrior'], sk:'charge2', ico:'charge2', wreq:M, o:{range:4, b:24, ad:1.3, stun:0.8, cd:10}},   // 参照 进阶-亚瑟(蓝)「无前陷阵」：冲锋 5 → 4 格，终点 30(+160%AD) → 24(+130%AD)，眩晕 1 → 0.8 秒
+  el_es3throw:    {name:'暗器连掷', fam:['assassin','mech'], sk:'hiddenThrow', ico:'hiddenThrow', o:{max:3, cd:6}},   // 参照 鲁滨逊(蓝)「器无虚发」(精英已有同名被动，改名)：5 枚 → 3 枚，冷却 3 → 6
+  el_es3hide:     {name:'隐秘之术', fam:['assassin','bard'], sk:'stealthArts', ico:'stealthArts', sc:[], o:{dur:4, cd:16}},   // 参照 瑟菲斯(蓝)「隐秘之术」：隐身 5 → 4 秒，冷却 10 → 16
+  el_es3horn:     {name:'冲锋号角', fam:['cav'], sk:'chargeHorn', ico:'chargeHorn', sc:[], o:{r:6, cd:16}},   // 参照 奥薇尔(紫)「冲锋号角」：范围 10 → 6 格，冷却 10 → 16(不受冷却缩减，同原技能)
+});}
+// 以神之名：英雄版的说明写着「3★ 起移除目标的减伤」，精英用自己的说明（逻辑同 SK.godsName）
+CFG.skills.es3GodsName=Object.assign({},CFG.skills.godsName,{name:'以神之名', desc:p=>`向前方斩出长 ${p.len} 格、宽 ${p.w} 格的一击，必定命中，无视物理防御：造成 ${sv_(p.b,p.ad)} 伤害，移除目标的所有增益状态，并使其禁疗 ${p.healcut} 秒`+(p.rm>0?`；移除目标 ${pc_(p.rm)} 的减伤，持续 ${p.rmT} 秒`:'')});
+CFG.skills.es3Snipe=Object.assign({},CFG.skills.gwSnipe,{name:'毙命狙击', desc:p=>`施法距离为射程的 ${p.rk} 倍：锁定一个亡灵，造成 ${sv_(p.b,p.ad)} 伤害，并使其受到的伤害 +${pc_(p.vuln)}，持续 ${p.vt} 秒；若未击杀目标，${['','一','二','三','四'][p.killTier]||p.killTier}阶及以下的亡灵有 ${pc_(p.killP)} 概率被直接击杀`});   // 逻辑同 SK.gwSnipe
+// V 级质变（Claude 定：多数借原技能高星才有的效果，数取得比英雄低）
+Object.assign(CFG.elite.skV,{
+  el_es3word:{add:{radius:1}, t:'范围 +1 格'},
+  el_es3rally:{set:{haste:0.1, dur:3}, t:'回复后 3 秒内冷却速度、装填速度、攻击速度 +10%'},
+  el_es3wrath:{add:{root:0.5}, t:'禁锢 +0.5 秒'},
+  el_es3chain:{set:{depth:2}, t:'连锁 2 次'},
+  el_es3pierce:{add:{len:2}, t:'射击长度 +2 格'},
+  el_es3snipe:{add:{vuln:0.1}, t:'易伤额外 +10%'},
+  el_es3gods:{set:{rm:0.25}, t:'移除目标 25% 的减伤'},
+  el_es3stand:{add:{stun:0.5}, t:'眩晕 +0.5 秒'},
+  el_es3charge:{add:{r:0.25}, t:'终点重击范围 +0.25 格'},
+  el_es3throw:{add:{max:2}, t:'暗器 +2 枚'},
+  el_es3hide:{add:{r:1}, t:'范围 +1 格'},
+  el_es3horn:{add:{r:2}, t:'范围 +2 格'},
+});
+
 // ---------- 0.12.7 代理 EG：精英装备「一键购买」「一键强化」（用户 0.12.7 预告第 3、4 条；逻辑 game/el_gear2.js，界面 ui/el_gear2.js）----------
 //   一键购买：给上阵的精英，把空着的、比常规商店能买到的差的格子换成这名精英能用的最好的商店普通装备（仓库里有一样好的就直接换上，不花钱）
 //   一键强化：给精英穿着的装备强化到 enhTo（用户定 +10）；成功率、花费、强化石照现有强化，不用幸运符、护刃钳（Claude 定）
@@ -74266,6 +74306,8 @@ SK.es2Discord={cast(h,p,a){const ang=Math.atan2(a.y-h.y,a.x-h.x),eff=elEffOf(ES2
     bkCast({k:'rect',len:p.len,w:p.w},{who:'E',mix:{impact:1},fx:null,on:j=>{if(E.alive[j])bfAddE(j,'es2Disc',eff,t,ES2_DB)}},bkCH(h,skD(h,p),h.x,h.y,ang));
     h.facing=Math.cos(ang)>=0?1:-1;if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(h.x+Math.cos(ang)*p.len*8),y:Math.round(h.y+Math.sin(ang)*p.len*8),r:p.w*8+4,life:0.3,c:'#e8a8d8'});sfx('zap',h.x,h.y);return true},
   ai(h,p){const j=nearestEnemy(h.x,h.y,p.len*16,true);return j>=0?{x:E.x[j],y:E.y[j]}:null}};
+// —— 0.12.7 第四批（参照英雄技能，数据 data/el_skills4.js）：只换了说明的两个，施放、托管照原英雄技能 ——
+SK.es3GodsName=SK.godsName;SK.es3Snipe=SK.gwSnipe;if(SKFX.godsName)SKFX.es3GodsName=SKFX.godsName;   // 施法特效也借原技能的
 
 // ---------- 0.12.7 代理 EG：精英装备「一键购买」「一键强化」（用户 0.12.7 预告第 3、4 条；数据 data/el_gear2.js 的 CFG.elite.eg，界面 ui/el_gear2.js）----------
 // 一键购买 egBuyPlan()：上阵的精英（锁定配置的跳过），按 主武器 → 副手 → 头 → 身 → 脚 的顺序，每个格子在「常规商店现在能买的」和「仓库里没人穿的」里挑最好的一件：
@@ -76713,7 +76755,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.6',GAME_TAG='稳定版',GAME_CODE=192,GAME_BUILD="de3fd79+",GAME_BUILT=1793474298730,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.6',GAME_TAG='稳定版',GAME_CODE=192,GAME_BUILD="87eb5bf",GAME_BUILT=1793474962300,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
