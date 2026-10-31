@@ -22836,15 +22836,14 @@ CFG.survivor={
   cards:['oath','blade','heroAs','heroArmor','heroClock','boots','weakAim','aim','clover'],   // 复用的强化卡（只要对单个英雄有用的：生命、伤害、攻速、减伤、冷却、移速、暴击、精准、幸运），效果、品质、重复拿的衰减、折算都和常规模式一样
   own:[   // 幸存者专用的两张（不进常规卡池）：sv = 效果的键
     {id:'svRegen', name:'生生不息', alt:'万物复苏', q:'all', sv:'svRegen', qv:{svRegen:[0.004,0.005,0.006,0.007,0.008]}, desc:'英雄每秒回复 {svRegen%} 最大生命'},   // Claude 定：普通 0.4%～传说 0.8%，可叠加
-    {id:'svHeal',  name:'急救包',   alt:'灵药',     q:'all', sv:'svHeal',  qv:{svHeal:[0.3,0.36,0.42,0.51,0.6]}, desc:'立即回复 {svHeal%} 最大生命'},
   ],
   autoGap:0.2,   // 「自动放技能」多久看一次
   reward:{k:1, capMin:30, res:['银币','建材','科研点','设计点'], rep:false, wares:true},   // 结算：每活满 1 分钟算常规的 1 波，最多算 30 分钟。0.12.7a（用户定）奖励照常给（k = 1），但只给银币、建材、科研点、设计点、地区物资（还有英雄经验）；家族声望也不给（用户 2026-10-31：声望是常规模式才拿的，同打造书、英雄之魄）；不给金币、英雄之魄、装备、打造书（强化石 / 洗练石、丹药也不给）
 };
 // 0.12.7b（用户 2026-10-31 定）不用常规模式的 1 号位：在娱乐模式页自己挑 1 位英雄（队长）+ 精英小队；开局带一部分，之后援军陆续赶到（game/sv_squad）
 //   以下数 Claude 定：小队最多 6 名精英（用户定），开局带 2 名，之后每 3 波来 1 名（升级时的「援军」卡立刻叫来下一名）；队员倒下 30 秒后在队长身边复活；队长倒下 = 结束
-CFG.survivor.squad={max:6, start:2, every:3, respawn:30, r:2.2, leash:7};   // 0.12.7a（用户定）最多 6 名；every：改成按波次，每打完 3 波来 1 名援军（Claude 定）；r：队员站在队长身边几格（围成一圈）；leash：离站位超过几格就先回来（不再追亡灵）
-CFG.survivor.own.push({id:'svReinf', name:'援军', alt:'援军', q:'rare', sv:'svReinf', desc:'小队里还没赶到的下一名精英立刻赶来'});   // 只在还有没赶到的队员时出现
+CFG.survivor.squad={max:6, start:2, every:5, respawn:30, r:2.2, leash:7};   // 0.12.7a（用户定）最多 6 名；every：改成按波次，每打完 5 波来 1 名援军（用户定：20 波来满）；r：队员站在队长身边几格（围成一圈）；leash：离站位超过几格就先回来（不再追亡灵）
+// 0.12.7b（用户定）援军固定每 5 波来一名（20 波来满），「援军」卡（svReinf）不再进卡池；急救包（svHeal）改成地图上的急救包（game/sv_box）
 // 0.12.7a（用户 2026-10-31 定）改成按波次：一波的亡灵刷完、清完 → 开卡（三选一，不再按经验升级）→ 歇 gap 秒 → 下一波；强度 = 第几波（G.wave，同无尽第 n 波的成长）
 //   以下数 Claude 定：一波的出怪预算（按亡灵 cost，僵尸 1.5）= base + per × n + sq × n²，在 dur 秒里刷完（第 1 波约 9 只僵尸、第 10 波约 50 只、第 20 波约 100 只）；
 //   每 5 波来精英（每 10 波多一只），每 10 波来这张图的首领；刷完后 stall 秒还没清完也算这一波过了（剩下的接着打）；场上最多 aliveMax 只
@@ -22864,20 +22863,26 @@ CFG.survivor.box={
   // waves：资源 = 常规每波的银币 / 建材 / 科研点 / 设计点（CFG.rewardPerWave × 地区倍率 × 难度倍率 × 第 refWave 波的波数系数）× waves；wares：地区材料按常规每波的物资 × wares
   // core：地区特殊材料（核心特产）几个；weapon：同阶常规商店武器几把；rep：本地一个结盟家族的声望；book：本地的打造书几本；key：开出黄金宝箱钥匙的概率；gold：金币；soul：本地英雄之魄
   kinds:{
-    iron:  {name:'黑铁宝箱', col:'#8c929c', dk:'#4a4e56', waves:2,  wares:2},
-    bronze:{name:'青铜宝箱', col:'#c98a4a', dk:'#6e4524', waves:4,  wares:4,  core:[1,2], weapon:1, rep:[20,40]},
-    silver:{name:'白银宝箱', col:'#dfe6ee', dk:'#7d8794', waves:8,  wares:8,  core:[2,3], weapon:1, rep:[40,80],  book:1, key:0.25},
-    gold:  {name:'黄金宝箱', col:'#ffd54a', dk:'#9a6a10', waves:16, wares:16, core:[3,5], weapon:2, rep:[80,160], book:2, gold:[20,40], soul:[3,6], keyName:'黄金宝箱钥匙'},
+    // 0.12.7b（用户定）开出来的不是全都给，而是从 pool 里随机挑 pick 样（Claude 定几样）；钥匙另外按概率；英雄之魄少给（Claude 定 1～2）
+    iron:  {name:'黑铁宝箱', col:'#8c929c', dk:'#4a4e56', waves:2,  wares:2,  pick:2, pool:['银币','建材','科研点','设计点','wares']},
+    bronze:{name:'青铜宝箱', col:'#c98a4a', dk:'#6e4524', waves:4,  wares:4,  core:[1,2], weapon:1, rep:[20,40], pick:3, pool:['银币','建材','科研点','设计点','wares','core','weapon','rep']},
+    silver:{name:'白银宝箱', col:'#dfe6ee', dk:'#7d8794', waves:8,  wares:8,  core:[2,3], weapon:1, rep:[40,80],  book:1, key:0.25, pick:3, pool:['银币','建材','科研点','设计点','wares','core','weapon','rep','book']},
+    gold:  {name:'黄金宝箱', col:'#ffd54a', dk:'#9a6a10', waves:16, wares:16, core:[3,5], weapon:2, rep:[80,160], book:2, gold:[20,40], soul:[1,2], keyName:'黄金宝箱钥匙', pick:4, pool:['银币','建材','科研点','设计点','wares','core','weapon','rep','book','gold','soul']},
   },
   refWave:15,   // 资源按常规第 15 波的波数系数（waveRewK）算
   rnd:[0.8,1.2],   // 资源浮动
   timed:{every:3, by:[[0,'iron'],[10,'bronze'],[20,'silver']]},   // 0.12.7a 改成按波次：每打完 3 波直接给一个（不用捡）：第 10 波前黑铁、10～19 波青铜、20 波起白银
-  field:{every:50, life:90, max:3, r:[6,14], w:{iron:80, bronze:20}},   // 地图上每 50 秒冒一个（离英雄 6～14 格、走得到的地方），90 秒没捡就消失，同时最多 3 个；品质按权重
+  field:{every:50, life:90, max:3, r:[6,14], w:{iron:80, bronze:20}},   // 地图上每 50 秒冒一个（离英雄 6～14 格、走得到的地方），同时最多 3 个；品质按权重
+  auto:1.2,   // 0.12.7b（用户定）宝箱自动拾取：出现 1.2 秒后自己飞进背包（开五倍速也拿得到）；走过去碰到也照样捡
+  bossSoul:1,   // 0.12.7b（用户定）每打死一只大首领必掉 1 个英雄之魄（这张图的英雄，结算时入库，不受宝箱上限）
   drop:{elite:'bronze', boss:'silver'},   // 精英掉青铜、首领掉白银（掉在地上，走过去捡；不会消失）
   pick:20,   // 英雄离宝箱多近（像素）就捡起来
   endKey:{minW:5, n:1},   // 对局结束：打完 5 波给 1 把黄金宝箱钥匙
-  daily:{iron:30, bronze:12, silver:5, gold:3},   // 每天最多拿到多少（局内捡到的、结算给的钥匙、开白银开出的钥匙都算；超出的不给）
+  daily:{bronze:12, silver:5, gold:3},   // 0.12.7b（用户定）每张地图每天各自的上限，黑铁不限（局内捡到的、结算给的钥匙、开白银开出的钥匙都算；超出的不给）
 };
+// 0.12.7b（用户定）「急救包」不再是卡牌，改成地图上的急救包：每 every 秒在英雄 r 格内冒一个，同时最多 max 个，life 秒没捡就消失；队长走过去碰到，全队回复 k 最大生命（Claude 定数）
+CFG.survivor.heal={every:40, life:60, max:2, r:[5,12], k:0.3, pick:22};
+
 
 /* ---------- 0.12.5 第二轮（用户 2026-10-30 策划，代理 T）新塔楼「电能塔」ynTesla、新功能建筑「源能装置」ynDevice。逻辑 structs/yn_tdev.js，占位图 art/yn_stub_t.js ----------
    两座都是通关「源能王城」(地图 id ynCity)后才能研发（designTree 的 map，同守望长城的长城城墙 / 边军大营）。
@@ -75756,45 +75761,53 @@ function svBegin(){if(!G||G.mode!=='survivor')return;startWave();G.queue.length=
 
 /* ---------- 0.12.7b 幸存者模式的宝箱（用户 2026-10-31 定；数据 data/sv_box.js，界面 ui/sv_hub.js）----------
    局内（G.sv 上的字段，开局 svBoxInit 补）：bx 地上的宝箱 [{x,y,k,t 出现的时间,life 0 = 不消失}]、gb 已经捡到的 {种类: 个数}、bfT 下一个地上宝箱的时间；每打完几波给的宝箱在 svBoxWave
-   局外（META.sv）：box {'种类|地图|难度': 个数}（黄金 = 黄金宝箱钥匙）、day {d 哪天, n {种类: 今天拿了几个}}
+   局外（META.sv）：box {'种类|地图|难度': 个数}（黄金 = 黄金宝箱钥匙）、day {d 哪天, n {地图: {种类: 今天拿了几个}}}（0.12.7b 每张地图各自的上限，黑铁不限）
+   0.12.7b（用户定）：宝箱自动拾取；开出来的从 pool 里挑几样；大首领必掉英雄之魄；地图上的急救包（S.hk）
    结算（game/survivor.svAward 调 svBoxEnd）：捡到的宝箱 + 打完 endKey.minW 波给的钥匙，按每天的上限入库；开宝箱在营地「娱乐模式」页（svBoxOpen） */
 const svBoxC=()=>CFG.survivor.box;
 function svBoxFix(m){const r=svFix(m);if(!r)return null;const o=v=>v&&typeof v==='object'&&!Array.isArray(v);if(!o(r.box))r.box={};if(!o(r.day)||!o(r.day.n))r.day={d:'',n:{}};return r}
 META_LATE.push(['svBoxFix',m=>{svBoxFix(m)}]);
 const svBoxSt=()=>svBoxFix(META)||{box:{},day:{d:'',n:{}}};
 function svBoxDay(){const S=svBoxSt(),d=dayKey();if(S.day.d!==d)S.day={d,n:{}};return S.day}
-const svBoxLeft=k=>Math.max(0,(svBoxC().daily[k]||0)-(svBoxDay().n[k]||0));
+const svBoxLeft=(k,m)=>{const cap=svBoxC().daily[k];if(cap==null)return Infinity;const N=svBoxDay().n[m];return Math.max(0,cap-((N&&typeof N==='object'&&N[k])||0))};   // 0.12.7b 按地图；没写上限 = 不限（黑铁）
 // 入库（受每天的上限）：返回实际给了几个
-function svBoxGive(k,m,d,n){const g=Math.min(n,svBoxLeft(k));if(g<=0)return 0;const S=svBoxSt(),key=k+'|'+m+'|'+d;S.box[key]=(S.box[key]||0)+g;const D=svBoxDay();D.n[k]=(D.n[k]||0)+g;return g}
+function svBoxGive(k,m,d,n){const g=Math.min(n,svBoxLeft(k,m));if(g<=0)return 0;const S=svBoxSt(),key=k+'|'+m+'|'+d;S.box[key]=(S.box[key]||0)+g;const D=svBoxDay();let N=D.n[m];if(!N||typeof N!=='object')N=D.n[m]={};N[k]=(N[k]||0)+g;return g}
 const svBoxN=()=>{let n=0;const B=svBoxSt().box;for(const k in B)n+=B[k]||0;return n};
 // —— 局内 ——
-function svBoxInit(S){const C=svBoxC();S.bx=[];S.gb={};S.bfT=C.field.every}
+function svBoxInit(S){const C=svBoxC();S.bx=[];S.gb={};S.bfT=C.field.every;S.hk=[];S.hkT=CFG.survivor.heal.every;S.sl={}}   // hk 地上的急救包（x、y、t）、hkT 下一个的时间、sl 大首领掉的英雄之魄（英雄 → 个数）
 function svBoxAt(k,x,y,life){const S=G.sv;S.bx.push({x,y,k,t:S.t,life:life||0})}
-function svBoxField(){const S=G.sv,C=svBoxC().field,h=svHero();if(!h)return;let n=0;for(const b of S.bx)if(b.life)n++;if(n>=C.max)return;
-  for(let q=0;q<10;q++){const a=rng()*Math.PI*2,r=(C.r[0]+rng()*(C.r[1]-C.r[0]))*16,x=h.x+Math.cos(a)*r,y=h.y+Math.sin(a)*r;if(x<40||y<40||x>MW-40||y>MH-40)continue;
-    const t=tidx(x,y);if(!(SVB.D[t]>=0))continue;let tw=0;for(const k in C.w)tw+=C.w[k];let v=rng()*tw,kk='iron';for(const k in C.w){v-=C.w[k];if(v<=0){kk=k;break}}
-    svBoxAt(kk,(t%MAP_W)*16+8,((t/MAP_W)|0)*16+8,C.life);return}}
+// 英雄 r 格内一个走得到的格子（格子下标，−1 = 没找到）
+function svSpot(r0,r1){const h=svHero();if(!h)return-1;for(let q=0;q<10;q++){const a=rng()*Math.PI*2,r=(r0+rng()*(r1-r0))*16,x=h.x+Math.cos(a)*r,y=h.y+Math.sin(a)*r;if(x<40||y<40||x>MW-40||y>MH-40)continue;const t=tidx(x,y);if(SVB.D[t]>=0)return t}return-1}
+function svBoxField(){const S=G.sv,C=svBoxC().field;let n=0;for(const b of S.bx)if(b.life)n++;if(n>=C.max)return;
+  {const t=svSpot(C.r[0],C.r[1]);if(t<0)return;let tw=0;for(const k in C.w)tw+=C.w[k];let v=rng()*tw,kk='iron';for(const k in C.w){v-=C.w[k];if(v<=0){kk=k;break}}
+    svBoxAt(kk,(t%MAP_W)*16+8,((t/MAP_W)|0)*16+8,C.life)}}
 function svBoxGot(k,why){const S=G.sv;S.gb[k]=(S.gb[k]||0)+1;sfx('pick');sayT(`${why}：${svBoxC().kinds[k].name}`)}
 function svBoxTick(dt){const S=G.sv;if(!S||S.end||G.phase!=='wave')return;if(!S.bx)svBoxInit(S);const C=svBoxC(),h=svHero();
   if(S.t>=S.bfT){S.bfT+=C.field.every;svBoxField()}
-  if(!S.bx.length||!h||h.dead)return;const R2=C.pick*C.pick;
-  for(let i=S.bx.length-1;i>=0;i--){const b=S.bx[i];if(b.life&&S.t-b.t>b.life){S.bx.splice(i,1);continue}const dx=b.x-h.x,dy=b.y-h.y;if(dx*dx+dy*dy<=R2){S.bx.splice(i,1);svBoxGot(b.k,'捡到')}}}
+  if(!h||h.dead)return;const R2=C.pick*C.pick;
+  for(let i=S.bx.length-1;i>=0;i--){const b=S.bx[i],dx=b.x-h.x,dy=b.y-h.y;if(S.t-b.t>=C.auto||dx*dx+dy*dy<=R2){S.bx.splice(i,1);svBoxGot(b.k,'捡到')}}   // 0.12.7b 自动拾取
+  const HC=CFG.survivor.heal;if(S.t>=S.hkT){S.hkT+=HC.every;if(S.hk.length<HC.max){const t=svSpot(HC.r[0],HC.r[1]);if(t>=0)S.hk.push({x:(t%MAP_W)*16+8,y:((t/MAP_W)|0)*16+8,t:S.t})}}
+  const P2=HC.pick*HC.pick;for(let i=S.hk.length-1;i>=0;i--){const b=S.hk[i];if(S.t-b.t>HC.life){S.hk.splice(i,1);continue}const dx=b.x-h.x,dy=b.y-h.y;if(dx*dx+dy*dy<=P2){S.hk.splice(i,1);for(const u of G.heroes)if(!u.dead)healF(u,u.maxHp*HC.k);sfx('pick');sayT(`急救包：全队回复 ${Math.round(HC.k*100)}% 生命`)}}}   // 0.12.7b（用户定）急救包改成地图上的，队长走过去捡
 // 0.12.7a 每打完 timed.every 波直接给一个（game/survivor.svWaveEnd 调）
 function svBoxWave(n){const S=G.sv,C=svBoxC().timed;if(!S||n%C.every)return;if(!S.bx)svBoxInit(S);let k='iron';for(const[w,kk]of C.by)if(n>=w)k=kk;svBoxGot(k,`打完第 ${n} 波`)}
 // 精英、首领掉宝箱（掉在它死的地方）
-function svBoxDie(i,c){const S=G.sv;if(!S||S.end||E.smn[i]||!c)return;if(!S.bx)svBoxInit(S);const D=svBoxC().drop,k=c.tier>=5?D.boss:c.tier===4?D.elite:null;if(k)svBoxAt(k,E.x[i],E.y[i],0)}
+function svBoxDie(i,c){const S=G.sv;if(!S||S.end||E.smn[i]||!c)return;if(!S.bx)svBoxInit(S);const D=svBoxC().drop,k=c.tier>=5?D.boss:c.tier===4?D.elite:null;if(k)svBoxAt(k,E.x[i],E.y[i],0);
+  if(c.tier>=5&&!c.mini){const h=svBoxSoul(G.map),n=svBoxC().bossSoul;if(h&&n>0){S.sl[h]=(S.sl[h]||0)+n;sayT(`${c.name}掉落：${CFG.heroes[h].name}之魄 ×${n}`)}}}   // 0.12.7b（用户定）大首领必掉英雄之魄
 // 地上的宝箱：小箱子（箱身 + 箱盖 + 锁扣），快消失时闪
 const SVBX_C={};const svBoxCol=k=>SVBX_C[k]||(SVBX_C[k]={c:C(svBoxC().kinds[k].col),d:C(svBoxC().kinds[k].dk)});   // 画图用的颜色对象（ui/draw 的 C）
 const SVBX_K={sh:null,lk:null,hi:null};
-function svBoxDraw(cx0,cy0,cx1,cy1){const S=G.sv;if(!S||!S.bx||!S.bx.length)return;if(!SVBX_K.sh){SVBX_K.sh=C('#000000');SVBX_K.lk=C('#2a2016');SVBX_K.hi=C('#ffe9a8')}const Kq=SVBX_K;
-  for(let i=0;i<S.bx.length;i++){const b=S.bx[i];if(b.x<cx0-16||b.x>cx1+16||b.y<cy0-16||b.y>cy1+16)continue;if(b.life&&b.life-(S.t-b.t)<10&&(G.time*4|0)%2)continue;
+function svBoxDraw(cx0,cy0,cx1,cy1){const S=G.sv;if(!S||!S.bx)return;if(!SVBX_K.sh){SVBX_K.sh=C('#000000');SVBX_K.lk=C('#2a2016');SVBX_K.hi=C('#ffe9a8');SVBX_K.w=C('#f4f0e8');SVBX_K.r=C('#d83a3a');SVBX_K.e=C('#8a6a5a')}const Kq=SVBX_K;
+  for(let i=0;i<S.hk.length;i++){const b=S.hk[i];if(b.x<cx0-16||b.x>cx1+16||b.y<cy0-16||b.y>cy1+16)continue;if(CFG.survivor.heal.life-(S.t-b.t)<8&&(G.time*4|0)%2)continue;const x=Math.round(b.x),y=Math.round(b.y);   // 急救包：白盒子红十字
+    rectW(x-5,y+4,11,2,Kq.sh,0.35);rectW(x-5,y-4,11,9,Kq.e);rectW(x-4,y-3,9,7,Kq.w);rectW(x-1,y-2,3,5,Kq.r);rectW(x-3,y,7,1,Kq.r)}
+  for(let i=0;i<S.bx.length;i++){const b=S.bx[i];if(b.x<cx0-16||b.x>cx1+16||b.y<cy0-16||b.y>cy1+16)continue;
     const D=svBoxCol(b.k),x=Math.round(b.x),y=Math.round(b.y)+Math.round(Math.sin(G.time*3+i)*1);
     rectW(x-6,y+4,13,2,Kq.sh,0.35);rectW(x-6,y-1,13,6,D.d);rectW(x-5,y,11,4,D.c);rectW(x-6,y-5,13,4,D.d);rectW(x-5,y-4,11,2,D.c);rectW(x-1,y-2,3,3,Kq.lk);rectW(x,y-1,1,1,Kq.hi)}}
 feat('svbox',{on:()=>!!(G&&G.mode==='survivor'),hooks:{tick:svBoxTick,eDie:svBoxDie,drawUnder:svBoxDraw}});
 // 结算：捡到的 + 钥匙，按每天的上限入库；返回 {got 给了的, lost 超出上限没给的}
 function svBoxEnd(){const S=G.sv,C=svBoxC(),got={},lost={},m=G.map,d=DIFF.id;if(!S)return{got,lost};const want=Object.assign({},S.gb||{});
   if((S.wc||0)>=C.endKey.minW)want.gold=(want.gold||0)+C.endKey.n;
-  for(const k of C.order){const n=want[k]||0;if(!n)continue;const g=svBoxGive(k,m,d,n);if(g)got[k]=g;if(n>g)lost[k]=n-g}return{got,lost}}
+  for(const k of C.order){const n=want[k]||0;if(!n)continue;const g=svBoxGive(k,m,d,n);if(g)got[k]=g;if(n>g)lost[k]=n-g}
+  const souls=Object.assign({},S.sl||{});for(const h in souls)META.souls[h]=(META.souls[h]||0)+souls[h];return{got,lost,souls}}   // souls：大首领掉的英雄之魄
 // —— 开宝箱 ——
 const svBoxRi=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 function svBoxWeapon(m){const t=mapTierOf(m)+1;let L=regularBases(t).filter(b=>gearKindOf(b)==='w'&&gearOpen(b));
@@ -75804,20 +75817,21 @@ function svBoxBook(m){const L=trBooksOf(m);if(!L.length)return null;let b=L[Math
 function svBoxSoul(m){let L=trSoulsOf(m);if(!L.length){const P=CFG.mapPages[mapTierOf(m)];if(P)L=P.maps.flatMap(trSoulsOf)}return L.length?L[Math.floor(Math.random()*L.length)]:null}
 // 开一个：o = 合计（开多个时累加）；返回 o
 function svBoxOne(k,m,d,o){const C=svBoxC(),D=C.kinds[k],dk=(DIFFS[d]&&DIFFS[d].reward)||1,wk=waveRewK(C.refWave),rn=()=>C.rnd[0]+Math.random()*(C.rnd[1]-C.rnd[0]);
-  for(const r in CFG.rewardPerWave){const n=Math.round(CFG.rewardPerWave[r]*(r==='建材'?1:mapRewardK(m))*dk*wk*D.waves*rn());if(n>0){META.wallet[r]=(META.wallet[r]||0)+n;o.res[r]=(o.res[r]||0)+n}}
+  const P=D.pool.slice(),on={};for(let q=0;q<D.pick&&P.length;q++)on[P.splice(Math.floor(Math.random()*P.length),1)[0]]=1;   // 0.12.7b（用户定）只给其中几样
+  for(const r in CFG.rewardPerWave){if(!on[r])continue;const n=Math.round(CFG.rewardPerWave[r]*(r==='建材'?1:mapRewardK(m))*dk*wk*D.waves*rn());if(n>0){META.wallet[r]=(META.wallet[r]||0)+n;o.res[r]=(o.res[r]||0)+n}}
   const T=CFG.wares&&CFG.wares.tiers[mapTierOf(m)],M=T&&T.maps&&T.maps[m],W=CFG.forgeMat.wave;if(!META.wares)META.wares={};
-  if(M)for(const kind in T.basic){const w=T.basic[kind],n=coreDropN(W.base*(M.basic.includes(w)?1:W.far)*dk*wk*D.wares);if(n>0){META.wares[w]=(META.wares[w]||0)+n;o.wares[w]=(o.wares[w]||0)+n}}
-  if(D.core){const c=wareCoreOf(m),n=svBoxRi(D.core[0],D.core[1]);if(c&&n>0){META.wares[c]=(META.wares[c]||0)+n;o.wares[c]=(o.wares[c]||0)+n}}
-  for(let q=0;q<(D.weapon||0);q++){const b=svBoxWeapon(m);if(b){addGear(pgStd(b));o.items.push(b)}}
-  if(D.rep&&META.el){const F=elRegFams(m);if(F.length){const n=svBoxRi(D.rep[0],D.rep[1]);elRepAdd(elPick(F),n);o.rep+=n}}
-  for(let q=0;q<(D.book||0);q++){const b=svBoxBook(m);if(b){addGear(makeGear(b,{book:true,mp:m}));o.books.push(b)}}
+  if(M&&on.wares)for(const kind in T.basic){const w=T.basic[kind],n=coreDropN(W.base*(M.basic.includes(w)?1:W.far)*dk*wk*D.wares);if(n>0){META.wares[w]=(META.wares[w]||0)+n;o.wares[w]=(o.wares[w]||0)+n}}
+  if(D.core&&on.core){const c=wareCoreOf(m),n=svBoxRi(D.core[0],D.core[1]);if(c&&n>0){META.wares[c]=(META.wares[c]||0)+n;o.wares[c]=(o.wares[c]||0)+n}}
+  if(on.weapon)for(let q=0;q<(D.weapon||0);q++){const b=svBoxWeapon(m);if(b){addGear(pgStd(b));o.items.push(b)}}
+  if(D.rep&&on.rep&&META.el){const F=elRegFams(m);if(F.length){const n=svBoxRi(D.rep[0],D.rep[1]),f=elPick(F);elRepAdd(f,n);o.rep+=n;o.repF[f]=(o.repF[f]||0)+n}}
+  if(on.book)for(let q=0;q<(D.book||0);q++){const b=svBoxBook(m);if(b){addGear(makeGear(b,{book:true,mp:m}));o.books.push(b)}}
   if(D.key&&Math.random()<D.key){if(svBoxGive('gold',m,d,1))o.keys++;else o.keyLost++}
-  if(D.gold){const n=svBoxRi(D.gold[0],D.gold[1]);META.wallet.金币=(META.wallet.金币||0)+n;o.gold+=n}
-  if(D.soul){const h=svBoxSoul(m),n=svBoxRi(D.soul[0],D.soul[1]);if(h&&n>0){META.souls[h]=(META.souls[h]||0)+n;o.souls[h]=(o.souls[h]||0)+n}}
+  if(D.gold&&on.gold){const n=svBoxRi(D.gold[0],D.gold[1]);META.wallet.金币=(META.wallet.金币||0)+n;o.gold+=n}
+  if(D.soul&&on.soul){const h=svBoxSoul(m),n=svBoxRi(D.soul[0],D.soul[1]);if(h&&n>0){META.souls[h]=(META.souls[h]||0)+n;o.souls[h]=(o.souls[h]||0)+n}}
   o.n++;return o}
 // 开 key（'种类|地图|难度'）n 个（'all' = 全部）
 function svBoxOpen(key,n){const S=svBoxSt(),have=S.box[key]||0;if(!have)return null;const[k,m,d]=key.split('|');if(!svBoxC().kinds[k]||!CFG.maps[m])return null;
-  const c=n==='all'?have:Math.min(have,Math.max(1,n|0)),o={k,m,d,n:0,res:{},wares:{},items:[],books:[],rep:0,keys:0,keyLost:0,gold:0,souls:{}};
+  const c=n==='all'?have:Math.min(have,Math.max(1,n|0)),o={k,m,d,n:0,res:{},wares:{},items:[],books:[],rep:0,repF:{},keys:0,keyLost:0,gold:0,souls:{}};
   S.box[key]=have-c;if(!S.box[key])delete S.box[key];for(let q=0;q<c;q++)svBoxOne(k,m,d,o);
   v5fEarnGot({...o.res,金币:o.gold,wares:o.wares});saveMeta();return o}
 
@@ -76926,7 +76940,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.7a',GAME_TAG='测试版',GAME_CODE=193,GAME_BUILD="21654cf+",GAME_BUILT=1793486294115,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.7a',GAME_TAG='测试版',GAME_CODE=193,GAME_BUILD="c9fbeb8+",GAME_BUILT=1793487670678,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -82021,7 +82035,7 @@ function svResult(got){if(!got)return;const B=svSt().best[svKey(got.map,got.diff
     <p class="meta">这张图这个难度的最长存活：${B?`${B.w||0} 波(${svTime(B.t)}，击杀 ${B.k})`:'—'}${got.old&&got.nb?`，原来 ${got.old.w||0} 波`:''}</p>
     <div class="actions"><button class="px big on" type="button" data-act="svxAgain">再来一局</button><button class="px" type="button" data-act="svxBack">返回幸存者模式</button><button class="px" type="button" data-act="tomenu">返回主界面</button></div></div>`,'[data-act=svxAgain]')}
 const svGotTxt=g=>{const L=[];for(const k in g.res||{})if(g.res[k]>0)L.push(`${k} <b>+${g.res[k]}</b>`);for(const k in g.wares||{})if(CFG.wares.items[k])L.push(`${CFG.wares.items[k].name} <b>+${g.wares[k]}</b>`);if(g.rep>0)L.push(`家族声望 <b>+${g.rep}</b>`);if(g.exp)L.push(`${g.hero}经验 <b>+${g.exp}</b>`);return L.length?L.join(' · '):'(存活不满 1 分钟没有奖励)'};   // 0.12.7a 结算的奖励一行
-const svBoxGotTxt=x=>{if(!x)return'';const C=svBoxC(),a=C.order.filter(k=>x.got[k]).map(k=>`${svBoxIco(k)} ${svBoxNm(k)} ×${x.got[k]}`),b=C.order.filter(k=>x.lost[k]).map(k=>`${svBoxNm(k)} ${x.lost[k]}`);return(a.length?`<p class="meta">宝箱：${a.join(' · ')}(在营地「娱乐模式」页开)</p>`:'')+(b.length?`<p class="meta warn">今天的宝箱上限满了，没拿到：${b.join('、')}</p>`:'')};   // 0.12.7b
+const svBoxGotTxt=x=>{if(!x)return'';const sl=Object.keys(x.souls||{}).map(h=>`<span class="svrc"><img alt="" src="${heroIcon(h,1)}"><b>+${x.souls[h]}</b></span>`).join('');const C=svBoxC(),a=C.order.filter(k=>x.got[k]).map(k=>`${svBoxIco(k)} ${svBoxNm(k)} ×${x.got[k]}`),b=C.order.filter(k=>x.lost[k]).map(k=>`${svBoxNm(k)} ${x.lost[k]}`);return(a.length?`<p class="meta">宝箱：${a.join(' · ')}(在营地「娱乐模式」页开)</p>`:'')+(sl?`<p class="meta">英雄之魄：</p><div class="svrcs">${sl}</div>`:'')+(b.length?`<p class="meta warn">这张图今天的宝箱上限满了，没拿到：${b.join('、')}</p>`:'')};   // 0.12.7b
 function svLeave(){running=false;hudEl.hidden=true;newGame({})}
 function svAct(a,v,b){
   if(svHubAct(a,v)){sfx('click');showHub('fun');svPagerFix();return}   // 0.12.7b 营地「娱乐模式」页的按钮（ui/sv_hub）
@@ -82047,7 +82061,7 @@ let SVH_POP=null,SVH_RES=null;
 .svpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}.svpick button{display:flex;gap:6px;align-items:center;text-align:left}.svpick button span{display:flex;flex-direction:column;line-height:1.25}
 .svbx{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;margin:4px 0;padding:4px 8px;background:#1a1622;box-shadow:inset 0 0 0 1px var(--iron)}
 .svbxi{display:inline-block;vertical-align:middle;flex:none;width:24px;height:18px;position:relative;background:var(--c);box-shadow:inset 0 0 0 2px var(--d),inset 0 7px 0 0 var(--d)}.svbxi:after{content:'';position:absolute;left:9px;top:5px;width:6px;height:6px;background:#2a2016;box-shadow:inset 0 0 0 2px #ffe9a8}
-.svfoot .shrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.svday{line-height:1.9}.svday .svbxi{margin-right:4px}.svres2 li{margin:2px 0}.svgo{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:8px}
+.svfoot .shrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.svrcs{display:flex;flex-wrap:wrap;gap:8px}.svrc{display:flex;align-items:center;gap:4px;padding:4px 8px;background:#1a1622;box-shadow:inset 0 0 0 1px var(--iron)}.svrc img{width:32px;height:32px;image-rendering:pixelated}.svrc .wic{transform:scale(1.4);margin:0 6px}.svrc .eli{width:28px;height:28px}.svrc b{font-weight:400;color:#ffe08a}.svday{line-height:1.9}.svday .svbxi{margin-right:4px}.svres2 li{margin:2px 0}.svgo{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:8px}
 `,st=document.createElement('style');st.textContent=css;document.head.appendChild(st)}
 const svBoxIco=k=>{const D=svBoxC().kinds[k];return`<i class="svbxi" style="--c:${D.col};--d:${D.dk}"></i>`};
 const svBoxNm=k=>{const D=svBoxC().kinds[k];return D.keyName||D.name};
@@ -82056,7 +82070,7 @@ function hubFun(){const C=CFG.survivor,ds=CFG.difficulties.filter(d=>diffOpen(d)
   if(!open.includes(SV_MENU.map))SV_MENU.map=open[0]||'wild';if(!ds.some(d=>d.id===SV_MENU.diff))SV_MENU.diff=(ds[0]||CFG.difficulties[0]).id;
   const pg=Math.max(0,pages.findIndex(P=>P.maps.includes(SV_MENU.map)));SVH_PG=pg;
   const lid=svLeadId(),sp=lid?currentHeroSpec(lid):null,H=sp&&CFG.heroes[sp.id],B=svSt().best,auto=svSt().auto,Q=svSqC(),W=C.wave,L=svSqList();
-  const help=ui2Q('幸存者模式',()=>hpL(['不能建造，也没有主堡要守。挑一位英雄当队长，带精英小队上场；队长倒下就结算',`一波一波打：这一波的亡灵从四面八方刷出来，清完以后三选一强化，歇 ${W.gap} 秒开下一波；每 ${W.eliteEvery} 波来精英、每 ${W.bossEvery} 波来这张图的首领(这两波开卡有品质保底)；越往后越多、越强(同无尽模式的第几波)`,`精英小队最多 ${Q.max} 名：开局带前 ${Q.start} 名，之后每打完 ${Q.every} 波赶到 1 名援军(选「援军」卡立刻叫来下一名)；队员跟着队长打身边的亡灵，倒下 ${Q.respawn} 秒后在队长身边复活，不会受伤`,'结算：每打完 1 波按常规的 1 波给银币、建材、科研点、设计点、地区物资和英雄经验；一路上的宝箱在「战利品」里开']));
+  const help=ui2Q('幸存者模式',()=>hpL(['不能建造，也没有主堡要守。挑一位英雄当队长，带精英小队上场；队长倒下就结算',`一波一波打：这一波的亡灵从四面八方刷出来，清完以后三选一强化(地图上会冒出急救包，走过去捡全队回血)，歇 ${W.gap} 秒开下一波；每 ${W.eliteEvery} 波来精英、每 ${W.bossEvery} 波来这张图的首领(这两波开卡有品质保底)；越往后越多、越强(同无尽模式的第几波)`,`精英小队最多 ${Q.max} 名：开局带前 ${Q.start} 名，之后每打完 ${Q.every} 波赶到 1 名援军；队员跟着队长打身边的亡灵，倒下 ${Q.respawn} 秒后在队长身边复活，不会受伤`,'结算：每打完 1 波按常规的 1 波给银币、建材、科研点、设计点、地区物资和英雄经验；大首领掉的英雄之魄直接入库；一路上的宝箱在「战利品」里开']));
   const card=k=>{const lock=!open.includes(k),b=svBestOf(k);return`<div class="mapw"><button class="mapc${k===SV_MENU.map?' on':''}${lock?' lock':''}" type="button" ${lock?'aria-disabled="true"':`data-act="svxMap" data-v="${k}"`} style="${mapColor(k)}"><b>${CFG.maps[k].name}</b><span>${lock?'还没解锁':b?`最多 ${b.r.w||0} 波 · ${b.d.name}`:'还没有纪录'}</span></button></div>`};
   const mapBox=`<div class="box"><div class="shrow"><h4 class="sh">选择地图</h4>${pages.length>1?`<div class="ptabs">${pages.map((P,i)=>`<button class="px${i===pg?' on':''}" type="button" data-act="mpage" data-v="${i}">${P.name}</button>`).join('')}</div>`:''}</div>
     <div class="mpager" data-sk="svpager">${pages.map(P=>`<div class="mpage">${P.maps.map(card).join('')}</div>`).join('')}</div>
@@ -82073,8 +82087,8 @@ function svPagerFix(){const el=sheet.querySelector('.mpager[data-sk=svpager]');i
 function svLootHTML(){const C=svBoxC(),S=svBoxSt(),D=svBoxDay(),keys=Object.keys(S.box).filter(k=>S.box[k]>0&&C.kinds[k.split('|')[0]]);
   keys.sort((a,b)=>C.order.indexOf(a.split('|')[0])-C.order.indexOf(b.split('|')[0])||(a<b?-1:a>b?1:0));
   const row=key=>{const[k,m,d]=key.split('|'),n=S.box[key];return`<div class="svbx">${svBoxIco(k)}<span><b style="color:${C.kinds[k].col}">${svBoxNm(k)}</b> ×${n}<br><span class="meta">${CFG.maps[m]?CFG.maps[m].name:m} · ${DIFFS[d]?DIFFS[d].name:d}</span></span><span class="row2"><button class="px on" type="button" data-act="svxBoxO" data-v="${key}">${k==='gold'?'开黄金宝箱':'开 1 个'}</button>${n>1?`<button class="px" type="button" data-act="svxBoxA" data-v="${key}">全部开</button>`:''}</span></div>`};
-  return`<div class="box"><h4 class="sh">战利品 ${ui2Q('宝箱',()=>hpL([`撑过 ${C.timed.every/60} 分钟给一个宝箱(10 分钟起青铜、20 分钟起白银)；地图上会冒出宝箱(${C.field.life} 秒不捡就消失)；精英掉青铜宝箱、首领掉白银宝箱，走过去捡`,`活满 ${C.endKey.minT/60} 分钟结算时给 1 把黄金宝箱钥匙；开白银宝箱有 ${Math.round(C.kinds.silver.key*100)}% 开出钥匙；一把钥匙开一个黄金宝箱`,'黑铁：银币、建材、科研点、设计点、地区材料；青铜：再加地区特殊材料、同阶常规商店武器、家族声望；白银：再加地区打造书、钥匙；黄金：再加金币、英雄之魄(资源一个比一个多)','宝箱记着从哪张图、哪个难度来的：材料、打造书、英雄之魄都是那张图的，资源按那个难度的结算倍率','每天拿到的宝箱有上限(捡到的、钥匙都算)，超出的不给']))}</h4>
-    <p class="meta svday">今天还能拿：${C.order.map(k=>`${svBoxIco(k)} ${svBoxLeft(k)} / ${C.daily[k]}`).join('　')}</p>
+  return`<div class="box"><h4 class="sh">战利品 ${ui2Q('宝箱',()=>hpL([`每打完 ${C.timed.every} 波给一个宝箱(第 10 波起青铜、第 20 波起白银)；地图上会冒出宝箱；精英掉青铜宝箱、首领掉白银宝箱；宝箱都会自动拾取；打死大首领必掉 1 个这张图的英雄之魄`,`打完 ${C.endKey.minW} 波结算时给 1 把黄金宝箱钥匙；开白银宝箱有 ${Math.round(C.kinds.silver.key*100)}% 开出钥匙；一把钥匙开一个黄金宝箱`,`开出来的是下面几样里随机挑的几样(黑铁 ${C.kinds.iron.pick} 样、青铜 ${C.kinds.bronze.pick} 样、白银 ${C.kinds.silver.pick} 样、黄金 ${C.kinds.gold.pick} 样)：黑铁——银币、建材、科研点、设计点、地区材料；青铜再加地区特殊材料、同阶常规商店武器、家族声望；白银再加地区打造书(另有概率开出钥匙)；黄金再加金币、英雄之魄(资源一个比一个多)`,'宝箱记着从哪张图、哪个难度来的：材料、打造书、英雄之魄都是那张图的，资源按那个难度的结算倍率','每张地图每天拿到的青铜、白银宝箱和钥匙各有上限(捡到的、钥匙都算)，超出的不给；黑铁不限']))}</h4>
+    <p class="meta svday">${CFG.maps[SV_MENU.map]?CFG.maps[SV_MENU.map].name:''}今天还能拿：${C.order.filter(k=>C.daily[k]!=null).map(k=>`${svBoxIco(k)} ${svBoxLeft(k,SV_MENU.map)} / ${C.daily[k]}`).join('　')}　${svBoxIco('iron')} 不限</p>
     ${keys.length?keys.map(row).join(''):'<p class="meta">还没有宝箱</p>'}</div>`}
 // —— 弹窗 ——
 function svHubPop(){if(!SVH_POP)return'';let T='',body='';
@@ -82082,11 +82096,13 @@ function svHubPop(){if(!SVH_POP)return'';let T='',body='';
     body=`<div class="svpick">${L.map(id=>{const sp=currentHeroSpec(id);return`<button class="px${id===lid?' on':''}" type="button" data-act="svxHeroP" data-v="${id}"><img alt="" src="${heroIconS(sp.id,3)}"><span><b>${CFG.heroes[sp.id].name}</b>${starsHTML(sp.star)}</span></button>`}).join('')}</div>`}
   else if(SVH_POP==='sq'){T=`精英小队(${svSqList().length} / ${svSqC().max})`;const L=elSt().list.filter(svSqOk),In=svSqList();
     body=`<p class="meta">点人加入 / 移出；按加入的顺序赶到(前 ${svSqC().start} 名开局就在)。派遣、驻扎中的不能带。</p><div class="svpick">${L.map(e=>{const i=In.indexOf(e);return`<button class="px${i>=0?' on':''}" type="button" data-act="svxSqT" data-v="${e.id}"><img alt="" src="${elIcon(e)}"><span><b>${i>=0?(i+1)+'. ':''}${elName(e)}</b><span class="meta">${elJobD(e).name} · Lv${elLv(e)}</span></span></button>`}).join('')||'<span class="meta">没有能带的精英</span>'}</div>`}
-  else if(SVH_POP==='res'&&SVH_RES){const o=SVH_RES,L=[];T=`开了 ${o.n} 个${svBoxNm(o.k)}`;
-    for(const k in o.res)L.push(`${k} +${o.res[k]}`);for(const w in o.wares)if(CFG.wares.items[w])L.push(`${CFG.wares.items[w].name} +${o.wares[w]}`);
-    const cnt=a=>{const m={};for(const b of a)m[b]=(m[b]||0)+1;return m};{const m=cnt(o.items);for(const b in m)L.push(`${itemDef({base:b}).name} ×${m[b]}`)}{const m=cnt(o.books);for(const b in m)L.push(`《${bookDef(b).name}》打造书 ×${m[b]}`)}
-    if(o.rep)L.push(`家族声望 +${o.rep}`);if(o.gold)L.push(`金币 +${o.gold}`);for(const h in o.souls)L.push(`${CFG.heroes[h].name}之魄 +${o.souls[h]}`);if(o.keys)L.push(`黄金宝箱钥匙 +${o.keys}`);if(o.keyLost)L.push(`<span class="warn">开出 ${o.keyLost} 把钥匙，今天的上限满了没拿到</span>`);
-    body=`<ul class="svres2">${L.map(x=>`<li>${x}</li>`).join('')}</ul>`}
+  else if(SVH_POP==='res'&&SVH_RES){const o=SVH_RES,L=[];T=`开了 ${o.n} 个${svBoxC().kinds[o.k].name}`;   // 0.12.7b（用户定）图标 + 数字
+    const chip=(ico,n,ti)=>L.push(`<span class="svrc" title="${ti}">${ico}<b>${n}</b></span>`),img=u=>`<img alt="" src="${u}">`,RI={建材:'material',银币:'mint',科研点:'lab',设计点:'design'};
+    for(const k in o.res)chip(img(settleIcon(RI[k])),'+'+o.res[k],k);if(o.gold)chip(img(goldIcon()),'+'+o.gold,'金币');
+    for(const w in o.wares)if(CFG.wares.items[w])chip(wareIco(w),'+'+o.wares[w],CFG.wares.items[w].name);
+    const cnt=a=>{const m={};for(const b of a)m[b]=(m[b]||0)+1;return m};{const m=cnt(o.items);for(const b in m)chip(img(itemIcon({base:b})),'×'+m[b],itemDef({base:b}).name)}{const m=cnt(o.books);for(const b in m)chip(img(itemIcon({base:b,book:true})),'×'+m[b],`《${bookDef(b).name}》`)}
+    for(const f in o.repF||{})chip(elCrI(f),'+'+o.repF[f],(elBlood()[f]||{}).name+'声望');for(const h in o.souls)chip(img(heroIcon(h,1)),'+'+o.souls[h],CFG.heroes[h].name+'之魄');if(o.keys)chip(svBoxIco('gold'),'+'+o.keys,'黄金宝箱钥匙');
+    body=`<div class="svrcs">${L.join('')}</div>${o.keyLost?`<p class="meta warn">开出 ${o.keyLost} 把钥匙，这张图今天的上限满了没拿到</p>`:''}`}
   else{SVH_POP=null;return''}
   return`<div class="mpopbg" data-act="svxPx" role="button" aria-label="关闭"></div><div class="mpop oppop elpop kt2 wide" role="dialog"><div class="oph"><b>${T}</b><button class="px sq" type="button" data-act="svxPx" aria-label="关闭">×</button></div><div class="opb">${body}<div class="actions"><button class="px" type="button" data-act="svxPx">关闭</button></div></div></div>`}
 // 动作（ui/survivor.svAct 先问这里）：返回 true = 处理了（刷新营地这一页）
