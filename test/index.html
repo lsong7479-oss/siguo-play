@@ -13051,11 +13051,11 @@ Object.assign(CFG.units,{
               melee:{dmg:120, int:0.8, reach:0.8}, ship:{turn:180, accel:2, land:0.25, crew:0, ram:{dmg:120, cd:0.8, charge:1.5}, boom:{r:2, dmg:120}},
               note:'舰船；靠撞击造成伤害，满速冲撞 ×1.5；防御高、血厚；沉没时爆炸，2 格内造成伤害；不载士兵；占 1 个驻军位'},
   rocketShip:{name:'火箭楼船', tier:4, hp:700, def:6, mdef:2, speed:2.4, capW:2, look:'rocketShip', noWall:true, weapon:null,
-              ranged:{dmg:25, int:1.2, mag:6, reload:4, range:7, spread:5, proj:'arrow', speed:14, burn:{dps:0, dpsP:0.3, t:3}, mix:{pierce:0.5, fire:0.5}},
+              ranged:{dmg:40, int:1.2, mag:6, reload:3, range:7, spread:5, proj:'arrow', speed:14, burn:{dps:0, dpsP:0.3, t:3}, mix:{pierce:0.5, fire:0.5}},   // 0.12.5（用户定：海军只能打海战，提一档）攻击 25 → 40、装填 4 → 3 秒
               ship:{turn:120, accel:2, land:0.25, crew:4, guns:{n:2, k:'rocket'}},
               note:'舰船；船上 2 座火箭塔，射程 7 格，命中灼烧；可载 4 名士兵；占 2 个驻军位'},
   gunShip:   {name:'铁甲炮艇', tier:4, hp:800, def:10, mdef:3, speed:2.2, capW:2, look:'gunShip', noWall:true, weapon:null,
-              ranged:{dmg:100, int:3, mag:0, range:6, spread:4, proj:'ball', speed:12, aoe:1.2, mix:{impact:1}},
+              ranged:{dmg:150, int:2.5, mag:0, range:6, spread:4, proj:'ball', speed:12, aoe:1.5, mix:{impact:1}},   // 0.12.5（用户定）攻击 100 → 150、间隔 3 → 2.5 秒、爆炸 1.2 → 1.5 格
               ship:{turn:120, accel:2, land:0.25, crew:2, guns:{n:1, k:'gun'}},
               note:'舰船；船上 1 门炮塔，射程 6 格，爆炸伤害；可载 2 名士兵；占 2 个驻军位'},
 });
@@ -73101,7 +73101,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.5f',GAME_TAG='测试版',GAME_CODE=186,GAME_BUILD="a4822a3+",GAME_BUILT=1793420583791,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.5f',GAME_TAG='测试版',GAME_CODE=186,GAME_BUILD="6fb431c+",GAME_BUILT=1793420758258,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
