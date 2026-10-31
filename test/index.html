@@ -12545,17 +12545,17 @@ Object.assign(CFG.units,{
   mechDrone:   {name:'无人机', tier:4, hp:250, def:2, mdef:2, speed:5, melee:{dmg:1, int:1, reach:0.5}, ranged:Object.assign({},V8_MG), summoned:true, flyU:true, mech:true, v8:'dr', noWall:true, from:'精械工程师放出',
                 boom:{dmg:100, mul:0.5, r:1, life:10}, weapon:null, look:'mechDrone',
                 note:'飞行；平时在主人身边 9 格上平均分开绕圈巡逻，提供视野；看到亡灵整组集火同一个；带机炮，两个弹匣打完就飞向亡灵自爆；碰到亡灵、被打掉都会自爆：碰到的那只 100 伤害，1 格内 50%'},
-  bloodGuard:  {name:'赤血禁卫', tier:4, hp:750, def:18, mdef:9.5, speed:1.8, melee:{dmg:30, int:1.0, reach:2.0, pen:4}, melee2:{dmg:13.5, int:2.0, reach:1.0, stun:1, kb:1, bash:true},   // v0.10.2 数值第一轮；v0.10.11 用户定：攻击 18 → 30、格挡防御 16.5 → 22；生命恢复原值 750（r1 660）、防御 18（原 24、r1 13，Claude 定）   // v0.10.11 收尾（用户定：略微对齐）法防 / 格挡防御取原值和数值第一轮之间
+  bloodGuard:  {name:'赤血禁卫', tier:4, hp:750, def:18, mdef:9.5, speed:1.8, melee:{dmg:40, int:1.0, reach:2.0, pen:4}, melee2:{dmg:13.5, int:2.0, reach:1.0, stun:1, kb:1, bash:true},   // v0.10.2 数值第一轮；v0.10.11 用户定：攻击 18 → 30、格挡防御 16.5 → 22；生命恢复原值 750（r1 660）、防御 18（原 24、r1 13，Claude 定）   // v0.10.11 收尾（用户定：略微对齐）法防 / 格挡防御取原值和数值第一轮之间
                 block:0.75, shield:22, stagMul:0.3, v8:'bg', weapon:'spear', shieldSize:4, look:'bloodGuard',   // v0.10.2 数值第一轮
                 note:'长枪在 2 格外控距离；被贴身时用盾击：眩晕 1 秒、击退 1 格；格挡 75%'},
-  bloodKnight: {name:'赤血铁骑', tier:4, hp:640, def:16, mdef:8.5, speed:5, melee:{dmg:35, int:0.625, reach:1.3}, melee2:{dmg:61, int:2.0, reach:2.4, lance:true}, charge:2.5,   // v0.10.2 数值第一轮；v0.10.11 用户定：攻击 22.5 → 35；生命恢复原值 640（r1 460）、防御 16（原 24、r1 8.1，Claude 定）   // v0.10.11 收尾（用户定：略微对齐）法防 / 格挡防御取原值和数值第一轮之间
+  bloodKnight: {name:'赤血铁骑', tier:4, hp:640, def:16, mdef:8.5, speed:5, melee:{dmg:50, int:0.625, reach:1.3}, melee2:{dmg:61, int:2.0, reach:2.4, lance:true}, charge:2.5,   // v0.10.2 数值第一轮；v0.10.11 用户定：攻击 22.5 → 35；生命恢复原值 640（r1 460）、防御 16（原 24、r1 8.1，Claude 定）   // v0.10.11 收尾（用户定：略微对齐）法防 / 格挡防御取原值和数值第一轮之间
                 bump:{dmg:30, stun:0.5, kb:0.5, full:1.5}, cavalry:true, hcav:true, accel:1, hitRun:{back:3.5, t:1.2}, v8:'bk', weapon:'lance', shieldSize:1, look:'bloodKnight', saint:'saintRider',
                 note:'满速冲锋时用骑枪：伤害 ×2.5，撞开身边的亡灵：造成伤害、眩晕、击退；不冲锋时用剑；1 秒加速到满速；奥薇尔在场时变成圣女铁骑'},
   saintRider:  {name:'圣女铁骑', tier:4, hp:720, def:28, mdef:12, speed:5, melee:{dmg:33, int:0.625, reach:1.3}, melee2:{dmg:70, int:2.0, reach:2.4, lance:true}, charge:2.5,   // v0.10.11 收尾（用户定往赤血铁骑 35 靠一点）近战 30 → 33(Claude 定)
                 bump:{dmg:30, stun:0.5, kb:0.5, full:1.5}, cavalry:true, hcav:true, accel:1, hitRun:{back:3.5, t:1.2}, v8:'bk', weapon:'lance', mmix:{holy:1}, shieldSize:1, look:'saintRider', blood:'bloodKnight', noTrain:true, from:'赤血兵营(奥薇尔在场时)',
                 note:'奥薇尔在场时的赤血铁骑'},
   bloodGunner: {name:'赤血砲手', tier:4, hp:450, def:5.5, mdef:1.5, speed:2.4, melee:{dmg:9.4, int:1.0, reach:1.0},   // v0.10.2 数值第一轮；v0.10.11 用户定：轻炮（速射）27.5 → 30（重炮 70 在 data/misc_080）；生命恢复原值 450（r1 230）、防御 5.5（原 8、r1 3.3，Claude 定）   // v0.10.11 收尾（用户定：略微对齐）法防 / 格挡防御取原值和数值第一轮之间
-                ranged:{dmg:30, int:1.0, range:7, spread:3, mag:10, reload:3, proj:'bullet', speed:30, pen:8},   // v0.10.2 数值第一轮
+                ranged:{dmg:40, int:1.0, range:7, spread:3, mag:10, reload:3, proj:'bullet', speed:30, pen:8},   // v0.10.2 数值第一轮；0.12.5（用户定）30 → 40（禁卫 30 → 40、铁骑 35 → 50 同时上调）
                 ranged2:{dmg:70, int:2.0, range:12, minR:7, spread:3, mag:10, reload:3, proj:'bullet', speed:34, pen:12, crit:0.2, critMul:2},
                 gunpowder:true, sight:2, v8:'bn', weapon:'musket', side:'bayonet', look:'bloodGunner',
                 note:'7 格内速射：每秒 1 发；7～12 格狙击：每 2 秒 1 发，伤害 70，暴击率 20%、暴击伤害 ×2；两种模式共用 10 发弹匣，装填 3 秒'},
@@ -13094,9 +13094,9 @@ Object.assign(CFG.units,{
              ranged:{dmg:50, int:1.2, range:8, spread:2, mag:4, reload:3.5, proj:'abRkt', speed:20, pen:6, blast:{r:2, mul:0.5, mix:{impact:1}}, vsAir:2},
              note:'地面单位；优先打天上的，对空伤害 ×2；发射直飞的火箭弹，命中处 2 格内爆炸，爆炸伤害 50%；能上城墙驻防'},
   abFighter:{name:'机炮战斗机', tier:4, hp:560, def:8, mdef:4, speed:6.5, turn:360, accel:1.5, capW:2, noWall:true, weapon:null, look:'abFighter', abK:'ft', hpY:18, gunpowder:true, rmix:{impact:1}, mmix:{blunt:1},
-             ranged:{dmg:25, int:0.25, range:7, spread:5, mag:24, reload:3, proj:'rshell', speed:26, pen:4, blast:{r:0.5, mul:0.3, mix:{impact:1}}},
+             ranged:{dmg:30, int:0.25, range:7, spread:5, mag:24, reload:3, proj:'rshell', speed:26, pen:4, penP:0.4, blast:{r:0.5, mul:0.3, mix:{impact:1}}},   // 0.12.5（用户定）25 → 30，目标物理防御只算 60%（penP 0.4，units/airbase.abFire）
              abGuns:2, sortie:{t:20, lvK:0.25, lvMax:1, rest:5, heal:0.04, r:14, give:4},
-             note:'飞行，近战够不着，不受城墙阻挡；占 2 个驻军位；从空军基地起飞战斗 20 秒后返航，基地每高 1 级多飞 25%，最多 +100%；在基地门口休息 5 秒再出动；像骑兵一样加速、转弯，冲过去扫射；2 门速射机炮，命中处 0.5 格内爆炸，爆炸伤害 30%'},
+             note:'飞行，近战够不着，不受城墙阻挡；占 2 个驻军位；从空军基地起飞战斗 20 秒后返航，基地每高 1 级多飞 25%，最多 +100%；在基地门口休息 5 秒再出动；像骑兵一样加速、转弯，冲过去扫射；2 门速射机炮，无视目标 40% 物理防御，命中处 0.5 格内爆炸，爆炸伤害 30%'},
 });
 // v0.10.11（用户定）机炮战斗机攻击 12 → 25、热气球炸弹 90 → 150、对空炮卫爆炸 2.5 → 2 格、制导防空对空伤害 +0.5；三阶见 data/evo3_s5.js
 CFG.designTree.push({id:'airBase', cost:260, req:['campG'], map:'skyCity', mapName:'浮空之城', note:'通关七阶地区「浮空之城」后才能研发'});
@@ -20680,10 +20680,10 @@ Object.assign(CFG.units,{
               weapon:'spear', bj:{k:'tiger', cut:{def:0.2, pdr:0.2, vuln:0.1, t:3, max:3}, fear:3, leap:{r:6, t:1, aoe:2.5, mul:2, stun:2, cd:10}},
               note:'冲锋伤害 ×2.5，冲锋命中时目标恐惧 3 秒；每次命中让目标物理防御 −20%、物理减伤 −0.2、易伤 +10%，持续 3 秒，最多叠 3 层；技能「虎跃」：跃向 6 格内的目标，落地 2.5 格内 200% 伤害(无视物理防御和物理减伤)并眩晕 2 秒，冷却 10 秒'},
   bjPhoenix: {name:'星阳火凰射', tier:4, hp:650, def:18, mdef:8, speed:2.5, capW:2, melee:{dmg:30, int:1.2, reach:0.8},
-              ranged:{dmg:105, int:1/1.5, range:10, spread:2, mag:0, reload:0, proj:'arrow', speed:20, kb:0.5, blast:{r:1, mul:0.5, mix:{fire:1}}},
+              ranged:{dmg:100, int:1/1.5, range:10, spread:2, mag:0, reload:0, proj:'arrow', speed:20, kb:0.5, blast:{r:1, mul:0.5, mix:{fire:1}}},
               weapon:'longbow', side:'dagger', rmix:{pierce:1},
-              bj:{k:'phoenix', chg:{min:0.5, max:2}, pit:{r:1, t:3, dps:0.5, fr:0.5}, fall:{r:4, pitR:4, pitT:5, dps:0.5, clrT:3, mul:2, cd:10}},
-              note:'射程 10 格，攻击速度 1.5 次/秒，击退 0.5 格；攻击可以蓄力到 2 倍攻击间隔、也可以提前到 0.5 倍放出，伤害 × 间隔倍数；命中处 1 格爆炸(50% 伤害)并留下 3 秒火坑，每秒灼烧 50% 攻击，火坑里的亡灵火焰抗性 −0.5(不叠加)；技能「凰落」：目标处 4 格爆炸 200% 伤害并留下 5 秒火坑，火坑里的亡灵火焰抗性清空 3 秒(火焰免疫不受影响)，冷却 10 秒'},
+              bj:{k:'phoenix', chg:{min:0.5, max:2}, pit:{r:1, t:2, dps:0.3, fr:0.5}, fall:{r:4, pitR:4, pitT:2, dps:0.3, clrT:3, mul:2, cd:10}},   // 0.12.5（用户定，压群伤）攻击 105 → 100；火坑每秒 50% → 30%、3 秒 → 2 秒（凰落的火坑同样 5 秒 → 2 秒）
+              note:'射程 10 格，攻击速度 1.5 次/秒，击退 0.5 格；攻击可以蓄力到 2 倍攻击间隔、也可以提前到 0.5 倍放出，伤害 × 间隔倍数；命中处 1 格爆炸(50% 伤害)并留下 2 秒火坑，每秒灼烧 30% 攻击，火坑里的亡灵火焰抗性 −0.5(不叠加)；技能「凰落」：目标处 4 格爆炸 200% 伤害并留下 2 秒火坑(每秒 30%)，火坑里的亡灵火焰抗性清空 3 秒(火焰免疫不受影响)，冷却 10 秒'},
   bjTortoise:{name:'星阳玄武卫', tier:4, hp:1800, def:45, mdef:25, speed:2, capW:2, block:0.75, shield:70, shieldSize:3, melee:{dmg:60, int:1, reach:0.5}, stagMul:0.5,
               share:{r:4, f:0.8}, weapon:'club',
               bj:{k:'tortoise', bkSh:{pct:0.1, max:0.5, t:5, cd:1}, xd:{t:4, cd:10, bk:1, ref:0.2, icpt:1}},
@@ -20752,8 +20752,8 @@ Object.assign(CFG.units,{
                note:'闪电剑近战；背着 1 门闪电射线(攻击 70，射程 7 格，弹射 3 次，每 2.5 秒)和 1 门机炮(攻击 12，射程 7 格，每秒 2 发)，边走边打'},
   ynGunnerP:  {name:'源能重炮手', tier:4, hp:620, def:8, mdef:8, speed:2, melee:{dmg:20, int:1.2, reach:0.8}, mech:true, weapon:null, mmix:{slash:1},
                ranged:{dmg:180, int:2.5, range:10, spread:0, mag:0, reload:0, proj:'arcane', speed:16, magic:true}, rmix:{lightning:1},   // ranged：只用来走位（站在 10 格内），开火走 cy.guns
-               cy:{k:'g', guns:[{k:'ray', X:5, range:10, int:2.5, dmg:180, heavy:1}], over:{gun:{k:'ray', X:5, range:10, int:2.5, dmg:180, heavy:1}, n:1}},
-               note:'重型闪电射线：攻击 180，射程 10 格，命中后连锁 1.5 格内至多 3 个亡灵，弹射 5 次，每次伤害 ×0.8，每 2.5 秒一发'},
+               cy:{k:'g', guns:[{k:'ray', X:5, range:10, int:2.5, dmg:180, heavy:1, dk:0.6, arcDk:0.75}], over:{gun:{k:'ray', X:5, range:10, int:2.5, dmg:180, heavy:1, dk:0.6, arcDk:0.75}, n:1}},   // dk / arcDk：0.12.5（用户定，压群伤）重炮手的重型闪电射线每次弹射 ×0.6（别的闪电射线仍 ×0.8）；电弧穿刺对它是 ×0.75（对别的仍不衰减）
+               note:'重型闪电射线：攻击 180，射程 10 格，命中后连锁 1.5 格内至多 3 个亡灵，弹射 5 次，每次伤害 ×0.6，每 2.5 秒一发'},
   ynEngineerP:{name:'源能工程师', tier:4, hp:650, def:8, mdef:10, speed:2.3, melee:{dmg:0, int:1, reach:0.8}, mech:true, weapon:null, mmix:{impact:1},
                ranged:{dmg:0, int:1, range:5, spread:0, mag:0, reload:0, proj:'arcane', speed:16, magic:true}, rmix:{lightning:1},   // ranged：只用来走位（走到目标 5 格内），自己不攻击
                cy:{k:'e', drone:{k:'ynDroneP', n:2, cd:15}, emp:{cd:10, r:5, t:3}, over:{droneK:2}},
@@ -20787,7 +20787,7 @@ CFG.btech.towers.campYn={base:CFG.olv.lists.camp.slice(), baseOld:['ctrain','chp
   }, evo3:{
     overDev: {name:'过载装置', desc:'士兵和召唤物获得技能「过载」：交战时造成的伤害 +65%(独立)，持续 5 秒；然后进入 5 秒冷却，冷却期间造成的伤害 −25%(独立)；循环', cyOvl:{up:0.65, t:5, down:0.25, cd:5}},
     barrier: {name:'源能屏障', desc:'士兵和召唤物每秒获得 5% 最大生命的护盾，最多 50%；每有 1% 最大生命的护盾，减伤 +1%；有护盾时拦截身边的亡灵弹道', cyBar:{per:0.05, max:0.5, icpt:1}},
-    arcPierce:{name:'电弧穿刺', desc:'兵营的闪电装置和士兵、无人机的闪电射线：弹射伤害不衰减，弹射次数 +1', cyArc:{x:1}},
+    arcPierce:{name:'电弧穿刺', desc:'兵营的闪电装置和士兵、无人机的闪电射线：弹射伤害不衰减(重炮手的重型闪电射线改成每次 ×0.75)，弹射次数 +1', cyArc:{x:1}},
   }};
 
 // ---------- 0.11.3 英雄战斗力的技能折算（tools/stats/herocp.py 生成，别手改；算法见 game/hero_cp.js）----------
@@ -56318,7 +56318,7 @@ const abRelK=s=>ENV.ourSpd*(1+pm.reload+TM.uReload+pm.rgReload+solAspT(s))*uCmdK
 const abTgtOk=s=>{if(s.ordT){if(eOk(s.ordT.i,s.ordT.id)&&eVis(s.ordT.i)){s.ti=s.ordT.i;s.tid=s.ordT.id;return true}s.ordT=null}if(s.ti>=0&&!eOk(s.ti,s.tid)){s.ti=-1;s.tid=0;s.think=0}return false};
 // 开一枪（热气球的火枪手、战斗机的机炮）：从高处打，前半程不被建筑挡（fireAt 的 elev）
 function abFire(s,mx,my,j,w,R){const dmg=abDmg(s,w.dmg);
-  fireAt(mx,my,j,w,dmg,{hit:100+(s.hitAdd||0),critPt:s.critPt||0,bd:dmg,hd:dmg,pen:(w.pen||0)+(TM.uRgPen||0),crit:(w.crit||0)+(s.critAdd||0),critK:TM.uCritV||0,hitK:TM.uHitV||0,critMul:w.critMul||CFG.combat.critMul,mix:s.rmix,psn:psnFor(s),ua:1,atk:1,su:s},pm.accuracy+(TM.uAcc||0),R,true)}
+  fireAt(mx,my,j,w,dmg,{hit:100+(s.hitAdd||0),critPt:s.critPt||0,bd:dmg,hd:dmg,pen:(w.pen||0)+(TM.uRgPen||0),penP:w.penP||0,crit:(w.crit||0)+(s.critAdd||0),critK:TM.uCritV||0,hitK:TM.uHitV||0,critMul:w.critMul||CFG.combat.critMul,mix:s.rmix,psn:psnFor(s),ua:1,atk:1,su:s},pm.accuracy+(TM.uAcc||0),R,true)}
 
 // ===== 对空炮卫：要重新挑目标时，射程里有天上的就先打天上的 =====
 function abAA(s){if(ADVQ||s.ordT||!s.rg||s.think>0||s.shipH)return false;
@@ -60577,7 +60577,7 @@ function cyGuns(s,Q,e,dt){const L=Q.g;if(!L.length)return;let rM=-1,rP=-1;
     if(j<0){g.cd=CFG.cyCamp.retry;continue}
     g.cd=g.W.int;cyFire(s,e,g,j,R,k)}}
 function cyFire(s,e,g,j,R,k){const W=g.W,f=E.x[j]>=s.x?1:-1,mx=s.x+f*(4+k),my=s.y-10-(s.elev||0)-k,dmg=W.dmg*cyDK(s,g.mag);if(!s.walking)s.facing=f;
-  if(W.k==='ray'){const A=e.cyArc,o={su:s,ua:1,bd:dmg,hd:dmg};if(A)o.ynDk=1;
+  if(W.k==='ray'){const A=e.cyArc,o={su:s,ua:1,bd:dmg,hd:dmg};if(A)o.ynDk=W.arcDk!=null?W.arcDk:1;else if(W.dk!=null)o.ynDk=W.dk;   // dk / arcDk：0.12.5 重炮手单独的弹射衰减（data/cy_camp）
     if(typeof ynRay==='function')ynRay(s,mx,my,j,dmg,(W.X|0)+(A?A.x:0),W.heavy?Object.assign(o,CY_HV):o);else fireAt(mx,my,j,CY_RW,dmg,o,0,R,true);
     if(inViewPt(s.x,s.y)&&fxr()<0.35)sfx('zap',s.x,s.y)}
   else{fireAt(mx,my,j,g.w,dmg,{bd:dmg,hd:dmg,pen:g.w.pen,mix:CY_MGM,ua:1,su:s},pm.accuracy+TM.uAcc,R,true);
@@ -73101,7 +73101,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.5f',GAME_TAG='测试版',GAME_CODE=186,GAME_BUILD="c7aa4a0+",GAME_BUILT=1793400790747,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.5f',GAME_TAG='测试版',GAME_CODE=186,GAME_BUILD="a286f46+",GAME_BUILT=1793420127339,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
