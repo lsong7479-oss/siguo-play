@@ -1,11 +1,11 @@
 {
  "ch": "stable",
  "ver": "0.12.7",
- "code": 199,
- "size": 17592937,
- "sha256": "6ffb6ce1f62ca4094bd41625dd83b6b1630daa081775f9b68a44670c159c79fa",
+ "code": 200,
+ "size": 17610107,
+ "sha256": "41705df616b7baa93cfc0d80569d907aeef422d5b17f8b6a8bd00525cdae4e82",
  "minLoader": 1,
- "sig": "+idXAi/+sUYV33K9aaCPO5WimRQYL+zov0VTdDHMG+bm6J1iYoarbp5J83urfPVJhpLYJ8g1kP72BtOAJaJ0gQ==",
- "note": "0.12.7 稳定版：娱乐模式·幸存者模式、在线热更新、进阶-马可·波罗、AI 游玩接口、塔楼与兵营平衡",
- "at": "2026-11-01 19:09 UTC"
+ "sig": "pRM2GqAji0qoCxKHvI5YHdn8m7mMYXKKvK4Y8QzCSXKUeUwV78qFhZS2PsIYOZQP+3hxRyWUGhxkmWetoPOi3A==",
+ "note": "0.12.7 稳定版：死国开关（噩梦 / 炼狱 / 绝境、3 轮、10 张新亡灵卡）、娱乐模式·幸存者模式、在线热更新、进阶-马可·波罗、AI 游玩接口、塔楼与兵营平衡",
+ "at": "2026-11-01 20:50 UTC"
 }

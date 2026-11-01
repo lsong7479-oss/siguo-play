@@ -15710,6 +15710,18 @@ CFG.soulPt={diff:{easy:3, normal:4, hard:6, nightmare:8, inferno:10, abyss:12},
 // 来源地图的专属英雄（soulDrop.map）：每轮结束固定给几个英雄之魄（用户定：困难 1、噩梦 1.5、炼狱 2、深渊 2.5；小数攒着），不再按概率；仍按 soulDrop.minDiff、dayCap
 CFG.soulSrc={easy:0, normal:0, hard:1, nightmare:1.5, inferno:2, abyss:2.5};
 
+// ---------- 0.12.7 代理 SG：「死国」开关（用户 2026-11-01 策划；机制 game/sg_dead.js，界面 ui/sg_ui.js）----------
+// 出征设置（常规模式）誓约、流浪商人下面的开关（SET.sgOn，默认关）；开局写进 G.sg，局内存读档带着。开拓、剧情、入侵战、无尽、幸存者都没有。
+// 开了死国：难度只能选 diffs 里的三档（深渊在死国下叫 abyssName「绝境」，关着时照旧叫深渊）；三档都打 rounds 轮。
+//   hp / dmg：所有亡灵的生命、伤害（乘在难度倍率 G.dHp / G.dDmg 之上）
+//   reward：结算的基础奖励（银币、建材、科研点、设计点、金币、经验）、地区材料、强化石 / 洗练石的数量（= 难度结算倍率 DIFF.reward 再 × 这个，独立乘区）
+//   drop：掉宝率（打造书、装备、核心材料、首领专属装备……= 难度掉宝倍率 DIFF.drop 再 × 这个；精英的装备 / 打造书原来不吃难度掉宝倍率，单独 × 这个；
+//         首领必掉的装备、打造书每件再有 drop − 1 的概率多掉一件，期望 × drop）
+//   souls：来源地图的专属英雄每轮固定给几个英雄之魄（替换 CFG.soulSrc 的值）；培养值（CFG.soulPt.diff）按同样的比例上调 = souls ÷ CFG.soulSrc（噩梦 ×2、炼狱 ×1.75、绝境 ×1.6）
+CFG.sg={hp:1.5, dmg:1.25, reward:1.5, drop:1.5, rounds:3,
+  souls:{nightmare:3, inferno:3.5, abyss:4},
+  diffs:['nightmare','inferno','abyss'], abyssName:'绝境'};
+
 // ---------- 0.12.5（用户定）道具「蓝图」：作战时用阵型蓝图建造要先消耗 1 张（一局只扣一次）；开拓地「套用布局」不消耗（机制 ui/bp_run.js）----------
 //   shop：商店「幸运商店」里买，每张 gold 金币，每 hours 小时最多买 max 张
 //   black：神秘黑市底部，每 hours 小时刷新一次，p 的概率出现，每张 silver 银币，这一次最多 n 张（n Claude 定）
@@ -23291,6 +23303,33 @@ CFG.ynStruct={
   // 机械士兵换过去的亡灵种类也算机械单位（魅惑挡它们、亡灵维修中心修它们）：机械（mech）的兵种和秘法工厂电磁干扰表里的兵
   for(const k in CFG.units){const u=CFG.units[k];if((u.mech||CFG.arcaneFactory.emMech.units[k])&&EN['xf_'+k])EN['xf_'+k].mech=true}}
 
+// ---------- 0.12.7 之后（用户 2026-11-01 定，代理 EC 加）新亡灵卡：死国专属 6 张 + 通用 4 张；逻辑在 game/ecard_sg.js ----------
+// 死国专属（sg:true）：只在开了「死国」的对局出现（avail 读 G.sg，开关本身归代理 SG）；通用的四张：所有难度、模式都能出，但这局的亡灵里有这种伤害才出现（ecsHas）
+// 数值按用户原文；品质档位照现有亡灵卡的分布（普通～传说按 0 / 20% / 40% / 70% / 100% 在最低和最高之间取，同 vcPoolR 这类 10～20% 的卡；Claude 定）；史诗、传说用 alt 名字
+// 名词（Claude 定，写进各卡的 help）：
+//   技能伤害 = 亡灵普通攻击以外的伤害（普通攻击 = 近战出手、普通射击的弹道和它的爆炸，伤害对象带 ea 标记；engine/enemy.enemyMelee / enemyShoot / updateEProj）；持续伤害不算
+//   爆炸伤害 = 带爆炸标记的整下（自爆、炸弹 / 炮弹的范围伤害：o.blast / o.boom）+ 别的伤害里「冲击」那部分（按占比，同亡灵卡「防爆骨甲」的口径）
+//   中毒伤害 = 伤害类型里中毒 + 酸蚀的占比（酸蚀并进中毒抗性，同 engine/combat.envRes）；火焰、闪电按各自的占比；持续伤害（灼烧、中毒）也算
+CFG.ecsSg={
+  apoc:{pct:0.01, every:1},   // 天启之力：每 every 秒受到最大生命 pct 的法术伤害（按持续伤害结算）
+  conq:{hp:0.5},              // 征服之力：命中时目标生命低于 hp（比例）就转化
+  fear:{r:5, t:5},            // 恐惧之力：半径 r 格、恐惧 t 秒
+  pun:{f:1, t:3},             // 惩戒之力：禁疗 f（1 = 完全不能回血）、持续 t 秒
+  // 「这局的亡灵有没有这种伤害」的静态查找（game/ecard_sg.ecsScan）：亡灵数据里任意层的 mix、下面这些字段名（值是真的才算；以 Imm / Res / Red / Heal / Back 结尾的是免疫、抗性类，跳过）
+  keys:{fire:/fire|burn|flame/i, poison:/venom|toxi|psn|poison|acid/i, lightning:/lightning|thunder|tesla|zap/i, blast:/explo|boom|bomb|blast|mortar|grenade|pulse/i},
+};
+CFG.enemyCards.push(
+  {id:'ecsCd',   name:'死灵之术', alt:'邪神之法', q:'all', sg:true, avail:()=>!!(G&&G.sg), desc:'亡灵技能冷却速度 +{ecsCd%}', help:'合计最多 +100%；和亡灵身上别的「冷却速度 +X%」相加。作用范围同统一 buff 的冷却速度：亡灵的通用技能计时(召唤、治疗、新星、冲锋、箭雨 / 地刺、护盾、领域、印记……)；只在死国出现。', eff:{ecsCd:0.1}, qv:{ecsCd:[0.1,0.12,0.14,0.17,0.2]}, cap:['ecsCd',1]},
+  {id:'ecsSk',   name:'魔灵咒文', alt:'邪神魔咒', q:'all', sg:true, avail:()=>!!(G&&G.sg), desc:'亡灵技能伤害 +{ecsSk%}', help:'技能 = 普通攻击(近战出手、普通射击和它的爆炸)以外的伤害：技能、特殊攻击、自爆、死后爆炸……；持续伤害不算。和亡灵别的「伤害 +X%」相加；只在死国出现。', eff:{ecsSk:0.15}, qv:{ecsSk:[0.15,0.16,0.17,0.185,0.2]}},
+  {id:'ecsApoc', name:'天启之力', q:'legend', flat:true, unique:true, sg:true, avail:()=>!!(G&&G.sg), desc:'我方英雄、士兵、召唤物每秒受到最大生命 1% 的法术伤害', help:'按持续伤害结算(只吃通用减伤，不僵直、不打断装填)；建筑不受影响；只在死国出现。', eff:{ecsApoc:1}},
+  {id:'ecsConq', name:'征服之力', q:'legend', flat:true, unique:true, sg:true, avail:()=>!!(G&&G.sg), desc:'亡灵命中生命低于 50% 的士兵时，把它变成亡灵阵营(直到被打死)', help:'英雄、精英、召唤物、机械士兵、城墙和塔上的士兵不会被转化；持续伤害不算命中；只在死国出现。', eff:{ecsConq:1}},
+  {id:'ecsFear', name:'恐惧之力', q:'legend', flat:true, unique:true, sg:true, avail:()=>!!(G&&G.sg), desc:'亡灵击杀我方单位后，被击杀者 5 格内的我方单位恐惧 5 秒', help:'吃控制抗性和免控；城墙、塔上的单位不受影响；只在死国出现。', eff:{ecsFear:1}},
+  {id:'ecsPun',  name:'惩戒之力', q:'legend', flat:true, unique:true, sg:true, avail:()=>!!(G&&G.sg), desc:'亡灵造成伤害后，清除目标身上的增益效果，并让目标禁疗 100%，持续 3 秒', help:'英雄、士兵、建筑都算；增益效果 = 统一 buff 里的增益(光环、药水、技能给的加成……)；只在死国出现。', eff:{ecsPun:1}},
+  {id:'ecsFire', name:'亡者之火', alt:'幽冥鬼火', q:'all', avail:()=>ecsHas('fire'), desc:'亡灵造成的火焰伤害 +{ecsFire%}', help:'按这一下里火焰的占比算，灼烧也算；和亡灵别的「伤害 +X%」相加。这局的亡灵带火焰伤害才出现。', eff:{ecsFire:0.2}, qv:{ecsFire:[0.2,0.24,0.28,0.34,0.4]}},
+  {id:'ecsBlast',name:'爆破之力', alt:'毁灭爆破', q:'all', avail:()=>ecsHas('blast'), desc:'亡灵造成的爆炸伤害 +{ecsBlast%}', help:'自爆、炸弹、炮弹的范围伤害整下都算，别的伤害里冲击的部分按占比算；和亡灵别的「伤害 +X%」相加。这局的亡灵带爆炸伤害才出现。', eff:{ecsBlast:0.2}, qv:{ecsBlast:[0.2,0.24,0.28,0.34,0.4]}},
+  {id:'ecsPsn',  name:'毒素之力', alt:'腐毒核心', q:'all', avail:()=>ecsHas('poison'), desc:'亡灵造成的中毒伤害 +{ecsPsn%}', help:'中毒、酸蚀都算(按占比)，中毒的持续伤害也算；和亡灵别的「伤害 +X%」相加。这局的亡灵带中毒伤害才出现。', eff:{ecsPsn:0.25}, qv:{ecsPsn:[0.25,0.3,0.35,0.425,0.5]}},
+  {id:'ecsLtn',  name:'闪电之力', alt:'死灵雷霆', q:'all', avail:()=>ecsHas('lightning'), desc:'亡灵造成的闪电伤害 +{ecsLtn%}', help:'按这一下里闪电的占比算；和亡灵别的「伤害 +X%」相加。这局的亡灵带闪电伤害才出现。', eff:{ecsLtn:0.2}, qv:{ecsLtn:[0.2,0.24,0.28,0.34,0.4]}});
+
 'use strict';
 // ---------- 核心常量与工具 ----------
 // v6.1：地图改成 64×64（原 64×40），南北方向的亡灵和东西方向走一样远
@@ -23407,7 +23446,8 @@ const EM_KEYS=['hp','dmg','speed','def','atkSpd','count','lifesteal','elites','r
   'mdmg','rdmg','sdmg','mdef','toxin','rFire','rBlast','rRanged','rMelee','rMagic','rCtrl','rPoison',   // v0.5.4：伤害拆近战 / 远程 / 法术、法术防御、毒素、七种减伤
   'mAtk','rAtk','sAtk','rLoad',
   'pdr','deflPt','hitPt','accuracy','critPt','critDmg','mls','structDmg','rFrost','toxN','frostA','frostN','mist','cstorm','stealth','eChoice',
-  'defP','mdefP','eliteP','critRes','corpse','corrode','boneSh','sacri','sPenE','rangeE','rangeU','split','ccUp','vcLs','vcPoolR'];   // vcLs / vcPoolR：v0.11.0 血族城堡专属亡灵卡「生命汲取」「血池扩张」（maps/vamp）   // v0.9.1（用户定）亡灵卡第二批：物理 / 法术防御 %、精英数量 %、暴击伤害减免、尸爆、腐蚀之刃、骸骨护盾、献祭狂热   // v0.8.25 新亡灵卡组（data/cards.enemyCards）   // v0.6.01 攻速拆成近战 / 远程物理 / 施法 / 远程装填（atkSpd 是老存档的「狂躁」，对所有亡灵）
+  'defP','mdefP','eliteP','critRes','corpse','corrode','boneSh','sacri','sPenE','rangeE','rangeU','split','ccUp','vcLs','vcPoolR',
+  'ecsCd','ecsSk','ecsApoc','ecsConq','ecsFear','ecsPun','ecsFire','ecsBlast','ecsPsn','ecsLtn'];   // 代理 EC 加：死国专属 6 张、通用 4 张新亡灵卡（data/ecard_sg、game/ecard_sg）   // vcLs / vcPoolR：v0.11.0 血族城堡专属亡灵卡「生命汲取」「血池扩张」（maps/vamp）   // v0.9.1（用户定）亡灵卡第二批：物理 / 法术防御 %、精英数量 %、暴击伤害减免、尸爆、腐蚀之刃、骸骨护盾、献祭狂热   // v0.8.25 新亡灵卡组（data/cards.enemyCards）   // v0.6.01 攻速拆成近战 / 远程物理 / 施法 / 远程装填（atkSpd 是老存档的「狂躁」，对所有亡灵）
 // v0.6.02 英雄当前朝向的角度：dx、dy 都是 0 才按左右朝向（原来 dx 为 0 就当成 1，纯上下移动时变成斜 45°）
 const heroAng=h=>(h.dx||h.dy)?Math.atan2(h.dy||0,h.dx||0):(h.facing<0?Math.PI:0);
 function zeroMods(keys){const o=fastObj(Object.fromEntries(keys.map(k=>[k,0.5])));for(let i=0;i<keys.length;i++)o[keys[i]]=0;return o}   // P3 改（0.12.2d 性能）：先用小数 0.5 建、再逐个写回 0，让每个字段一出生就是「小数」表示——拿卡第一次把某项从 0 改成 0.12 时不再换形状（原来每换一次，读 pm.xxx 的几十个函数整批作废重编，见 索引-机制备忘「对象形状」）；「先建成 0 再改小数」会把整条转换链重建 175 次，第一局开局要几毫秒
@@ -23730,7 +23770,8 @@ xnS ar3O
 hmSeen hmOpt hmArt hmW hmMcD
 sv
 en2WK
-mp2U mp2H mp2A`.trim().split(/\s+/);   // stDrF：0.12.2 德拉贡传（game/story），tools/perfcheck.py 查出来漏登记的；esN esAt esVer esR：代理 ES 加，亡灵阵营的建筑（structs/estruct）；ynm：0.12.5 代理 M 加，源能王城的进攻战（maps/ynm_city）；esOn hkL esTr esDR ynKDR：0.12.5 代理 K 加（骇入、亡灵建筑）   // xnS：0.12.6 代理 H 加（希娜「龙之恩赐」，heroes/xina）   // hmSeen…hmMcD：0.12.6 代理 X 加（隐士，game/hermit）   // en2WK：0.12.6 代理 E 加（进阶-达·芬奇「城墙加固」这一波的城墙生命上限加成，heroes/engineer2）
+mp2U mp2H mp2A
+sg`.trim().split(/\s+/);   // stDrF：0.12.2 德拉贡传（game/story），tools/perfcheck.py 查出来漏登记的；esN esAt esVer esR：代理 ES 加，亡灵阵营的建筑（structs/estruct）；ynm：0.12.5 代理 M 加，源能王城的进攻战（maps/ynm_city）；esOn hkL esTr esDR ynKDR：0.12.5 代理 K 加（骇入、亡灵建筑）   // xnS：0.12.6 代理 H 加（希娜「龙之恩赐」，heroes/xina）   // hmSeen…hmMcD：0.12.6 代理 X 加（隐士，game/hermit）   // en2WK：0.12.6 代理 E 加（进阶-达·芬奇「城墙加固」这一波的城墙生命上限加成，heroes/engineer2）
 const G_NUM='time tick wave prepId kills legionSeq corpses waveT flowT flowVer structVer navVer flowCool sdistVer visT night shake dayIdx flashT tA wA tunnelN tombN lowT oAsk oBupo mcP gold gdT sqT frT drumT bfT esN esVer'.split(' ');   // P2 加（0.12.2d）gold gdT sqT frT drumT bfT：每帧 / 每次击杀都写的数字（原来先装 undefined，每写一次小数都新建一个数字对象）
 const GState=shapeCtor(G_KEYS,G_NUM);
 shapeWarm(GState,G_KEYS,G_NUM);   // P2 加（0.12.2d 性能）：预先写宽，见 core/shape.js 的 shapeWarm / shapeWarmAll
@@ -43092,7 +43133,7 @@ function eSpawn(ti,x,y,st){
   E.wkU[i]=0;E.wkF[i]=0;E.glT[i]=0;E.sjU[i]=0;E.sjF[i]=0;E.sup[i]=0;   // v0.8.0
   BPW.U[i]=0;E.pdU[i]=0;E.drmU[i]=0;   // pd / drm：v0.10.3 统一的破防（物理防御 −X%）、移除减伤（engine/enemy.drKOf；积木 st.defDn / st.rmDR）
    // v0.9.1 修：魏德曼「无坚不摧」的破防（maps/blood.BPW）原来只有赤血关隘的亡灵生成时清，别的地图新出的亡灵会接着用这个下标上一只没到期的破防；新开一局 G.time 从 0 算，上一局留下的到期时间更是一直有效
-  E.fac[i]=st.fac!==undefined?st.fac:EFAC0[ti];E.fcv[i]=0;E.fe[i]=-1;E.feId[i]=0;{const q=i*6;E.bfK[q]=E.bfK[q+1]=E.bfK[q+2]=E.bfK[q+4]=E.bfK[q+5]=1;E.bfK[q+3]=0}if(EBL[i])EBL[i]=null;if(E.fac[i]!==FAC_U)FAC_X=true;   // v0.8.6 阵营（engine/faction）、统一 buff（engine/buff）
+  E.fac[i]=st.fac!==undefined?st.fac:EFAC0[ti];E.fcv[i]=0;E.fe[i]=-1;E.feId[i]=0;{const q=i*6;E.bfK[q]=E.bfK[q+1]=E.bfK[q+2]=E.bfK[q+4]=1;E.bfK[q+5]=1+em.ecsCd;E.bfK[q+3]=0}if(EBL[i])EBL[i]=null;if(E.fac[i]!==FAC_U)FAC_X=true;   // v0.8.6 阵营（engine/faction）、统一 buff（engine/buff）   // 1 + em.ecsCd：代理 EC 加，亡灵卡「死灵之术」的冷却速度（engine/buff.bfApplyE 同样加）
   E.dv[i]=0;E.hb[i]=SPAWN_HB?1:0;E.csS[i]=0;E.csK[i]=0;E.csA[i]=0;E.csB[i]=0;   // v0.8.2 黄沙海岸
   E.drX[i]=0;E.drXU[i]=0;E.fsIm[i]=0;E.fsImU[i]=0;E.fsRv[i]=0;E.fsKs[i]=0;E.fsKsU[i]=0;E.fsNc[i]=0;E.mvT[i]=-9;E.mAc[i]=0;E.vuT[i]=-9;E.fsl[i]=0;E.pzW[i]=0;E.pzL[i]=0;E.bwU[i]=0;E.edIl[i]=0;E.edMh[i]=0;E.edDm[i]=0;E.atTl[i]=-1;E.atAc[i]=0;E.diSb[i]=0;E.mdU[i]=0;E.mdP[i]=0;E.diA[i]=0;E.diB[i]=0;   // v0.8.7 堕落圣堂；mvT：v0.8.8
   E.dsA[i]=0;E.dsU[i]=0;E.dsC[i]=0;E.esT[i]=-1;E.esL[i]=1;E.esA[i]=0;   // v0.10.4 云中偏斜的护盾；esT / esL / esA：代理 ES 加（亡灵建筑的 EINIT 在后面填）
@@ -43414,14 +43455,14 @@ function enemyMelee(i,c,u,s){
   if(c.charge&&E.chg[i]>=CFG.combat.chargeDist*16&&G.time-E.mvT[i]<0.3&&(!EACC[E.t[i]]||E.cv[i]>=0.97)&&(u||!c.noBldChg))dmg*=c.charge;E.chg[i]=0;if(E.sld[i])slideStand(i,c);   // v0.8.8（用户定）冲锋：一直以至少一半的速度跑了 chargeDist 格、刚才还在跑；会加速的骑兵要满速；noBldChg：陷阵将军打建筑不算   // v0.5.1 僵尸企鹅：第一下之后站起来
   const ls=s&&ELSNS[E.t[i]]?0:E.ls[i]+(E.buffL[i]>0?0.2:0)+(G.zsYg?zsLsOf(i):0);let dealt=0,dev=false;   // zsLsOf：v0.7.0 赢勾在场，僵尸吸血   // ELSNS：v0.11.0 lsNoS 打建筑不吸血（用户定）
   if(u&&c.devour){const r=pythonBite(i,c,u,dmg);dmg=r.dmg;dev=r.devour}   // v0.3.2 蟒蛇吞噬
-  if(u)dealt=hurtF(u,dmg,{crit:c.crit||0,src:i,melee:true,mix:c.mix,chill:c.chill,rot:c.rot,sure:c.sure,mk:EMK});   // sure：v0.6.0 腐化圣堂武士必中
+  if(u)dealt=hurtF(u,dmg,{crit:c.crit||0,src:i,melee:true,mix:c.mix,chill:c.chill,rot:c.rot,sure:c.sure,mk:EMK,ea:1});   // ea：代理 EC 加，亡灵的普通攻击（近战出手、enemyShoot 的弹道和它的爆炸都带；亡灵卡「魔灵咒文」的技能伤害不算带 ea 的）   // sure：v0.6.0 腐化圣堂武士必中
   if(u&&c.sever&&dealt>0)cathSever(u,dealt*c.sever.v);   // v0.6.0 瑟塔洛斯幻影：断绝之力
   if(u&&c.hitRun)sanHitRun(i,c,u);   // v0.4.0 腐化皇家骑兵：打完就撤
   if(u&&c.venom&&dealt>0)poisonF(u,c.venom,c.venom.max||queenNear(u.x,u.y));
-  if(u&&c.magAdd&&!u.dead)hurtF(u,E.dmg[i]*c.magAdd,{src:i,sid:E.id[i],magic:true,mix:{arcane:1}});   // v0.6.0 暗黑精灵刀客：附带法术伤害
+  if(u&&c.magAdd&&!u.dead)hurtF(u,E.dmg[i]*c.magAdd,{src:i,sid:E.id[i],magic:true,mix:{arcane:1},ea:1});   // v0.6.0 暗黑精灵刀客：附带法术伤害
   if(u&&c.toxic&&dealt>0){u.txT=c.toxic.t;u.txD=Math.max(u.txT>0?u.txD||0:0,c.toxic.dps*E.dmg[i]/c.dmg)}   // v0.6.0 剧毒蜂王：每 0.1 秒一跳（maps/elemforest.efTick）   // 毒蜂：中毒（蜂后附近叠层）；v0.5.0 毒蝎：一直叠（最多 max 层）
   if(dev&&(u.dead||u.hp<=0)){E.dgT[i]=c.devour.digest;if(inViewPt(E.x[i],E.y[i]))sayT(`${c.name}吞下了一名守军，正在消化`)}
-  else if(s){dealt=hurtS(s,dmg*(c.structMul||1),{mix:c.mix,kt:E.t[i],src:i,sid:E.id[i],melee:1,mk:EMK});   // src / melee：v0.6.1 城墙二阶的反击（近战反弹照旧在下面）
+  else if(s){dealt=hurtS(s,dmg*(c.structMul||1),{mix:c.mix,kt:E.t[i],src:i,sid:E.id[i],melee:1,mk:EMK,ea:1});   // src / melee：v0.6.1 城墙二阶的反击（近战反弹照旧在下面）
     if(s.cfg&&s.cfg.chill)gateChill(s,i);   // v0.5.2 寒冰城门
     const rf=s.cfg&&s.cfg.reflect;if(rf&&dealt>0){const lm=CFG.wallLevels.effect[s.level-1];dealE(i,(dealt*rf.pct+rf.flat)*lm,{magic:true,mix:s.cfg.mix});if(inViewPt(s.x,s.y))pp(E.x[i],E.y[i]-6,4,vr(-20,20),vr(-10,10),vr(10,20),160,0.4,'#86bf55',1,0,0)}}
   if(ls>0&&dealt>0&&E.alive[i]&&!(E.hcT[i]>0)){const hv=dealt*ls*eHK(i);if(EZS_OV[E.t[i]])zsOverHeal(i,hv);else eLsHeal(i,hv)}   // eLsHeal：v0.11.0 溢出的部分交给钩子 eLsOver（血族城堡进血池）   // zsOverHeal：v0.7.0 赢勾「冥血之躯」
@@ -43453,7 +43494,7 @@ function enemyShoot(i,c,T,ty,inVolley){if(ETG[E.t[i]]||E.clk[i]>0)eReveal(i);
   const base=Math.atan2(ty-y,T.x-x),n=c.fan?c.fan.n:1;
   for(let k=0;k<n;k++){const sa=E.blT[i]>0?CFG.temple.eBlind.spread:0,ang=base+(n>1?(k/(n-1)-0.5)*c.fan.arc*DEG:0)+(c.spread||sa?vr(-1,1)*((c.spread||0)*ENV.spread/(1+em.accuracy)+sa)*DEG:0);   // sa：v0.5.0 失明
     G.eproj.push({x,y,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,life:(n>1?Math.max(d,c.range*16):d)/sp+0.05,dmg:E.dmg[i]*(E.xAt[i]>0?1+E.xA[i]:1),magic:!!c.magic,aoe:(c.aoe||0)*16,crit:c.crit||0,mix:c.mix,
-      tgtF:T.cfg?null:T,tgtS:T.cfg?T:null,tt:T.cfg?T.ty*MAP_W+T.tx:tidx(T.x,T.y),k:c.proj||'earrow',src:i,id:E.id[i],kt:E.t[i],ls:E.ls[i]+(E.buffL[i]>0?0.2:0)+(G.zsYg?zsLsOf(i):0),pud:c.puddle||null,pudK:E.dmg[i],chill:c.chill||null,sm:c.siege||1,fs:c.frostShot||null,vn:c.pvenom||null,el:c.elemArrow?1:0})}   // vn / el：v0.6.0 元素森林（弹道中毒、元素箭矢）
+      tgtF:T.cfg?null:T,tgtS:T.cfg?T:null,tt:T.cfg?T.ty*MAP_W+T.tx:tidx(T.x,T.y),k:c.proj||'earrow',src:i,id:E.id[i],kt:E.t[i],ls:E.ls[i]+(E.buffL[i]>0?0.2:0)+(G.zsYg?zsLsOf(i):0),pud:c.puddle||null,pudK:E.dmg[i],chill:c.chill||null,sm:c.siege||1,fs:c.frostShot||null,vn:c.pvenom||null,el:c.elemArrow?1:0,ea:1})}   // vn / el：v0.6.0 元素森林（弹道中毒、元素箭矢）
   // 连射（冰原大法师、首领）：后面几发由 stepEnemy 按间隔补上
   if(c.volley&&!inVolley){E.vol[i]=c.volley.n-1;E.volT[i]=c.volley.gap;E.vt[i]=T}
   if(NBB_CAT[E.t[i]])nbBShot(i,c,T,ty,inVolley);   // 代理 B 加：守望长城统领的在场效果（弓骑兵多射 2 支 + 额外射击、火枪骑兵的贯穿射击；maps/nb_boss）
@@ -43553,18 +43594,18 @@ function updateEProj(dt){
     p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;
     if(mfp&&hkAny('eproj',p,dt))continue;   // v0.5.1 地图机制（机械工厂的蒸汽、齿轮）
     if(p.k==='blade'){   // 刀气：贯穿守军，被建筑挡下
-      const bs=G.structAt[tidx(clamp(p.x,0,MW-1),clamp(p.y+5,0,MH-1))];if(bs&&blocksProj(bs)){hurtS(bs,p.dmg,{mix:p.mix,kt:p.kt,bsrc:p.src,mk:p.mk});p.dead=true;continue}
+      const bs=G.structAt[tidx(clamp(p.x,0,MW-1),clamp(p.y+5,0,MH-1))];if(bs&&blocksProj(bs)){hurtS(bs,p.dmg,{mix:p.mix,kt:p.kt,bsrc:p.src,mk:p.mk,ea:p.ea});p.dead=true;continue}
       for(const u of FR){if(p.hit.has(u)||u.layer)continue;if(Math.abs(u.x-p.x)<9&&Math.abs(u.y-6-p.y)<10){p.hit.add(u);hurtF(u,p.dmg,{src:p.src,sid:p.id,mix:p.mix})}}
       if(p.life<=0)p.dead=true;continue}
     // 被建筑阻挡（目标所在格除外）：箭/法球打在挡路的建筑上
     const bt=tidx(clamp(p.x,0,MW-1),clamp(p.y+5,0,MH-1)),bs=G.structAt[bt];
-    if(bs&&bt!==p.tt&&blocksProj(bs)){if(bs.cfg&&bs.cfg.chill&&eOk(p.src,p.id))gateChill(bs,p.src);if(p.aoe){eExplode(p)}else{hurtS(bs,p.dmg*(p.sm||1),{magic:p.magic,mix:p.mix,kt:p.kt,src:p.src,sid:p.id,mk:p.mk});if(inViewPt(p.x,p.y))pp(p.x,p.y,0,vr(-10,10),vr(-8,4),vr(5,12),160,0.25,'#a99c80',1,0,0)}p.dead=true;continue}
+    if(bs&&bt!==p.tt&&blocksProj(bs)){if(bs.cfg&&bs.cfg.chill&&eOk(p.src,p.id))gateChill(bs,p.src);if(p.aoe){eExplode(p)}else{hurtS(bs,p.dmg*(p.sm||1),{magic:p.magic,mix:p.mix,kt:p.kt,src:p.src,sid:p.id,mk:p.mk,ea:p.ea});if(inViewPt(p.x,p.y))pp(p.x,p.y,0,vr(-10,10),vr(-8,4),vr(5,12),160,0.25,'#a99c80',1,0,0)}p.dead=true;continue}
     if(G.icptL&&G.icptL.length&&icptHit(p))continue;
     if(p.fe!==undefined){facProjE(p);continue}   // v0.8.6 第三方阵营：打敌对亡灵的弹道（engine/faction）   // v0.6.1 大盾卫二阶「拦截禁令」：身边飞过的弹道打在它身上
     if(p.aoe){if(p.life<=0){if(!prismShell(p))eExplode(p);p.dead=true}continue}   // prismShell：v0.5.2 棱镜套装把炮弹弹回去（不爆炸）
-    for(const u of FR){if(Math.abs(u.x-p.x)<6&&Math.abs(u.y-6-(u.elev||0)-p.y)<8+(u.elev?6:0)){if(u.prism&&prismBounce(u,p))break;const d=hurtF(u,p.dmg,{crit:p.crit,src:p.src,sid:p.id,mix:p.mix,magic:p.magic,chill:p.chill,ep:1,mk:p.mk});if(p.fs&&d>0)frostStack(u,p.fs);if(d>0&&p.vn)poisonF(u,p.vn,false);if(d>0&&p.el)efElemHit(u,p);if(p.ls&&eOk(p.src,p.id)&&!(E.hcT[p.src]>0))eLsHeal(p.src,d*p.ls*eHK(p.src));p.dead=true;break}}
+    for(const u of FR){if(Math.abs(u.x-p.x)<6&&Math.abs(u.y-6-(u.elev||0)-p.y)<8+(u.elev?6:0)){if(u.prism&&prismBounce(u,p))break;const d=hurtF(u,p.dmg,{crit:p.crit,src:p.src,sid:p.id,mix:p.mix,magic:p.magic,chill:p.chill,ep:1,mk:p.mk,ea:p.ea});if(p.fs&&d>0)frostStack(u,p.fs);if(d>0&&p.vn)poisonF(u,p.vn,false);if(d>0&&p.el)efElemHit(u,p);if(p.ls&&eOk(p.src,p.id)&&!(E.hcT[p.src]>0))eLsHeal(p.src,d*p.ls*eHK(p.src));p.dead=true;break}}
     if(p.dead)continue;
-    if(p.life<=0){if(p.tgtS&&!p.tgtS.dead&&Math.hypot(p.tgtS.x-p.x,p.tgtS.y-8-p.y)<16+Math.hypot(p.vx,p.vy)*0.06){if(p.tgtS.cfg&&p.tgtS.cfg.chill&&eOk(p.src,p.id))gateChill(p.tgtS,p.src);hurtS(p.tgtS,p.dmg*(p.sm||1),{mk:p.mk,mgS:p.magic,mix:p.mix,kt:p.kt,src:p.src,sid:p.id})}p.dead=true}   // v0.4.0 修复：弹道寿命多算 0.05 秒，快的弩矢 / 子弹会飞过头 14 像素以上，原来打建筑常常落空
+    if(p.life<=0){if(p.tgtS&&!p.tgtS.dead&&Math.hypot(p.tgtS.x-p.x,p.tgtS.y-8-p.y)<16+Math.hypot(p.vx,p.vy)*0.06){if(p.tgtS.cfg&&p.tgtS.cfg.chill&&eOk(p.src,p.id))gateChill(p.tgtS,p.src);hurtS(p.tgtS,p.dmg*(p.sm||1),{mk:p.mk,mgS:p.magic,mix:p.mix,kt:p.kt,src:p.src,sid:p.id,ea:p.ea})}p.dead=true}   // v0.4.0 修复：弹道寿命多算 0.05 秒，快的弩矢 / 子弹会飞过头 14 像素以上，原来打建筑常常落空
   }
   for(let i_12=0,a_12=G.eproj;i_12<a_12.length;i_12++){const p=a_12[i_12];if(p.dead&&p.pud){addAcid(p.x,p.y+4,p.pud,p.pudK);p.pud=null}}
   compact(G.eproj,pfLive);
@@ -43575,7 +43616,7 @@ function prismBack(u,p,dmg){const P=u.prism,src=eOk(p.src,p.id)?p.src:-1,dist=sr
   fireAng(p.x,p.y,a,back,{proj:PRISM_FK[p.k]||'arrow',speed:Math.max(8,Math.hypot(p.vx,p.vy)/16),spread:0,aoe:0,mix:p.mix},dmg*P.mul,{hk:u.isHero?u:null,mix:p.mix},back);
   if(inViewPt(p.x,p.y)){if(FXK>0)addFx({k:'ring',x:Math.round(p.x),y:Math.round(p.y),r:7,life:0.2,c:'#ff9af0'});sfx('clank')}}
 function prismBounce(u,p){if(p.magic||!PRISM_FK[p.k]||Math.random()>=u.prism.p)return false;
-  hurtF(u,p.dmg*u.prism.take,{crit:p.crit,src:p.src,sid:p.id,mix:p.mix,chill:p.chill,mk:p.mk});prismBack(u,p,p.dmg);p.dead=true;return true}
+  hurtF(u,p.dmg*u.prism.take,{crit:p.crit,src:p.src,sid:p.id,mix:p.mix,chill:p.chill,mk:p.mk,ea:p.ea});prismBack(u,p,p.dmg);p.dead=true;return true}
 function prismShell(p){if(p.magic||!PRISM_FK[p.k])return false;for(let i_13=0,a_13=G.heroes;i_13<a_13.length;i_13++){const h=a_13[i_13];if(h.dead||!h.prism||Math.hypot(h.x-p.x,h.y-p.y)>=p.aoe+4)continue;if(Math.random()>=h.prism.p)continue;   // 炮弹：不受伤害、也不爆炸
     prismBack(h,p,p.dmg);return true}return false}
 // v0.5.2 寒冰城门：被打时攻击者移速、攻速下降（随城墙等级 ×wallLevels.effect；精英 ×0.6、首领 ×0.3 的时间）
@@ -43588,8 +43629,8 @@ function burnE(j,dps,t){if(!(dps>0)||!(t>0)||!E.alive[j]||G.efWater)return;if(HK
   {const L=HK.burnDurE;for(let k=0;k<L.length;k++)t=L[k](t)}   // 0.12.6 代理 B 加：灼烧持续时间的钩子（赤龙法杖，gear/fx_ly）
   const cur=E.burnT[j]>0?E.burnD[j]:0;if(dps<cur)return;E.burnT[j]=dps>cur?t:Math.max(E.burnT[j],t);E.burnD[j]=dps;if(SV_ON)svSt2Burn(j)}   // svSt2Burn：代理 SVDV 加，记下灼烧是谁点的（幸存者模式的伤害统计，game/sv_st2）
 function eExplode(p){
-  for(let i_14=0,a_14=G.friends;i_14<a_14.length;i_14++){const u=a_14[i_14];if(Math.hypot(u.x-p.x,u.y-p.y)<p.aoe+4)hurtF(u,p.dmg,{magic:p.magic,src:p.src,sid:p.id,mix:p.mix,chill:p.chill,boom:1,mk:p.mk,ptg:p.tgtF});}   // ptg：0.12.6 代理 R 加，炮弹瞄的主要目标（联盟共主-亚瑟「胜利誓约 · 守护」：别的士兵免疫波及）
-  for(let i_15=0,a_15=G.structs.slice();i_15<a_15.length;i_15++){const s=a_15[i_15];if(!s.dead&&Math.hypot(s.x-p.x,s.y-8-p.y)<p.aoe+8)hurtS(s,p.dmg,{magic:p.magic,mix:p.mix,kt:p.kt,bsrc:p.src,mk:p.mk});}   // bsrc：v0.8.3 只给赤血关隘的摧城之志认人（不用 src：src 会触发城墙的反击）
+  for(let i_14=0,a_14=G.friends;i_14<a_14.length;i_14++){const u=a_14[i_14];if(Math.hypot(u.x-p.x,u.y-p.y)<p.aoe+4)hurtF(u,p.dmg,{magic:p.magic,src:p.src,sid:p.id,mix:p.mix,chill:p.chill,boom:1,mk:p.mk,ptg:p.tgtF,ea:p.ea});}   // ptg：0.12.6 代理 R 加，炮弹瞄的主要目标（联盟共主-亚瑟「胜利誓约 · 守护」：别的士兵免疫波及）
+  for(let i_15=0,a_15=G.structs.slice();i_15<a_15.length;i_15++){const s=a_15[i_15];if(!s.dead&&Math.hypot(s.x-p.x,s.y-8-p.y)<p.aoe+8)hurtS(s,p.dmg,{magic:p.magic,mix:p.mix,kt:p.kt,bsrc:p.src,mk:p.mk,ea:p.ea});}   // bsrc：v0.8.3 只给赤血关隘的摧城之志认人（不用 src：src 会触发城墙的反击）
   if(inViewPt(p.x,p.y)){addFx({k:'boom',x:Math.round(p.x),y:Math.round(p.y),r:p.aoe,life:0.35,pal:1});sfx('zap')}
 }
 const GORE=[];const CORPSE=[];
@@ -47690,7 +47731,7 @@ const bfHasE=(i,id)=>{const B=EBL[i];return!!(B&&B.id===E.id[i]&&B.L.some(b=>b.i
 function bfPurgeE(i,o){const B=EBL[i];if(!B||B.id!==E.id[i]||!B.L.length)return 0;const L=B.L,n0=L.length;for(let k=L.length-1;k>=0;k--)if((o&&o.all)||!L[k].neg)L.splice(k,1);if(L.length===n0)return 0;bfApplyE(B);return n0-L.length}
 // 亡灵：把合计的攻击、攻速、移速、防御换进 E.dmg / E.ai / E.sp / E.def（先除掉上次乘进去的）
 function bfApplyE(B){const i=B.i,q=i*6,V=bfSum(B.L,B.V),P0=ueAtkP0(i),dK=Math.max(0.05,(1+P0+V[0])/Math.max(0.05,1+P0)*(1+V[1])*m1WkE(i,V)),aK=1/Math.max(0.1,1+V[2]),sK=Math.max(0.05,1+V[3]);   // m1WkE：M1 加，v0.10.11 虚弱（engine/m1_weak）   // P0：v0.10.11（用户定，规则 2）统一 buff 的 atk 和亡灵卡的「伤害 +X%」相加（E.dmg 里已经乘过 1 + P0）
-  E.dmg[i]*=dK/E.bfK[q];E.bfK[q]=dK;E.ai[i]*=aK/E.bfK[q+1];E.bfK[q+1]=aK;E.sp[i]*=sK/E.bfK[q+2];E.bfK[q+2]=sK;E.def[i]+=V[7]-E.bfK[q+3];E.bfK[q+3]=V[7];E.bfK[q+4]=V[BF_TK];E.bfK[q+5]=Math.max(0.1,1+V[9])}
+  E.dmg[i]*=dK/E.bfK[q];E.bfK[q]=dK;E.ai[i]*=aK/E.bfK[q+1];E.bfK[q+1]=aK;E.sp[i]*=sK/E.bfK[q+2];E.bfK[q+2]=sK;E.def[i]+=V[7]-E.bfK[q+3];E.bfK[q+3]=V[7];E.bfK[q+4]=V[BF_TK];E.bfK[q+5]=Math.max(0.1,1+V[9]+em.ecsCd)}   // em.ecsCd：代理 EC 加，亡灵卡「死灵之术」的冷却速度和统一 buff 的 cdSpd 相加（eSpawn 的初值同样加）
 // 英雄的伤害倍率（engine/enemy.dealE，o.hk）
 // 英雄的临时伤害倍率：统一 buff 的 atk + 征服骑枪光环（auDm），和英雄的伤害加成相加（heroAddK）；buff 的 atkI 独立乘区（v0.8.11 用户定：临时加成都相加）
 const bfHK=h=>heroAddK(h,(h.auDmU>G.time?h.auDm:0)+(h.bfV?h.bfV[0]:0))*(h.bfV?1+h.bfV[1]:1);
@@ -70924,7 +70965,7 @@ const saveSlots=()=>['regular',...Object.keys(CFG.maps).map(k=>'endless.'+k),'st
 const curSlot=()=>G&&G.story?'story':saveSlot(MODE,G&&G.map);   // v0.6.3 剧情模式单独一个存档位
 function newGame(opts){if(typeof pickReset==='function')pickReset();
   try{olvFlush()}catch(e){}   // v0.8.14 上一局没分完的经验先平均分掉
-  opts=opts||{};MODE=opts.mode||'regular';DIFF=DIFFS[opts.diff||'normal'];
+  opts=opts||{};MODE=opts.mode||'regular';DIFF=sgDiff(DIFFS[opts.diff||'normal'],opts);   // sgDiff：0.12.7 代理 SG 加，死国换成派生的难度（game/sg_dead）
   const seed=opts.seed??((Math.random()*1e9)>>>0);RS=seed;
   {const md=CFG.maps[opts.map]||CFG.maps.wild,sz=md.size||64;const own=opts.stMap&&stMapOwn(opts.map);if(opts.stMap&&!own)setMapSize(CFG.settlement.mapSize,CFG.settlement.mapSize);else setMapSize(md.w||sz,md.h||sz);if(md.center&&(!opts.stMap||own)){const[cx,cy]=md.center;BASE_TX=cx-1;BASE_TY=cy-1;TERR_CX=cx;TERR_CY=cy}}   // v0.5.0 地图大小；center：v0.6.0 主堡不在正中（铁血要塞在南边）
   pm=zeroMods(PM_KEYS);em=zeroMods(EM_KEYS);eReset();ptClear();dsReset();   // dsReset：v0.8.13 数据详情
@@ -70935,7 +70976,7 @@ function newGame(opts){if(typeof pickReset==='function')pickReset();
     queue:[],waveT:0,nextPlan:null,lastPlan:null,curSides:[],flowDirty:true,flowT:0,flowVer:0,structVer:1,navVer:0,flowCool:0,sdistVer:0,visT:0,visDirty:true,night:0,shake:0,dayIdx:0,weather:'sunny',flashT:0,boltT:null,tA:0,wA:0,cleared:[],
     globalMode:'guard',towerMode:'free',heroMode:'guard',heroModes:{},heroCmd:{},autoNext:!!SET.autoNext,rush:false,tunnels:[],tunnelN:0,tombN:0,bountyMul:((CFG.run.tierBounty||[])[Math.max(0,CFG.mapPages.findIndex(p=>p.maps.includes(CFG.maps[opts.map]?opts.map:'wild')))]||1)*((CFG.maps[opts.map]&&CFG.maps[opts.map].bountyK)||1),keepHit:{},keepHitW:{},mv:(CFG.maps[opts.map]&&CFG.maps[opts.map].moveMul)||1,lowT:0,base:null,hero:null,cardOpts:null,ecardOpts:null,meta:{建材:0,科研点:0,设计点:0,银币:0,金币:0},
     lineup:null,heroes:[],twoP:false,loadout:nbmGiveL((opts.loadout||currentLoadout()).slice(),opts),terr:CFG.maps[opts.terr]?opts.terr:null,mdo:opts.mdo&&CFG.maps[opts.map]?Object.assign({},CFG.maps[opts.map],opts.mdo):null,   // terr / mdo：v0.7.3 剧情（圣堂墓园第一章在王都）：地形长成 terr 那张图的样子；mdo 改掉这张图的部分设定（开局套件、墓园……）
-    total:MODE==='regular'?(opts.total||regWavesOf(DIFF,opts.map)):Infinity,stMap:!!opts.stMap,oathOn:!!opts.oath,oaths:[],oAsk:-1,oBupo:0,prepEvOn:!!opts.prepEv,mcP:0,mc:null,mcOwn:[],mcN:{},pots:{},wares:{}});   // GState：PF 加（v0.11.2）先按字段表 core/gshape 建好全部字段（undefined），再填字面量的值   // prepEvOn：v0.9.4 准备阶段事件（商人，game/merchant094）   // oathOn：v0.9.4 誓约（出征设置的开关，game/oath094）
+    total:MODE==='regular'?(opts.total||regWavesOf(DIFF,opts.map)):Infinity,stMap:!!opts.stMap,oathOn:!!opts.oath,oaths:[],oAsk:-1,oBupo:0,prepEvOn:!!opts.prepEv,mcP:0,mc:null,mcOwn:[],mcN:{},pots:{},wares:{},sg:!!DIFF.sgB});   // GState：PF 加（v0.11.2）先按字段表 core/gshape 建好全部字段（undefined），再填字面量的值   // prepEvOn：v0.9.4 准备阶段事件（商人，game/merchant094）   // oathOn：v0.9.4 誓约（出征设置的开关，game/oath094）   // sg：0.12.7 代理 SG 加，死国（game/sg_dead）
   {const t=mapTierOf(G.map),C=CFG.combat,dt=CFG.diffTier&&CFG.diffTier[DIFF.id];G.ePenB=((C.ePenTier&&C.ePenTier[t])||0)*((C.ePenDiff&&C.ePenDiff[DIFF.id])||1);G.ePenD=(C.ePenDiff&&C.ePenDiff[DIFF.id])||1;G.eTough=C.regTough[t]||100;G.eDefl=C.regDefl[t]||0;G.eDflD=null;G.eDflE=null;G.dHp=dt?dt.hp[t]:DIFF.stat;G.dDmg=dt?dt.dmg[t]:DIFF.stat}   // dHp / dDmg：v0.8.14 难度倍率按地区阶（CFG.diffTier，数值第二轮）
   G.olv=opts.olv||olvSnap();G.expPool=opts.expPool||0;G.usedB=opts.usedB||{};   // v0.8.14 局外等级快照、这一局的经验池、用过的建筑种类（game/olv）   // v0.8.14 亡灵的韧性、偏斜按地区阶（engine/enemy.dealE）
   postVer=-1;POSTS=[];soulPtInit();   // soulPtInit：0.12.5 培养英雄（game/soul_pt）
@@ -71335,6 +71376,7 @@ function afterPlayerCard(){
   toPrep();
 }
 function applyEnemyCard(o){const e=o.c.eff||{},R=G.emRaw||(G.emRaw={});for(const k in e){if(!(k in em))continue;const v=cardEff(o,k);if(o.c.set){em[k]=v;if(k in R)R[k]=v}else dimAdd(em,R,k,v)}if(o.c.cap)em[o.c.cap[0]]=Math.min(em[o.c.cap[0]],o.c.cap[1]);G.epickN[o.c.id]=(G.epickN[o.c.id]||0)+1;G.epicked.push({n:cardName(o.c,o.q),q:o.q});   // v0.8.25 按品质取值（qv）、顶替卡（set）直接设值
+  ecsCardOn(o);   // 代理 EC 加：死国 / 通用新亡灵卡，拿到就挂上它们的钩子（game/ecard_sg）
   xnECardRec(o);   // 0.12.6 代理 H 加：记下这张卡的 id 和倍率，希娜「龙之恩赐」移除亡灵卡时用（heroes/xina）
   if(e.night||e.smog||e.bloodMoon||e.mist||e.cstorm)dayRefresh()}
 // v0.8.23（用户定）刷新卡牌：花 1 次刷新次数（卡「幸运机会 / 命运之掷」「以量胜质」），把这一批重抽；精英 / 首领波的保底照算
@@ -71422,9 +71464,9 @@ function clearSave(s){if(!s&&G&&G.invade||metaLock)return;try{   // metaLock：v
 // 0.3.0 及以前只有一个存档位：里面是无尽模式的话挪到对应地图的无尽存档位
 function migrateSaves(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return;const d=JSON.parse(raw);if(!validRun(d))return;const s=saveSlot(d.mode,d.map);
   if(s!=='regular'){if(!localStorage.getItem(slotKey(s)))localStorage.setItem(slotKey(s),raw);localStorage.removeItem(SAVE_KEY)}}catch(e){}}
-const slotName=d=>d.story&&stC(d.story.c)?`剧情 · ${stC(d.story.c).R.name} · ${stC(d.story.c).C.name}`:`${(CFG.maps[d.map]||CFG.maps.wild).name} · ${d.expand!=null?'开拓':d.mode==='regular'?'常规':d.mode==='endless'?'无尽':d.mode==='survivor'?'幸存者':'剧情'} · ${DIFFS[d.diff].name}`;
+const slotName=d=>d.story&&stC(d.story.c)?`剧情 · ${stC(d.story.c).R.name} · ${stC(d.story.c).C.name}`:`${(CFG.maps[d.map]||CFG.maps.wild).name} · ${d.expand!=null?'开拓':d.mode==='regular'?'常规':d.mode==='endless'?'无尽':d.mode==='survivor'?'幸存者':'剧情'} · ${d.sg?'死国·':''}${diffName(d.diff,!!d.sg)}`;   // d.sg：0.12.7 代理 SG 加（game/sg_dead）
 function loadRun(d){
-  newGame(Object.assign({mode:d.mode,diff:d.diff,map:d.map,seed:d.seed,heroes:d.lineup||[d.heroSpec],twoP:d.twoP,loadout:d.loadout,tech:d.tech,btech:btMigrate(d.btech||{}),olv:d.olv,expPool:d.expPool,usedB:d.usedB,total:d.total||undefined,expand:d.expand??null,expandR:d.expandR||'wild',restoring:true},d.story?stMapOpts(d.story):{}));   // stMapOpts：v0.7.3 剧情这一章的地形样子、改过的地图设定
+  newGame(Object.assign({mode:d.mode,diff:d.diff,map:d.map,seed:d.seed,heroes:d.lineup||[d.heroSpec],twoP:d.twoP,loadout:d.loadout,tech:d.tech,btech:btMigrate(d.btech||{}),olv:d.olv,expPool:d.expPool,usedB:d.usedB,total:d.total||undefined,expand:d.expand??null,expandR:d.expandR||'wild',sg:!!d.sg,restoring:true},d.story?stMapOpts(d.story):{}));   // stMapOpts：v0.7.3 剧情这一章的地形样子、改过的地图设定   // sg：0.12.7 代理 SG 加，死国的局读档（DIFF、波数、倍率在 newGame 里定）
   G.story=d.story||null;hkBuild();   // v0.6.3 剧情；hkBuild：v0.8.10 剧情的特性要按 G.story 重排一次
   hkEach('load',d);   // v0.5.1 地图机制读档（沙漠神殿已经塌了、传送带方向……）
   for(const i of d.cleared||[])if(clearCostOf(G.terrain[i])){clearTileRaw(i);G.cleared.push(i)}
@@ -71432,6 +71474,7 @@ function loadRun(d){
   RS=d.RS;if(!d.pv&&d.pm&&d.pm.waveCopper>0)d.pm.waveCopper/=20;   // v0.6.0 老存档：战时税原来每张存 20 × 品质倍率，改成存品质倍率
   Object.assign(pm,d.pm);Object.assign(em,d.em);G.seen=d.seen||{};G.seenF=d.seenF||{};if(d.ds&&typeof d.ds==='object'){DSK=Object.create(null);for(const k in d.ds){const r=d.ds[k];if(r&&r.k)DSK[k]=r}}   // seenF：v0.8.23 我方受到过的伤害种类（抗性药水卡）   // ds：v0.8.24 修——读档后「数据详情」清空了：存档带上这一局的数据详情（按键记的合计；DSM 是单位 → 记录的缓存，读档后按键重新挂上）   // P3 改：读档填进 newGame 建好的 pm / em（原来 fastObj 重建一份，理由同 applyCard）
   if(d.pmRaw&&typeof d.pmRaw==='object'){G.pmRaw=d.pmRaw;G.emRaw=d.emRaw||{}}else{G.pmRaw=dimMigrate(pm);G.emRaw=dimMigrate(em)}   // v0.8.22 卡牌折算：老存档的合计当成卡面合计再折算
+  ecsLoad();   // 代理 EC 加：em 还原之后按新亡灵卡重建一次钩子（game/ecard_sg）
   G.weather=WX[d.weather]?d.weather:'sunny';G.dayIdx=dayIdxFor(d.wave+1);envApply();
   Object.assign(G,{heroCmd:d.heroCmd&&typeof d.heroCmd==='object'?d.heroCmd:{},wave:d.wave,gold:d.gold,kills:d.kills,kE:d.kE||0,kB:d.kB||0,picked:d.picked||[],epicked:d.epicked||[],globalMode:d.globalMode||'guard',towerMode:TWR_NAMES[d.towerMode]?d.towerMode:'free',heroMode:d.heroMode||(d.globalMode&&d.globalMode!=='guard'?'sortie':'guard'),heroModes:d.heroModes||{},autoNext:!!d.autoNext,meta:d.meta||G.meta,prepId:d.prepId||1,pickN:d.pickN||{},epickN:d.epickN||{},loot:d.loot||[],souls:d.souls||{},soulTgt:typeof d.soulTgt==='string'?d.soulTgt:G.soulTgt,soulPt:+d.soulPt||0,soulPtRaw:+d.soulPtRaw||0,soulDbl:d.soulDbl|0,soulSrcF:d.soulSrcF&&typeof d.soulSrcF==='object'?d.soulSrcF:{},bpPaid:!!d.bpPaid,bpGot:d.bpGot|0,skinFrag:d.skinFrag||{},mats:d.mats||{}});
   const list=[];   // v0.6.02 存档里有已经不存在的建筑 / 陷阱种类就跳过（原来读档直接报错）；list 占位，士兵的兵营下标不错位
@@ -71540,6 +71583,72 @@ feat('ecard091',{hooks:{
   eDie:(i,c)=>{if(em.corpse>0)ecCorpse(i,c);if(em.sacri>0)ecSacri(i);if(em.split>0)ecSplit(i,c)},
   save:o=>{if(G.eliteAcc>0)o.eliteAcc=G.eliteAcc},
   load:d=>{if(d.eliteAcc>0)G.eliteAcc=+d.eliteAcc}}});
+
+// ---------- 0.12.7 之后（用户 2026-11-01 定，代理 EC 加）新亡灵卡的机制：数据和名词口径在 data/ecard_sg.js ----------
+// 没拿到这些卡时零开销：两个特性只在 em 里对应的值 > 0 时由 hkBuild 挂上（拿卡时 game.applyEnemyCard → ecsCardOn，读档时 game.loadRun → ecsLoad 重建一次钩子）
+//   ecsDmg：dmgInF / dmgInS —— 技能伤害、火焰 / 爆炸 / 中毒 / 闪电伤害 +X%，进出手亡灵的加算池子（engine/enemy.ueAtkK，同秘法工厂的法术增伤）
+//   ecsMisc：afterHurtF / afterHurtS / tick / waveEnd —— 惩戒之力、征服之力、恐惧之力、天启之力
+// 冷却速度（死灵之术）不在这里：em.ecsCd 直接加进亡灵的统一冷却速度（engine/enemy.eSpawn 的初值、engine/buff.bfApplyE），和统一 buff 的 cdSpd 相加
+// 「亡灵造成的」：直接伤害要有亡灵来源（o.src / o.bsrc 亡灵下标，或 o.kt 亡灵种类）；持续伤害（灼烧、中毒）分不清来源，按伤害类型一律算（Claude 定）
+//   来源是别的阵营（不是 FAC_U）的、被惩戒骑士移除了亡灵卡效果的（E.fsNc）亡灵不吃这些卡
+const ECS_KEYS=new Set(['ecsCd','ecsSk','ecsApoc','ecsConq','ecsFear','ecsPun','ecsFire','ecsBlast','ecsPsn','ecsLtn']);
+const ECS_Q=[];   // 等着被征服之力转化的士兵：排到 tick 里再换（伤害回调里当场生成会复用刚死亡亡灵的下标，同堕落圣堂 fsQ）
+const ECS_DT={g:null,m:'',fire:0,blast:0,poison:0,lightning:0};   // 这局的亡灵带哪几种伤害（ecsScan 算一次，按 G、地图缓存）
+const ECS_SKIP=/(Imm|Res|Red|Heal|Back)$/;   // 免疫、抗性、减免、被打回血这类字段名不算「带这种伤害」
+const ECS_APO={magic:true,dot:true,noFx:true,src:-1};   // 天启之力：法术伤害，按持续伤害结算（不僵直、不打断装填、只吃通用减伤）
+let ECS_G=null,ECS_AT=0;
+const ecsDmgOn=()=>!!em&&(em.ecsSk>0||em.ecsFire>0||em.ecsBlast>0||em.ecsPsn>0||em.ecsLtn>0);
+const ecsMiscOn=()=>!!em&&(em.ecsApoc>0||em.ecsConq>0||em.ecsFear>0||em.ecsPun>0);
+function ecsSync(){if(ECS_G!==G){ECS_G=G;ECS_Q.length=0;ECS_AT=0;ECS_DT.g=null}}   // 换了一局：队列、计时、伤害类型缓存都清掉
+// 拿到亡灵卡（game.applyEnemyCard 末尾调）：是这几张就重建钩子；战斗中（熔岩之地「龙之贪婪」在 tick 钩子里给亡灵抽卡）推到这一帧之后，免得改到正在遍历的钩子列表
+function ecsCardOn(o){const e=o&&o.c&&o.c.eff;if(!e||!G)return;for(const k in e)if(ECS_KEYS.has(k)){ecsSync();if(G.phase==='wave'){const g=G;setTimeout(()=>{if(G===g)hkBuild()},0)}else hkBuild();return}}
+// 读档（game.loadRun 在 em 还原之后调）：开局时 hkBuild 还没有 em，这里补一次
+function ecsLoad(){ecsSync();if(ecsDmgOn()||ecsMiscOn())hkBuild()}
+// —— 这局的亡灵带不带某种伤害（通用四张卡的出现条件）——
+// 静态：这张图会出现的亡灵（图鉴名单 mapRoster + 组表里的）数据里任意层的 mix、射程弹道、爆炸范围、字段名（CFG.ecsSg.keys）；
+// 另外：这局我方已经受到过这种伤害（G.seenF：火焰、中毒、爆炸）、亡灵卡「淬毒 / 猛毒」（中毒）、「尸爆」（爆炸）也算
+function ecsHas(k){if(!G)return false;if(ECS_DT.g!==G||ECS_DT.m!==G.map)ecsScan();if(ECS_DT[k])return true;
+  const F=G.seenF;if(F&&F[k])return true;if(k==='poison'&&em&&em.toxin>0)return true;if(k==='blast'&&em&&em.corpse>0)return true;return false}
+function ecsScan(){const R=ECS_DT;R.g=G;R.m=G.map;R.fire=R.blast=R.poison=R.lightning=0;let L=[];
+  try{L=mapRoster(G.map)}catch(e){L=[]}   // 个别地图数据不全（没有 elites……）时只看组表
+  const W=mapDef().waveGroups;if(W&&W.groups)for(const g in W.groups){const U=W.groups[g].units;for(const k in U)if(L.indexOf(k)<0)L.push(k)}
+  for(const k of L){const e=CFG.enemies[k];if(e)ecsScanE(e,0)}}
+function ecsScanE(o,d){const R=ECS_DT,K=CFG.ecsSg.keys;
+  for(const k in o){const v=o[k];if(!v)continue;
+    if(k==='mix'){if(typeof v==='object'){if(v.fire>0)R.fire=1;if(v.poison>0||v.acid>0)R.poison=1;if(v.lightning>0)R.lightning=1;if(v.impact>0)R.blast=1}continue}
+    if(k==='aoe'&&v>0)R.blast=1;if(k==='proj'){if(v==='efire')R.fire=1;else if(v==='acid')R.poison=1}if(k==='pulse')R.poison=1;   // pulse：自爆脉冲（engine/enemy.ePulse）是酸蚀 + 冲击
+    if(!ECS_SKIP.test(k)){if(K.fire.test(k))R.fire=1;if(K.poison.test(k))R.poison=1;if(K.lightning.test(k))R.lightning=1;if(K.blast.test(k))R.blast=1}
+    if(d<3&&typeof v==='object'&&!Array.isArray(v))ecsScanE(v,d+1)}}
+// —— 来源 ——
+const ecsUnd=o=>o.src>=0||o.bsrc>=0||(typeof o.kt==='number'&&o.kt>=0);   // 这一下是亡灵造成的（直接伤害用）
+function ecsSi(o){const i=o.src>=0?o.src:o.bsrc>=0?o.bsrc:-1;return i>=0&&E.alive[i]&&(o.sid===undefined||E.id[i]===o.sid)?i:-1}   // 出手的亡灵下标（已经不在了 = -1）
+const ecsOff=i=>i>=0&&(E.fac[i]!==FAC_U||E.fsNc[i]===1);   // 别的阵营、被移除了亡灵卡效果的
+// —— 增伤：这一下另加的「伤害 +X%」 ——
+function ecsDmgX(o,und){const m=o.mix;let x=0;
+  if(und&&!o.dot&&!o.ea&&em.ecsSk>0)x+=em.ecsSk;   // 技能伤害：普通攻击（o.ea）、持续伤害不算
+  if(m){if(em.ecsFire>0&&m.fire>0)x+=em.ecsFire*m.fire;if(em.ecsPsn>0){const p=(m.poison||0)+(m.acid||0);if(p>0)x+=em.ecsPsn*p}if(em.ecsLtn>0&&m.lightning>0)x+=em.ecsLtn*m.lightning}
+  if(em.ecsBlast>0){const b=o.blast||o.boom?1:m?m.impact||0:0;if(b>0)x+=em.ecsBlast*b}
+  return x}
+function ecsIn(d,o){if(!(d>0))return d;const und=ecsUnd(o);if(!und&&!o.dot)return d;const i=ecsSi(o);if(ecsOff(i))return d;const x=ecsDmgX(o,und);return x>0?d*ueAtkK(i,x):d}
+// —— 惩戒之力：清增益 + 禁疗（我方单位 u.rotF / rotT，建筑 s.shcF / shcU；同一来源取大、时间取长，同积木 st.hc）——
+function ecsPunF(u){const P=CFG.ecsSg.pun,t=G.time;bfPurge(u);u.rotF=Math.max(u.rotT>t?u.rotF||0:0,P.f);u.rotT=Math.max(u.rotT||0,t+P.t)}
+function ecsPunS(s){const P=CFG.ecsSg.pun,t=G.time;bfPurge(s);s.shcF=Math.max(s.shcU>t?s.shcF:0,P.f);s.shcU=Math.max(s.shcU||0,t+P.t)}
+// —— 恐惧之力：被击杀者 r 格内的我方单位（不含城墙、塔上的）从它倒下的地方跑开 ——
+function ecsFearAt(v){const F=CFG.ecsSg.fear,R=F.r*16,x=v.x,y=v.y,L=G.friends;
+  for(let k=0;k<L.length;k++){const u=L[k];if(u===v||u.dead||u.hp<=0||u.layer)continue;const dx=u.x-x,dy=u.y-y;if(dx*dx+dy*dy<=R*R)bkFFear(u,F.t,x,y)}
+  if(FXK>0&&inViewPt(x,y))addFx({k:'ring',x:Math.round(x),y:Math.round(y-6),r:R,life:0.5,c:'#8a5ad8'})}
+// —— 受伤之后 ——
+function ecsAfterF(u,dmg,o){if(!ecsUnd(o))return;const i=ecsSi(o);if(ecsOff(i))return;
+  if(u.hp<=0){if(em.ecsFear>0)ecsFearAt(u);return}
+  if(em.ecsPun>0)ecsPunF(u);
+  if(em.ecsConq>0&&!o.dot&&!u.isHero&&u.hp+dmg<u.maxHp*CFG.ecsSg.conq.hp&&facCanF(u)&&ECS_Q.indexOf(u)<0){ecsSync();ECS_Q.push(u)}}   // 命中时（这一下之前）生命低于 50%；facCanF 挡英雄、召唤物、机械、城墙 / 塔上的、船上的
+function ecsAfterS(s,dmg,o){if(em.ecsPun>0&&!s.dead&&s.hp>0&&ecsUnd(o)&&!ecsOff(ecsSi(o)))ecsPunS(s)}
+// —— 每帧（战斗中）——
+function ecsFlush(){ecsSync();for(let k=0;k<ECS_Q.length;k++){const u=ECS_Q[k];if(!u.dead&&u.hp>0&&facCanF(u))facTurnF(u,FAC_U)}ECS_Q.length=0}   // 永久转化（不写 dur）：打死为止
+function ecsTick(dt){if(ECS_Q.length)ecsFlush();
+  if(em.ecsApoc>0){const A=CFG.ecsSg.apoc;ECS_AT+=dt;if(ECS_AT>=A.every){ECS_AT-=A.every;const L=G.friends;for(let k=0;k<L.length;k++){const u=L[k];if(!u.dead&&u.hp>0)hurtF(u,u.maxHp*A.pct,ECS_APO)}}}}
+feat('ecsDmg',{on:ecsDmgOn,hooks:{dmgInF:(u,d,o)=>ecsIn(d,o),dmgInS:(s,d,o)=>ecsIn(d,o)}});
+feat('ecsMisc',{on:ecsMiscOn,hooks:{afterHurtF:ecsAfterF,afterHurtS:ecsAfterS,tick:ecsTick,waveEnd:()=>{ECS_Q.length=0}}});
 
 // ---------- v0.9.3 流派构筑卡的机制（用户 2026-10-13 定；卡在 data/cards093.js，数值 CFG.cardFx）----------
 // 冰控：寒潮（engine/enemy.dealE 的易伤合计）、霜刃（dealE 寒冰伤害）、凛风刺骨（enemy.eTick 解冻）、绝对零度（eTick 控制计时、engine/cc.eFrz）在核心里直接读 pm；
@@ -72481,10 +72590,11 @@ function awardMeta(win,settle){for(const k in G.souls||{})if(!CFG.heroes[k])dele
   else if(win){const mk=G.map||'wild',was=!!(META.mapClear&&META.mapClear[mk]),ct0=clearTier();got.newMaps=recordMapClear();const ct1=clearTier();
     if(!was&&META.mapClear&&META.mapClear[mk])got.newDesign=CFG.designTree.filter(d=>d.map===mk||(d.tier&&d.tier>ct0&&d.tier<=ct1&&designMapOk(d))).map(d=>d.id)}   // v0.9.0 tier：第一次通关这一阶   // v0.4.1 首次通关：可以研发的新建筑（教堂）
   got.drops=materializeLoot();
+  sgRunEnd(win,cleared,got,ban);   // 0.12.7 代理 SG 加：死国的纪录（META.sgRec，game/sg_dead）
   if(!ban)try{const t0=v5fTaskN();dailyRunEnd(win);v5fTaskAdd(t0)}catch(e){console.warn('daily',e)}   // v0.5.1 日常任务进度；0.12.5 代理 F：v5fTaskN / v5fTaskAdd 数完成的任务（game/v5f_rec）
   saveMeta();
   // 最好成绩只记常规 / 无尽（v0.2.2 起扩张战不记，免得和常规模式混在一个键里）
-  if(G.expand==null&&!G.invade&&!G.story&&!ban)try{const b=loadBest(),k=(G.map&&G.map!=='wild'?G.map+'.':'')+MODE+'.'+DIFF.id;if(!(b[k]>=cleared)){b[k]=cleared;localStorage.setItem(BEST_KEY,JSON.stringify(b))}}catch(e){}
+  if(G.expand==null&&!G.invade&&!G.story&&!ban)try{const b=loadBest(),k=(G.map&&G.map!=='wild'?G.map+'.':'')+MODE+'.'+DIFF.id,cw=sgBestCap(cleared);if(!(b[k]>=cw)){b[k]=cw;localStorage.setItem(BEST_KEY,JSON.stringify(b))}}catch(e){}   // sgBestCap：0.12.7 代理 SG 加，死国的一局记进常规的键时封顶常规的波数（game/sg_dead）
   try{chRunEnd(win,got,ban,cleared)}catch(e){console.warn('chRunEnd',e)}   // 代理 CH：徽章（常规深渊通关）、无尽挑战记录（game/ch_chal）
   try{ctkRunEnd(win,ban,cleared)}catch(e){console.warn('ctkRunEnd',e)}   // 挑战任务：深渊无尽的分数、轮数（game/ch_task）
   if(win&&MODE==='regular'&&!ban)try{const L=stAutoExpand();if(L.length)got.autoExp=stAutoExpandTxt(L)}catch(e){console.warn('autoExp',e)}   // v0.9.51 常规通关困难及以上：自动开拓
@@ -72835,13 +72945,13 @@ function matDrop(kind){const D=CFG.matDrop[kind];if(!D||!G)return;const t=Math.m
     G.mats[k+t]=(G.mats[k+t]||0)+n;sayT(`掉落：${matName(k,t)} ×${n}`)}}
 function onEliteKill(c,eq){eq=eq||1;const D=CFG.drops,night=diffAtLeast(D.nightmare);matDrop(c&&c.mini?'mini':'elite');   // c：v0.6.01 小首领也走这里（不掉英雄之魄），多掉洗练石；eq：v0.6.7 两轮后随机出的小首领装备掉宝率 ×0.25
   // 装备、打造书二选一；「幸运之手」把两者都放大，加起来超过 100% 的部分 = 两样都掉
-  for(let k=0;k<(night?2:1);k++){const m=dropMul()*eq,pw=D.eliteWeapon*m,pb=D.eliteBook*m,r=Math.random();if(r<pw)addLoot('w');if((r>=pw&&r<pw+pb)||r<pw+pb-1)addLoot('b')}
+  for(let k=0;k<(night?2:1);k++){const m=dropMul()*eq*sgDropK(),pw=D.eliteWeapon*m,pb=D.eliteBook*m,r=Math.random();if(r<pw)addLoot('w');if((r>=pw&&r<pw+pb)||r<pw+pb-1)addLoot('b')}   // sgDropK：0.12.7 代理 SG 加，死国掉宝率 ×1.5（这里原来不吃难度掉宝倍率，game/sg_dead）
   if(night)G.meta.金币=(G.meta.金币||0)+D.eliteGold*DIFF.reward}   // v0.8.18（用户定）掉宝倍率只管英雄之魄和装备，金币按结算倍率   // v0.5.9（用户定）金币 × 掉宝倍率
 // v0.8.11 英雄之魄按号位权重给（用户定）：5 人以内依次 10/8/6/4/2；v0.8.12（用户改）超过 5 人：最后一位 2，往前每位 +2（6 人 = 12/10/8/6/4/2）
 function soulSlotW(N){const B=CFG.drops.soulSlotW,L=B.length,w=[];for(let k=0;k<N;k++)w.push(N<=L?B[k]:2*(N-k));return w}
 function soulPick(L){if(!L.length)return null;const w=soulSlotW(L.length);let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let k=0;k<L.length;k++){r-=w[k];if(r<0)return L[k]}return L[L.length-1]}   // L 已按号位排好（joinHero 排序）
 function onBossKill(rb){const D=CFG.drops,night=diffAtLeast(D.nightmare),eq=rb?D.randBoss.gear:1,gl=k=>{if(!rb||Math.random()<eq)addLoot(k)};   // rb：v0.6.7 两轮后随机出的首领——装备、打造书各按 ×0.25 的概率掉，不掉英雄之魄
-  gl('w');gl('b');if(night){gl('w');gl('b')}matDrop('boss');
+  gl('w');gl('b');if(night){gl('w');gl('b')}matDrop('boss');sgBossExtra(gl,night);   // sgBossExtra：0.12.7 代理 SG 加，死国下必掉的每件再有 50% 多掉一件（game/sg_dead）
   // 按号位权重抽一位上阵英雄，给他的英雄之魄（v0.8.11）
   // 0.12.5（用户定）首领不再按号位掉英雄之魄，改成每轮结束给培养英雄培养值（game/soul_pt.soulRoundAward）；soulRoll / soulPick 留着没人调   // v0.7.3 进阶形态出战掉进阶版的英雄之魄（两种各算各的）   // elite：0.12.0 修复——精英不掉英雄之魄（原来会抽到精英，记成「el+编号」的英雄之魄，最后一波结算时找不到这位英雄报错、卡在结算前）
   G.meta.金币=(G.meta.金币||0)+D.bossGold*DIFF.reward*(night?2:1);   // v0.8.18 金币按结算倍率
@@ -73225,9 +73335,9 @@ function soulPtInit(){const t=soulTgtOf();G.soulTgt=t&&CFG.heroes[t]?currentHero
 function soulRoundAward(){if(!G||!G.map||G.story||G.invade||G.expand!=null)return;
   const C=CFG.soulPt,base=C.diff[DIFF&&DIFF.id]||0;
   if(base>0&&G.soulTgt&&CFG.heroes[G.soulTgt]){let v=soulPtCapped(soulPtDay().n+(G.soulPtRaw||0),base)*soulMapK();G.soulPtRaw=(G.soulPtRaw||0)+base;
-    const dbl=Math.random()<C.dbl;if(dbl){v*=2;G.soulDbl=(G.soulDbl||0)+1}v=Math.round(v*10)/10;G.soulPt=(G.soulPt||0)+v;
+    v*=sgPtK();const dbl=Math.random()<C.dbl;if(dbl){v*=2;G.soulDbl=(G.soulDbl||0)+1}v=Math.round(v*10)/10;G.soulPt=(G.soulPt||0)+v;   // sgPtK：0.12.7 代理 SG 加，死国的培养值倍率（软上限照旧按 × 之前的数算，game/sg_dead）
     if(v>0)sayT(`${dbl?'丰收！':''}${CFG.heroes[G.soulTgt].name}的培养值 +${v}`)}
-  const s=CFG.soulSrc[DIFF&&DIFF.id]||0;if(s<=0)return;if(!G.soulSrcF)G.soulSrcF={};
+  const s=sgSoulSrc();if(s<=0)return;if(!G.soulSrcF)G.soulSrcF={};   // sgSoulSrc：0.12.7 代理 SG 加，死国每轮 3 / 3.5 / 4（game/sg_dead）
   for(const id of HIDS){const S=soulSrcs(id).find(x=>x.map===G.map);if(!S||!diffAtLeast(S.minDiff||'normal'))continue;
     const f=(G.soulSrcF[id]!=null?G.soulSrcF[id]:((META.soulSrcF||{})[id]||0))+s,n=Math.floor(f+1e-9);G.soulSrcF[id]=Math.round((f-n)*100)/100;
     if(n>0){G.souls[id]=(G.souls[id]||0)+n;sayT(`掉落：${CFG.heroes[id].name}的英雄之魄 ×${n}`)}}}
@@ -73247,6 +73357,45 @@ function soulTgtSet(id){META.soulTgt=id;const n=CFG.heroes[id]?soulPoolSpend(cur
 function soulPtTxt(id){const f=currentHeroSpec(id).id,P=soulPool();return`今日 ${P.n[f]||0}/${CFG.soulPt.heroDay} · ${soulPtCost(f)} 点 1 个`}
 // 阵容里现在的培养英雄（没选或不在阵容里 = 1 号位）
 const soulTgtOf=()=>{const L=(META.lineup||[]).slice(0,typeof lineupSize==='function'?lineupSize():3);return META.soulTgt&&L.includes(META.soulTgt)?META.soulTgt:L[0]};
+
+// ---------- 0.12.7 代理 SG：「死国」（用户 2026-11-01 策划；数据 data/deadland.js 的 CFG.sg；界面 ui/sg_ui.js）----------
+// 状态：G.sg（这一局开没开；newGame 的 opts.sg 经 sgOk 判断：只有常规模式、diffs 里的难度、不是开拓 / 剧情 / 入侵战 / 开拓地才开）。别的代理（EC 的死国亡灵卡）只读 G.sg。
+// 乘区（都是独立乘，和卡牌、英雄的加成相乘、不相加）：
+//   难度：newGame 里 DIFF = sgDiff(…)：开了死国换成一份派生的难度对象（id 不变；reward、drop 已 × CFG.sg.reward / drop；rounds = CFG.sg.rounds；name =「死国·噩梦 / 炼狱 / 绝境」，sgB = 原来的难度），
+//     读 DIFF.reward / DIFF.drop 的地方自动带上：每波结算资源、经验、金币、地区材料（trade095.waveWaresDrop）、强化石 / 洗练石数量（items.matDrop）、
+//     打造书 / 指定装备 / 核心材料 / 首领专属装备 / 夜明珠的掉率（items、trade095.coreDropWave）。
+//     卡牌（拾荒搜刮、科研灵感、幸运之手）、商人搜山检海、黄虎筹万物、进阶-马可·波罗攫财之道 / 掉宝率照旧在 awardMeta、dropMul、(1 + mp2Loot) 里各算各的，和这里相乘。
+//     G.total = regWavesOf(DIFF) 跟着 rounds 变成 3 轮；planWave 按 G.total 和 rd 走（第三轮 cycleK、每轮末首领波、后期精英都照常规第二轮的写法往后排）。
+//   亡灵：start 钩子（读档时也跑：newGame 重算 G.dHp / G.dDmg 之后）再 × hp / dmg
+//   英雄之魄：sgSoulSrc()（game/soul_pt 每轮固定给）；培养值 × sgPtK()
+//   精英的装备 / 打造书原来只吃 dropMul，不吃难度掉宝倍率：game/items.onEliteKill 单独 × sgDropK()；首领必掉的装备、打造书：sgBossExtra（game/items.onBossKill）
+// 纪录：META.sgRec[地图][难度] = 死国下最多守到几波（守满 sgWaves 波 = 死国通关；绝境通关 → 成就里这张图的徽章加蓝紫色火焰外框，ui/sg_ui）；
+//   死国的一局同时按常规记最好成绩，但封顶常规的波数（sgBestCap），老的解锁、徽章、开拓判断照旧
+function sgOk(o,d){return!!(o&&o.sg&&(o.mode||'regular')==='regular'&&o.expand==null&&!o.story&&!o.invade&&!o.stMap&&d&&CFG.sg.diffs.includes(d.id))}
+// 难度名：死国下深渊叫「绝境」；d 可以是难度 id、CFG.difficulties 的一项或派生的难度
+function diffName(d,sg){const D=typeof d==='string'?DIFFS[d]:d;if(!D)return'';const B=D.sgB||D;return sg&&B.id==='abyss'?CFG.sg.abyssName:B.name}
+function sgDiff(d,o){if(!sgOk(o,d))return d;const C=CFG.sg,r=v=>Math.round(v*1000)/1000;
+  return Object.assign({},d,{name:'死国·'+diffName(d,true),reward:r(d.reward*C.reward),drop:r(d.drop*C.drop),rounds:C.rounds,sgB:d})}
+const sgDropK=()=>G&&G.sg?CFG.sg.drop:1;
+// 首领必掉的装备、打造书（每件 / 噩梦起每两件）：各再有 drop − 1 的概率多掉一件；gl 是 onBossKill 里的掉落函数（两轮后的随机首领照样按它的概率）
+function sgBossExtra(gl,night){if(!G||!G.sg)return;const p=CFG.sg.drop-1;for(let k=0;k<(night?2:1);k++){if(Math.random()<p)gl('w');if(Math.random()<p)gl('b')}}
+const sgSoulSrc=()=>{const id=DIFF&&DIFF.id,S=CFG.sg.souls;return G&&G.sg&&S[id]!=null?S[id]:CFG.soulSrc[id]||0};
+const sgPtK=()=>{const id=DIFF&&DIFF.id,a=CFG.sg.souls[id],b=CFG.soulSrc[id];return G&&G.sg&&a>0&&b>0?a/b:1};
+feat('sgDead',{hooks:{
+  start:()=>{if(G.sg){G.dHp*=CFG.sg.hp;G.dDmg*=CFG.sg.dmg}},
+  save:o=>{if(G.sg)o.sg=1}}});   // 读档：game/game.loadRun 把存档的 sg 交给 newGame（DIFF、G.total、倍率都要在 newGame 里定）
+// —— 纪录 ——
+const sgWaves=m=>mapRound(m)*CFG.sg.rounds;
+function sgRec(){if(!META.sgRec||typeof META.sgRec!=='object')META.sgRec={};return META.sgRec}
+const sgBestOf=(m,d)=>{const R=META&&META.sgRec&&META.sgRec[m];return R&&R[d]>0?R[d]:undefined};
+const sgClear=(m,d)=>(sgBestOf(m,d)||0)>=sgWaves(m);
+const sgFlameOn=m=>sgClear(m,'abyss');
+// 结算（game/meta.awardMeta，saveMeta 之前调）
+function sgRunEnd(win,cleared,got,ban){if(!G||!G.sg||ban||MODE!=='regular'||G.expand!=null||G.invade||G.story)return;
+  const m=G.map||'wild',d=DIFF.id,R=sgRec(),M=R[m]||(R[m]={}),was=sgClear(m,d);if(!(M[d]>=cleared))M[d]=cleared|0;
+  if(!was&&sgClear(m,d)){got.sgClear=d;const nm=CFG.maps[m]?CFG.maps[m].name:m;setTimeout(()=>toast(d==='abyss'?`死国·${diffName(d,true)}通关：${nm}的徽章加上了蓝紫色火焰外框`:`死国·${diffName(d,true)}通关：${nm}`),1500)}}
+// 常规的最好成绩：死国的一局封顶常规的波数（死国 3 轮，记进常规的键会出现「最佳 60 波」）
+const sgBestCap=c=>G&&G.sg?Math.min(c,regWavesOf(DIFF.sgB||DIFF,G.map||'wild')):c;
 
 // ---------- v0.5.1 日常：每月签到、日常任务（数据见 data/daily.js；界面见 ui/daily.js）----------
 // META.sign = {m:'2026-10', days:[签过的日子], got:{累计档位:1}}；META.daily = {d:dayKey, ref:今天换过几批, tasks:[{kind,cat,map,diff,hero,n,p,r,done}]}
@@ -77707,7 +77856,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=199,GAME_BUILD="c08624e+",GAME_BUILT=1793561697274,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=200,GAME_BUILD="f5c620d",GAME_BUILT=1793566471147,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -78487,7 +78636,7 @@ function recordBox(){const B=loadBest(),D=CFG.difficulties,PG=mapPages(null),tab
     let reg='—',end='—',best=-1,bd=null,eb=-1,ed=null;for(const d of D){const r=B[pre+'regular.'+d.id],e=B[pre+'endless.'+d.id];
       if(r!==undefined&&(r>=regWavesOf(d,k)?1e3+D.indexOf(d):r)>best){best=r>=regWavesOf(d,k)?1e3+D.indexOf(d):r;bd=d}if(e!==undefined&&e>eb){eb=e;ed=d}}
     if(bd)reg=best>=1e3?`<b>${bd.name}</b> 通关`:`${bd.name} <b>${best}</b> 波`;if(ed)end=`${ed.name} <b>${eb}</b> 波`;
-    return`<tr><td>${M.name}</td><td>${reg}</td><td>${end}</td></tr>`}).join('');
+    return`<tr><td>${M.name}</td><td>${reg}${sgRecTxt(k)}</td><td>${end}</td></tr>`}).join('');   // sgRecTxt：0.12.7 代理 SG 加，死国的纪录（ui/sg_ui）
   const tb=tabs.length>1?`<div class="ptabs rtabs"><button class="px${REC_PG<0?' on':''}" type="button" data-act="recpg" data-v="-1">全部</button>${tabs.map(([P,i])=>`<button class="px${REC_PG===i?' on':''}" type="button" data-act="recpg" data-v="${i}">${P.name}</button>`).join('')}</div>`:'';
   return`<details class="box recbox" ${SET.recOpen===false?'':'open'} data-tg="recOpen"><summary><h4>战绩</h4></summary>${tb}<table class="rec"><tr><th>地图</th><th>常规</th><th>无尽</th></tr>${rows||'<tr><td colspan="3" class="meta">这一阶还没有战绩</td></tr>'}</table></details>`}
 function recPage(i){REC_PG=i;const el=sheet.querySelector('.recbox');if(el){const sl=el.querySelector('.rtabs'),x=sl?sl.scrollLeft:0;el.outerHTML=recordBox();const n=sheet.querySelector('.recbox .rtabs');if(n){n.scrollLeft=x;tabIntoView(n)}}}   // v0.8.15 可收起（记住开关）
@@ -78518,12 +78667,12 @@ const diffOpen=d=>d.open||DEV||testOn();   // v0.4.4 噩梦、炼狱直接开放
 function mapPages(ex){if(ex)return[{name:'开拓',maps:[menuExpandR]}];const seen=new Set(),P=CFG.mapPages.map(p=>({name:p.name,maps:p.maps.filter(k=>CFG.maps[k]&&!seen.has(k)&&seen.add(k))}));
   const rest=Object.keys(CFG.maps).filter(k=>!seen.has(k));if(rest.length)P[P.length-1].maps.push(...rest);return P.filter(p=>p.maps.length)}
 const mapColor=k=>{const T=THEME_PAL[CFG.maps[k].theme||'wild']||THEME_PAL.wild,g=T.GR[1],d=T.DI[1];return`--mg:rgb(${g});--md:rgb(${d})`};
-function mapCard(k,ex,best){const M=CFG.maps[k],on=(ex?menuExpandR:menuMap)===k,lock=!ex&&!mapOpen(k),b=best[(k!=='wild'?k+'.':'')+menuMode+'.'+menuDiff];
+function mapCard(k,ex,best){const M=CFG.maps[k],on=(ex?menuExpandR:menuMap)===k,lock=!ex&&!mapOpen(k),sg=sgUiOn(ex),b=sg?sgBestOf(k,menuDiff):best[(k!=='wild'?k+'.':'')+menuMode+'.'+menuDiff];   // sg：0.12.7 代理 SG 加，死国开着时显示死国的纪录（game/sg_dead）
   return`<div class="mapw"><button class="mapc${on?' on':''}${lock?' lock':''}" type="button" data-act="mapsel" data-v="${k}" style="${mapColor(k)}"><b>${M.name}</b>
-    <span>${ex?`共 ${ex.waves} 波`:lock?`通关「${mapReqName(k)}」后解锁`:META.mapClear[k]?'已通关':'未通关'}${!ex&&!lock&&b!==undefined?` · 最佳 ${b} 波`:''}${!ex&&!lock?` · ${goldDayTxt(k,menuDiff||'normal')}`:''}</span></button>
+    <span>${ex?`共 ${ex.waves} 波`:lock?`通关「${mapReqName(k)}」后解锁`:sg?(sgClear(k,menuDiff)?'死国已通关':'死国未通关'):META.mapClear[k]?'已通关':'未通关'}${!ex&&!lock&&b!==undefined?` · 最佳 ${b} 波`:''}${!ex&&!lock?` · ${goldDayTxt(k,menuDiff||'normal')}`:''}</span></button>
     <button class="mapq" type="button" data-act="bestiary" data-v="${k}" aria-label="${M.name}怪物图鉴">?</button></div>`}
 function showDiff(){
-  const best=loadBest(),L=currentLoadout(),ex=menuExpand!==null?CFG.settlement.expansions[menuExpand]:null;if(ex)menuDiff=ex.diff;
+  const best=loadBest(),L=currentLoadout(),ex=menuExpand!==null?CFG.settlement.expansions[menuExpand]:null;if(ex)menuDiff=ex.diff;sgDiffFix(ex);   // sgDiffFix：0.12.7 代理 SG 加，死国只能选噩梦起（ui/sg_ui）
   if(!CFG.maps[menuMap]||!mapOpen(menuMap))menuMap='wild';
   const tip=tutDiffTip(ex),pages=mapPages(ex),pg=Math.max(0,pages.findIndex(p=>p.maps.includes(ex?menuExpandR:menuMap)));
   const fresh=modal.hidden||sheet.dataset.view!=='diff',wmv=!ex&&!!SET.wmView;   // wmv：v0.9.5 大地图样式
@@ -78531,10 +78680,10 @@ function showDiff(){
     <div class="col" data-sk="df-l">${tip}
       <div class="shrow"><h4 class="sh">地图</h4>${ex?'':`<button class="px sm wmtog" type="button" data-act="wmview">${wmv?'列表':'大地图'}</button>`}${wmv?'':pages.length>1?`<div class="ptabs">${pages.map((P,i)=>`<button class="px${i===pg?' on':''}" type="button" data-act="mpage" data-v="${i}">${P.name}</button>`).join('')}</div>`:''}<span class="meta">${wmv?`选中：<b>${CFG.maps[menuMap].name}</b> · 点图标看出征、开拓地、贸易`:`最高通关：${clearTierName()} · 点 ? 看怪物图鉴`}</span></div>
       ${wmv?wmHTML('diff'):`<div class="mpager" data-sk="mpager">${pages.map(P=>`<div class="mpage">${P.maps.map(k=>mapCard(k,ex,best)).join('')}</div>`).join('')}</div>`}
-      <h4 class="sh">难度</h4><div class="diffs">${CFG.difficulties.map(d=>{const lock=ex?d.id!==ex.diff:!diffOpen(d),mp=ex?menuExpandR:menuMap,b=best[(mp!=='wild'?mp+'.':'')+menuMode+'.'+d.id];
-        return`<button class="dc${d.id===menuDiff?' on':''}${lock?' dlock':''}" type="button" ${lock?'aria-disabled="true"':`data-act="diff" data-v="${d.id}"`}><b>${d.name}</b>${helpBtn('diff-'+d.id)}
-        <span class="sm">${lock?(ex?'':'未开放'):b!==undefined&&!ex?`最佳：${b} 波`:''}</span></button>`}).join('')}</div>
-      ${ex?'':`<div class="dfopt"><div class="shrow"><h4 class="sh">誓约${helpBtn('oath')}</h4><button class="px sm${SET.oathOn!==false?' on':''}" type="button" data-act="oathTog">${SET.oathOn!==false?'开':'关'}</button></div><div class="shrow"><h4 class="sh">流浪商人${helpBtn('pmerch')}</h4><button class="px sm${SET.prepEvOn!==false?' on':''}" type="button" data-act="pevTog">${SET.prepEvOn!==false?'开':'关'}</button></div></div>${menuMode==='endless'?chDiffRow():''}`}
+      <h4 class="sh">难度</h4><div class="diffs">${CFG.difficulties.map(d=>{const sk=sgUiOn(ex)?(CFG.sg.diffs.includes(d.id)?2:1):0,lock=ex?d.id!==ex.diff:!diffOpen(d),mp=ex?menuExpandR:menuMap,b=sk?sgBestOf(mp,d.id):best[(mp!=='wild'?mp+'.':'')+menuMode+'.'+d.id];   // sk：0.12.7 代理 SG 加，死国开着时 1 = 锁链锁上、2 = 火焰角标（ui/sg_ui）
+        return`<button class="dc${d.id===menuDiff&&sk!==1?' on':''}${lock||sk===1?' dlock':''}${sk===1?' sglk':''}" type="button" ${sk===1?'aria-disabled="true" data-act="sgLock"':lock?'aria-disabled="true"':`data-act="diff" data-v="${d.id}"`}><b>${sk?diffName(d,true):d.name}</b>${helpBtn('diff-'+d.id)}
+        <span class="sm">${sk===1?'死国不可选':lock?(ex?'':'未开放'):b!==undefined&&!ex?`最佳：${b} 波`:''}</span>${sgDecor(sk)}</button>`}).join('')}</div>
+      ${ex?'':`<div class="dfopt"><div class="shrow"><h4 class="sh">誓约${helpBtn('oath')}</h4><button class="px sm${SET.oathOn!==false?' on':''}" type="button" data-act="oathTog">${SET.oathOn!==false?'开':'关'}</button></div><div class="shrow"><h4 class="sh">流浪商人${helpBtn('pmerch')}</h4><button class="px sm${SET.prepEvOn!==false?' on':''}" type="button" data-act="pevTog">${SET.prepEvOn!==false?'开':'关'}</button></div>${menuMode==='regular'?sgRow():''}</div>${menuMode==='endless'?chDiffRow():''}`}
       ${mapInfo(ex?menuExpandR:menuMap)}</div>
     <aside class="col side" data-sk="df-r">
       <h4 class="sh">出战阵容 <span class="meta">${[...Array(lineupSize()).keys()].map(k=>(k+1)+' 号'+slotJoin(k)).join('，')}</span></h4><div class="lrs">${lineupRows()}</div>
@@ -78550,7 +78699,7 @@ function mapInfo(k){const M=CFG.maps[k],EN=CFG.enemies,W=Object.entries(M.weathe
   return`<div class="box minfo"><h4>${M.name}<span class="meta">${M.desc}</span></h4>
     <div class="mi"><span>精英</span><b>${M.elites.map(e=>EN[e].name).join('、')}</b></div>${M.minis?`<div class="mi"><span>小首领</span><b>${M.minis.map(e=>EN[e].name).join('、')}：${M.miniNote||`每 ${M.miniEvery||5} 波一位`}</b></div>`:''}<div class="mi"><span>${M.minis?'大首领':'首领'}</span><b>${M.boss.map(e=>EN[e].name).join('、')}${M.round?`：第 ${M.round} 波`:''}</b></div>
     <div class="mi"><span>天气</span><b>${W.map(([w])=>CFG.weather[w].name).join('、')}${M.moveMul?` · 所有单位移速 −${Math.round((1-M.moveMul)*100)}%`:''}</b></div>${M.countMul?`<div class="mi"><span>兵力</span><b>每波亡灵数量 ×${M.countMul}</b></div>`:''}
-    ${hs.length?`<div class="mi"><span>英雄之魄</span><b>${hs.map(id=>CFG.heroes[id].name+'('+CFG.heroes[id].title+')').join('、')}：困难及以上每轮结束固定掉落(困难 1、噩梦 1.5、炼狱 2、深渊 2.5 个，小数攒着)</b></div>`:''}
+    ${hs.length?`<div class="mi"><span>英雄之魄</span><b>${hs.map(id=>CFG.heroes[id].name+'('+CFG.heroes[id].title+')').join('、')}：困难及以上每轮结束固定掉落(困难 1、噩梦 1.5、炼狱 2、深渊 2.5 个，小数攒着${sgSoulNote()})</b></div>`:''}
     ${BI?`<div class="mi"><span>首领掉落</span><b>${bookDef(BI.w).name}：击败首领有概率掉落</b></div>`:''}</div>`}   // v0.5.9 地图首领专属装备
 // 地图分页：滑动时同步页签；点页签滑过去
 function pagerSync(el){const i=Math.round(el.scrollLeft/Math.max(1,el.clientWidth));sheet.querySelectorAll('.ptabs:not(.rtabs) .px').forEach((b,k)=>b.classList.toggle('on',k===i));tabIntoView(sheet.querySelector('.ptabs:not(.rtabs)'))}
@@ -78978,6 +79127,7 @@ function onSheetClick(e){
   else if(a==='mctab'||a==='mcbuy'||a==='mcx')merchantAct(a,v);   // v0.9.4 商人
   else if(a==='pevTog'){SET.prepEvOn=SET.prepEvOn===false;saveSettings();showDiff()}
   else if(a==='oathTog'){SET.oathOn=SET.oathOn===false;saveSettings();showDiff()}   // v0.9.4 出征设置的誓约开关
+  else if(a==='sgTog'||a==='sgLock')sgAct(a);   // 0.12.7 代理 SG 加：死国开关、锁着的难度（ui/sg_ui）
   else if(a==='tdback')deckBack();
   else if(a==='ecardok'){if(G.cardSel>=0&&armed('card'))pickEnemyCard(G.cardSel)}
   else if(a==='eaok'){if(G&&G.eAuto&&armed('card'))confirmEnemyPicked()}
@@ -78999,7 +79149,7 @@ function onSheetClick(e){
   else if(a==='go'){const old=readSave(menuExpand!==null?'regular':saveSlot(menuMode,menuMap));   // 只有同一个存档位（常规 / 这张地图的无尽）会被覆盖
     if(old&&!b.dataset.ok){b.dataset.ok='1';b.textContent=`再点一次(会覆盖「${slotName(old)}」的存档)`;return}
     audioInit();const ex=menuExpand!==null?CFG.settlement.expansions[menuExpand]:null;
-    newGame(ex?{mode:'regular',diff:ex.diff,total:ex.waves,expand:menuExpand,expandR:menuExpandR,map:menuExpandR}:{mode:menuMode,diff:menuDiff,map:menuMap,oath:SET.oathOn!==false,prepEv:SET.prepEvOn!==false});chInit();saveRun();beginRun(ex?`开拓：守住 ${ex.waves} 波`:null)}
+    newGame(ex?{mode:'regular',diff:ex.diff,total:ex.waves,expand:menuExpand,expandR:menuExpandR,map:menuExpandR}:{mode:menuMode,diff:menuDiff,map:menuMap,oath:SET.oathOn!==false,prepEv:SET.prepEvOn!==false,sg:SET.sgOn===true});chInit();saveRun();beginRun(ex?`开拓：守住 ${ex.waves} 波`:null)}   // sg：0.12.7 代理 SG 加，死国开关（game/sg_dead 判断能不能开）
   else if(a==='menu'){if(running){running=false;hudEl.hidden=true;newGame({})}showMenu()}
   else if(a==='resume')hideModal();
   else if(a==='olvtab'){OLV_TAB=v;if(RES_LAST)showResult(RES_LAST[0],RES_LAST[1])}   // 0.12.0 分经验的页签
@@ -79011,7 +79161,7 @@ function onSheetClick(e){
   else if(a==='tomenu'){olvCommitUI();running=false;hudEl.hidden=true;newGame({});showMenu()}
   else if(a==='tohub'){olvCommitUI();running=false;hudEl.hidden=true;newGame({});showHub('settle')}
   else if(a==='again'){if(G.invade)return;olvCommitUI();if(!mapOpen(G.map)){toast('这张地图还没解锁');return}audioInit();
-    const o={mode:G.mode,diff:G.diff,map:G.map,oath:SET.oathOn!==false,prepEv:SET.prepEvOn!==false};if(G.expand!==null&&G.expand!==undefined&&stExp(G.expandR||'wild')===G.expand){o.total=G.total;o.expand=G.expand;o.expandR=G.expandR||'wild'}newGame(o);chInit();saveRun();beginRun()}   // oath / prepEv：v0.11.0 修——「再来一局」原来没带这两个开关，重开的那局没有誓约、不来商人
+    const o={mode:G.mode,diff:G.diff,map:G.map,oath:SET.oathOn!==false,prepEv:SET.prepEvOn!==false,sg:SET.sgOn===true};if(G.expand!==null&&G.expand!==undefined&&stExp(G.expandR||'wild')===G.expand){o.total=G.total;o.expand=G.expand;o.expandR=G.expandR||'wild'}newGame(o);chInit();saveRun();beginRun()}   // oath / prepEv：v0.11.0 修——「再来一局」原来没带这两个开关，重开的那局没有誓约、不来商人   // sg：0.12.7 代理 SG 加
   else if(a==='cardq'){const c=b.closest('.card');if(c)c.classList.toggle('help')}   // v0.5.8 卡牌的「?」：展开 / 收起属性说明，不选卡
   else if(a==='card'||a==='ecard')cardTap(+b.dataset.i,a==='ecard');
   else if(a==='perf'){togglePerf();b.textContent=perfEl.hidden?'显示性能面板':'隐藏性能面板'}
@@ -79104,6 +79254,7 @@ const EM_LABEL={hp:['亡灵生命','%'],dmg:['亡灵攻击','%'],speed:['亡灵�
   rFire:['火焰减伤','%'],rBlast:['爆炸减伤','%'],rRanged:['远程物理减伤','%'],rMelee:['近战物理减伤','%'],rMagic:['法术减伤','%'],rCtrl:['减速 / 冰冻时间减免','%'],rPoison:['中毒减伤','%']};
 Object.assign(EM_LABEL,{pdr:['物理减伤','%'],deflPt:['偏斜','n'],hitPt:['命中','n'],accuracy:['精准','%'],critPt:['暴击','n'],critDmg:['暴击伤害','%'],mls:['近战吸血','%'],structDmg:['对建筑伤害','%'],rFrost:['寒冰抗性','%'],   // v0.8.25 亡灵卡组（原来强化列表里漏了）
   vcLs:['任意伤害吸血','%'],vcPoolR:['血池消耗减免','%'],   // v0.11.0 血族城堡专属亡灵卡
+  ecsCd:['技能冷却速度','%'],ecsSk:['技能伤害','%'],ecsFire:['火焰伤害','%'],ecsBlast:['爆炸伤害','%'],ecsPsn:['中毒伤害','%'],ecsLtn:['闪电伤害','%'],   // 代理 EC 加：新亡灵卡（唯一卡是开关，看卡名）
   revive:['死后复活概率','%'],defP:['亡灵物理防御','%'],mdefP:['亡灵法术防御','%'],eliteP:['每波精英数量','%'],critRes:['受到的暴击伤害','-%'],corpse:['尸爆 · 最大生命','%'],corrode:['腐蚀之刃 · 每层防御','-n'],boneSh:['骸骨护盾 · 最大生命','%'],sacri:['献祭狂热 · 每层攻速','%'],sPenE:['攻击建筑的物理穿透','n'],rangeE:['远程亡灵射程','%'],split:['分裂 · 每只生命','%'],ccUp:['对我方的控制时间','%']});   // v0.9.1   // 减伤：受到的伤害 ÷ (1 + 这个数)
 function modsHTML(m,L,R){const out=[];for(const k in L){const v=m[k];if(!v)continue;const[nm,f]=L[k];let t;
     if(f==='%')t=(v>0?'+':'−')+pctS(Math.abs(v));else if(f==='-%')t=(v>0?'−':'+')+pctS(Math.abs(v));else if(f==='-w')t='−'+Math.min(50,Math.round(v*10))+'%';else if(f==='n5')t='+'+Math.round(v*CFG.cardFx.luckWave);else if(f==='tax')t='+'+taxGold(v);else if(f==='-n')t='−'+Math.round(v*10)/10;else t=(v>0?'+':'−')+Math.round(Math.abs(v)*10)/10;
@@ -79131,7 +79282,7 @@ function openPause(force){if(!running||(modalState&&!force)||(G&&(G.phase==='ove
 // v0.5.8（用户定）卡牌只写效果；右上角「?」点开列出这张卡用到的属性的解释（卡自己的 help + 描述里出现的 CFG.cardTerms）
 function cardHelp(o){const d=cardDesc(o),L=[];if(o.c.help)L.push(o.c.help);for(const T of CFG.cardTerms||[])if(d.includes(T.k))L.push(`<b>${T.n||T.k}</b>：${T.t}`);return L}
 const cardHTML=(o,i,act)=>{const Q=CFG.cardQ[o.q],r=qCls(o.q),N=act==='card'?G.pickN:G.epickN,n=N&&N[o.c.id]||0,H=cardHelp(o);
-  return`<button class="card q${r}${act?'':' nosel'}" type="button" data-act="${act}" data-i="${i}"${act?'':' aria-disabled="true"'}>${act?`<kbd>${i+1}</kbd>`:''}${H.length?`<span class="cq" data-act="cardq" role="button" aria-label="属性说明">?</span>`:''}<span class="tier">${Q.name}${o.guar?' <span class="guar">保底</span>':''}${o.c.unique?' <span class="guar">唯一</span>':''}</span><b>${cardName(o.c,o.q)}</b><span class="desc">${cardDesc(o)}</span>${H.length?`<span class="chelp">${H.join('<br>')}</span>`:''}${o.c.map?`<span class="mtag">${CFG.maps[o.c.map].name}专属</span>`:''}${act&&n&&cardDecay(o.c,N)<1?`<span class="dec">第 ${n+1} 次 · 效果 ×${cardDecay(o.c,N).toFixed(1)}</span>`:''}</button>`};
+  return`<button class="card q${r}${act?'':' nosel'}" type="button" data-act="${act}" data-i="${i}"${act?'':' aria-disabled="true"'}>${act?`<kbd>${i+1}</kbd>`:''}${H.length?`<span class="cq" data-act="cardq" role="button" aria-label="属性说明">?</span>`:''}<span class="tier">${Q.name}${o.guar?' <span class="guar">保底</span>':''}${o.c.unique?' <span class="guar">唯一</span>':''}</span><b>${cardName(o.c,o.q)}</b><span class="desc">${cardDesc(o)}</span>${H.length?`<span class="chelp">${H.join('<br>')}</span>`:''}${o.c.map?`<span class="mtag">${CFG.maps[o.c.map].name}专属</span>`:''}${o.c.sg?'<span class="mtag">死国专属</span>':''}${act&&n&&cardDecay(o.c,N)<1?`<span class="dec">第 ${n+1} 次 · 效果 ×${cardDecay(o.c,N).toFixed(1)}</span>`:''}</button>`};
 // 选卡防误触：弹出动画 0.5 秒，动画中第一次点击只是跳过动画；开启「选卡需要确认」时先选中再确认
 function openCardModal(state,html){G.cardSel=-1;openModal(state,html,null);sheet.classList.add('pop','cardsheet');arm('card',500);   // cardsheet：v0.5.7 卡牌区单独滑动（竖屏竖滑、横屏横滑），确定键固定在下面；v0.5.8 修复：0.5.7 把这条注释插到了 arm 前面，选卡防误触（弹出动画里第一下只跳过动画）失效
   clearTimeout(openCardModal.t);openCardModal.t=setTimeout(()=>sheet.classList.remove('pop'),520);if(CH_CHAOS&&state==='cards')chChaosMark()}   // chChaosMark：代理 CH 无尽挑战「混乱抉择」
@@ -80190,7 +80341,7 @@ function chAchHTML(){chCss();if(chMigrate(META))saveMeta();const A=chAch();
   const sub=`<div class="tabs sub dtabs chsub">${[['wall','勋章墙'],['rec','挑战记录'],['v5f','存档记录']].map(([k,n])=>`<button class="px sm${CH_SUB===k?' on':''}" type="button" data-act="chxSub" data-v="${k}">${n}</button>`).join('')}</div>`;   // 0.12.5 代理 F：小页签「存档记录」
   return sub+(CH_SUB==='rec'?chRecHTML(A):CH_SUB==='v5f'&&typeof v5fStatHTML==='function'?v5fStatHTML():chWallHTML(A))}   // 0.12.5 代理 F：v5f「存档记录」（ui/v5f_rec）
 function chWallHTML(A){const P=chPages(),all=P.reduce((a,p)=>a+p.maps.length,0),got=P.reduce((a,p)=>a+p.maps.filter(k=>A.b[k]).length,0),MD=mdWallPage(P.length);   // MD：代理 5 加，最后一页「纪念勋章」（ui/md_ui）
-  const cell=k=>{const on=!!A.b[k];return`<div class="chb${on?' on':''}"><img alt="" src="${chBadgeURL(k,on)}"><b>${CFG.maps[k].name}</b><small>${on?'深渊通关':'未获得'}</small></div>`};
+  const cell=k=>{const on=!!A.b[k],fl=on&&sgFlameOn(k);return`<div class="chb${on?' on':''}${fl?' sgf':''}">${sgBadgeImg(k,on)}<b>${CFG.maps[k].name}</b><small>${fl?'死国·绝境通关':on?'深渊通关':'未获得'}</small></div>`};   // sgBadgeImg / sgFlameOn：0.12.7 代理 SG 加，死国绝境通关的火焰外框（ui/sg_ui）
   return`<p class="meta">已获得 <b>${got}</b> / ${all} 枚${helpBtn('ui2-ach')}</p>
   <div class="chptabs">${P.map((p,i)=>`<button class="px sm${i?'':' on'}" type="button" data-act="chxPg" data-v="${i}">${p.name} ${p.maps.filter(k=>A.b[k]).length}/${p.maps.length}</button>`).join('')}${MD.tab}</div>
   <div class="chwall">${P.map(p=>`<div class="chpage">${p.maps.map(cell).join('')}</div>`).join('')}${MD.page}</div>`}
@@ -80219,6 +80370,65 @@ function chCss(){if(typeof document==='undefined'||document.getElementById('chcs
 .chb{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;background:var(--plate-solid);border:1px solid rgba(255,255,255,.08);border-radius:6px;text-align:center}
 .chb.on{border-color:rgba(232,184,74,.55)}.chb img{width:64px;height:64px;image-rendering:pixelated}.chb b{font-size:.95rem}.chb small{opacity:.7;font-size:.75rem}.chb:not(.on) b{opacity:.55}
 .chrec{overflow-x:auto}.chrec table{width:100%;border-collapse:collapse}.chrec th,.chrec td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;vertical-align:top}.chrec small{opacity:.7}`;document.head.appendChild(s)}
+
+// ---------- 0.12.7 代理 SG：「死国」的界面（机制 game/sg_dead.js，数据 data/deadland.js）----------
+// 出征设置（ui/hub.showDiff）：誓约、流浪商人下面的开关 sgRow（只在常规模式、不是开拓时出现）；开着时难度只能选噩梦 / 炼狱 / 绝境：
+//   简单～困难的按钮变灰、盖两条交叉锁链（点了提示），噩梦～绝境右上角一枚蓝紫色火焰角标；深渊显示「绝境」（diffName）
+// 成就勋章墙（ui/ch_ach.chWallHTML）：死国下通关绝境的地图，徽章外面加一圈蓝紫色火焰（sgBadgeURL）
+// 图都是代码画的像素图（canvas → dataURL，有缓存）；CSS 在 sgCss 里一次插进页面
+const sgUiOn=ex=>!ex&&menuMode==='regular'&&SET.sgOn===true;
+const SG_IMG={};
+// 蓝紫色火焰的四档颜色：外缘深紫、中间蓝紫、亮紫、焰心近白
+const SG_FC=['#2c1670','#5a3ce0','#9a82ff','#e8e2ff'];
+// 火焰角标：10 × 12 像素（显示时放大 2 倍）；. 透明、1 外缘、2 中间、3 亮、4 焰心
+const SG_FLAME=['....1.....','....11....','...121..1.','...121.11.','..12211221','.122321221','.122332221','1123332221','1223443221','1234443321','.12344321.','..112211..'];
+function sgFlameURL(){if(SG_IMG.fl)return SG_IMG.fl;const c=canvasOf(10,12),x=c.getContext('2d');
+  SG_FLAME.forEach((r,y)=>{for(let i=0;i<r.length;i++){const k=+r[i];if(k>0){x.fillStyle=SG_FC[k-1];x.fillRect(i,y,1,1)}}});return SG_IMG.fl=c.toDataURL()}
+// 两条交叉锁链（88 × 24，和难度按钮差不多的长宽比，盖满整个按钮）：沿两条对角线，空心环和实心短节交替；正中一把挂锁
+function sgChainURL(){if(SG_IMG.ch)return SG_IMG.ch;const W=88,H=24,c=canvasOf(W,H),x=c.getContext('2d'),px=(a,b,col)=>{x.fillStyle=col;x.fillRect(a,b,1,1)};
+  const ring=(cx,cy)=>{for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++){const e=Math.abs(i)===2||Math.abs(j)===2;if(!e)continue;if(Math.abs(i)===2&&Math.abs(j)===2)continue;px(cx+i,cy+j,j<0||i<0?'#c9ced6':'#6c7280')}
+    for(const[i,j]of[[-3,-1],[-3,0],[-3,1],[3,-1],[3,0],[3,1],[-1,-3],[0,-3],[1,-3],[-1,3],[0,3],[1,3]])px(cx+i,cy+j,'#1a1a20')};
+  const bar=(cx,cy)=>{x.fillStyle='#1a1a20';x.fillRect(cx-1,cy-1,3,3);px(cx,cy,'#9aa0aa')};
+  for(const[x0,y0,x1,y1]of[[2,2,W-3,H-3],[2,H-3,W-3,2]]){const L=Math.hypot(x1-x0,y1-y0),n=Math.floor(L/4);for(let k=0;k<=n;k++){const t=k/n,cx=Math.round(x0+(x1-x0)*t),cy=Math.round(y0+(y1-y0)*t);if(k%2)bar(cx,cy);else ring(cx,cy)}}
+  const lx=W/2-4,ly=H/2-2;x.fillStyle='#1a1a20';x.fillRect(lx-1,ly-1,10,9);x.fillStyle='#b08a3a';x.fillRect(lx,ly,8,7);x.fillStyle='#e0c070';x.fillRect(lx,ly,8,2);x.fillStyle='#1a1a20';x.fillRect(lx+3,ly+3,2,3);   // 挂锁的锁身、锁孔
+  x.fillStyle='#1a1a20';x.fillRect(lx+1,ly-5,6,1);x.fillRect(lx,ly-4,1,4);x.fillRect(lx+7,ly-4,1,4);x.fillStyle='#c9ced6';x.fillRect(lx+2,ly-4,4,1);x.fillRect(lx+1,ly-3,1,3);x.fillRect(lx+6,ly-3,1,3);   // 锁梁
+  return SG_IMG.ch=c.toDataURL()}
+// 难度按钮上的装饰：k = 1 锁着（锁链），2 死国可选（火焰角标）
+const sgDecor=k=>k===1?`<img alt="" class="sgch" src="${sgChainURL()}">`:k===2?`<img alt="" class="sgfl" src="${sgFlameURL()}">`:'';
+// 出征设置的开关（誓约、流浪商人下面）
+const sgRow=()=>{const on=SET.sgOn===true;return`<div class="shrow sgrow"><h4 class="sh">死国${helpBtn('sg')}</h4><button class="px sm${on?' on':''}" type="button" data-act="sgTog">${on?'开':'关'}</button></div>`};
+// showDiff 开头调：死国开着时难度不在三档里就换成噩梦
+function sgDiffFix(ex){if(sgUiOn(ex)&&!CFG.sg.diffs.includes(menuDiff))menuDiff=CFG.sg.diffs[0]}
+function sgAct(a){if(a==='sgTog'){SET.sgOn=SET.sgOn!==true;saveSettings();showDiff()}else if(a==='sgLock'){sfx('click');toast('死国只能选噩梦及以上')}}
+// 徽章外加一圈火焰（80 × 80，徽章 64 画在正中）：每 2 × 2 一个像素块，火舌的高度按角度起伏
+function sgBadgeURL(id){if(SG_IMG['b'+id])return SG_IMG['b'+id];let b=null;try{b=(typeof badgeSprite==='function'&&badgeSprite(id))||chBadgeFallback(id)}catch(e){b=null}
+  const c=canvasOf(80,80),x=c.getContext('2d');
+  for(let py=0;py<80;py+=2)for(let px=0;px<80;px+=2){const dx=px+1-40,dy=py+1-40,r=Math.hypot(dx,dy),a=Math.atan2(dy,dx),h=34+3.2*(0.5+0.5*Math.sin(a*14))+1.8*Math.sin(a*5+1.3)+(Math.sin(a*14)>0.8?1.5:0);
+    if(r<29||r>h)continue;const f=(r-29)/Math.max(1,h-29);x.fillStyle=SG_FC[f>0.82?0:f>0.55?1:f>0.28?2:3];x.fillRect(px,py,2,2)}
+  if(b)x.drawImage(b,0,0,b.width,b.height,8,8,64,64);return SG_IMG['b'+id]=c.toDataURL()}
+// 勋章墙的一格用哪张图（ui/ch_ach.chWallHTML）
+const sgBadgeImg=(k,on)=>on&&sgFlameOn(k)?`<img alt="" class="sgfr" src="${sgBadgeURL(k)}">`:`<img alt="" src="${chBadgeURL(k,on)}">`;
+// 战绩（ui/hub.recordBox）常规一格后面：死国打到的最高难度
+function sgRecTxt(k){const D=CFG.sg.diffs;for(let i=D.length-1;i>=0;i--){const b=sgBestOf(k,D[i]);if(b===undefined)continue;return`<br><small>死国 ${sgClear(k,D[i])?`<b>${diffName(D[i],true)}</b> 通关`:`${diffName(D[i],true)} <b>${b}</b> 波`}</small>`}return''}
+// 地图情报的英雄之魄一行（ui/hub.mapInfo）
+const sgSoulNote=()=>SET.sgOn===true&&menuMode==='regular'?`；死国：${CFG.sg.diffs.map(d=>diffName(d,true)+' '+CFG.sg.souls[d]).join('、')} 个`:'';
+function sgCss(){if(typeof document==='undefined'||document.getElementById('sgcss'))return;const s=document.createElement('style');s.id='sgcss';s.textContent=`
+.dc.sglk{filter:grayscale(1)}.dc.sglk>b,.dc.sglk>span.sm{position:relative;z-index:1;text-shadow:0 0 3px #000,0 0 2px #000}
+.dc .sgch{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;image-rendering:pixelated;opacity:.85}
+.dc .sgfl{position:absolute;top:-14px;right:0;width:20px;height:24px;pointer-events:none;image-rendering:pixelated;filter:drop-shadow(0 0 3px rgba(138,100,255,.8));z-index:1}
+.chb img.sgfr{width:80px;height:80px;margin:-8px;image-rendering:pixelated}`;document.head.appendChild(s)}
+sgCss();
+HELP.sg=()=>({t:'死国',b:hpL(['只有常规模式有；开拓、剧情、入侵战、无尽、幸存者没有。默认关闭，记住上次的选择',
+  `难度只能选噩梦、炼狱、绝境(死国下的深渊)，三个难度都要打 ${CFG.sg.rounds} 轮`,
+  `所有亡灵的生命 ×${CFG.sg.hp}、伤害 ×${CFG.sg.dmg}(乘在难度倍率上)`,
+  `结算的基础奖励(银币、建材、科研点、设计点、金币、经验)、地区材料、强化石 / 洗练石的数量额外 +${Math.round((CFG.sg.reward-1)*100)}%`,
+  `掉宝率额外 +${Math.round((CFG.sg.drop-1)*100)}%：打造书、装备、核心材料、首领专属装备；首领必掉的装备、打造书每件有 ${Math.round((CFG.sg.drop-1)*100)}% 概率多掉一件`,
+  `来源地图的英雄之魄每轮 ${CFG.sg.diffs.map(d=>diffName(d,true)+' '+CFG.sg.souls[d]).join('、')} 个；培养值同比例提升(${CFG.sg.diffs.map(d=>diffName(d,true)+' ×'+Math.round(CFG.sg.souls[d]/CFG.soulSrc[d]*100)/100).join('、')})`,
+  '和卡牌、英雄(搜山检海、攫财之道……)的加成分开相乘',
+  '死国的纪录单独记(战绩里常规那一格下面)；死国下通关绝境，成就里这张地图的徽章加上蓝紫色火焰外框'])});
+// 死国开着时，噩梦～深渊的「?」里补死国的倍率和波数
+for(const id of CFG.sg.diffs){const f=HELP['diff-'+id];if(!f)continue;HELP['diff-'+id]=()=>{const r=f();if(!sgUiOn(menuExpand!==null?CFG.settlement.expansions[menuExpand]:null))return r;
+  return{t:`死国·${diffName(id,true)}`,b:r.b+hpP(`死国：亡灵生命再 ×${CFG.sg.hp}、伤害再 ×${CFG.sg.dmg}；结算再 ×${CFG.sg.reward}、掉宝再 ×${CFG.sg.drop}；守 ${sgWaves(menuMap)} 波`)}}}
 
 // ---------- 挑战任务的界面：营地「日常 → 签到 · 任务」右栏、日常任务下面（逻辑 game/ch_task.js）----------
 // 插入点只有一个：ui/ch_ach.js 的 chDaily 用 ctkWrap(hubDaily()) 把这一块塞进右栏末尾（不改 ui/daily.js，方便和日常任务的改动合并）
@@ -81397,7 +81607,7 @@ const tdN=side=>side==='e'?G.epickN:G.pickN;
 function tdWhy(c,side){const t=[],N=tdN(side),n=N[c.id]||0;
   if(c.map&&c.map!==G.map)t.push(`${CFG.maps[c.map]?CFG.maps[c.map].name:c.map}专属`);{const NC=mapDef().noCards;if(NC&&NC.includes(c.id))t.push('这张地图不出')}   // v0.11.0 地图的 noCards
   if(!capOk(c,side==='e'?em:pm,N))t.push(c.unique&&n?'唯一，已拿过':'已到上限');
-  if(c.avail&&!c.avail())t.push('现在抽不到');if(c.seen&&!G.seen[c.seen])t.push('这局还没遇到对应的伤害 / 状态');return t}
+  if(c.sg&&!(G&&G.sg))t.push('死国专属');else if(c.avail&&!c.avail())t.push('现在抽不到');if(c.seen&&!G.seen[c.seen])t.push('这局还没遇到对应的伤害 / 状态');return t}
 // 这次点卡算不算「这次选卡」
 const tdCounts=()=>!tdStack&&((tdSide==='p'&&tdCtx==='p')||(tdSide==='e'&&tdCtx==='e'));
 // v0.7.0 冷「万古为卷」（tdCtx = 'aeon'）：同一个牌库界面，只看我方的卡、只能拿平时抽得到的（标灰的点不了）、品质只到传说（剧情里按剧情能出的品质），拿一张就回到选卡
@@ -81452,7 +81662,7 @@ function u1QTag(c){const Q=CFG.cardQ,qs=cardQs(c);
   return qs.map(q=>Q[q]?Q[q].name:q).join('、')}
 function u1Card(c,side){const Q=CFG.cardQ,all=u1CdQ==='all',q=all?cardQs(c)[0]:u1CdQ,qc=(Q[q]||{color:'#ccc'}).color;
   const nm=all?c.name:cardName(c,q),alt=all&&c.alt?` <span class="meta">(${Q.epic.name}、${Q.legend.name}：${c.alt})</span>`:'';
-  const tags=[u1QTag(c),side==='p'&&CFG.cardRules.catName?CFG.cardRules.catName[cardCatOf(c)]:'',c.map&&CFG.maps[c.map]?`${CFG.maps[c.map].name}专属`:'',c.unique?'唯一':'',c.maxN?`最多 ${c.maxN} 张`:''].filter(Boolean).join(' · ');
+  const tags=[u1QTag(c),side==='p'&&CFG.cardRules.catName?CFG.cardRules.catName[cardCatOf(c)]:'',c.map&&CFG.maps[c.map]?`${CFG.maps[c.map].name}专属`:'',c.sg?'死国专属':'',c.unique?'唯一':'',c.maxN?`最多 ${c.maxN} 张`:''].filter(Boolean).join(' · ');
   return`<div class="tdk u1k" style="--qc:${qc}"><b>${nm}${alt}</b><span class="meta">${tags}</span><span class="desc">${all?u1DescAll(c):u1Desc(c,q)}</span>${c.help?`<span class="meta u1h">${c.help}</span>`:''}</div>`}
 function u1CdexHTML(){const Q=CFG.cardQ,all=u1CdList(u1CdSide),qs=U1_QS.filter(q=>Q[q]&&all.some(c=>cardQs(c).includes(q)));if(u1CdQ!=='all'&&!qs.includes(u1CdQ))u1CdQ='all';
   const list=(u1CdQ==='all'?all.slice().sort((a,b)=>u1QIdx(a)-u1QIdx(b)):all.filter(c=>cardQs(c).includes(u1CdQ)));
@@ -83617,7 +83827,7 @@ function aipNewRun(o){o=o||{};const mode=o.mode||'regular',map=o.map||'wild',dif
     if(!svNewRun(diff,map))return{ok:false,why:'还没有能当队长的英雄'};
     svRunStart();if(o.auto!=null)G.sv.auto=!!o.auto;aipDsSnap();return Object.assign({ok:true},aipState())}
   const lo=o.loadout?[].concat(o.loadout).filter(t=>BDEF[t]&&(o.force||designUnlocked(t))).slice(0,o.force?99:loadoutMax()):undefined;
-  newGame({mode,diff,map,seed:o.seed!=null?(+o.seed>>>0):undefined,oath:!!o.oath,prepEv:o.merchant!==false,heroes:o.heroes?[].concat(o.heroes).map(id=>currentHeroSpec(id)):undefined,loadout:lo});
+  newGame({mode,diff,map,seed:o.seed!=null?(+o.seed>>>0):undefined,oath:!!o.oath,sg:!!o.sg,prepEv:o.merchant!==false,heroes:o.heroes?[].concat(o.heroes).map(id=>currentHeroSpec(id)):undefined,loadout:lo});   // sg：0.12.7 代理 SG 加，死国
   chInit();saveRun();beginRun();G.autoNext=false;aipDsSnap();aipAutoAck();return Object.assign({ok:true},aipState())}
 // 弹窗兜底：读当前弹窗的标题、文字、按钮（接口没专门包的弹窗：誓约、五神法、隐士、剧情……），press(i) 点第 i 个按钮（走游戏自己的点击处理）
 function aipUi(){if(modal.hidden)return{m:null};const B=[...sheet.querySelectorAll('button')].filter(b=>!b.disabled&&b.offsetParent!==null);
