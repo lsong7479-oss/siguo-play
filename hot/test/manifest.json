@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.12.7c",
- "code": 196,
- "size": 17537192,
- "sha256": "838c8b7d1a243a3c4d88c715e19d153844cdf965cd3efe890ef4b69a4666af95",
+ "ver": "0.12.7d",
+ "code": 197,
+ "size": 17558843,
+ "sha256": "5f42f507a2d3d0f738fb9d27b849d24c14ea372b432dc243285c940a1bdcdbc0",
  "minLoader": 1,
- "sig": "ugJc6mZ43Rn4PkVyf05KPRKwwn65wbChi7J7MtU+oV/WmLA4u5c79+8WMYNYlN2on6Evt9LSBFEYNdyEUpdTBQ==",
- "note": "0.12.7c 测试版（安卓 196）：在线热更新、进阶-马可·波罗（掉宝率 +50% 不算核心特产）、幸存者模式图标",
- "at": "2026-11-01 02:36 UTC"
+ "sig": "swPc2EjyY+c/L9iG1LOY5VyLdH+GkNktGtqcasgudiqhLn9ACHmx81G2xwUJyzX3xhX37ywLvT4oTkB5tCXwFg==",
+ "note": "0.12.7d 测试版：幸存者模式开放三～八阶地图、伤害统计、装置进化、商人装置升级、每波特性、通关、平衡",
+ "at": "2026-11-01 09:32 UTC"
 }
