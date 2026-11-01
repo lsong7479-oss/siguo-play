@@ -1,0 +1,11 @@
+{
+ "ch": "stable",
+ "ver": "0.12.7",
+ "code": 199,
+ "size": 17592937,
+ "sha256": "6ffb6ce1f62ca4094bd41625dd83b6b1630daa081775f9b68a44670c159c79fa",
+ "minLoader": 1,
+ "sig": "+idXAi/+sUYV33K9aaCPO5WimRQYL+zov0VTdDHMG+bm6J1iYoarbp5J83urfPVJhpLYJ8g1kP72BtOAJaJ0gQ==",
+ "note": "0.12.7 稳定版：娱乐模式·幸存者模式、在线热更新、进阶-马可·波罗、AI 游玩接口、塔楼与兵营平衡",
+ "at": "2026-11-01 19:09 UTC"
+}

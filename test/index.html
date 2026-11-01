@@ -23067,7 +23067,7 @@ CFG.survivor.evo={
 /* ---------- 0.12.5 第二轮（用户 2026-10-30 策划，代理 T）新塔楼「电能塔」ynTesla、新功能建筑「源能装置」ynDevice。逻辑 structs/yn_tdev.js，占位图 art/yn_stub_t.js ----------
    两座都是通关「源能王城」(地图 id ynCity)后才能研发（designTree 的 map，同守望长城的长城城墙 / 边军大营）。
    排在 data/olv.js 之后（自己写基础加成列表）、data/estruct.js 之前（电能塔的亡灵阵营版本 xs_ynTesla 由 estruct 按这份数据生成，亡灵版和我方版是同一份数据）。
-   电能塔（用户定）：1×1，造价 500，生命 800；闪电装置 X = 3，每升 2 级 +1（Lv1～2 = 3、Lv3～4 = 4、Lv5 = 5）；射程 7.5 格，攻击 150（0.12.7f 改 125），物理闪电伤害，攻速 4 次/秒；
+   电能塔（用户定）：1×1，造价 500，生命 800；闪电装置 X = 3，每升 2 级 +1（Lv1～2 = 3、Lv3～4 = 4、Lv5 = 5）；射程 7.5 格，攻击 150（0.12.7f 改成 基础 40 + 均摊 ×1.5，见 weapon 的注释），物理闪电伤害，攻速 4 次/秒；
      对同一个目标持续攻击时每次攻击增伤 2%，至多 100%。
      一阶：聚能爆破（首个目标 2.5 格 40% 爆炸、第一次弹射 1.5 格 25% 爆炸）、高压电能（弹射不衰减，伤害 +50%）、电弧跳跃（X +1、弹射数量 +2、弹射半径 +1 格）
      二阶：渗透爆破（前置聚能爆破：无视 30% 减伤、30% 电抗性、30% 物理防御，每级 +5%、Lv5 50%；爆炸半径 +0.5 格；第二次弹射 1 格 20% 爆炸，这个半径不加）、
@@ -23103,9 +23103,9 @@ CFG.survivor.evo={
          领域维修：再修目标周围 3×3 格里的其它受损建筑（同样的量）；
        装置本身是机械建筑（会被电磁干扰，干扰期间三种模式、维修都停；不会被骇入）。 */
 CFG.buildings.ynTesla={cat:'tower', name:'电能塔', cost:500, hp:800, def:4, vision:8,
-  weapon:{dmg:125, int:0.25, mag:0, range:7.5, spread:0, proj:'lightning', mix:{pierce:0.5, lightning:0.5},
-    tesla:{X:3, lvX:2, stack:{per:0.02, max:1}}},   // dmg：0.12.7f（用户定，先试水）150 → 125   // X：闪电装置的弹射次数，每升 lvX 级 +1；stack：同一个目标每次攻击 +per，至多 +max
-  note:'闪电装置：连线打中目标，再连锁 1.5 格内至多 3 个别的目标，弹射 X 次(Lv1～2 X = 3、Lv3～4 = 4、Lv5 = 5)，每跳伤害 ×0.8；物理闪电伤害(物理攻击，50% 穿刺 + 50% 雷电)；每秒 4 次；对同一个目标持续攻击时每次攻击增伤 2%，至多 100%；机械单位'};
+  weapon:{dmg:40, int:0.25, mag:0, range:7.5, spread:0, proj:'lightning', mix:{pierce:0.5, lightning:0.5},
+    tesla:{X:3, lvX:2, stack:{per:0.02, max:1}, poolK:1.5}},   // 0.12.7f（用户定）先链接、后均摊：基础攻击 40（链上每个目标一份，照常衰减、爆炸；用户提 30，Claude 实测定 40），另外 攻击 × poolK 的总伤害平分给这一发打中的所有亡灵（不衰减、不爆炸）；同一发里每只亡灵的爆炸只吃一次、取最高（maps/yn_ray.YNR_BX）。木桩实测（八阶满档）单体 3.6 万 → 2.3 万、打一群 169 万 → 16 万；之前 150 → 125 试水   // X：闪电装置的弹射次数，每升 lvX 级 +1；stack：同一个目标每次攻击 +per，至多 +max
+  note:'闪电装置：连线打中目标，再连锁 1.5 格内至多 3 个别的目标，弹射 X 次(Lv1～2 X = 3、Lv3～4 = 4、Lv5 = 5)，每跳伤害 ×0.8；连完以后再把 150% 攻击的伤害平分给这一发打中的所有亡灵；同一发里每只亡灵的爆炸只算一次(取最高)；物理闪电伤害(物理攻击，50% 穿刺 + 50% 雷电)；每秒 4 次；对同一个目标持续攻击时每次攻击增伤 2%，至多 100%；机械单位'};
 CFG.btech.towers.ynTesla={base:CFG.olv.lists.tower.slice(), baseOld:['hp','rate','dmg'], cost:[18,150], evoCost:[75,600], evo:{   // base：本文件排在 data/olv.js 之后，自己写基础加成列表（同边军大营）
   ytBoom:{name:'聚能爆破', desc:'每次攻击对首个目标额外造成 2.5 格的爆炸，40% 伤害；第一次弹射造成 1.5 格的爆炸，25% 伤害', ytBm:[{r:2.5, mul:0.4},{r:1.5, mul:0.25}]},
   ytHv:  {name:'高压电能', desc:'弹射伤害不衰减；伤害 +50%，建筑进化的独立乘区', ytNd:1, dmgMul:1.5},
@@ -55997,14 +55997,15 @@ const ynREy=j=>E.y[j]-8-(E.air[j]?(ETC[E.t[j]].hover?ETC[E.t[j]].hover.h*0.5:8):
 let YNR_PX=0,YNR_PY=0;const ynRPick=j=>{if(YNR_SEEN.has(E.id[j]))return;const dx=E.x[j]-YNR_PX,dy=E.y[j]-YNR_PY;YNR_JA.push(j);YNR_JB.push(dx*dx+dy*dy)};   // 固定函数 + 模块变量（不每次新建闭包）
 // 我方打亡灵的爆炸（代理 T）：先把范围里的亡灵记下来再打（dealE 里可能有别的东西改格子）
 const YNR_BL=[];
+let YNR_BX=null;   // 0.12.7f（用户定）电能塔：同一发里每只亡灵的爆炸只吃一次、取最高的——structs/yn_tdev.ytlShot 开火前设成一张表（亡灵下标 → [id, 最高伤害]），这里只记不打，打完由它统一结算
 function ynRBoomE(x,y,R,d,mk){const L=YNR_BL,s0=L.length;ynRBoomFx(x,y,R);eQuery(x,y,R,j=>{L.push(j,E.id[j])});
-  for(let k=s0;k<L.length;k+=2){const j=L[k];if(!E.alive[j]||E.id[j]!==L[k+1])continue;const O=mk();O.blast=true;O.noFx=true;dealE(j,d,O)}L.length=s0}
+  const BX=YNR_BX;for(let k=s0;k<L.length;k+=2){const j=L[k];if(!E.alive[j]||E.id[j]!==L[k+1])continue;if(BX){const r=BX.get(j);if(!r)BX.set(j,[E.id[j],d]);else if(r[0]!==E.id[j]){r[0]=E.id[j];r[1]=d}else if(d>r[1])r[1]=d;continue}const O=mk();O.blast=true;O.noFx=true;dealE(j,d,O)}L.length=s0}
 function ynRayE(src,x0,y0,j,dmg,X,o){if(typeof j!=='number'||j<0||!E.alive[j])return 0;const heavy=!!(o&&o.heavy),Y=(o&&o.yr)||YNR_Y0,phys=Y!==YNR_Y0&&o.magic===false;
   const tx=E.x[j],ty=ynREy(j),bk=ynRBlock(x0,y0,tx,ty,'F');
   if(bk){ynRBolt(x0,y0,bk.x,bk.y,heavy,false);return 0}
   ynRBolt(x0,y0,tx,ty,heavy,false);
   const mk=()=>{const O=Object.assign({},o||null);if(!O.mix)O.mix=YNR_LIT;O.magic=!phys;return O};   // 每一下一份（dealE 会往选项里写东西）；phys：代理 T，电能塔的物理闪电
-  const id0=E.id[j];dealE(j,dmg,mk());
+  const id0=E.id[j],HL=o&&o.ynHit;if(HL)HL.push(j);dealE(j,dmg,mk());   // ynHit：0.12.7f 电能塔的均摊伤害要知道这一发打中了谁（structs/yn_tdev.ytlShot）
   {const bm=ynRBm(Y,0);if(bm)ynRBoomE(tx,ty,bm.r*16,dmg*bm.mul,mk)}
   let n=1;if(!X)return n;
   YNR_SEEN.clear();YNR_SEEN.add(id0);let A=YNR_FA,B=YNR_FB;A.length=0;A.push(tx,ty);
@@ -56016,7 +56017,7 @@ function ynRayE(src,x0,y0,j,dmg,X,o){if(typeof j!=='number'||j<0||!E.alive[j])re
         const k=YNR_JA[bi];YNR_JA[bi]=YNR_JA[YNR_JA.length-1];YNR_JB[bi]=YNR_JB[YNR_JB.length-1];YNR_JA.pop();YNR_JB.pop();
         if(!E.alive[k]||YNR_SEEN.has(E.id[k]))continue;YNR_SEEN.add(E.id[k]);
         const kx=E.x[k],ky=ynREy(k),bq=ynRBlock(px,py,kx,ky,'F');if(bq){ynRBolt(px,py,bq.x,bq.y,false,true);continue}
-        ynRBolt(px,py,kx,ky,false,true);dealE(k,d,mk());n++;B.push(kx,ky);if(bm)ynRBoomE(kx,ky,bm.r*16,d*bm.mul,mk)}}
+        ynRBolt(px,py,kx,ky,false,true);if(HL)HL.push(k);dealE(k,d,mk());n++;B.push(kx,ky);if(bm)ynRBoomE(kx,ky,bm.r*16,d*bm.mul,mk)}}
     const S=A;A=B;B=S}
   YNR_FA.length=0;YNR_FB.length=0;YNR_JA.length=0;YNR_JB.length=0;YNR_SEEN.clear();return n}
 // ================= 电磁干扰 =================
@@ -70804,6 +70805,7 @@ function ytlOpt(ev,L){ev=ev||YTL_E0;L=Math.min(4,Math.max(0,L|0));let a=YTL_OC.g
   let bm=null;if(ev.ytBm){bm=ev.ytBm.map(b=>({r:b.r+br,mul:b.mul}))}if(ev.ytBm2){bm=bm||[null,null];while(bm.length<2)bm.push(null);bm[2]={r:ev.ytBm2.r,mul:ev.ytBm2.mul}}   // 第二次弹射的 1 格不加渗透爆破的 0.5（用户定）
   const yr={n:ev.ytNx||R.n+(ev.ytN||0),r:R.r+(ev.ytR||0)+(ev.ytR2||0),cap:R.cap,dk:(ev.ytNd?1:R.decay)*(1+(ev.ytHop||0)),bm,ba:ev.ytBa?{r:ev.ytBa.r+br,mul:ev.ytBa.mul}:null};
   r={X:W.X+Math.floor(L/W.lvX)+(ev.ytX||0),yr,pen:P,resCut:P>0?{lightning:P}:null,dr:ev.ytDr||0};a[L]=r;return r}
+const YTL_HL=[],YTL_BX=new Map();   // 这一发电能塔打中的亡灵（均摊用，复用）
 const ytlStackK=(W,n)=>1+W.stack.per*n,ytlStackN=W=>Math.round(W.stack.max/W.stack.per);
 // 我方电能塔开火（structs/structs.updateTowers：t = 首个目标的亡灵下标，o = 塔楼通用的物理伤害选项，ev = 这一座的进化）
 function ytlShot(s,T,t,mz,o,ev,vis){const W=T.w.tesla,P=ytlOpt(ev,s.level-1),id=E.id[t];
@@ -70811,13 +70813,16 @@ function ytlShot(s,T,t,mz,o,ev,vis){const W=T.w.tesla,P=ytlOpt(ev,s.level-1),id=
   const O=Object.assign({},o);O.magic=false;O.yr=P.yr;
   if(P.pen>0){O.igRed=Math.min(1,(O.igRed||0)+P.pen);O.penP=Math.min(1,(O.penP||0)+P.pen);O.resCut=P.resCut}   // 渗透爆破：无视减伤、雷电抗性、物理防御
   if(P.dr>0)O.m2Dr=(O.m2Dr||0)+P.dr;   // 穿刺电弧：忽略 1 点减伤（同魔导阵塔三阶，engine/enemy.ueDen）
-  ynRay(s,mz.x,mz.y-4,t,T.dmg*ytlStackK(W,s.ytlN),P.X,O);
+  const K=ytlStackK(W,s.ytlN),HL=YTL_HL;HL.length=0;if(W.poolK>0)O.ynHit=HL;
+  const BX=YTL_BX;BX.clear();YNR_BX=BX;try{ynRay(s,mz.x,mz.y-4,t,T.dmg*K,P.X,O)}finally{YNR_BX=null}
+  if(BX.size){const B=Object.assign({},O,{magic:false,blast:true,noFx:true,ynHit:null,yr:null});if(!B.mix)B.mix=CFG.buildings.ynTesla.weapon.mix;for(const[k,r]of BX)if(E.alive[k]&&E.id[k]===r[0])dealE(k,r[1],Object.assign({},B));BX.clear()}   // 爆炸：每只只吃一次、取最高（maps/yn_ray.ynRBoomE 记的）
+  if(HL.length){const per=T.dmg*K*W.poolK/HL.length;O.ynHit=null;O.yr=null;for(let q=0;q<HL.length;q++){const k=HL[q];if(E.alive[k])dealE(k,per,Object.assign({},O,{mix:CFG.buildings.ynTesla.weapon.mix}))}HL.length=0}   // 0.12.7f（用户定）均摊：连完以后，攻击 × poolK 的总伤害平分给这一发打中的所有亡灵（不衰减、不爆炸）
   if(vis)sfx('zap',s.x,s.y)}
 // 亡灵版电能塔（structs/es_fire.esTesla）：返回 true = 打出去了
 function ytlFoe(i,S,Tg){const w=S.w;if(!w||!w.tesla)return false;const H=ES_HS[i],F=H||ES_FS[i],W=w.tesla,P=ytlOpt(S.ev,(H?H.level:E.esL[i])-1);let n=0;
   if(F){if(F.ytlO===Tg)F.ytlN=Math.min(ytlStackN(W),(F.ytlN||0)+1);else{F.ytlO=Tg;F.ytlN=0}n=F.ytlN}
   const O={mix:w.mix,magic:false,yr:P.yr,igDef:P.pen};   // 打我方：无视物理防御照带（减伤、雷电抗性我方受伤没有对应的写法）
-  ynRay(i,E.x[i],E.y[i]-18,Tg,S.dmg*ytlStackK(W,n)*(H?1:CFG.ynStruct.teslaK),P.X,O);
+  ynRay(i,E.x[i],E.y[i]-18,Tg,S.dmg*(1+(W.poolK||0))*ytlStackK(W,n)*(H?1:CFG.ynStruct.teslaK),P.X,O);   // 亡灵版不做均摊：链上每一下按 基础 ×(1 + poolK)，同改版前（攻击 120 ≈ 原来的 125）
   if(inViewPt(E.x[i],E.y[i]))sfx('zap',E.x[i],E.y[i]);return true}
 
 // ================= 源能装置 =================
@@ -77701,7 +77706,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.7e',GAME_TAG='测试版',GAME_CODE=198,GAME_BUILD="fb1d15a+",GAME_BUILT=1793557513117,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=199,GAME_BUILD="be699f6",GAME_BUILT=1793560368027,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
