@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.12.7d",
- "code": 197,
- "size": 17558843,
- "sha256": "5f42f507a2d3d0f738fb9d27b849d24c14ea372b432dc243285c940a1bdcdbc0",
+ "ver": "0.12.7e",
+ "code": 198,
+ "size": 17558760,
+ "sha256": "1699f950f7ec3c031693016caa2ee3e1fcd02ed05ce90b17297b5e449ec6ee81",
  "minLoader": 1,
- "sig": "swPc2EjyY+c/L9iG1LOY5VyLdH+GkNktGtqcasgudiqhLn9ACHmx81G2xwUJyzX3xhX37ywLvT4oTkB5tCXwFg==",
- "note": "0.12.7d 测试版：幸存者模式开放三～八阶地图、伤害统计、装置进化、商人装置升级、每波特性、通关、平衡",
- "at": "2026-11-01 09:32 UTC"
+ "sig": "kI522mFaFhrvAUqnfesCfdWFSLoy+pETJpEE10wswblb7YoCZFmveRVvSsy1VA5XS9puUei7UC2VTlttVs2b6Q==",
+ "note": "0.12.7e 测试版：幸存者模式平衡改成以强英雄为准、黄虎不再从不老之泉掉",
+ "at": "2026-11-01 16:32 UTC"
 }
