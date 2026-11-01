@@ -12873,14 +12873,14 @@ CFG.designTree.push({id:'glueTrap', cost:60, req:['bearTrap'], map:'arcaneFactor
 //     v0.10.6 神圣伤害（用户定 100%）：圣堂骑士、惩戒武士、圣女铁骑的近战全部神圣（mmix，物理攻击也是神圣属性），红衣主教的法术攻击全部神圣（rmix）；圣女铁骑的冲锋撞人、冲锋技能照旧（钝击、刺击）
 const V8_MG={dmg:10, int:1/3, range:6.5, spread:4, mag:30, reload:4, proj:'mgun', speed:24, pen:2, blast:{r:0.25, mul:0.2, mix:{impact:1}}};   // 机炮：精械战士、无人机共用
 Object.assign(CFG.units,{
-  mechWarrior: {name:'精械战士', tier:4, hp:500, def:7.5, mdef:3, speed:2.5, melee:{dmg:40, int:1.0, reach:1.0}, mgun:Object.assign({},V8_MG,{dmg:15, penP:0.5}), mech:true, v8:'mw', weapon:'axe', look:'mechWarrior',   // v0.10.11 用户定：精械战士的机炮攻击 10 → 15、无视 50% 防御（penP，S4 加）；v0.10.2 数值第一轮；v0.10.11 用户定：近战 21 → 40、法防 5.8 → 3（机炮 15 在 data/misc_080）；四阶生命恢复原值 500（r1 290）、防御 7.5（原 10、r1 4.9，Claude 定）
+  mechWarrior: {name:'精械战士', tier:4, hp:650,   /* 0.12.7f（用户定：扛伤提升一些）生命 500 → 650（Claude 定 +30%） */ def:7.5, mdef:3, speed:2.5, melee:{dmg:40, int:1.0, reach:1.0}, mgun:Object.assign({},V8_MG,{dmg:15, penP:0.5}), mech:true, v8:'mw', weapon:'axe', look:'mechWarrior',   // v0.10.11 用户定：精械战士的机炮攻击 10 → 15、无视 50% 防御（penP，S4 加）；v0.10.2 数值第一轮；v0.10.11 用户定：近战 21 → 40、法防 5.8 → 3（机炮 15 在 data/misc_080）；四阶生命恢复原值 500（r1 290）、防御 7.5（原 10、r1 4.9，Claude 定）
                 note:'近战；肩上的机炮自己索敌开火：射程 6.5 格，每秒 3 发，弹匣 30，装填 4 秒，无视 50% 防御，命中后 0.25 格爆炸；机械单位，电磁干扰里机炮不开火'},
-  mechGunner:  {name:'精械炮手', tier:4, hp:350, def:5.5, mdef:1.5, speed:2.4, melee:{dmg:12.5, int:1.5, reach:0.75},   // v0.10.2 数值第一轮；v0.10.11 用户定：轻炮攻击 15 → 35（攻速、重炮在 data/misc_080）；生命恢复原值 350（r1 230）、防御 5.5（原 8、r1 3.3，Claude 定）   // v0.10.11 收尾（用户定：略微对齐）法防 / 格挡防御取原值和数值第一轮之间
+  mechGunner:  {name:'精械炮手', tier:4, hp:350, def:5.5, mdef:1.5, speed:2.4, melee:{dmg:12.5, int:1.5, reach:0.75},   // v0.10.2 数值第一轮；v0.10.11 用户定：轻炮攻击 15 → 35（攻速、重炮在 data/misc_080）；生命恢复原值 350（r1 230）、防御 5.5（原 8、r1 3.3，Claude 定）   // v0.10.11 收尾（用户定：略微对齐）法防 / 格挡防御取原值和数值第一轮之间   // 0.12.7f（用户定：砍一波，×1.6 先）无人机 dmgK 2 → 1.6；机炮攻击 gun 30 → 24（gun 是算好 dmgK 的最终攻击，s4_camps.s4Drone 里会除掉 gk，激光机炮也用它，所以要一起改）
                 ranged:{dmg:35, int:0.5, range:5, spread:4, mag:40, reload:3, proj:'rshell', speed:22, pen:4, kb:0.4, blast:{r:0.25, mul:0.2, mix:{impact:1}}},   // v0.10.2 数值第一轮
                 ranged2:{dmg:100, int:1/0.45, range:10, minR:5, spread:3, mag:5, reload:1/0.45, proj:'ball', speed:18, pen:8, aim:0.8, aimKeep:true, blast:{r:1.75, mul:0.5, mix:{impact:1}}},   // v0.10.11 收尾（用户定）瞄准一次后连续开火、装填后才重新瞄准(aimKeep)，弹匣 1 → 5 发(Claude 定，同一目标 ≈ 0.42 次/秒)；v0.10.11 用户定：重炮攻击 80 → 100；攻速 0.33 → 0.45 次/秒（S4 改；弹匣 1 发，装填跟着改成同样的间隔，Claude 定；轻炮 4 → 2 次/秒，攻击 35 在上一行 ranged）
                 gunpowder:true, mech:true, v8:'mg', weapon:'handcannon', side:'club', look:'mechGunner',
                 note:'5 格内用轻炮：每秒 2 发，弹匣 40，命中击退；5～10 格用重炮：每秒 0.45 发，瞄准 0.8 秒后开火，会被打断，1.75 格爆炸；两门炮都是机械'},
-  mechEngineer:{name:'精械工程师', tier:4, hp:350, def:5.5, mdef:1.5, speed:2.7, melee:{dmg:10, int:1.5, reach:0.75}, drone:{max:2, int:10, ammo:2, dmgK:2, gun:30, penP:0.25}, bRepair:{amt:10, pct:0.01, n:1, r:4}, wallOk:true, mech:true, v8:'me', weapon:'club', look:'mechEngineer',   // v0.10.2 数值第一轮；v0.10.11 生命恢复原值 350（r1 240）、防御 5.5（原 8、r1 3.3，Claude 定）   // v0.10.11 收尾（用户定：略微对齐）法防 / 格挡防御取原值和数值第一轮之间
+  mechEngineer:{name:'精械工程师', tier:4, hp:350, def:5.5, mdef:1.5, speed:2.7, melee:{dmg:10, int:1.5, reach:0.75}, drone:{max:2, int:10, ammo:2, dmgK:1.6, gun:24, penP:0.25}, bRepair:{amt:10, pct:0.01, n:1, r:4}, wallOk:true, mech:true, v8:'me', weapon:'club', look:'mechEngineer',   // v0.10.2 数值第一轮；v0.10.11 生命恢复原值 350（r1 240）、防御 5.5（原 8、r1 3.3，Claude 定）   // v0.10.11 收尾（用户定：略微对齐）法防 / 格挡防御取原值和数值第一轮之间
                 note:'每 10 秒造一架无人机，最多同时 2 架；无人机的机炮攻击 30、无视 25% 防御，自爆伤害 ×2；无人机每波结束不散；战斗中每秒修理 4 格内受损最重的 1 座建筑：10 × 兵营攻击 × 兵营等级倍率 + 目标最大生命 1%，兵营攻击吃基础加成「武备」，主堡减半；能上城墙驻防'},
   mechDrone:   {name:'无人机', tier:4, hp:250, def:2, mdef:2, speed:5, melee:{dmg:1, int:1, reach:0.5}, ranged:Object.assign({},V8_MG), summoned:true, flyU:true, mech:true, v8:'dr', noWall:true, from:'精械工程师放出',
                 boom:{dmg:100, mul:0.5, r:1, life:10}, weapon:null, look:'mechDrone',
@@ -21433,10 +21433,10 @@ Object.assign(CFG.units,{
               weapon:'spear', bj:{k:'tiger', cut:{def:0.2, pdr:0.2, vuln:0.1, t:3, max:3}, fear:3, leap:{r:6, t:1, aoe:2.5, mul:2, stun:2, cd:10}},
               note:'冲锋伤害 ×2.5，冲锋命中时目标恐惧 3 秒；每次命中让目标物理防御 −20%、物理减伤 −0.2、易伤 +10%，持续 3 秒，最多叠 3 层；技能「虎跃」：跃向 6 格内的目标，落地 2.5 格内 200% 伤害(无视物理防御和物理减伤)并眩晕 2 秒，冷却 10 秒'},
   bjPhoenix: {name:'星阳火凰射', tier:4, hp:650, def:18, mdef:8, speed:2.5, capW:2, melee:{dmg:30, int:1.2, reach:0.8},
-              ranged:{dmg:100, int:1/1.5, range:10, spread:2, mag:0, reload:0, proj:'arrow', speed:20, kb:0.5, blast:{r:1, mul:0.5, mix:{fire:1}}},
+              ranged:{dmg:150, int:1/1.5, range:10, spread:2, mag:0, reload:0, proj:'arrow', speed:20, kb:0.5, blast:{r:1, mul:0.2, mix:{fire:1}}},
               weapon:'longbow', side:'dagger', rmix:{pierce:1},
-              bj:{k:'phoenix', chg:{min:0.5, max:2}, pit:{r:1, t:2, dps:0.3, fr:0.5}, fall:{r:4, pitR:4, pitT:2, dps:0.3, clrT:3, mul:2, cd:10}},   // 0.12.5（用户定，压群伤）攻击 105 → 100；火坑每秒 50% → 30%、3 秒 → 2 秒（凰落的火坑同样 5 秒 → 2 秒）
-              note:'射程 10 格，攻击速度 1.5 次/秒，击退 0.5 格；攻击可以蓄力到 2 倍攻击间隔、也可以提前到 0.5 倍放出，伤害 × 间隔倍数；命中处 1 格爆炸(50% 伤害)并留下 2 秒火坑，每秒灼烧 30% 攻击，火坑里的亡灵火焰抗性 −0.5(不叠加)；技能「凰落」：目标处 4 格爆炸 200% 伤害并留下 2 秒火坑(每秒 30%)，火坑里的亡灵火焰抗性清空 3 秒(火焰免疫不受影响)，冷却 10 秒'},
+              bj:{k:'phoenix', chg:{min:0.5, max:2}, pit:{r:1, t:2, dps:0.15, fr:0.5}, fall:{r:4, pitR:4, pitT:2, dps:0.15, clrT:3, mul:1.3, cd:10}},   // 0.12.7f（用户定：单体抬一些、群体略降）攻击 100 → 150，命中爆炸 50% → 20%，火坑每秒 30% → 15%，凰落 200% → 130%（数 Claude 定；木桩实测单体 +18%、密集 −5%）；0.12.5（用户定，压群伤）攻击 105 → 100；火坑每秒 50% → 30%、3 秒 → 2 秒（凰落的火坑同样 5 秒 → 2 秒）
+              note:'射程 10 格，攻击速度 1.5 次/秒，击退 0.5 格；攻击可以蓄力到 2 倍攻击间隔、也可以提前到 0.5 倍放出，伤害 × 间隔倍数；命中处 1 格爆炸(20% 伤害)并留下 2 秒火坑，每秒灼烧 15% 攻击，火坑里的亡灵火焰抗性 −0.5(不叠加)；技能「凰落」：目标处 4 格爆炸 130% 伤害并留下 2 秒火坑(每秒 15%)，火坑里的亡灵火焰抗性清空 3 秒(火焰免疫不受影响)，冷却 10 秒'},
   bjTortoise:{name:'星阳玄武卫', tier:4, hp:1800, def:45, mdef:25, speed:2, capW:2, block:0.75, shield:70, shieldSize:3, melee:{dmg:60, int:1, reach:0.5}, stagMul:0.5,
               share:{r:4, f:0.8}, weapon:'club',
               bj:{k:'tortoise', bkSh:{pct:0.1, max:0.5, t:5, cd:1}, xd:{t:4, cd:10, bk:1, ref:0.2, icpt:1}},
@@ -77701,7 +77701,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.7e',GAME_TAG='测试版',GAME_CODE=198,GAME_BUILD="81b0340+",GAME_BUILT=1793556013831,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.7e',GAME_TAG='测试版',GAME_CODE=198,GAME_BUILD="fb1d15a+",GAME_BUILT=1793557513117,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
