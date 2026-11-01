@@ -13338,7 +13338,7 @@ CFG.btech.towers.holyFlameTower={base:['hp','rate','dmg'], cost:[20,160], evoCos
   gear:   {name:'自动齿轮', desc:'攻击速度 +50%', rateAdd:0.5},
   brew:   {name:'圣液改良', desc:'造成的伤害 +50%', dmgMul:1.5},
 }, evo2:{
-  jet:    {name:'圣焰喷射', desc:'改为持续喷射圣焰光束：沿途的亡灵受到 50% 伤害，目标受到 100%，不再溅射；攻击速度改为每秒 2 次', hfBeam:{path:0.5}, w:{int:0.5, lob:null}},
+  jet:    {name:'圣焰喷射', desc:'改为持续喷射圣焰光束，一直照到射程尽头：光束上的亡灵受到 50% 伤害，目标受到 100%，不再溅射；攻击速度改为每秒 2 次', hfBeam:{path:0.5}, w:{int:0.5, lob:null}},
   spread: {name:'圣焰蔓延', desc:'溅射范围改为 2.5 格，落点留下圣焰坑，持续 3 秒，每秒造成 20% 伤害(神圣)', hfSpread:{r:2.5, pit:{p:0.2, dur:3}}},
   dense:  {name:'浓缩圣液', desc:'伤害 +100%，独立乘区', dmgI:1},
 }, evo3:{
@@ -70079,16 +70079,16 @@ function hfLand(p){const w=p.w,H=w.hf,ev=p.hev||HF_E0,s=p.hs||null,x=p.x1,y=p.y1
     for(let k=0;k<10;k++)pp(x+vr(-3,3),y-2,2,vr(-40,40),vr(-30,10),vr(10,35),180,vr(0.3,0.6),vpick(['#fff6d8','#ffd25a','#ff8a2a','#e8452a']),1,0,0);
     for(let k=0;k<4;k++)pp(x+vr(-2,2),y-1,0,vr(-12,12),vr(-6,6),vr(4,10),0,0.35,'#f4f0e6',1,0,0);   // 瓶子的碎玻璃
     sfx('zap')}}
-// 圣焰喷射（二阶）：从喷口照到目标，沿途 path，目标 100%；不溅射
+// 圣焰喷射（二阶）：从喷口朝目标照到射程尽头（0.12.7g 用户定；原来只照到目标为止），沿途 path，目标 100%；不溅射
 const HF_L=[];
 function hfBeamShot(s,T,t,ev,d,o,vis){const H=T.w.hf,px=s.x,py=s.y-19,a=Math.atan2(E.y[t]-6-py,E.x[t]-px),ux=Math.cos(a),uy=Math.sin(a),x0=px+ux*6,y0=py+uy*4,hw=8;s.aim=a;
   disbandNear(E.x[t],E.y[t],24);
-  const at=(E.x[t]-x0)*ux+(E.y[t]-6-y0)*uy,L=HF_L;L.length=0;
+  const at=Math.max((E.x[t]-x0)*ux+(E.y[t]-6-y0)*uy,T.range||0),L=HF_L;L.length=0;   // at：光束长度 = 射程（目标更远就照到目标）
   eQuery(x0,y0+6,Math.max(8,at)+8,j=>{if(j===t)return;const dx=E.x[j]-x0,dy=E.y[j]-6-y0,al=dx*ux+dy*uy;if(al<-4||al>at)return;if(Math.abs(dy*ux-dx*uy)<=hw+E.r[j])L.push(j)},true);
   const oF=hfFireO(o),id=E.id[t],P=ev.hfBeam.path;
   for(let k=0;k<L.length;k++)hfHit(L[k],d*P,d,o,oF,ev,s,H);
   if(eOk(t,id))hfHit(t,d,d,o,oF,ev,s,H);
-  s.beam={x0,y0,x1:E.x[t],y1:E.y[t]-6,t:G.time,f:1,hf:1,j:t,id,sx:px,sy:py,life:T.int*1.25+0.1};   // life：两发之间光束不断（攻速 2 次 / 秒，ui/draw 按它画）
+  s.beam={x0,y0,x1:x0+ux*at,y1:y0+uy*at,t:G.time,f:1,hf:1,j:t,id,sx:px,sy:py,len:at,life:T.int*1.25+0.1};   // life：两发之间光束不断（攻速 2 次 / 秒，ui/draw 按它画）
   if(vis){for(let k=0;k<3;k++)pp(E.x[t]+vr(-3,3),E.y[t]-6,2,vr(-16,16),vr(-20,2),vr(4,12),0,0.3,vpick(['#fff6d8','#ffd25a','#ff8a2a']),1,0,1);if(chance(0.5))sfx('zap')}}
 // —— 圣焰坑（圣焰蔓延）：只烧地面亡灵，每 0.5 秒结算 dps × 0.5；n = 还剩几次 ——
 zoneDef('hfPit',{tick(z,dt){z.tk-=dt;if(z.tk>0)return;z.tk+=0.5;const o=HF_PIT_O;o.spen=z.spen;
@@ -70116,7 +70116,7 @@ feat('holyflame',{hooks:{
   tick:hfTick,
   drawWorld:hfBurnDraw}});
 // —— 画：光束（ui/draw.drawBeam 转过来）、塔上的投臂 / 喷口（ui/draw.drawStruct）——
-function hfBeamDraw(b){if(eOk(b.j,b.id)){b.x1=E.x[b.j];b.y1=E.y[b.j]-6;const a=Math.atan2(b.y1-b.sy,b.x1-b.sx);b.x0=b.sx+Math.cos(a)*6;b.y0=b.sy+Math.sin(a)*4}
+function hfBeamDraw(b){if(eOk(b.j,b.id)){const a=Math.atan2(E.y[b.j]-6-b.sy,E.x[b.j]-b.sx),c=Math.cos(a),n=Math.sin(a);b.x0=b.sx+c*6;b.y0=b.sy+n*4;const L=b.len||Math.hypot(E.x[b.j]-b.x0,E.y[b.j]-6-b.y0);b.x1=b.x0+c*L;b.y1=b.y0+n*L}   // 0.12.7g 光束画到射程尽头、方向跟着目标转
   const fl=0.8+0.2*Math.sin(G.time*35),dx=b.x1-b.x0,dy=b.y1-b.y0,l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l;
   for(const k of[-2,2])pline(b.x0+nx*k,b.y0+ny*k,b.x1+nx*k,b.y1+ny*k,HF_K.red,0.35*fl);
   for(const k of[-1,1])pline(b.x0+nx*k,b.y0+ny*k,b.x1+nx*k,b.y1+ny*k,HF_K.fl,0.75*fl);
@@ -77707,7 +77707,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=199,GAME_BUILD="be699f6+",GAME_BUILT=1793561300884,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=199,GAME_BUILD="c08624e+",GAME_BUILT=1793561697274,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
