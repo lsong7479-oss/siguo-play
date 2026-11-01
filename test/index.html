@@ -77701,7 +77701,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.7e',GAME_TAG='测试版',GAME_CODE=198,GAME_BUILD="8bca22f+",GAME_BUILT=1793551955823,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.7e',GAME_TAG='测试版',GAME_CODE=198,GAME_BUILD="95157e8",GAME_BUILT=1793555545124,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -83307,6 +83307,337 @@ function bootFail(e){saveLock=true;console.error('boot',e);dbgErr('启动失败�
   const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:99999;background:#16131b;color:#e8dcc0;padding:24px;overflow:auto;font:15px/1.6 sans-serif';
   d.innerHTML=`<h2 style="margin:0 0 8px">启动出错</h2><p>游戏启动时出了错：${String((e&&e.message)||e).replace(/[<>&]/g,'')}</p><p>你的存档没有被改动。可以把下面的存档文字复制下来发给开发者，或者等修好的版本。</p>${metaLock?`<p>${metaLockText()}</p>`:''}<textarea id="bootFailTxt" readonly style="width:100%;height:40vh;background:#0e0c10;color:#e8dcc0;border:1px solid #4a4450"></textarea>`;
   d.querySelector('textarea').value=t;document.body.appendChild(d)}
+
+// ---------- AI 游玩接口 window.__ai（代理 AIP 加，2026-11-02；用户要「以后 Claude 们也能玩游戏」，需求见《AI游玩接口策划（箭塔草案）》）----------
+//   给 AI（Claude）读局面、做决定、快进用；驱动工具在 tools/ai_play/（不进包），用法写在 tools/ai_play/README.md。
+//   规矩：只包现有函数，不另写一套规则；只在被调用时运行，不进每帧循环；自己的状态都放在 AIP 里，不往 G、单位、CFG 上加字段（t_gshape / t_ai 查）。
+//   返回值都是小 JSON（字段名短，含义写在 help() 里）。正式玩家碰不到：没有任何界面入口。
+//   hold（保持暂停）：开着时每次调用结束都把页面自己的实时循环停住（paused = true，不弹窗），局面只在 run / move 里逐帧 update(STEP) 往前走，前后一致；关掉 = 实时模式，页面照常跑。
+const AIP={hold:false,ev:[],all:[],seen:new Set(),ds0:null,dsW:0,mv:null,go:null,mcL:-1};   // mcL：这个准备阶段（prepId）已经让商人走了，别再替它打开
+const AIP_Q={common:'普通',fine:'优秀',rare:'精良',epic:'史诗',legend:'传说',curse:'诅咒',myth:'神话',abyss:'深渊'};
+const AIP_DIR=['东','东南','南','西南','西','西北','北','东北'];
+const aipTxt=h=>String(h==null?'':h).replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
+const aipR=(v,k)=>{const m=Math.pow(10,k||0);return Math.round((+v||0)*m)/m};
+const aipSv=()=>!!(G&&G.mode==='survivor'&&G.sv);
+// 方向：屏幕 y 向下，北 = 上；以 (cx, cy) 为中心（常规 = 主堡，幸存者 = 队长）
+function aipDirOf(x,y,cx,cy){const a=Math.atan2(y-cy,x-cx);return AIP_DIR[(Math.round(a/(Math.PI/4))+8)%8]}
+function aipCenter(){if(aipSv()){const h=svHero();if(h)return{x:h.x,y:h.y}}return G&&G.base?{x:G.base.x,y:G.base.y}:{x:0,y:0}}
+const aipXY=s=>s.tx+','+s.ty;
+function aipEvt(o){o.w=G?G.wave:0;o.t=G?aipR(G.time,1):0;AIP.ev.push(o);AIP.all.push(o);if(AIP.all.length>300)AIP.all.splice(0,AIP.all.length-300)}
+// 每次调用的外壳：接住报错（返回 {err}）、读出这一下弹出的提示文字（toast）、hold 时把实时循环停住
+function aipCall(f,args){let r;const t0=toastEl?toastEl.textContent:'';if(toastEl)toastEl.textContent='';
+  try{r=f.apply(null,args)}catch(e){r={err:String(e&&e.message||e),at:String(e&&e.stack||'').split('\n').slice(1,3).join(' | ')}}
+  if(toastEl){const t=toastEl.textContent;if(t&&r&&typeof r==='object'&&!Array.isArray(r)&&r.msg===undefined)r.msg=t;if(!t)toastEl.textContent=t0}
+  aipHoldNow();try{return r===undefined?null:JSON.parse(JSON.stringify(r))}catch(e){return{err:'返回值不能转成 JSON：'+e.message}}}
+function aipHoldNow(){if(AIP.hold&&typeof running!=='undefined'&&running)paused=true;if(!AIP.mv){input.jx=0;input.jy=0}}
+// —— 现在要做的决定（没有 = null）
+function aipDecision(){if(!G)return{k:'menu'};
+  if(G.phase==='over'||G.phase==='victory'||(G.sv&&G.sv.end))return{k:G.phase==='victory'?'victory':'over'};
+  const m=modalState;
+  if(m==='cards'||m==='svcards')return{k:'card',n:(m==='cards'?G.cardOpts:G.sv.opts||[]).length};
+  if(m==='ecards'||m==='svecards')return{k:'ecard',n:(m==='ecards'?G.ecardOpts:G.sv.eopts||[]).length};
+  if(m==='svdev')return{k:'dev',n:(G.sv.dopts||[]).length};
+  if(m==='merchant'||m==='svmc')return{k:'shop',open:true};
+  if(m==='epick')return{k:'eshow'};
+  if(m==='hfx')return{k:'hfx'};
+  if(m==='svch')return{k:'chal'};
+  if(m==='svclr')return{k:'clear'};
+  if(m==='pause')return{k:'pause'};
+  if(m)return{k:'ui',m};
+  if(G.phase==='reward'&&G.cardOpts&&G.cardOpts.length)return{k:'card',n:G.cardOpts.length,closed:true};
+  if(G.phase==='reward'&&G.ecardOpts&&G.ecardOpts.length)return{k:'ecard',n:G.ecardOpts.length,closed:true};
+  if(G.phase==='prep'&&G.mc&&!aipSv())return{k:'shop',open:false};
+  if(G.phase==='prep')return{k:'prep'};
+  return null}
+// 商人在准备阶段开头隔两帧才弹（merchant094.mcDefer）：接口这边一进准备阶段就马上打开，不让它在两次调用之间突然弹出来（草案「卡住的地方」2）
+function aipMcSync(){if(G&&G.phase==='prep'&&G.mc&&!aipSv()&&modal.hidden&&G.mcAsk===G.prepId&&AIP.mcL!==G.prepId)mcOpen()}
+// 自动应付只是告知的弹窗：英雄效果（hfx，「继续」= 去选卡）、炼狱 / 深渊亡灵自己选的卡（epick）
+function aipAutoAck(){for(let k=0;k<4;k++){const m=modalState;
+  if(m==='hfx'){aipEvt({e:'hfx',x:aipTxt(sheet.querySelector('.hfxl')?sheet.querySelector('.hfxl').innerHTML:'').slice(0,300)});hfxOk();continue}
+  if(m==='epick'&&G.eAuto){const A=G.eAuto;aipEvt({e:'ecard',n:cardName(A.o.c,A.o.q),all:A.all?A.opts.map(o=>cardName(o.c,o.q)):undefined});confirmEnemyPicked();continue}
+  break}aipMcSync()}
+
+// ========== 局面 ==========
+function aipState(part,o){if(!G||!G.base)return{err:'没有对局'};o=o||{};
+  if(part==='structs')return aipStructs();
+  if(part==='heroes')return G.heroes.map(aipHero);
+  if(part==='enemies')return aipEnemies(o.all);
+  if(part==='next')return aipNext();
+  if(part==='picked')return{me:G.picked.map(p=>p.n+'/'+(AIP_Q[p.q]||p.q)),foe:(G.epicked||[]).map(p=>p.n+'/'+(AIP_Q[p.q]||p.q))};
+  if(part==='stats')return aipStats(o.n||12);
+  if(part==='grid')return aipGrid(o);
+  if(part==='build')return aipBuildList();
+  if(part==='sv')return aipSvState(true);
+  const d=aipDecision(),b=G.base,sv=aipSv();
+  const r={map:G.map,mn:mapDef().name,diff:DIFF.name,mode:G.mode,wave:G.wave,total:G.total===Infinity?0:G.total,ph:G.phase,gold:Math.floor(G.gold),kills:G.kills,t:aipR(G.time,1),d,env:envName()};
+  if(!sv){r.keep={lv:b.level,hp:Math.ceil(b.hp),max:Math.round(b.maxHp),up:upgradeCost(b)};r.rep=repairAllCost();
+    r.st=G.structs.length-1;r.lowS=G.structs.filter(s=>s!==b&&s.hp<s.maxHp*0.6).map(s=>s.cfg.name+'@'+aipXY(s)+' '+Math.round(s.hp/s.maxHp*100)+'%').slice(0,8);
+    r.sold=G.soldiers.filter(s=>!s.dead&&!s.summon).length;r.picked=G.picked.length}
+  r.heroes=G.heroes.filter(h=>!h.svSq).map(h=>{const x={n:h.d.name,hp:h.dead?0:Math.ceil(h.hp),max:Math.round(h.maxHp)};if(h.dead)x.rv=aipR(h.respawn,1);if(h.ai)x.ai=1;
+    x.cd=[0,1,2].map(k=>h.unl[k]?Math.max(0,aipR(h.cds[k],1)):-1);return x});
+  if(G.phase==='wave'&&!sv)r.foe=aipFoeSum();
+  if(G.phase==='prep'||G.phase==='reward')r.next=aipNext(true);
+  if(sv)r.sv=aipSvState(false);
+  return r}
+function aipStructs(){return G.structs.map(s=>{const x={n:s.cfg.name,t:s.type,at:aipXY(s),lv:lvShow(s),hp:Math.ceil(s.hp),max:Math.round(s.maxHp),up:upgradeCost(s),rep:repairCost(s)};
+  if(s.isCamp){x.u=s.unit;x.un=CFG.units[s.unit]?CFG.units[s.unit].name:s.unit;x.us=(BDEF[s.type].units||[]).join('/');let n=0;for(const u of G.soldiers)if(!u.dead&&u.camp===s&&!u.summon)n++;x.men=n}
+  if(s.temp)x.temp=1;return x}).concat(G.traps.map(t=>({n:t.cfg.name,t:t.type,at:aipXY(t),lv:lvShow(t),trap:1,up:upgradeCost(t)})))}
+function aipHero(h,i){const sv=aipSv();const x={i,id:h.id,n:h.d.name,lv:heroLv(h),hp:h.dead?0:Math.ceil(h.hp),max:Math.round(h.maxHp),x:aipR(h.x/16,1),y:aipR(h.y/16,1)};
+  if(h.dead)x.rv=aipR(h.respawn,1);if(h.ai)x.ai=1;if(h.elite)x.elite=1;if(h.layer)x.wall=1;
+  x.sk=[0,1,2].map(k=>{if(!h.skills[k])return null;const p=skP(h,h.sp[k]);return{n:p.name,cd:h.unl[k]?Math.max(0,aipR(h.cds[k],1)):-1,aim:p.aim||''}}).filter(Boolean);
+  if(sv&&i===0)x.cap=1;return x}
+// 场上亡灵按方向（离主堡 / 队长）汇总（n 含军团成员 lg，q = 还没出的）；精英、首领单独列（名字、血量、方向、距离格数）
+function aipFoeSum(){const c=aipCenter(),by={},big=[];let n=0;
+  for(let i=0;i<E.n;i++){if(!E.alive[i])continue;n++;const T=ETC[E.t[i]],dir=aipDirOf(E.x[i],E.y[i],c.x,c.y);by[dir]=(by[dir]||0)+1;
+    if(T.tier>=4||T.mini)big.push({n:T.name,k:T.tier>=5?'boss':T.mini?'mini':'elite',hp:Math.round(E.hp[i]/Math.max(1,E.mhp[i])*100)+'%',dir,d:Math.round(Math.hypot(E.x[i]-c.x,E.y[i]-c.y)/16)})}
+  let lg=0;for(const L of G.legions){lg+=L.n;const dir=aipDirOf(L.x,L.y,c.x,c.y);by[dir]=(by[dir]||0)+L.n}   // 军团（一整队走、还没散开的）：成员不在 E 里，按军团的位置算方向
+  return{n:n+lg,lg,q:queuedCount(),by,big:big.slice(0,10)}}
+function aipEnemies(all){const c=aipCenter(),L=[];for(let i=0;i<E.n;i++){if(!E.alive[i])continue;const T=ETC[E.t[i]];
+  L.push({n:T.name,tier:T.tier,hp:Math.ceil(E.hp[i]),x:aipR(E.x[i]/16,1),y:aipR(E.y[i]/16,1),d:aipR(Math.hypot(E.x[i]-c.x,E.y[i]-c.y)/16,1)})}
+  L.sort((a,b)=>a.d-b.d);return all?L:L.slice(0,30)}
+// 下一波预告：准备阶段的 G.nextPlan（planWave 排好的出怪队列）按出怪口汇总；幸存者按波次规则（精英 / 首领波）
+function aipNext(short){if(aipSv()){const S=G.sv,W=CFG.survivor.wave,n=S.wc+1,MD=mapDef();return{w:n,elite:n%W.eliteEvery===0&&!!(MD.elites&&MD.elites.length),boss:n%W.bossEvery===0&&!!MD.boss}}
+  const P=G.phase==='wave'?G.lastPlan:G.nextPlan;if(!P)return null;const side={},ty={};
+  for(const q of P.queue){const nm=(G.spawns[q.side]&&G.spawns[q.side].name)||String(q.side);side[nm]=(side[nm]||0)+q.n;const T=ETC[q.ti];if(T&&T.tier<4)ty[T.name]=(ty[T.name]||0)+q.n}
+  const top=Object.entries(ty).sort((a,b)=>b[1]-a[1]).slice(0,short?4:12).map(([k,v])=>k+'×'+v);
+  const nm=e=>CFG.enemies[e]?CFG.enemies[e].name:e;
+  const r={w:G.phase==='wave'?G.wave:G.wave+1,n:P.total,side,top,elite:P.elites.map(nm)};if(P.boss)r.boss=[].concat(P.boss).map(nm);if(P.rnd&&P.rnd.length)r.rnd=P.rnd.map(nm);return r}
+// 输出 / 承伤 / 治疗 / 控制 / 击杀（dsRows，「数据详情」用的同一份）；w = 这一波（从 act('wave') / run 开波时记的底数算）
+function aipStats(n){const L=dsRows(),B=AIP.ds0||{},f=r=>({n:r.n,g:r.g,dmg:Math.round(r.dmg),tak:Math.round(r.tak),heal:Math.round(r.heal),cc:aipR(r.cc,1),kill:r.kill});
+  const tot=L.slice(0,n).map(f),wv=L.map(r=>{const b=B[r.k]||{dmg:0,tak:0,heal:0,cc:0,kill:0};return{n:r.n,g:r.g,dmg:Math.round(r.dmg-b.dmg),tak:Math.round(r.tak-b.tak),heal:Math.round(r.heal-b.heal),kill:r.kill-b.kill}}).filter(r=>r.dmg>0||r.tak>0||r.heal>0||r.kill>0).sort((a,b)=>b.dmg-a.dmg).slice(0,n);
+  return{tot,wave:wv,w:AIP.dsW}}
+function aipDsSnap(){const o={};for(const k in DSK){const r=DSK[k];o[k]={dmg:r.dmg,tak:r.tak,heal:r.heal,cc:r.cc,kill:r.kill}}AIP.ds0=o;AIP.dsW=G.wave}
+function aipBuildList(){return{gold:Math.floor(G.gold),list:G.loadout.map(t=>{const D=BDEF[t];if(!D)return{t};const x={t,n:D.name,c:bcost(t)};if(isCampT(t))x.units=(D.units||[]).map(u=>u+'='+(CFG.units[u]?CFG.units[u].name:u)).join(' ');if(isTrapT(t))x.trap=1;if(bSize(t)>1)x.size=bSize(t);return x})}}
+// 文字地图：每格一个字。o = {x, y, r}（格；默认以主堡 / 队长为中心，r 默认常规 = 领地半径 + 2、幸存者 = 12）
+//   . 能造的空地  : 能造的土路  , 领地外能走  T 树  t 树丛  # 岩石 / 挡路  ~ 水 / 冰湖  s 流沙
+//   K 主堡  = 城墙  + 城门  B 兵营  ^ 陷阱  o 其它建筑  S 出怪口  @ 英雄 / 队长  e 亡灵  E 精英 / 首领  h 急救包  $ 宝箱
+function aipGrid(o){const c=aipCenter(),sv=aipSv(),cx=o.x!=null?+o.x:Math.floor(c.x/16),cy=o.y!=null?+o.y:Math.floor(c.y/16);
+  let r=o.r!=null?+o.r:sv?12:Math.ceil((typeof terrR==='function'?terrR():12))+2;r=Math.max(3,Math.min(40,r));
+  const x0=Math.max(0,cx-r),x1=Math.min(MAP_W-1,cx+r),y0=Math.max(0,cy-r),y1=Math.min(MAP_H-1,cy+r),W=x1-x0+1,rows=[];
+  const bt=G.loadout.find(t=>BDEF[t]&&!isCampT(t)&&!isTrapT(t)&&bSize(t)<=1),ch=new Array((y1-y0+1)*W);
+  const canB=(x,y)=>{if(!terrIn(x,y))return false;if(!bt||G.phase!=='prep')return true;const e=buildCheck(bt,x,y);return!e||/不足$|亡灵/.test(e)};
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const i=y*MAP_W+x,s=G.structAt[i],tp=G.trapAt[i],T=G.terrain[i];let g;
+    if(s){g=s.type==='keep'?'K':s.type==='gate'?'+':isWallT(s.type)?'=':s.isCamp?'B':'o'}
+    else if(tp)g='^';
+    else if(T===2||T===13)g='T';else if(T===5)g='t';else if(T===3||T===7)g='#';else if(T===6)g='s';else if(T===10)g='~';
+    else if(!sv&&canB(x,y))g=T===1?':':'.';
+    else g=friendPassPt(x*16+8,y*16+8)?',':'#';
+    ch[(y-y0)*W+x-x0]=g}
+  const put=(px,py,g)=>{const x=Math.floor(px/16),y=Math.floor(py/16);if(x>=x0&&x<=x1&&y>=y0&&y<=y1)ch[(y-y0)*W+x-x0]=g};
+  for(const p of G.spawns)put(p.x*16+8,p.y*16+8,'S');
+  if(sv&&G.sv.hk)for(const b of G.sv.hk)put(b.x,b.y,'h');if(sv&&G.sv.bx)for(const b of G.sv.bx)put(b.x,b.y,'$');
+  for(let i=0;i<E.n;i++){if(!E.alive[i])continue;const T=ETC[E.t[i]];put(E.x[i],E.y[i],T.tier>=4||T.mini?'E':'e')}
+  for(const h of G.heroes)if(!h.dead)put(h.x,h.y,'@');
+  const pad=v=>String(v).padStart(3,' ');
+  for(let y=y0;y<=y1;y++)rows.push(pad(y)+' '+ch.slice((y-y0)*W,(y-y0+1)*W).join(''));
+  let h1='    ',h2='    ';for(let x=x0;x<=x1;x++){h1+=Math.floor(x/10)%10;h2+=x%10}
+  return{x0,y0,x1,y1,rows:[h1,h2].concat(rows),k:'. 可造  : 可造土路  , 领地外  T树 t树丛 #挡路 ~冰 s流沙  K主堡 =墙 +门 B兵营 ^陷阱 o建筑  S出怪口 @英雄 e亡灵 E精英首领 h急救包 $宝箱'}}
+function aipSvState(full){const S=G.sv,h=svHero();if(!S||!h)return null;const W=CFG.survivor.wave;
+  const r={wc:S.wc,ws:S.ws,gap:S.ws==='gap'?aipR(S.wT,1):undefined,wt:aipR(S.wt,1),every:W.every,live:svTime(S.t),lv:S.lv,
+    cap:{n:h.d.name,hp:h.dead?0:Math.ceil(h.hp),max:Math.round(h.maxHp),x:aipR(h.x/16,1),y:aipR(h.y/16,1)},auto:S.auto?1:0,
+    dv:(S.dv||[]).map(d=>svDvName(d.id)+(d.mL?' Lv'+d.mL:'')),slots:S.slots,rr:S.rr||0,gb:S.gb||{},ek:S.ek,bk:S.bk};
+  const c={x:h.x,y:h.y},near={},big=[];let n=0,n6=0;const L=[];
+  for(let i=0;i<E.n;i++){if(!E.alive[i])continue;n++;const dx=E.x[i]-c.x,dy=E.y[i]-c.y,d=Math.hypot(dx,dy)/16,T=ETC[E.t[i]];if(d<=6)n6++;
+    if(d<=12){const dir=aipDirOf(E.x[i],E.y[i],c.x,c.y);near[dir]=(near[dir]||0)+1}
+    if(T.tier>=4||T.mini)big.push({n:T.name,k:T.tier>=5?'boss':T.mini?'mini':'elite',hp:Math.round(E.hp[i]/Math.max(1,E.mhp[i])*100)+'%',dir:aipDirOf(E.x[i],E.y[i],c.x,c.y),d:Math.round(d)});
+    if(full)L.push({n:T.name,d:aipR(d,1),dir:aipDirOf(E.x[i],E.y[i],c.x,c.y)})}
+  r.foe={n,n6,near,big:big.sort((a,b)=>a.d-b.d).slice(0,6)};
+  const pt=A=>(A||[]).map(b=>({x:aipR(b.x/16,1),y:aipR(b.y/16,1),d:Math.round(Math.hypot(b.x-c.x,b.y-c.y)/16),k:b.k})).sort((a,b)=>a.d-b.d).slice(0,5);
+  r.kits=pt(S.hk);r.boxes=pt(S.bx);
+  r.sq=G.heroes.filter(u=>u.svSq>0).map(u=>u.d.name+(u.dead?'(倒下)':' '+Math.round(u.hp/u.maxHp*100)+'%'));
+  if(full){L.sort((a,b)=>a.d-b.d);r.close=L.slice(0,12);r.st=S.st;r.pk=(S.pk||[]).map(p=>p.n||p)}
+  return r}
+
+// ========== 选卡 ==========
+function aipCardOf(o,i){const x={i,n:cardName(o.c,o.q),q:AIP_Q[o.q]||o.q,d:aipTxt(cardDesc(o)).slice(0,160)};if(o.c.unique)x.uq=1;if(o.q==='curse')x.curse=1;if(o.q==='abyss')x.abyss=1;if(o.dv)x.dv=o.dv.kind+':'+o.dv.id;return x}
+function aipCards(){aipAutoAck();const d=aipDecision();if(!d)return{k:null,why:'现在没有要选的卡'};
+  const sv=aipSv(),S=G.sv;
+  if(d.k==='card'){const L=sv?S.opts:G.cardOpts;return{k:'card',opts:(L||[]).map(aipCardOf),rr:sv?S.rr||0:Math.floor(pm.reroll||0)}}
+  if(d.k==='ecard'){const L=sv?S.eopts:G.ecardOpts;return{k:'ecard',opts:(L||[]).map(aipCardOf),note:'替亡灵选一张(挑最不致命的)'}}
+  if(d.k==='dev')return{k:'dev',opts:(S.dopts||[]).map(aipCardOf),slots:S.dv.length+'/'+S.slots,rr:S.rr||0};
+  if(d.k==='chal')return{k:'chal',opts:(G.chQ||[]).map((k,i)=>({i,id:k,n:CFG.chal.list[k].name,pts:CFG.chal.list[k].pts,d:aipTxt(CFG.chal.list[k].desc)})),note:'pick(-1) = 不选了，开始'};
+  if(d.k==='clear')return{k:'clear',opts:[{i:0,n:'继续无尽'},{i:1,n:'结算'}]};
+  return{k:null,d:d.k,why:'现在不是选卡('+d.k+')'}}
+function aipPick(i){i=+i;aipAutoAck();const d=aipDecision(),sv=aipSv(),S=G&&G.sv;if(!d)return{ok:false,why:'现在没有要选的卡'};let nm='';
+  if(d.k==='card'){if(sv){const o=S.opts&&S.opts[i];if(!o)return{ok:false,why:'没有第 '+i+' 张'};nm=cardName(o.c,o.q);svCardPick(i)}
+    else{const o=G.cardOpts&&G.cardOpts[i];if(!o)return{ok:false,why:'没有第 '+i+' 张'};nm=cardName(o.c,o.q);if(modalState!=='cards'&&modalState)hideModal();pickCard(i)}}
+  else if(d.k==='ecard'){if(sv){const o=S.eopts&&S.eopts[i];if(!o)return{ok:false,why:'没有第 '+i+' 张'};nm=cardName(o.c,o.q);ARM.card=0;svECardPick(i)}
+    else{const o=G.ecardOpts&&G.ecardOpts[i];if(!o)return{ok:false,why:'没有第 '+i+' 张'};nm=cardName(o.c,o.q);pickEnemyCard(i)}}
+  else if(d.k==='dev'){const o=S.dopts&&S.dopts[i];if(!o)return{ok:false,why:'没有第 '+i+' 张'};nm=cardName(o.c,o.q);ARM.card=0;svDevPick(i)}
+  else if(d.k==='chal'){const k=i>=0&&G.chQ?G.chQ[i]:'';nm=k?CFG.chal.list[k].name:'不选';svChPick(k)}
+  else if(d.k==='clear'){if(i===1){nm='结算';S.clq=0;hideModal();svOver(true)}else{nm='继续无尽';S.clq=0;hideModal()}}
+  else return{ok:false,why:'现在不是选卡('+d.k+')'};
+  aipEvt({e:'pick',k:d.k,n:nm});aipAutoAck();return{ok:true,n:nm,d:aipDecision()}}
+function aipReroll(){const d=aipDecision();if(!d)return{ok:false,why:'没有可刷新的卡'};const sv=aipSv(),S=G.sv;
+  if(sv){if(!(S.rr>0))return{ok:false,why:'没有重抽次数'};if(d.k!=='card'&&d.k!=='dev')return{ok:false,why:'只能重抽数值卡 / 装置卡'};S.rr--;hideModal();if(d.k==='card')svLvOpen();else svDevOpen();return aipCards()}
+  if(!(pm.reroll>=1))return{ok:false,why:'没有刷新次数'};if(d.k==='card')rerollCards(false);else if(d.k==='ecard')rerollCards(true);else return{ok:false,why:'现在不能刷新'};return aipCards()}
+
+// ========== 商人 ==========
+function aipShop(){aipAutoAck();if(!G)return{err:'没有对局'};const sv=aipSv();
+  if(sv){const S=G.sv;if(modalState!=='svmc'||!S.mc)return{k:null,why:'商人没来(幸存者的商人在一波打完的间隙弹出)'};
+    return{k:'sv',gold:Math.floor(G.gold),slots:S.dv.length+'/'+S.slots,buy:S.mc.map((x,i)=>({id:'b'+i,n:cardName(x.o.c,x.o.q),q:AIP_Q[x.o.q]||x.o.q,d:aipTxt(cardDesc(x.o)).slice(0,120),p:x.price,sold:x.sold?1:0,dv:x.o.dv?x.o.dv.kind:undefined})),
+      up:S.dv.map((d,i)=>({id:'u'+i,n:svDvName(d.id),lv:d.mL||0,p:svMcUpP(d)})),note:'buy("b0") 买商品，buy("u1") 升级装置，leave() 离开'}}
+  const C=G.mc&&mcNorm(G.mc);if(!C||G.phase!=='prep')return{k:null,why:'这个准备阶段没有商人'};const M=CFG.merchant;
+  return{k:'mc',gold:Math.floor(G.gold),open:modalState==='merchant'?1:0,nb:(C.nb||0)+'/'+mcItemMax(),
+    pots:C.pots.map(id=>({id:'pot:'+id,n:M.pots[id].name,d:aipTxt(M.pots[id].desc),p:potPrice(id),rem:mc2PotRem(id),full:mc2PotRem(id)>=M.potMax?1:0})),
+    items:C.items.map(id=>{const I=M.items[id];return{id:'item:'+id,n:I.name,d:aipTxt(I.desc),p:itemPrice(id),got:mcBought(C,id)?1:0,cnt:mc2Cnt(id),lim:mc2Lim(id)}}),
+    wares:C.lots.map((L,k)=>({id:'ware:'+k,n:CFG.wares.items[L.id].name+'×'+L.n,p:mp2LotP(L),sold:L.sold?1:0})),
+    note:'药水管 '+M.potWaves+' 波(作用于英雄和士兵)；道具一局有效；物资结算时入库。buy(id)，leave() 离开；开下一波时商人自动离开'}}
+function aipBuy(id){id=String(id||'');aipAutoAck();if(!G)return{ok:false,why:'没有对局'};
+  if(aipSv()){const S=G.sv;if(modalState!=='svmc'||!S.mc)return{ok:false,why:'商人不在'};const k=id[0],i=parseInt(id.slice(1),10);
+    if(k==='b'){const x=S.mc[i];if(!x)return{ok:false,why:'没有这件'};if(x.sold)return{ok:false,why:'已经买了'};const err=svMcBuy(i);if(err)return{ok:false,why:err};svMcOpen();aipEvt({e:'buy',n:cardName(x.o.c,x.o.q),p:x.price});return{ok:true,n:cardName(x.o.c,x.o.q),gold:Math.floor(G.gold)}}
+    if(k==='u'){const d=S.dv[i];if(!d)return{ok:false,why:'没有这台装置'};const p=svMcUpP(d),err=svMcUp(i);if(err)return{ok:false,why:err+'(要 '+p+')'};SV_MCT='up';svMcOpen();aipEvt({e:'buy',n:svDvName(d.id)+' 升到 Lv'+d.mL,p});return{ok:true,n:svDvName(d.id),lv:d.mL,gold:Math.floor(G.gold)}}
+    return{ok:false,why:'编号写 b0 / u0 这种(shop() 里的 id)'}}
+  const C=G.mc&&mcNorm(G.mc);if(!C||G.phase!=='prep')return{ok:false,why:'这个准备阶段没有商人'};const M=CFG.merchant,j=id.indexOf(':'),kind=id.slice(0,j),v=id.slice(j+1);
+  let p=0,n='';
+  if(kind==='pot'){if(!C.pots.includes(v))return{ok:false,why:'没有这种药水'};if(mc2PotRem(v)>=M.potMax)return{ok:false,why:'同一种药水最多剩 '+M.potMax+' 波'};p=potPrice(v);n=M.pots[v].name}
+  else if(kind==='item'){if(!C.items.includes(v))return{ok:false,why:'没有这件道具'};if(mcBought(C,v))return{ok:false,why:'已经买过'};if(mc2Full(C))return{ok:false,why:'这一次最多买 '+mcItemMax()+' 件道具'};p=itemPrice(v);n=M.items[v].name}
+  else if(kind==='ware'){const L=C.lots[v|0];if(!L)return{ok:false,why:'没有这批物资'};if(L.sold)return{ok:false,why:'已经买了'};p=mp2LotP(L);n=CFG.wares.items[L.id].name+'×'+L.n}
+  else return{ok:false,why:'编号写 pot:xx / item:xx / ware:0(shop() 里的 id)'};
+  if(G.gold<p)return{ok:false,why:'铜币不够(要 '+p+'，有 '+Math.floor(G.gold)+')'};
+  const g0=G.gold;if(kind==='item')MC_TAB='item';else if(kind==='ware')MC_TAB='ware';else MC_TAB='pot';mcBuy(kind,v);if(G.gold>=g0)return{ok:false,why:'没买成'};
+  aipEvt({e:'buy',n,p});const r={ok:true,n,p,gold:Math.floor(G.gold)};if(G.mcDraw&&G.cardOpts)r.cards='买到的是抽卡：先 cards() / pick(i)，选完回到商人';return r}
+function aipLeave(){aipAutoAck();if(!G)return{ok:false,why:'没有对局'};
+  if(aipSv()){const S=G.sv;if(modalState!=='svmc')return{ok:false,why:'商人不在'};S.mq=0;S.mc=null;SV_MCT='buy';hideModal();return{ok:true}}
+  if(G.phase!=='prep'||!G.mc)return{ok:false,why:'这个准备阶段没有商人'};G.mcGo=false;G.mcAsk=G.prepId;AIP.mcL=G.prepId;if(modalState==='merchant')hideModal();return{ok:true,note:'商人还在(准备阶段可以 shop() 再看)，开下一波时离开'}}
+
+// ========== 指令 ==========
+// act('build arrowTower 30 29')、act('up 30,29')、act('up keep')、act('rep')、act('rep 30,29')、act('sell 30,29')、act('unit 30,34 archer')、
+// act('clear 31 25')、act('ai on [英雄号]')、act('skill 0 [x y] [h=1]')、act('wave')、act('goto x y [h=1]')、act('stop')、act('auto on|off')；几条用 ; 隔开
+function aipAt(ref){if(ref==null)return null;ref=String(ref);if(ref==='keep'||ref==='K')return G.base;const m=ref.match(/^(\d+)[,\s]+(\d+)$/);if(!m)return null;const x=+m[1],y=+m[2];if(x<0||y<0||x>=MAP_W||y>=MAP_H)return null;const i=y*MAP_W+x;return G.structAt[i]||G.trapAt[i]||null}
+function aipAct(cmd){if(!G||!G.base)return{ok:false,why:'没有对局'};aipAutoAck();
+  if(Array.isArray(cmd))return cmd.map(c=>aipAct1(String(c)));cmd=String(cmd||'').trim();
+  if(cmd.includes(';'))return cmd.split(';').map(s=>s.trim()).filter(Boolean).map(aipAct1);return aipAct1(cmd)}
+function aipAct1(cmd){let w=cmd.split(/\s+/).filter(Boolean),h=G.hero;const hw=w.find(x=>/^h=\d+$/.test(x));if(hw){h=G.heroes[+hw.slice(2)];w=w.filter(x=>x!==hw);if(!h)return{c:cmd,ok:false,why:'没有这位英雄'}}
+  const op=(w[0]||'').toLowerCase(),a=w.slice(1),num=k=>+a[k],ref2=k=>a[k]!=null&&a[k+1]!=null&&/^\d+$/.test(a[k])&&/^\d+$/.test(a[k+1])?a[k]+','+a[k+1]:a[k];
+  const R=x=>Object.assign({c:cmd},x);const sv=aipSv();
+  if(op==='build'||op==='b'){const t=a[0],x=num(1),y=num(2);if(!BDEF[t])return R({ok:false,why:'没有这种建筑：'+t+'(state("build") 看能造什么)'});if(!(x>=0&&y>=0))return R({ok:false,why:'要写坐标：build 类型 x y'});
+    const c=bcost(t),err=tryBuild(t,x,y,true);if(err)return R({ok:false,why:/不足$/.test(err)?err+'(要 '+c+'，有 '+Math.floor(G.gold)+')':err});const s=G.structAt[y*MAP_W+x]||G.trapAt[y*MAP_W+x];if(a[3]&&s&&s.isCamp){const u=campSetUnit(s,a[3]);if(u.err)return R({ok:true,c:c,warn:u.err})}return R({ok:true,cost:c,gold:Math.floor(G.gold)})}
+  if(op==='clear'){const x=num(0),y=num(1);if(G.phase!=='prep')return R({ok:false,why:'只能在准备阶段清障'});const T=G.terrain[y*MAP_W+x],c0=clearCostOf(T);if(!c0)return R({ok:false,why:'这一格不用清 / 不能清'});const g0=G.gold;const ok=clearAt(x,y,true);return R(ok?{ok:true,cost:Math.round(g0-G.gold)}:{ok:false,why:G.gold<c0?'铜币不够':'清不了'})}
+  if(op==='up'||op==='upg'){const sp=a[0]&&/^\d+$/.test(a[0]),s=aipAt(ref2(0)),n=Math.max(1,(+(sp?a[2]:a[1])||1)|0);if(!s)return R({ok:false,why:'那里没有建筑(写 x,y 或 keep)'});
+    if(G.noBuild)return R({ok:false,why:'这一局不能升级建筑'});const lv0=lvShow(s);let spent=0,why='';
+    for(let k=0;k<n;k++){const c=upgradeCost(s);if(c===null){why='已经升满 / 这座不能升级';break}if(G.gold<c){why='铜币不够(下一级要 '+c+'，有 '+Math.floor(G.gold)+')';break}doUpgrade(s);spent+=c}
+    if(spent)sfx('levelup');if(UI.ready&&spent)refreshSel(true);return R({ok:spent>0,n:s.cfg.name,lv:lv0+'→'+lvShow(s),cost:spent,next:upgradeCost(s),gold:Math.floor(G.gold),why:why||undefined})}
+  if(op==='rep'||op==='repair'){if(G.invade)return R({ok:false,why:'入侵战不能修理'});if(G.phase==='wave')return R({ok:false,why:'战斗中不能修理'});
+    const one=a.length&&a[0]!=='all'?aipAt(ref2(0)):null;if(a.length&&a[0]!=='all'&&!one)return R({ok:false,why:'那里没有建筑'});
+    const list=(one?[one]:G.structs.filter(s=>repairCost(s)>0).sort((x,y)=>(x.type==='keep'?-1:y.type==='keep'?1:x.hp/x.maxHp-y.hp/y.maxHp)));
+    const fixed=[],left=[];let spent=0;for(const s of list){const c=repairCost(s);if(c<=0)continue;if(doRepair(s)){fixed.push(s.cfg.name+'@'+aipXY(s)+' '+c);spent+=c}else left.push({n:s.cfg.name,at:aipXY(s),c,hp:Math.round(s.hp/s.maxHp*100)+'%'})}
+    if(fixed.length){sfx('build');if(UI.ready)refreshSel(true)}const need=left.reduce((t,x)=>t+x.c,0);
+    return R({ok:fixed.length>0||!list.length,fixed,left,cost:spent,short:left.length?Math.max(0,Math.ceil(need-G.gold)):0,gold:Math.floor(G.gold),note:list.length?(left.length?'修不起的按先修主堡、再修血少的顺序列在 left(游戏里不能只修一部分)':undefined):'都是满血'})}
+  if(op==='sell'){const s=aipAt(ref2(0));if(!s)return R({ok:false,why:'那里没有建筑'});if(s===G.base)return R({ok:false,why:'不能拆主堡'});if(G.noBuild)return R({ok:false,why:'这一局不能拆'});const v=sell(s,true);return R({ok:true,n:s.cfg.name,back:v,gold:Math.floor(G.gold)})}
+  if(op==='unit'){const s=aipAt(ref2(0)),u=a[a.length-1];if(!s||!s.isCamp)return R({ok:false,why:'那里不是兵营'});const r=campSetUnit(s,u);if(r.err)return R({ok:false,why:r.err});return R({ok:true,u:CFG.units[u]?CFG.units[u].name:u,sent:r.n})}
+  if(op==='ai'){if(!h)return R({ok:false,why:'没有英雄'});const on=a[0]==null?!h.ai:a[0]==='on'||a[0]==='1';if(/^\d+$/.test(a[1]||'')){h=G.heroes[+a[1]];if(!h)return R({ok:false,why:'没有这位英雄'})}h.ai=on;h.moveTo=null;if(UI.ready)refreshCtl();return R({ok:true,n:h.d.name,ai:on?1:0})}
+  if(op==='auto'){if(!sv)return R({ok:false,why:'只有幸存者模式有自动放技能(常规用 ai on)'});G.sv.auto=a[0]==null?!G.sv.auto:a[0]==='on'||a[0]==='1';return R({ok:true,auto:G.sv.auto?1:0})}
+  if(op==='skill'||op==='sk'){if(!h)return R({ok:false,why:'没有英雄'});const k=num(0);if(!(k>=0&&k<3)||!h.skills[k])return R({ok:false,why:'技能号 0～2'});const p=skP(h,h.sp[k]);
+    if(G.phase!=='wave')return R({ok:false,why:'只能在战斗中放技能'});if(h.dead)return R({ok:false,why:h.d.name+'倒下了'});if(!h.unl[k])return R({ok:false,why:'还没解锁(升星)'});if(h.cds[k]>0)return R({ok:false,why:'冷却中，还要 '+aipR(h.cds[k],1)+' 秒'});
+    const aim=a.length>=3?{x:num(1)*16+8,y:num(2)*16+8}:null;const ok=castSkill(k,p.aim==='self'?null:aim,true,h);return R(ok?{ok:true,n:p.name}:{ok:false,why:'放不出来(在施法 / 被控 / 没有目标 / 武器不对)',n:p.name})}
+  if(op==='wave'||op==='go'){const r=aipWave();return R(r)}
+  if(op==='goto'||op==='moveto'){if(!h||h.dead)return R({ok:false,why:'英雄倒下了'});const x=num(0),y=num(1);if(!(x>=0&&y>=0))return R({ok:false,why:'goto x y(格)'});h.ai=false;h.moveTo={x:x*16+8,y:y*16+8};h.tgtI=-1;if(UI.ready)refreshCtl();return R({ok:true,n:h.d.name,note:'要 run / move 让时间往前走才会走过去'})}
+  if(op==='stop'){if(h)h.moveTo=null;AIP.mv=null;return R({ok:true})}
+  return R({ok:false,why:'不认识的指令：'+op+'(help() 看指令表)'})}
+function aipWave(){if(aipSv())return{ok:false,why:'幸存者模式没有准备阶段(波次自己接着来)'};if(G.phase!=='prep')return{ok:false,why:'不在准备阶段('+G.phase+')'};
+  if(modalState==='merchant')hideModal();if(G.mc){G.mcGo=false;G.mcAsk=G.prepId;AIP.mcL=G.prepId}
+  if(modalState)return{ok:false,why:'先处理弹窗「'+modalState+'」(ui() 看内容和按钮，press(i) 点)'};
+  const w0=G.wave,mc=!!G.mc;startWave();if(G.phase!=='wave'||G.wave===w0)return{ok:false,why:G.story?'剧情：还没去赴约':'没能开始'};
+  AIP.seen.clear();aipDsSnap();if(mc)aipEvt({e:'mcLeft'});return{ok:true,wave:G.wave}}
+
+// ========== 快进 ==========
+// run(到哪, 选项)：逐帧 update(STEP)（同 tools/tests/bot.py），到要做决定的时候停：
+//   常规：选卡 / 亡灵卡 / 弹窗 / 准备阶段（有商人会报出来）/ 首领出场 / 主堡低于 base（默认 0.5）/ 英雄倒下 / 结束；在准备阶段调 = 先让商人走、开下一波再快进
+//   幸存者：选卡 / 装置卡 / 亡灵卡 / 商人 / 首领出场 / 队长低于 low（默认 0.35）/ 结束；默认每 5 秒（游戏时间）停一次，好调整走位
+//   until：'next'（默认）| 'wave'（只停在决定和结束，不管首领 / 倒下 / 血量）| 数字 = 最多快进这么多秒（游戏时间）
+//   选项：{sec 最多几秒, ms 真实时间上限（默认 15000）, base, low, boss:false, hero:false}
+function aipRun(until,o){if(!G||!G.base)return{stop:'menu',why:'没有对局：先 newRun()'};o=o||{};if(typeof until==='object'&&until){o=until;until=o.until}
+  aipAutoAck();const sv=aipSv();let d=aipDecision();
+  if(d&&d.k!=='prep'&&!(d.k==='shop'&&!sv))return aipStop(d.k,0,0);   // 常规的商人 = 准备阶段，run 先让他走；幸存者的商人是弹窗，要先 leave
+  if(!sv&&G.phase==='prep'){const r=aipWave();if(!r.ok)return Object.assign(aipStop('err',0,0),{why:r.why})}
+  if(G.phase!=='wave')return aipStop(G.phase,0,0);
+  const quiet=until==='wave',cap=typeof until==='number'?until:o.sec!=null?+o.sec:sv?5:Infinity,ms=o.ms||15000,baseK=o.base!=null?+o.base:0.5,lowK=o.low!=null?+o.low:0.35;
+  AIP.ev=[];const t0=performance.now(),g0=G.time;let f=0,stop=null;let lootN=G.loot.length;const S=G.sv,hd=new Map(G.heroes.map(x=>[x,x.dead])),st=G.structs.slice(),w0=G.wave,gb0=sv?JSON.stringify(S.gb||{}):'';
+  const hpK=()=>{if(sv){const h=svHero();return h&&!h.dead?h.hp/h.maxHp:0}return G.base.hp/G.base.maxHp};let k0=hpK(),thr=sv?lowK:baseK;
+  paused=false;
+  try{while(true){
+    if(AIP.mv){input.jx=AIP.mv.x;input.jy=AIP.mv.y;if(G.time>=AIP.mv.until){AIP.mv=null;input.jx=input.jy=0}}
+    if(AIP.go&&AIP.go.h){const h=AIP.go.h;if(h.dead||!h.moveTo){stop=stop||'arrived';AIP.go=null;break}}
+    update(STEP);f++;
+    if(modalState){if(modalState==='hfx'||modalState==='epick'){aipAutoAck();if(!modalState&&G.phase==='wave')continue}stop='modal';break}
+    if(G.phase!=='wave'||(S&&S.end)){stop=G.phase;break}
+    if(f%6===0){
+      for(let i=0;i<E.n;i++){if(!E.alive[i])continue;const T=ETC[E.t[i]];if(T.tier<4&&!T.mini)continue;const id=E.id[i];if(AIP.seen.has(id))continue;AIP.seen.add(id);const c=aipCenter(),boss=T.tier>=5;
+        aipEvt({e:boss?'boss':T.mini?'mini':'elite',n:T.name,dir:aipDirOf(E.x[i],E.y[i],c.x,c.y),d:Math.round(Math.hypot(E.x[i]-c.x,E.y[i]-c.y)/16),hp:Math.round(E.mhp[i])});if(boss&&!quiet&&o.boss!==false)stop='boss'}
+      for(const x of G.heroes){const was=hd.get(x);if(x.dead&&!was){aipEvt({e:'down',n:x.d.name});if(!quiet&&o.hero!==false&&!x.svSq)stop='hero'}hd.set(x,x.dead)}
+      for(const s of st)if(s.dead&&!s.sold)aipLost(s);
+      for(;lootN<G.loot.length;lootN++){const L=G.loot[lootN];aipEvt({e:'loot',n:(bookDef(L.base)||{}).name||L.base,kind:L.kind})}
+      const k1=hpK();if(k1<thr&&k0>=thr){aipEvt({e:sv?'low':'base',hp:Math.round(k1*100)+'%'});if(!quiet)stop=sv?'low':'base'}k0=k1;
+      if(sv&&G.wave!==w0){aipEvt({e:'wave',n:G.wave});}
+      if(stop)break;
+      if(f%60===0&&performance.now()-t0>ms){stop='time';break}}
+    if(G.time-g0>=cap-1e-9){stop='sec';break}}}
+  finally{if(!AIP.mv){input.jx=0;input.jy=0}}
+  if(sv&&JSON.stringify(S.gb||{})!==gb0)aipEvt({e:'box',gb:S.gb});
+  aipAutoAck();
+  return aipStop(stop,f,G.time-g0)}
+const AIP_GONE=new WeakSet();
+function aipLost(s){if(AIP_GONE.has(s))return;AIP_GONE.add(s);aipEvt({e:'lost',n:s.cfg.name,at:aipXY(s)})}
+function aipStop(stop,f,t){const r={stop,f,sec:aipR(t,1),wave:G?G.wave:0,ph:G?G.phase:'',gold:G?Math.floor(G.gold):0};if(!G)return r;
+  if(aipSv()){const h=svHero();if(h)r.cap=Math.ceil(h.hp)+'/'+Math.round(h.maxHp)}else if(G.base)r.keep=Math.ceil(G.base.hp)+'/'+Math.round(G.base.maxHp);
+  r.d=aipDecision();if(AIP.ev.length)r.ev=AIP.ev.slice(-15);if(G.phase==='prep'&&!aipSv())r.next=aipNext(true);return r}
+// move(dx, dy, 秒)：按住摇杆这个方向走（单位向量，北 = dy < 0），时间照常往前走（= run(秒)，碰到决定一样会停）
+function aipMove(dx,dy,sec,o){if(!G||!G.hero)return{ok:false,why:'没有对局'};if(G.phase!=='wave')return{ok:false,why:'只能在战斗中走(准备阶段时停)'};
+  const l=Math.hypot(+dx||0,+dy||0);if(!(l>0))return aipRun(+sec||1,o);const h=aipSv()?svHero():G.hero;if(h)h.moveTo=null;
+  AIP.mv={x:dx/l,y:dy/l,until:G.time+(+sec||1)};try{return aipRun(+sec||1,o)}finally{AIP.mv=null;input.jx=input.jy=0;aipHoldNow()}}
+// goto(x, y, 秒)：走到格子 (x, y)（游戏自己寻路，同点地面），到了或过了秒数就停
+function aipGoto(x,y,sec,o){if(!G||!G.hero)return{ok:false,why:'没有对局'};const h=aipSv()?svHero():G.hero;if(!h||h.dead)return{ok:false,why:'英雄倒下了'};
+  if(G.phase!=='wave')return{ok:false,why:'只能在战斗中走(准备阶段时停)'};h.ai=false;h.moveTo={x:+x*16+8,y:+y*16+8};h.tgtI=-1;AIP.go={h};
+  try{const r=aipRun(+sec||8,o);r.at=aipR(h.x/16,1)+','+aipR(h.y/16,1);return r}finally{AIP.go=null}}
+
+// ========== 局外 ==========
+function aipMeta(){const H=[];for(const id of HIDS){const m=META.heroes[id],c=CFG.heroes[id];if(!m||!m.owned||c.advOf)continue;H.push({id,n:c.name,star:m.star||1,lv:heroLv0(id)})}
+  const clr={};for(const k in META.mapClear||{}){const v=META.mapClear[k];clr[k]=typeof v==='object'?Object.keys(v).filter(d=>v[d]).join(','):v}
+  const maps=Object.keys(CFG.maps).filter(k=>mapOpen(k)&&!CFG.maps[k].hide).slice(0,60);
+  return{heroes:H,lineup:currentLineup().map(s=>s.id),loadout:currentLoadout(),loadMax:loadoutMax(),design:META.design.length,tech:Object.keys(META.tech||{}).length,
+    wallet:META.wallet,clear:clr,maps,diffs:CFG.difficulties.filter(d=>diffOpen(d)).map(d=>d.id+'='+d.name),sv:{lead:svLeadId(),maps:svMaps().filter(k=>mapOpen(k))},runs:META.runs||0,tut:tutOn()?1:0,running:running?1:0}}
+// newRun({map, diff, mode: 'regular' | 'endless' | 'survivor', heroes: [英雄 id…], loadout: [建筑…], seed, oath, merchant, auto, force})：开一局（同出征页「出征」/ 幸存者「开始」）
+function aipNewRun(o){o=o||{};const mode=o.mode||'regular',map=o.map||'wild',diff=o.diff||'normal';
+  if(!CFG.maps[map])return{ok:false,why:'没有这张地图：'+map};const D=CFG.difficulties.find(d=>d.id===diff);if(!D)return{ok:false,why:'没有这个难度：'+diff+'('+CFG.difficulties.map(d=>d.id).join('/')+')'};
+  if(!o.force&&!mapOpen(map))return{ok:false,why:'这张地图还没解锁(force:true 可以硬开)'};if(!o.force&&!diffOpen(D))return{ok:false,why:'这个难度还没开放(force:true 可以硬开)'};
+  const own=id=>META.heroes[advBase(id)]&&META.heroes[advBase(id)].owned;
+  if(o.heroes)for(const id of [].concat(o.heroes))if(!CFG.heroes[id]||(!o.force&&!own(id)))return{ok:false,why:'没有这位英雄：'+id};
+  if(o.tut===false&&META.tut)META.tut.done=true;
+  AIP.ev=[];AIP.all=[];AIP.seen.clear();AIP.mv=null;AIP.go=null;
+  if(running){running=false;hideModal()}
+  if(mode==='survivor'){if(!o.force&&!svMaps().includes(map))return{ok:false,why:'幸存者模式只开这几张图：'+svMaps().join(',')};
+    if(o.heroes){const r=svSqFix(META);r.hero=advBase([].concat(o.heroes)[0])}
+    if(!svNewRun(diff,map))return{ok:false,why:'还没有能当队长的英雄'};
+    svRunStart();if(o.auto!=null)G.sv.auto=!!o.auto;aipDsSnap();return Object.assign({ok:true},aipState())}
+  const lo=o.loadout?[].concat(o.loadout).filter(t=>BDEF[t]&&(o.force||designUnlocked(t))).slice(0,o.force?99:loadoutMax()):undefined;
+  newGame({mode,diff,map,seed:o.seed!=null?(+o.seed>>>0):undefined,oath:!!o.oath,prepEv:o.merchant!==false,heroes:o.heroes?[].concat(o.heroes).map(id=>currentHeroSpec(id)):undefined,loadout:lo});
+  chInit();saveRun();beginRun();G.autoNext=false;aipDsSnap();aipAutoAck();return Object.assign({ok:true},aipState())}
+// 弹窗兜底：读当前弹窗的标题、文字、按钮（接口没专门包的弹窗：誓约、五神法、隐士、剧情……），press(i) 点第 i 个按钮（走游戏自己的点击处理）
+function aipUi(){if(modal.hidden)return{m:null};const B=[...sheet.querySelectorAll('button')].filter(b=>!b.disabled&&b.offsetParent!==null);
+  return{m:modalState,h:aipTxt((sheet.querySelector('h2')||{}).innerHTML||''),x:aipTxt(sheet.innerHTML).slice(0,600),btn:B.slice(0,30).map((b,i)=>({i,t:aipTxt(b.innerHTML).slice(0,40),a:b.dataset.act||'',v:b.dataset.v||b.dataset.i||''}))}}
+function aipPress(i){if(modal.hidden)return{ok:false,why:'没有弹窗'};const B=[...sheet.querySelectorAll('button')].filter(b=>!b.disabled&&b.offsetParent!==null),b=B[+i];if(!b)return{ok:false,why:'没有第 '+i+' 个按钮'};
+  ARM.card=0;const t=aipTxt(b.innerHTML).slice(0,40);b.click();aipAutoAck();return{ok:true,t,m:modalState,d:G?aipDecision():null}}
+// 格子 → 屏幕坐标（CSS 像素，驱动工具点地面用；screenToWorld 的反算）
+function aipScr(tx,ty){const wx=+tx*16+8,wy=+ty*16+8;return{x:Math.round(((wx-CX)*zoom+OX)/DPR),y:Math.round(((wy-CY)*zoom+OY)/DPR),w:innerWidth,h:innerHeight}}
+function aipHold(on){AIP.hold=on==null?true:!!on;if(!AIP.hold&&running&&modal.hidden)paused=false;return{hold:AIP.hold?1:0}}
+function aipSpeed(x){x=+x;if(CFG.speeds.includes(x)){speedMul=x;refreshSpeed()}return{speed:speedMul,ok:CFG.speeds}}
+function aipLog(all){return all?AIP.all.slice(-120):AIP.ev}
+const AIP_HELP={
+  about:'死国开拓者 AI 游玩接口：数据管决策，截图看画面。hold 开着时游戏只在 run / move / goto 里往前走。字段：d 现在要做的决定(k: card 选卡 / ecard 替亡灵选卡 / dev 装置卡 / shop 商人 / chal 挑战卡 / clear 通关 / prep 准备阶段 / ui 其它弹窗 / over 输 / victory 赢)',
+  state:'state() 概况；state("structs"|"heroes"|"enemies"|"next"|"picked"|"stats"|"grid"|"build"|"sv")；grid 可带 {x,y,r}。lv 是真实等级(Lv5+N 已算进去)，up 升级价(null = 满级)，rep 修理价，at = "x,y" 格子',
+  cards:'cards() 看可选的卡；pick(i) 选(不用再确认，亡灵卡 / 装置卡 / 挑战卡 / 通关同样用 pick)；reroll() 花刷新次数重抽',
+  shop:'shop() 看商人(常规：pot:/item:/ware: 三页；幸存者：b0 商品、u0 装置升级)；buy(id)；leave() 离开。常规商人只在准备阶段能买，开下一波时自动离开',
+  act:'act("build 类型 x y [兵种]" | "clear x y" | "up x,y [级数]" | "up keep" | "rep" | "rep x,y" | "sell x,y" | "unit x,y 兵种" | "ai on|off [英雄号]" | "skill 号 [x y] [h=英雄号]" | "wave" | "goto x y" | "stop" | "auto on|off")；失败返回 why；几条用 ; 隔开',
+  run:'run() 快进到下一个决定 / 首领出场 / 主堡 < 50% / 英雄倒下 / 结束；run("wave") 只停在决定和结束；run(秒数)；选项 {sec, ms, base, low, boss:false, hero:false}；返回 stop(停下的原因) 和 ev(这一段的大事)',
+  move:'move(dx, dy, 秒) 按住方向走(北 = dy<0)，goto(x, y, 秒) 走到格子；幸存者模式靠这两个走位',
+  log:'log() 上一段快进的大事；log(true) 最近 120 条',
+  out:'meta() 存档概况(英雄 / 星级 / 等级、可开的地图和难度)；newRun({map, diff, mode, heroes, loadout, seed, oath, merchant, auto, force})',
+  misc:'ui() / press(i) 读 / 点任意弹窗；hold(true|false) 保持暂停 / 实时；speed(1|2|3…)；scr(x, y) 格子的屏幕坐标'};
+function aipHelp(k){return k&&AIP_HELP[k]?AIP_HELP[k]:AIP_HELP}
+window.__ai={help:aipHelp,state:aipState,cards:aipCards,pick:aipPick,reroll:aipReroll,shop:aipShop,buy:aipBuy,leave:aipLeave,act:aipAct,run:aipRun,move:aipMove,goto:aipGoto,log:aipLog,
+  meta:aipMeta,newRun:aipNewRun,ui:aipUi,press:aipPress,scr:aipScr,hold:aipHold,speed:aipSpeed};
+for(const k in window.__ai){const f=window.__ai[k];window.__ai[k]=(...a)=>aipCall(f,a)}
 
 </script>
 
