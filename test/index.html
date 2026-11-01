@@ -55200,7 +55200,7 @@ function ztInS(s,d,o){if(!(d>0)||o.tru||o.dot||o.ztT)return d;let i=o.src>=0?o.s
   ztLs(i,hurtS(s,d,{tru:true,src:o.src,sid:E.id[i],kt:ZT_T,melee:o.melee,mix:o.mix,rd:o.rd,shK:o.shK,ztT:1}));return 0}
 // ================= 钩子 =================
 function ztTick(dt){if(G.phase!=='wave')return;if(ZT_MK.size){ZT_DT=dt;ZT_MK.forEach(ztMkStep)}}
-function ztReset(){for(const u of ZT_MK.keys())if(!u.dead)bfDel(u,'ztMark');ZT_MK.clear();ZT_X.clear();BF_NAME.ztHide='立隐式(免伤)';BF_NAME.ztGuard='潜龙式(架刀)';F1_BN.ztMark='刀痕(真田武)'}
+function ztReset(){for(const u of ZT_MK.keys())if(!u.dead)bfDel(u,'ztMark');ZT_MK.clear();ZT_X.clear()}
 function ztWaveEnd(){for(const z of G.zones)if(z.k==='ztMoonZ'||z.k==='ztQiZ')z.dead=true;ztReset()}
 // 世界层：守军身上的刀痕（层数个小红点）；立隐式的黑雾残影、潜龙式架刀时的青色龙环、出渊后的赤金刀气
 function ztDraw(cx0,cy0,cx1,cy1){const tm=G.time;
@@ -56494,8 +56494,7 @@ const K_LYR1=C('#ff8a3a'),K_LYR2=C('#ffe27a');
 // 偷铜币的飘字（-N）
 zoneDef('lyuTxt',{tick(z){if(z.t>=z.life)z.dead=true},draw(z){const u=z.t/z.life;pixNum(z.v,z.x,z.y-u*10,u>0.6?(1-u)/0.4:1)}});
 // ================= 选中亡灵的面板（ui/esel.eStatus 调）、头顶名字 =================
-let LYU_BFN=false;
-function lyuSt(i,add){if(!LYU_BFN&&typeof BF_NAME==='object'){LYU_BFN=true;for(let b=1;b<=6;b++)BF_NAME['lyRich'+b]='宝物·'+LYU_RN[b]}
+function lyuSt(i,add){   // 宝物光环 lyRich1～6 的 buff 名字在 ui/bfn_names 登记
   const t=E.t[i],K=LYU_K[t],now=G.time;
   if(K&&K.rich){const m=LYA.rk[i],P=[];for(let b=1;b<=7;b++)if(m&(1<<b))P.push(`${LYU_RN[b]}：${LYU_RD[b]}`);add('lyRich','三件宝物',0,Infinity,P.join('；')+'(群体效果对首领无效)')}
   if(K&&K.thief&&LYA.st[i]){const s=LYU_OBJ[i];if(s&&!s.dead)add('lyThief',LYA.st[i]===1?'标记建筑':'正在偷',1,LYA.tm[i],`盯上了「${s.cfg.name}」，${LYA.st[i]===1?'落地后':''} ${K.thief.steal} 秒内不击败就会被偷走`)}
@@ -61246,7 +61245,7 @@ function footCtl(s,g,dt,spd){footSlot(g,s);const qx=OBF_SX,qy=OBF_SY,dP=Math.hyp
 // 士兵循环里：由阵型接管的兵（锥形、方阵、圆阵）
 function formCtl(s,dt,spd){const g=s.fg;if(!g||g.dead||!FORM_CTL[g.kind])return false;return g.kind==='wedge'?wedgeCtl(s,g,dt,spd):footCtl(s,g,dt,spd)}
 // —— 拦截禁令：大盾卫身边 catchR 像素内飞过的亡灵弹道打在它身上（engine/enemy.updateEProj 调用；返回 true = 拦下了）——
-function icptHit(p){for(const u of G.icptL){if(u.dead)continue;const R=u.icpt.catchR;if(Math.abs(u.x-p.x)>=R||Math.abs(u.y-6-p.y)>=R)continue;
+function icptHit(p){for(const u of G.icptL){if(u.dead||!u.icpt)continue;const R=u.icpt.catchR;if(Math.abs(u.x-p.x)>=R||Math.abs(u.y-6-p.y)>=R)continue;   // 0.12.7h 修：源能屏障、边军护盾没了会把 icpt 设成 null，G.icptL 下次重建前读到就崩（代理 BFN 探测发现）
     if(p.aoe){eExplode(p);p.dead=true;return true}
     hurtF(u,p.dmg,{crit:p.crit,src:p.src,sid:p.id,mix:p.mix,magic:p.magic,chill:p.chill});
     if(FXK>0&&inViewPt(u.x,u.y))for(let k=0;k<3;k++)pp(p.x,p.y,0,vr(-18,18),vr(-14,4),vr(6,12),120,0.3,'#f3d47c',1,0,0);
@@ -73406,11 +73405,13 @@ function signState(){const m=monthKey();if(!META.sign||META.sign.m!==m)META.sign
 const signedToday=()=>signState().days.includes(nowD().getDate());
 const DIFF_IDS=CFG.difficulties.map(d=>d.id);
 // 奖励：资源直接进钱包（金币不算每日上限）；souls = 随机一位已有英雄的英雄之魄；hsouls = 指定英雄 [id, 数量]
+const GR_IT=[];   // 0.12.7h giveReward 发出去的东西（ui/rw_pop.rwGot 拿去做「图标 + 数字」弹窗）：[{k 'soul' / 'ware' / 'res', id, n}]
 function giveReward(r){const out=[];for(const k in r){const v=r[k];
-    if(k==='souls'){const ids=shopHeroes();if(!ids.length)continue;const id=rpick(ids);META.souls[id]=(META.souls[id]||0)+v;out.push(`${CFG.heroes[id].name}的英雄之魄 ×${v}`)}
-    else if(k==='hsouls'){const[id,n]=v;if(!CFG.heroes[id])continue;META.souls[id]=(META.souls[id]||0)+n;out.push(`${CFG.heroes[id].name}的英雄之魄 ×${n}`)}
-    else if(k==='ware'||k==='core'){const[w,n]=v;if(!CFG.wares.items[w])continue;trAdd(w,n);out.push(`${CFG.wares.items[w].name} ${n}`)}   // ware / core：0.12.2 地区物资、核心特产 [id, 数量]
-    else{META.wallet[k]=(META.wallet[k]||0)+v;out.push(`${k} ${v}`)}}
+    if(k==='souls'){const ids=shopHeroes();if(!ids.length)continue;const id=rpick(ids);META.souls[id]=(META.souls[id]||0)+v;out.push(`${CFG.heroes[id].name}的英雄之魄 ×${v}`);GR_IT.push({k:'soul',id,n:v})}
+    else if(k==='hsouls'){const[id,n]=v;if(!CFG.heroes[id])continue;META.souls[id]=(META.souls[id]||0)+n;out.push(`${CFG.heroes[id].name}的英雄之魄 ×${n}`);GR_IT.push({k:'soul',id,n})}
+    else if(k==='ware'||k==='core'){const[w,n]=v;if(!CFG.wares.items[w])continue;trAdd(w,n);out.push(`${CFG.wares.items[w].name} ${n}`);GR_IT.push({k:'ware',id:w,n})}   // ware / core：0.12.2 地区物资、核心特产 [id, 数量]
+    else{META.wallet[k]=(META.wallet[k]||0)+v;out.push(`${k} ${v}`);GR_IT.push({k:'res',id:k,n:v})}}
+  if(GR_IT.length>200)GR_IT.splice(0,GR_IT.length-200);
   v5fEarnR(r);return out}   // 0.12.5 代理 F：合计赚取资源（game/v5f_rec）
 const rewardText=r=>Object.entries(r).map(([k,v])=>k==='souls'?`随机已有英雄之魄 ×${v}`:k==='hsouls'?`${CFG.heroes[v[0]]?CFG.heroes[v[0]].name:'?'}的英雄之魄 ×${v[1]}`:(k==='ware'||k==='core')&&Array.isArray(v)?`${CFG.wares.items[v[0]]?CFG.wares.items[v[0]].name:v[0]} ${v[1]}`:`${k} ${v}`).join('、');
 // 0.12.2（用户定）签到、日常的资源按已通关最高阶放大（金币、英雄之魄不乘）；累计签到 7 / 14 天、签满另给一份已通关地区的核心特产
@@ -77856,7 +77857,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=200,GAME_BUILD="f5c620d",GAME_BUILT=1793566471147,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=200,GAME_BUILD="f825c2d",GAME_BUILT=1793568935543,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -78183,14 +78184,14 @@ function hideModal(){modal.hidden=true;modalState=null;if(running)paused=false}
 let selE=null,selEKey='';
 const eSelOK=()=>!!selE&&selE.i>=0&&E.alive[selE.i]&&E.id[selE.i]===selE.id;
 function selectEnemy(j){selE={i:j,id:E.id[j],open:null};selected=null;if(selUnit){selUnit=null;cam.follow=false;btnFollow.hidden=false}refreshSel(true)}
-// 统一 buff 的名字（engine/buff 的 id）；没登记的显示 id
+// 统一 buff 的名字（engine/buff 的 id）；显示时按 ui/f1_fbuf.f1BfName 查（这张表 → F1_BN → 英雄技能名），没登记的显示 id；0.12.7 补的名字在 ui/bfn_names
 const BF_NAME={drumAwe:'威慑(战鼓)',fsApocHit:'天启(易伤)',fsApocMark:'天启印记',akSnow:'寒霜(减速)',akDom:'支配(技能变慢)',akProph:'预言',fsRoad:'圣道',fsProphE:'先知庇护(免伤)',fsStatue:'石像(减伤)',bpNoMar:'无元帅',m1Para:'麻痹电击',m1Nerve:'神经损伤',m1Brit:'脆弱(冰冻)',m1Hard:'坚冰(冰冻)'};   // m1*：M1 加，v0.10.11 寒冰 / 雷电阵塔三阶
 const BF_LBL=['伤害','伤害(独立)','攻速','移速','减伤','免伤','易伤','防御','每秒回复','技能冷却速度','装填','虚弱','物理虚弱','法术虚弱'];   // 虚弱：M1 加（engine/m1_weak）
 const bfPct=v=>(v>0?'+':'')+Math.round(v*1000)/10+'%';
 // 一只亡灵身上的全部状态：{k 键, n 名字, neg 减益, t 剩余秒（Infinity = 一直有）, s 层数, d 详情}
 function eStatus(i){const L=[],now=G.time,add=(k,n,neg,t,d,s)=>L.push({k,n,neg,t,d,s:s||0});
   const B=EBL[i];if(B&&B.id===E.id[i])for(const b of B.L){const v=b.v,parts=[];for(let k=0;k<BF_TK;k++)if(v[k])parts.push(BF_LBL[k]+' '+(k===7?(v[k]>0?'+':'')+Math.round(v[k]*10)/10:k===8?bfPct(v[k])+' 最大生命':bfPct(v[k])));
-    add('bf:'+b.id,BF_NAME[b.id]||b.id,b.neg,b.u-now,parts.join('，')||'没有数值效果')}
+    add('bf:'+b.id,f1BfName(b.id),b.neg,b.u-now,parts.join('，')||'没有数值效果')}
   if(E.stun[i]>0)add('stun','眩晕',1,E.stun[i],'不能移动、攻击、放技能');
   if(E.frz[i]>0)add('frz','冰冻',1,E.frz[i],'不能移动、攻击');
   if(E.root[i]>0)add('root','定身',1,E.root[i],'不能移动，可以攻击');
@@ -78241,7 +78242,7 @@ const eSelHide=()=>{const b=$('#selBuf');if(b)b.hidden=true};
 // ---------- v0.10.11 我方单位身上的统一 buff（用户 2026-10-20 要：虚弱、减伤、易伤、攻速这些要看得到；照亡灵详情 ui/esel 的名字表、数值写法）----------
 // 选中士兵：面板里一排小牌子（点开看数值，同亡灵）；英雄：左上头像下面一排小牌子，只显示操控的英雄（G.hero），点一下弹提示看数值
 // 调用点：ui/hud.unitSelPanel → f1SelBuf；refreshSel 别的分支 → f1SelHide；updateHud → f1HeroBuf
-// 名字：先查亡灵那张表 BF_NAME，再查这张，再查英雄技能名（技能给的 buff 大多用技能的键当 id），都没有显示 id
+// 名字：先查亡灵那张表 BF_NAME，再查这张，再查英雄技能名（技能给的 buff 大多用技能的键当 id），都没有显示 id；亡灵面板（ui/esel）也用 f1BfName；0.12.7 补的名字在 ui/bfn_names
 const F1_BN={m3Parts:'零件更换',m3Bar:'机械屏障',m2Guard:'光明护佑',m2Osc:'魔力震荡',mgcB:'魔力爆发',t1Mech:'机电装置',jkAmb:'伏击',foDrRobe:'正法袈裟',edPhantom:'虚影',
   fsSnow:'暴雪',fsWhirl:'旋风',fsProph:'天启预言',fsArrDie:'死亡大阵',jtCTire:'扰敌疲兵',bcHy:'失温',bcGolemSh:'寒冰盾甲',cmFuryW:'怒海狂澜',cmFuryL:'怒海狂澜'};
 const f1BfName=id=>BF_NAME[id]||F1_BN[id]||(CFG.skills[id]&&CFG.skills[id].name)||id;
@@ -78272,6 +78273,30 @@ function f1HeroBuf(){const h=G&&G.hero;
   if(!L.length){if(!F1_HB.hidden){F1_HB.hidden=true;F1_HK=''}return}F1_HB.hidden=false;
   const n=L.length>F1_HN?F1_HN-1:L.length,html=L.slice(0,n).map(x=>f1Chip(x,false)).join('')+(L.length>n?`<button type="button" class="bfc" data-bk="more">+${L.length-n}</button>`:'');
   if(html!==F1_HK){F1_HK=html;F1_HB.innerHTML=html}}
+
+// ---------- 0.12.7 代理 BFN：统一 buff 的显示名字（用户 2026-11-01：很多 buff 名字直接显示的是字段名）----------
+// 亡灵身上的、两边都会出现的放 BF_NAME（ui/esel），只在我方单位身上的放 F1_BN（ui/f1_fbuf）；两边面板都按 f1BfName 查，所以放哪张表都看得到
+// 名字优先用游戏里已经给玩家看的名字（技能、卡、装备、科技、亡灵能力），括号里写效果；新加 buff 记得在这里起名字，tools/tests/t_bfn.py 会查
+Object.assign(BF_NAME,{
+  aiTide1:'源能潮汐(加速)',aiTide2:'源能潮汐(回复)',   // 艾斯「源能潮汐」，源能之城的亡灵版同 id
+  bjCut:'星阳白虎骑(破甲)',bwCut:'铁炮(削防)',bwVc:'赤备(易伤)',bwWk:'影武者(虚弱)',bwOni:'恶鬼面具(虚弱)',   // 边军营、布武阵屋的兵打亡灵
+  s1Leaf:'飞叶矢(破甲)',s2Vc:'弱点洞悉(易伤)',s2Wk:'致残狙击(虚弱)',s4Vc:'火枪骑射(易伤)',s4Wk:'致残炮弹(虚弱)',s4Pu:'惩戒之力',   // 兵营三阶
+  t1Brk:'破甲弩箭(破甲)',t2RA:'破甲箭矢(削防)',t2HB:'重弩炮塔(削防)',t2HB3:'破障弩箭(削防)',tfWeak:'玄钢兽夹(虚弱)',tfCurse:'诅咒兽夹(易伤)',gwlRej:'拒敌千里',   // 塔楼、陷阱、城墙
+  bkVuln:'易伤(技能)',loSw:'五神斗兵·剑(易伤)',tmTuV:'灵狐突袭(易伤)',xgCc:'摧城玄炮(易伤)',nbGBk:'破障骑枪(减伤降低)',nbGRd:'裂伤之铳(易伤)',nbGSn:'夺锐神弓(伤害降低)',obBCS:'指挥剑(易伤)',   // 英雄技能、装备特效
+  elWeak:'精英(虚弱)',elCorr:'腐蚀药剂',es2Disc:'刺耳音波(虚弱)',   // 精英
+  chDragon:'尸尸如龙(冷却)',chPozhu:'势如破竹',esac:'献祭狂热(攻速)',   // 挑战、亡灵卡
+  cdAura:'征服光环(伤害)',cdOrder:'统御指令',cdConq:'征服指令(伤害)',yyRaven:'鸦影法师(伤害)',foMind:'正念僧光环(伤害)',foAura:'尊者光环',   // 腐化教堂、幽影高原、佛窟
+  jtBMercy:'神曰慈悲(免伤)',jtCDrill:'操练练兵',jtCSwift:'兵贵神速',jtCLast:'背水一战',jtCBurn:'破釜沉舟',jtCGate:'一夫当关(减伤)',jtCRage:'不败(濒死)',   // 教皇宫
+  kyInsp:'鼓舞众生',tgShelter:'风羽庇护',laWnAura:'维尔纳光环',laScale:'龙鳞反甲',laAkGuard:'熔岩护体(减伤)',   // 九尾、天狗、熔岩深渊
+  lybAbs:'绝对防御',lybBless:'龙神恩赐',lybWms:'迅雷风翼龙(移速)',nbBHorse:'御风天马',nbBQk:'震波之炮(增伤)',   // 龙神遗迹、守望长城
+  obBCmd:'统帅指令',obUDr:'统领光环(减伤)',skQueen:'鹰身女王(移速)',vcBatD:'百蝠夜行·冲(增伤)',vcBatR:'百蝠夜行·绕(减伤)',vcReso:'魔力共鸣',   // 黑曜要塞、天空之城、吸血鬼城堡
+  wyStance:'风林火山',xgDisp:'分散火力(减伤)',xgFoc:'集中火力(增伤)',ztHide:'立隐式(免伤)',ztGuard:'潜龙式(架刀)'});   // 武馆、玄钢山城、真田（原来在 maps/zt_sanada.ztReset 里登记）
+Object.assign(F1_BN,{
+  cyOv:'过载',cyOvD:'过载(冷却)',cyBar:'源能屏障(减伤)',cyFeed:'源能输送',s4Bl:'庇佑之力(减伤)',s4Hk:'圣堂之力(减伤)',ydvPow:'源能动力',   // 兵营、建筑给我方的
+  elLeadA:'指挥(伤害)',elCmdA:'统御(攻速)',elWallA:'铜墙铁壁(减伤)',elTempA:'兵刃淬炼',elMechA:'工业之心(攻速)',elSongA:'赞颂之歌(余音)',elWarS:'战歌(余音)',elNat:'自然亲和(移速)',elElix:'强化药剂',es2Bn:'军旗',   // 精英
+  en2OptH:'机械优化(半效)',wnLead:'空中领袖',obBAF:'黑曜陆军旗',obBRF:'黑曜炮军旗',obBHM:'黑曜陆军帅甲',obBAM:'黑曜炮军帅甲',obBXC:'闪电十字',   // 英雄技能、装备特效
+  nbBSn:'夺锐之矢(伤害降低)',nbBBk:'破障之枪(减伤降低)',nbBRd:'裂伤之铳(易伤)',nbBFall:'天狼嗷啸(坠落)',ztMark:'刀痕(真田武)',svUp:'生生不息'});   // 首领打我方的；svUp 原来在 ui/survivor.svUiTog 里登记
+for(let b=1;b<=6;b++)BF_NAME['lyRich'+b]='宝物·'+LYU_RN[b];   // 龙神遗迹氪金战士的宝物光环（原来第一次打开亡灵面板才登记，头一下会显示 id）
 
 // ---------- v0.8.18 局内指挥面板（用户定）：点「指令」打开，塔楼 / 兵营 / 英雄三个页签，上下滑动 ----------
 // 塔楼：按种类分，切换选目标的方式（锁定的塔不变）；兵营：跟随（选英雄）、驻守（选驻守点）、出击（选刷新点或自由）；英雄：驻守（选驻守点）、出击（选刷新点或自由）
@@ -79101,11 +79126,11 @@ function onSheetClick(e){
   else if(a==='scolall'){const got=collectAll();showHub('settle');if(rwShow('领取全部产出',got))sfx('pick');else toast('暂时没有可领取的产出')}
   else if(a==='stest'){for(const k of['建材','银币','科研点','设计点'])META.wallet[k]+=k==='银币'?100000:10000;saveMeta();showHub(hubTab)}   // v0.5.9（用户定）1000 → 10000
   else if(a==='tcat'){techCat=v;showHub('tech')}
-  else if(a==='dsign'){const r=doSign();if(r.err)toast(r.err);else{sfx('pick');toast('签到成功：'+r.got.join('、'))}showHub('daily')}   // v0.5.1 日常
-  else if(a==='btyclaim'){const i=v.lastIndexOf('|'),r=btyClaim(v.slice(0,i),+v.slice(i+1));if(r.err)toast(r.err);else{sfx('pick');toast('领取：'+r.got.join('、'))}showHub('daily')}   // 0.12.2 地区悬赏
+  else if(a==='dsign'){GR_IT.length=0;const r=doSign();if(r.err)toast(r.err);else{sfx('pick');if(!rwGot('签到成功'))toast('签到成功：'+r.got.join('、'))}showHub('daily')}   // v0.5.1 日常
+  else if(a==='btyclaim'){GR_IT.length=0;const i=v.lastIndexOf('|'),r=btyClaim(v.slice(0,i),+v.slice(i+1));if(r.err)toast(r.err);else{sfx('pick');if(!rwGot('悬赏奖励'))toast('领取：'+r.got.join('、'))}showHub('daily')}   // 0.12.2 地区悬赏
   else if(a==='btytog'){const i=+v;if(!BTY_OPEN)BTY_OPEN=new Set();if(BTY_OPEN.has(i))BTY_OPEN.delete(i);else BTY_OPEN.add(i);showHub('daily')}   // 0.12.2 悬赏按地区阶展开 / 收起
-  else if(a==='btyall'){const r=btyClaimAll();if(r.got.length){sfx('pick');toast('领取：'+r.got.join('、'))}showHub('daily')}
-  else if(a==='dclaim'){const r=dailyClaim(+v);if(r.err)toast(r.err);else{sfx('pick');toast('领取：'+r.got.join('、'))}showHub('daily')}
+  else if(a==='btyall'){GR_IT.length=0;const r=btyClaimAll();if(r.got.length){sfx('pick');if(!rwGot('悬赏奖励'))toast('领取：'+r.got.join('、'))}showHub('daily')}
+  else if(a==='dclaim'){GR_IT.length=0;const r=dailyClaim(+v);if(r.err)toast(r.err);else{sfx('pick');if(!rwGot('任务奖励'))toast('领取：'+r.got.join('、'))}showHub('daily')}
   else if(a==='hfxok')hfxOk();   // 0.12.6 英雄效果弹窗（ui/hfx_pop）
   else if(a==='dswap'){const r=dailySwap(+v);if(r.err)toast(r.err);else sfx('pick');showHub('daily')}
   else if(a==='dref'){const r=dailyRefresh();if(r.err)toast(r.err);else sfx('pick');showHub('daily')}
@@ -80446,7 +80471,7 @@ function ctkHTML(){ctkCss();const S=ctkSt(),C=CTK();
 function ctkWrap(h){const e='</div></div>';let x='';try{x=ctkHTML()}catch(err){console.warn('ctk',err);return h}return h.endsWith(e)?h.slice(0,-e.length)+x+e:h+x}
 function ctkAct(a,v){const i=+v;
   if(a==='ctklock'){const r=ctkLock(i);if(r.err)toast(r.err);else{sfx('pick');toast(r.lock?'已锁定：领取奖励前不会刷新':'已取消锁定')}}
-  else if(a==='ctkclaim'){const r=ctkClaim(i);if(r.err)toast(r.err);else{sfx('pick');toast('领取：'+r.got.join('、'))}}
+  else if(a==='ctkclaim'){GR_IT.length=0;const r=ctkClaim(i);if(r.err)toast(r.err);else{sfx('pick');if(!rwGot('任务奖励'))toast('领取：'+r.got.join('、'))}}   // 0.12.7h（用户定）图标 + 数字弹窗
   showHub('daily')}
 HELP.chtask=()=>{const C=CTK();return{t:'挑战任务',b:hpL([`每批 ${C.n} 个，每 ${C.hours} 小时整批刷新；点「锁定」的任务到领取奖励为止不刷新，完成了还没领的也不会刷掉`,
   `要求：在指定地图打${DIFFS[C.diff].name}难度的无尽模式，开局选的挑战卡分数合计不低于要求(出征设置里打开「挑战」)，并守住指定轮数(一轮一般 20 波，有的图 25 波)；中途结算、失败都按已经守住的波数算，一局可以同时完成几个`,
@@ -82847,6 +82872,15 @@ function rwShow(title,got,note){const ks=Object.keys(got||{}).filter(k=>got[k]>0
   el.innerHTML=`<div class="rwbg" data-rwx="1"></div><div class="mpop oppop elpop rwpop" role="dialog"><div class="oph"><b>${title}</b><button class="px sq" type="button" data-rwx="1" aria-label="关闭">×</button></div><div class="opb">${note?`<p class="meta">${note}</p>`:''}
     <div class="rwg">${ks.map(k=>`<div class="rwt" title="${rwName(k)} ${got[k]}">${rwIco(k)}<b>${Math.round(got[k])}</b><span>${rwName(k)}</span></div>`).join('')}</div></div></div>`;
   el.addEventListener('click',e=>{if(e.target.closest('[data-rwx]')){e.stopPropagation();rwClose()}});document.body.appendChild(el);return true}
+// 0.12.7h（用户定：任务 / 签到 / 悬赏领取、幸存者开宝箱也用这种「图标 + 数字」弹窗）：rwShowL(标题, [{ico 图标 HTML, n 数量（数字或「×3」这样的字）, nm 名字}], 说明)
+function rwShowL(title,L,note){L=(L||[]).filter(x=>x&&x.n!==0&&x.n!=null);if(!L.length)return false;rwRm();
+  const el=document.createElement('div');el.id='rwpop';const num=n=>typeof n==='number'?Math.round(n):n;
+  el.innerHTML=`<div class="rwbg" data-rwx="1"></div><div class="mpop oppop elpop rwpop" role="dialog"><div class="oph"><b>${title}</b><button class="px sq" type="button" data-rwx="1" aria-label="关闭">×</button></div><div class="opb">${note?`<p class="meta">${note}</p>`:''}
+    <div class="rwg">${L.map(x=>`<div class="rwt" title="${x.nm} ${num(x.n)}">${x.ico||'<i class="wic"></i>'}<b>${num(x.n)}</b><span>${x.nm}</span></div>`).join('')}</div></div></div>`;
+  el.addEventListener('click',e=>{if(e.target.closest('[data-rwx]')){e.stopPropagation();rwClose()}});document.body.appendChild(el);return true}
+// giveReward（game/daily）发出去的东西记在 GR_IT（[{k 种类, id, n}]）；rwGot 把它变成弹窗并清空
+function rwGot(title,note){const L=[],m=new Map();for(const x of GR_IT.splice(0)){const key=x.k+':'+x.id;const o=m.get(key);if(o)o.n+=x.n;else{const y={k:x.k,id:x.id,n:x.n};m.set(key,y);L.push(y)}}
+  return rwShowL(title,L.map(x=>x.k==='soul'?{ico:`<img class="wic rc" alt="" src="${heroIcon(x.id,1)}">`,n:x.n,nm:(CFG.heroes[x.id]?CFG.heroes[x.id].name:'')+'之魄'}:{ico:rwIco(x.id),n:x.n,nm:rwName(x.id)}),note)}
 
 // ---------- 0.12.2 专属兑换码、纪念勋章的界面（代理 5）：设置 → 存档的「存档 ID」一行、勋章墙的「纪念」页、收获弹窗里碎片和勋章的图标 ----------
 // 设置 → 存档：兑换码上面一行（ui/menus 调 rdIdRow；「复制」= data-act rdcopy → rdCopyId）
@@ -82972,7 +83006,7 @@ img.svdvi{width:24px;height:24px;image-rendering:pixelated;vertical-align:-5px;m
 .svres .stats{margin:8px 0}.svnew{color:#ffd54a}`;
   document.head.appendChild(st)}
 // 每次 hkBuild（开局、读档、英雄上场）都由 game/survivor 的 svOnK 调：v = 这一局是不是幸存者模式
-function svUiTog(v){if(!document.body)return;if(v){svCss();svHudEl();if(typeof F1_BN==='object')F1_BN.svUp='生生不息'}document.body.classList.toggle('svOn',!!v)}
+function svUiTog(v){if(!document.body)return;if(v){svCss();svHudEl()}document.body.classList.toggle('svOn',!!v)}
 function svHudEl(){if(SV_HUD&&SV_HUD.isConnected)return SV_HUD;const P=document.getElementById('stats');if(!P)return null;
   SV_HUD=document.createElement('div');SV_HUD.id='svHud';SV_HUD.innerHTML='<div class="svl"><b class="svt">0:00</b><span class="svlv"></span><span class="svtr"></span></div><div class="svl2"><span class="svcp">'+svIcoH('coin','svci')+'<i>0</i></span><span class="svdv"></span></div><div class="svx"><i></i></div><div class="svhp"><i></i><span></span></div><div class="svxp"><i></i><span></span></div><button class="svelb" type="button">队员 ▸</button><div class="svel" hidden></div>';P.prepend(SV_HUD);
   SV_DVK='';SV_HUD.querySelector('.svelb').addEventListener('click',e=>{e.stopPropagation();const L=SV_HUD.querySelector('.svel');L.hidden=!L.hidden;e.currentTarget.textContent=L.hidden?'队员 ▸':'队员 ▾';SV_ELN=-1;svHudSync()});return SV_HUD}
@@ -83141,6 +83175,13 @@ function svLootHTML(){const C=svBoxC(),S=svBoxSt(),D=svBoxDay(),all=Object.keys(
     <p class="meta svday">${CFG.maps[SV_MENU.map]?CFG.maps[SV_MENU.map].name:''} · ${DIFFS[SV_MENU.diff]?DIFFS[SV_MENU.diff].name:''}今天还能拿：${C.order.filter(k=>C.daily[k]!=null).map(k=>`${svBoxIco(k)} ${svBoxLeft(k,SV_MENU.map,SV_MENU.diff)} / ${svBoxCap(k,SV_MENU.diff)}`).join('　')}　${svKeyIco()} ${svBoxLeft('key',SV_MENU.map,SV_MENU.diff)} / ${svBoxCap('key',SV_MENU.diff)}　${svBoxIco('iron')} 不限</p>
     ${tabs}${keys.length?keys.map(row).join(''):'<p class="meta">还没有宝箱</p>'}</div>`}
 // —— 弹窗 ——
+// 0.12.7h 开宝箱的收获弹窗：同开拓地领取的「图标 + 数字」（ui/rw_pop.rwShowL）
+function svBoxRw(o){const L=[],img=u=>`<img class="wic rc" alt="" src="${u}">`;
+  for(const k in o.res)L.push({ico:rwIco(k),n:o.res[k],nm:k});if(o.gold)L.push({ico:rwIco('金币'),n:o.gold,nm:'金币'});
+  for(const w in o.wares)if(CFG.wares.items[w])L.push({ico:rwIco(w),n:o.wares[w],nm:CFG.wares.items[w].name});
+  const cnt=a=>{const m={};for(const b of a||[])m[b]=(m[b]||0)+1;return m};{const m=cnt(o.items);for(const b in m)L.push({ico:img(itemIcon({base:b})),n:m[b],nm:itemDef({base:b}).name})}{const m=cnt(o.books);for(const b in m)L.push({ico:img(itemIcon({base:b,book:true})),n:m[b],nm:`《${bookDef(b).name}》`})}
+  for(const f in o.repF||{})L.push({ico:elCrI(f),n:o.repF[f],nm:((elBlood()[f]||{}).name||'')+'声望'});for(const h in o.souls||{})L.push({ico:img(heroIcon(h,1)),n:o.souls[h],nm:CFG.heroes[h].name+'之魄'});if(o.keys)L.push({ico:svKeyIco(),n:o.keys,nm:'黄金宝箱钥匙'});
+  return rwShowL(`开了 ${o.n} 个${svBoxC().kinds[o.k].name}`,L,o.keyLost?`开出 ${o.keyLost} 把钥匙，这张图今天的上限满了没拿到`:'')}
 function svHubPop(){if(!SVH_POP)return'';let T='',body='';
   if(SVH_POP==='hero'){T='换队长';const lid=svLeadId(),L=HIDS.filter(id=>!CFG.heroes[id].advOf&&META.heroes[id]&&META.heroes[id].owned);
     body=`<div class="svpick">${L.map(id=>{const sp=currentHeroSpec(id);return`<button class="px${id===lid?' on':''}" type="button" data-act="svxHeroP" data-v="${id}"><img alt="" src="${heroIconS(sp.id,3)}"><span><b>${CFG.heroes[sp.id].name}</b>${starsHTML(sp.star)}</span></button>`}).join('')}</div>`}
@@ -83161,7 +83202,7 @@ function svHubAct(a,v){
   else if(a==='svxHeroP'){const r=svSqFix(META);r.hero=v;saveMeta();SVH_POP=null}
   else if(a==='svxSqT'){const err=svSqTog(v);if(err)toast(err)}else if(a==='svxSqUp')svSqUp(v);
   else if(a==='svxReg')SVH_REG=v;   // 0.12.7b 战利品按地区看
-  else if(a==='svxBoxO'||a==='svxBoxA'){const o=svBoxOpen(v,a==='svxBoxA'?'all':1);if(o){SVH_RES=o;SVH_POP='res';sfx('pick')}}
+  else if(a==='svxBoxO'||a==='svxBoxA'){const o=svBoxOpen(v,a==='svxBoxA'?'all':1);if(o){sfx('pick');if(!svBoxRw(o)){SVH_RES=o;SVH_POP='res'}}}   // 0.12.7h（用户定）统一用收获弹窗
   else return false;return true}
 
 /* ---------- 0.12.7 代理 SVDV：幸存者模式的「伤害统计」表（数据 game/sv_st2.svSt2Rows；ui/survivor 的暂停页 svPauseOpen、结算页 svResult 各放一块）----------
