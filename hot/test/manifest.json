@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.12.7e",
- "code": 198,
- "size": 17558760,
- "sha256": "1699f950f7ec3c031693016caa2ee3e1fcd02ed05ce90b17297b5e449ec6ee81",
+ "ver": "0.13.0a",
+ "code": 205,
+ "size": 17697299,
+ "sha256": "bec818042af4ba9e5db48c004174744d73c968a3da93e2c47326c013c7a5e6da",
  "minLoader": 1,
- "sig": "kI522mFaFhrvAUqnfesCfdWFSLoy+pETJpEE10wswblb7YoCZFmveRVvSsy1VA5XS9puUei7UC2VTlttVs2b6Q==",
- "note": "0.12.7e 测试版：幸存者模式平衡改成以强英雄为准、黄虎不再从不老之泉掉",
- "at": "2026-11-01 16:32 UTC"
+ "sig": "RhwxFS9hhDQ3Lx7p5Mw8t9264eAj9DCFDDZCuuiLO1Itvzyt2xCD5joGRZa/zRKLMqLcvrz4hcG2TYyIid2cKA==",
+ "note": "0.13.0a 测试版：新剧情「荒野」换成定稿的荒野篇（6 章），剧情对话里有了选项和分支",
+ "at": "2026-11-02 15:15 UTC"
 }
