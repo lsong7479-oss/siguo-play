@@ -22760,6 +22760,10 @@ CFG.official={site:'https://lsong7479-oss.github.io/siguo-play/', ver:'https://l
   hosts:['lsong7479-oss.github.io','localhost','127.0.0.1',''], hostSfx:['.itch.zone','.itch.io','.hwcdn.net'], checkDelay:4, timeout:10, guard:0.5};   // checkDelay 进游戏几秒后才在后台查（不挡进游戏）；guard 弹窗出来后几秒内点击无效（防误触，用户定 0.5 秒）
 Object.assign(CFG.settingsDefault,{offAuto:true});   // 设置「自动检查更新」
 
+// 0.13 录制行动（ui/rec.js）：设置「录制行动」默认关；max = 一局最多记多少行（超了从最早的操作删，开头的说明留着）
+Object.assign(CFG.settingsDefault,{rec:false});
+CFG.rec={max:4000};
+
 // ---------- 0.12.7 代理 HOT 加：游戏在线热更新（逻辑 game/hot.js、界面 ui/hot.js、加载器 hot_loader.html、签名 tools/hot_sign.py、发布 tools/hot_pub.py） ----------
 // 只有安卓包 / 电脑版（app/www/index.html 是加载器）才热更；网页版是整页、不热更。频道按 GAME_TAG：测试版 → test，稳定版 → stable
 // pub：正式公钥（ECDSA P-256，SPKI 的 base64；私钥只在 GitHub 仓库密钥 HOT_SIGN_KEY 里）。build.py 也从这一行读它写进加载器，改公钥只改这里
@@ -77949,7 +77953,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.0a',GAME_TAG='测试版',GAME_CODE=205,GAME_BUILD="1835d41",GAME_BUILT=1793632729284,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.0a',GAME_TAG='测试版',GAME_CODE=205,GAME_BUILD="00dc715",GAME_BUILT=1793638707665,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -79081,6 +79085,8 @@ function showSettings(from){if(from)setFrom=from;const K=SET.keys;
       ${tg('autoECard','自动确认亡灵选卡','亡灵选卡弹出 1 秒后自动跳过；噩梦难度自动替亡灵选一张最低品质的(同品质随机)')}
       ${tg('autoRepair','每波结束自动全修','铜币够的话自动修满所有建筑，主堡优先')}
       ${tg('skipHfx','跳过局内英雄效果弹窗提示','每波结束不再弹出英雄效果(格拉淘金、黄虎夺天命等)，改成战斗提示')}
+      ${tg('rec','录制行动','开着的时候，每一局按波次把你的操作记成文字：建造、升级、修理、选卡、放技能、指令……下一局开始生效。可以把记录发给 AI 当攻略')}
+      <div class="sr"><span>行动记录<br><span class="meta">最近一局录下来的${recText()?'':'(还没有)'}</span></span><span><button class="px" type="button" data-act="recdl">下载</button> <button class="px" type="button" data-act="reccp">复制</button></span></div>
 </div>`;
   else if(setSec==='touch')body=`<div class="setrows">
       <div class="sr"><span>移动摇杆${ui2Q('移动摇杆','跟手：屏幕左下任意位置按下就以那里为中心；固定：只认摇杆本身')}</span><button class="px on" type="button" data-act="sjoy">${SET.joyMode==='follow'?'跟手':'固定'}</button></div>
@@ -79332,6 +79338,7 @@ function onSheetClick(e){
   else if(a==='devask'){devAsk=true;showSettings();const el=$('#devPw');if(el)el.focus()}
   else if(a==='devok'){const el=$('#devPw');if(el&&rdHash(el.value)===DEV_HASH){SET.devOn=true;devAsk=false;saveSettings();toast('调试功能已开启');showSettings()}else{toast('密码不对');if(el){el.value='';el.focus()}}}
   else if(a==='sexport')showExport();
+  else if(a==='recdl'||a==='reccp'){const t=recText();if(!t){toast('还没有行动记录：先在上面打开「录制行动」再打一局');return}if(a==='reccp')copyText(t,()=>toast('行动记录已复制'),()=>textBox({title:'行动记录',hint:'没能自动复制：长按 / 全选下面的文字复制',text:t}));else saveTextFile('死国开拓者-行动记录.txt',t,'text/plain','行动记录')}   // 0.13 录制行动（ui/rec）
   else if(a==='sexpf')exportFile();
   else if(a==='simpf'){if(!running)importFile()}
   else if(a==='elguide'){elTutReplay();if(running){toast('回到营地后，在「英雄 → 精英」里显示');showSettings()}else{hubTab='hero';showHub('hero')}}   // 0.12.2 精英玩法引导（ui/el_tut）
@@ -84172,14 +84179,81 @@ const AIP_HELP={
   run:'run() 快进到下一个决定 / 首领出场 / 主堡 < 50% / 英雄倒下 / 结束；run("wave") 只停在决定和结束；run(秒数)；选项 {sec, ms, base, low, boss:false, hero:false}；返回 stop(停下的原因) 和 ev(这一段的大事)',
   move:'move(dx, dy, 秒) 按住方向走(北 = dy<0)，goto(x, y, 秒) 走到格子；幸存者模式靠这两个走位',
   log:'log() 上一段快进的大事；log(true) 最近 120 条',
+  rec:'rec() 行动记录（设置里打开「录制行动」后，每局按波次记下的操作，真人玩家和 AI 的都记；0.13 加）：可以读真人玩家的记录学打法',
   out:'meta() 存档概况(英雄 / 星级 / 等级、可开的地图和难度)；newRun({map, diff, mode, heroes, loadout, seed, oath, merchant, auto, force})',
   misc:'ui() / press(i) 读 / 点任意弹窗；hold(true|false) 保持暂停 / 实时；speed(1|2|3…)；scr(x, y) 格子的屏幕坐标',
   camp:'局外(不在局内时)：techs([分类]) 科技列表、research(id,[级数]) 研究；designs() 建筑解锁树、unlock(id) 解锁、carry(id,[true|false]) 携带；btech(建筑) 建筑科技与进化、btup(建筑,加成键|all,[级数])、evo(建筑,进化id) 研发并带上；collect() 收开拓地产出'};
 function aipHelp(k){return k&&AIP_HELP[k]?AIP_HELP[k]:AIP_HELP}
-window.__ai={help:aipHelp,state:aipState,cards:aipCards,pick:aipPick,reroll:aipReroll,shop:aipShop,buy:aipBuy,leave:aipLeave,act:aipAct,run:aipRun,move:aipMove,goto:aipGoto,log:aipLog,
+window.__ai={rec:()=>typeof recText==='function'?recText():'',help:aipHelp,state:aipState,cards:aipCards,pick:aipPick,reroll:aipReroll,shop:aipShop,buy:aipBuy,leave:aipLeave,act:aipAct,run:aipRun,move:aipMove,goto:aipGoto,log:aipLog,
   meta:aipMeta,newRun:aipNewRun,ui:aipUi,press:aipPress,scr:aipScr,hold:aipHold,speed:aipSpeed,
   techs:aipTechs,research:aipResearch,designs:aipDesigns,unlock:aipUnlock,carry:aipCarry,btech:aipBtech,btup:aipBtUp,evo:aipEvo,collect:aipCollect};   // 局外：2026-11-02 工坊加
 for(const k in window.__ai){const f=window.__ai[k];window.__ai[k]=(...a)=>aipCall(f,a)}
+
+// ---------- 0.13 录制行动（用户 2026-11-03 提议：开了以后把这一局玩家的行动按波次记成文字，AI 可以「吸取攻略经验」）----------
+// 设置 → 游戏「录制行动」打开（SET.rec，下一局开始记）；设置里「行动记录」下载 / 复制最近一局；AI 接口 window.__ai.rec() 直接读
+// 记什么：建造、清障、升级、修理、拆除、撤销、整段 / 同类升级和修理、兵营换兵种、英雄放技能（玩家自己放的；AI 托管的不记）、选卡；
+//   指令（塔选目标、兵营驻守 / 出击 / 跟随和方向、驻守点，英雄驻守 / 出击、手动 / 托管）按「变了什么」记：开波时和战斗中每秒对一次
+//   每波开打、结束各一行战况（用时、击杀、主堡、丢了几座建筑、铜币），最后一行胜负
+// 做法：操作函数（tryBuild、doUpgrade……）在这里包一层，玩家点按钮和 AI 接口（ui/ai_api）都走它们，两边的操作都会记；
+//   函数里面再调的（整段升级里的单座升级）不重复记（REC.d）；开局、读档、存档、开波、波末、每帧挂在特性 rec 的钩子上
+// 坐标：格子 x,y（同 AI 接口 state('map')），后面括号是相对主堡的 (dx,dy)，换张图 / 换种子也能照着摆
+// 存放：局里跟着存档走（读档接着记）；每波结束、胜负时写进本机 wlwc.rec（只留最近一局，最多 CFG.rec.max 行）
+const REC={L:[],d:0,via:0,w0:0,k0:0,s0:0,snap:null,dT:0,dirty:0},REC_KEY='wlwc.rec';
+const recT=()=>{const t=Math.max(0,Math.round(G.time-REC.w0)),m=Math.floor(t/60),s=t%60;return m+':'+(s<10?'0':'')+s};
+const recXY=(tx,ty)=>{const dx=tx-G.base.tx,dy=ty-G.base.ty,f=v=>(v>0?'+':'')+v;return`@${tx},${ty} (${f(dx)},${f(dy)})`};
+const recS=s=>s===G.base?'主堡':`${s.cfg?s.cfg.name:s.type} ${recXY(s.tx,s.ty)}`;
+const recG=g0=>{const d=Math.round(G.gold-g0);return d?` 铜币 ${d>0?'+':''}${d}`:''};
+const recHp=()=>`主堡 ${Math.ceil(G.base.hp)}/${Math.round(G.base.maxHp)}`;
+function recPut(t,raw){if(!REC.on)return;REC.L.push(raw?t:(G.phase==='wave'?'  '+recT()+' ':'  ')+t);if(REC.L.length>CFG.rec.max)REC.L.splice(1,REC.L.length-CFG.rec.max);REC.dirty=1}
+function recSave(){if(!REC.on||!REC.dirty)return;REC.dirty=0;try{localStorage.setItem(REC_KEY,JSON.stringify({t:Date.now(),L:REC.L}))}catch(e){}}
+const recText=()=>{if(REC.on&&REC.L.length)return REC.L.join('\n');try{const o=JSON.parse(localStorage.getItem(REC_KEY));return o&&o.L?o.L.join('\n'):''}catch(e){return''}};
+// 指令的现状（对比上一次，变了的记一行）
+function recCmd(){const o={};o['塔楼选目标']=typeof TWR_NAMES!=='undefined'?TWR_NAMES[G.towerMode]||G.towerMode||'':G.towerMode;
+  for(const b of G.structs){if(b.dead||!isCampT(b.type))continue;const C=b.cmd||{},sp=C.c!=null&&G.spawns&&G.spawns[C.c]?' 朝 '+(typeof spawnNames==='function'?spawnNames()[C.c]:C.c):'',g=C.g?' 守 '+Math.round(C.g.x/16)+','+Math.round(C.g.y/16):'';
+    o['兵营 '+recXY(b.tx,b.ty)]=(SOLD_NAMES[b.mode||'guard']||b.mode)+(b.mode==='charge'?sp:'')+(b.mode!=='charge'?g:'')}
+  for(const h of G.heroes){if(h.stEl||h.dead&&h.respawn>1e8)continue;const C=(G.heroCmd&&G.heroCmd[h.id])||{},m=heroModeOf(h);
+    o[h.d.name]=(h.ai?'托管':'手动')+' · '+(HERO_MODES[m]||m)+(m==='sortie'&&C.c!=null&&G.spawns&&G.spawns[C.c]?' 朝 '+(typeof spawnNames==='function'?spawnNames()[C.c]:C.c):'')+(m==='guard'&&C.g?' 守 '+Math.round(C.g.x/16)+','+Math.round(C.g.y/16):'')}
+  return o}
+function recDiff(pre){const o=recCmd(),p=REC.snap||{};for(const k in o)if(p[k]!==undefined&&p[k]!==o[k])recPut((pre?'  ':'')+`指令 ${k}：${p[k]} → ${o[k]}`,pre);REC.snap=o}   // pre：开波时对的是准备阶段改的，不写时间
+function recHeroLine(){if(REC.hi==null||!REC.L[REC.hi]||!REC.L[REC.hi].startsWith('英雄：'))return;const H=G.heroes.filter(h=>!h.stEl).map(h=>`${h.d.name} ★${h.star||(h.spec&&h.spec.star)||1} Lv${heroLv(h)}`);if(H.length)REC.L[REC.hi]=REC.L[REC.hi].replace(/^英雄：[^·]*/,'英雄：'+H.join('、')+(REC.L[REC.hi].includes(' · ')?' ':''))}
+function recHead(cont){const D=CFG.maps[G.map],H=G.heroes.filter(h=>!h.stEl).map(h=>`${h.d.name} ★${h.star||(h.spec&&h.spec.star)||1} Lv${heroLv(h)}`);REC.L=[];REC.snap=null;
+  recPut(`# 死国开拓者 行动记录（v${GAME_VER} ${GAME_TAG}）${cont?' · 从存档接着打（第 '+G.wave+' 波）':''}`,1);
+  recPut(`地图：${D?D.name:G.map} · ${G.story?'剧情 '+(stCur()?stCur().C.name:''):G.mode==='survivor'?'幸存者':G.mode==='endless'?'无尽':'常规'} ${DIFF.name} · 种子 ${G.seed} · 共 ${G.total||'∞'} 波`,1);
+  REC.hi=REC.L.length;recPut(`英雄：${H.join('、')||'无'}${G.story&&G.story.els&&G.story.els.length?' · 剧情精英 '+G.story.els.join('、'):''}`,1);
+  recPut(`能造：${(G.loadout||[]).map(t=>BDEF[t]?BDEF[t].name:t).join('、')}`,1);
+  recPut(`坐标：格子 x,y（同 AI 接口 state('map')），括号里是相对主堡的 (dx,dy)；主堡 ${G.base.tx},${G.base.ty}`,1);
+  recPut(`【第 ${G.wave+1} 波之前】铜币 ${Math.floor(G.gold)}，${recHp()}`,1);REC.snap=recCmd()}
+// 包一层：只在开着录制、不是被别的操作调用的时候记；f 返回要记的一行（不记返回空）
+function recWrap(name,f){const g=window[name];if(typeof g!=='function')return;window[name]=function(...a){if(!REC.on||REC.d)return g.apply(this,a);const g0=G.gold,pre=f.pre?f.pre(...a):null;REC.d++;let r;
+    try{r=g.apply(this,a)}finally{REC.d--}try{const t=f(r,g0,pre,...a);if(t){recPut(t);recSnapNew()}}catch(e){}return r}}
+function recSnapNew(){if(!REC.snap)return;const o=recCmd();for(const k in o)if(REC.snap[k]===undefined)REC.snap[k]=o[k]}   // 新造的兵营：先记下现状，以后变了才记
+function recInit(){
+  recWrap('tryBuild',(r,g0,_,t,x,y)=>r?'':`造 ${BDEF[t]?BDEF[t].name:t} ${recXY(x,y)}${recG(g0)}`);
+  recWrap('clearAt',(r,g0,_,x,y)=>r?`清障 ${recXY(x,y)}${recG(g0)}`:'');
+  recWrap('doUpgrade',(r,g0,_,s)=>r?`升级 ${recS(s)} → ${lvShow(s)} 级${recG(g0)}`:'');
+  recWrap('doRepair',(r,g0,_,s)=>r?`修理 ${recS(s)}${recG(g0)}`:'');
+  const sellF=(r,g0,s)=>G.gold>g0||s&&s.dead?`拆除 ${s?recS(s):''}${recG(g0)}`:'';sellF.pre=s=>s;recWrap('sell',(r,g0,s)=>sellF(r,g0,s));
+  const undoF=(r,g0,s)=>s&&G.gold>g0?`撤销 ${recS(s)}${recG(g0)}`:'';undoF.pre=(x,y)=>x>=0&&y>=0&&x<MAP_W&&y<MAP_H?G.structAt[y*MAP_W+x]||G.trapAt[y*MAP_W+x]:null;recWrap('undoAt',undoF);
+  for(const[k,n]of[['upgradeGroup','整段升级'],['upgradeSame','同类一键升级'],['repairGroup','整段修理'],['repairSame','同类一键修理']])recWrap(k,(r,g0,_,s)=>G.gold<g0?`${n} ${recS(s)}${recG(g0)}`:'');
+  recWrap('repairAll',(r,g0,_,auto)=>G.gold<g0?`${auto?'自动':''}全修${recG(g0)}`:'');
+  recWrap('campSetUnit',(r,g0,_,b,u)=>r&&!r.err?`兵营 ${recXY(b.tx,b.ty)} 改练 ${CFG.units[u]?CFG.units[u].name:u}${recG(g0)}`:'');
+  recWrap('castSkill',(r,g0,_,slot,aim,quiet,h)=>{h=h||G.hero;if(!r||!h||(quiet&&!REC.via))return'';const p=h.sp&&h.sp[slot],nm=p&&p.name||(CFG.skills[h.skills[slot]]||{}).name||'技能';
+    return`${h.d.name} 放「${nm}」${aim&&aim.x!=null?' 对准 '+Math.floor(aim.x/16)+','+Math.floor(aim.y/16):''}`});
+  const pickF=(r,g0,O,i)=>{if(!O)return'';const o=O[i];if(!o)return'';const rest=O.filter((x,k)=>k!==i).map(x=>'「'+cardName(x.c,x.q)+'」');return`选卡「${cardName(o.c,o.q)}」${rest.length?'（另外：'+rest.join('')+'）':''}`};
+  pickF.pre=()=>G.cardOpts?G.cardOpts.slice():null;recWrap('pickCard',pickF);
+  {const g=window.aipAct1;if(typeof g==='function')window.aipAct1=function(...a){REC.via++;try{return g.apply(this,a)}finally{REC.via--}}}   // REC.via：AI 接口放的技能也记（castSkill 的 quiet 是 true）
+  recWrap('victory',()=>{recPut(`【结果】胜利：打完 ${G.wave} 波，${recHp()}，击杀 ${G.kills}`,1);REC.dirty=1;setTimeout(recSave,0);return''});
+  recWrap('gameOver',()=>{if(G.phase!=='over')return'';recPut(`【结果】失败：第 ${G.wave} 波主堡陷落，击杀 ${G.kills}`,1);REC.dirty=1;setTimeout(recSave,0);return''})}
+const recLive=()=>G.structs.filter(s=>!s.dead&&s!==G.base&&s.cfg&&!s.cfg.trap).length;
+feat('rec',{ord:990,on:()=>{REC.on=!!SET.rec;return REC.on},hooks:{
+  start:()=>{REC.on=true;recHead(false)},
+  load:d=>{REC.on=true;if(d&&Array.isArray(d.rec)&&d.rec.length){REC.L=d.rec.slice();REC.snap=recCmd();recPut(`【读档】从第 ${d.wave!=null?d.wave:G.wave} 波接着打`,1)}else recHead(true)},
+  save:o=>{if(REC.on)o.rec=REC.L},
+  waveStart:n=>{if(n===1||REC.hi!=null)recHeroLine();REC.hi=null;recDiff(true);REC.w0=G.time;REC.k0=G.kills;REC.s0=recLive();recPut(`【第 ${n} 波】开打：铜币 ${Math.floor(G.gold)}，${recHp()}`,1)},
+  tick:dt=>{REC.dT-=dt;if(REC.dT<=0){REC.dT=1;recDiff()}},
+  waveEnd:n=>{const lost=Math.max(0,REC.s0-recLive());recPut(`  结束：用时 ${recT()}，击杀 ${G.kills-REC.k0}，${recHp()}，${lost?'丢了 '+lost+' 座建筑':'没丢建筑'}，铜币 ${Math.floor(G.gold)}`,1);
+    if(!G.total||n<G.total)recPut(`【第 ${n+1} 波之前】`,1);recSave()}}});
+recInit();
 
 </script>
 
