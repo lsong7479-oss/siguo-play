@@ -77964,7 +77964,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.8',GAME_TAG='稳定版',GAME_CODE=202,GAME_BUILD="02879a6",GAME_BUILT=1793589581792,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.8',GAME_TAG='稳定版',GAME_CODE=202,GAME_BUILD="d55310d",GAME_BUILT=1793590904158,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -83830,6 +83830,7 @@ function aipState(part,o){if(!G||!G.base)return{err:'没有对局'};o=o||{};
   return r}
 function aipStructs(){return G.structs.map(s=>{const x={n:s.cfg.name,t:s.type,at:aipXY(s),lv:lvShow(s),hp:Math.ceil(s.hp),max:Math.round(s.maxHp),up:upgradeCost(s),rep:repairCost(s)};
   if(s.isCamp){x.u=s.unit;x.un=CFG.units[s.unit]?CFG.units[s.unit].name:s.unit;x.us=(BDEF[s.type].units||[]).join('/');let n=0;for(const u of G.soldiers)if(!u.dead&&u.camp===s&&!u.summon)n++;x.men=n}
+  if(BDEF[s.type]&&BDEF[s.type].weapon&&!s.isCamp)try{const T=towerW(s);x.r=aipR(T.range/16,1);x.dmg=aipR(T.dmg,1)}catch(e){}   // r 射程（格）、dmg 一发的伤害：2026-11-02 工坊加，布塔时看覆盖
   if(s.temp)x.temp=1;return x}).concat(G.traps.map(t=>({n:t.cfg.name,t:t.type,at:aipXY(t),lv:lvShow(t),trap:1,up:upgradeCost(t)})))}
 function aipHero(h,i){const sv=aipSv();const x={i,id:h.id,n:h.d.name,lv:heroLv(h),hp:h.dead?0:Math.ceil(h.hp),max:Math.round(h.maxHp),x:aipR(h.x/16,1),y:aipR(h.y/16,1)};
   if(h.dead)x.rv=aipR(h.respawn,1);if(h.ai)x.ai=1;if(h.elite)x.elite=1;if(h.layer)x.wall=1;
@@ -83867,12 +83868,14 @@ function aipGrid(o){const c=aipCenter(),sv=aipSv(),cx=o.x!=null?+o.x:Math.floor(
   const bt=G.loadout.find(t=>BDEF[t]&&!isCampT(t)&&!isTrapT(t)&&bSize(t)<=1),ch=new Array((y1-y0+1)*W);
   const canB=(x,y)=>{if(!terrIn(x,y))return false;if(!bt||G.phase!=='prep')return true;const e=buildCheck(bt,x,y);return!e||/不足$|亡灵/.test(e)};
   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const i=y*MAP_W+x,s=G.structAt[i],tp=G.trapAt[i],T=G.terrain[i];let g;
-    if(s){g=s.type==='keep'?'K':s.type==='gate'?'+':isWallT(s.type)?'=':s.isCamp?'B':'o'}
+    if(s){g=s.type==='keep'?'K':s.type==='gate'?'+':isWallT(s.type)?'=':s.isCamp?'B':BDEF[s.type]&&BDEF[s.type].weapon?'A':'o'}
     else if(tp)g='^';
     else if(T===2||T===13)g='T';else if(T===5)g='t';else if(T===3||T===7)g='#';else if(T===6)g='s';else if(T===10)g='~';
     else if(!sv&&canB(x,y))g=T===1?':':'.';
     else g=friendPassPt(x*16+8,y*16+8)?',':'#';
     ch[(y-y0)*W+x-x0]=g}
+  if(o.cov){const TW=[];for(const s of G.structs){if(s.dead||s.isCamp||!BDEF[s.type]||!BDEF[s.type].weapon)continue;try{TW.push([s.x,s.y,towerW(s).range])}catch(e){}}   // cov：射程覆盖到的空地画成 *（2026-11-02 工坊加）
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const j=(y-y0)*W+x-x0,g=ch[j];if(g!=='.'&&g!==':'&&g!==',')continue;const px=x*16+8,py=y*16+8;if(TW.some(t=>Math.hypot(t[0]-px,t[1]-py)<=t[2]))ch[j]='*'}}
   const put=(px,py,g)=>{const x=Math.floor(px/16),y=Math.floor(py/16);if(x>=x0&&x<=x1&&y>=y0&&y<=y1)ch[(y-y0)*W+x-x0]=g};
   for(const p of G.spawns)put(p.x*16+8,p.y*16+8,'S');
   if(sv&&G.sv.hk)for(const b of G.sv.hk)put(b.x,b.y,'h');if(sv&&G.sv.bx)for(const b of G.sv.bx)put(b.x,b.y,'$');
@@ -83881,7 +83884,7 @@ function aipGrid(o){const c=aipCenter(),sv=aipSv(),cx=o.x!=null?+o.x:Math.floor(
   const pad=v=>String(v).padStart(3,' ');
   for(let y=y0;y<=y1;y++)rows.push(pad(y)+' '+ch.slice((y-y0)*W,(y-y0+1)*W).join(''));
   let h1='    ',h2='    ';for(let x=x0;x<=x1;x++){h1+=Math.floor(x/10)%10;h2+=x%10}
-  return{x0,y0,x1,y1,rows:[h1,h2].concat(rows),k:'. 可造  : 可造土路  , 领地外  T树 t树丛 #挡路 ~冰 s流沙  K主堡 =墙 +门 B兵营 ^陷阱 o建筑  S出怪口 @英雄 e亡灵 E精英首领 h急救包 $宝箱'}}
+  return{x0,y0,x1,y1,rows:[h1,h2].concat(rows),k:'. 可造  : 可造土路  , 领地外  T树 t树丛 #挡路 ~冰 s流沙  K主堡 =墙 +门 B兵营 A攻击建筑 ^陷阱 o其它建筑 *射程覆盖到的空地(cov=1)  S出怪口 @英雄 e亡灵 E精英首领 h急救包 $宝箱'}}
 function aipSvState(full){const S=G.sv,h=svHero();if(!S||!h)return null;const W=CFG.survivor.wave;
   const r={wc:S.wc,ws:S.ws,gap:S.ws==='gap'?aipR(S.wT,1):undefined,wt:aipR(S.wt,1),every:W.every,live:svTime(S.t),lv:S.lv,
     cap:{n:h.d.name,hp:h.dead?0:Math.ceil(h.hp),max:Math.round(h.maxHp),x:aipR(h.x/16,1),y:aipR(h.y/16,1)},auto:S.auto?1:0,
@@ -84111,7 +84114,7 @@ function aipSpeed(x){x=+x;if(CFG.speeds.includes(x)){speedMul=x;refreshSpeed()}r
 function aipLog(all){return all?AIP.all.slice(-120):AIP.ev}
 const AIP_HELP={
   about:'死国开拓者 AI 游玩接口：数据管决策，截图看画面。hold 开着时游戏只在 run / move / goto 里往前走。字段：d 现在要做的决定(k: card 选卡 / ecard 替亡灵选卡 / dev 装置卡 / shop 商人 / chal 挑战卡 / clear 通关 / prep 准备阶段 / ui 其它弹窗 / over 输 / victory 赢)',
-  state:'state() 概况；state("structs"|"heroes"|"enemies"|"next"|"picked"|"stats"|"grid"|"build"|"sv")；grid 可带 {x,y,r}。lv 是真实等级(Lv5+N 已算进去)，up 升级价(null = 满级)，rep 修理价，at = "x,y" 格子',
+  state:'state() 概况；state("structs"|"heroes"|"enemies"|"next"|"picked"|"stats"|"grid"|"build"|"sv")；grid 可带 {x,y,r,cov}（cov=1 把射程覆盖到的空地画成 *）。structs 里攻击建筑有 r 射程(格)、dmg。lv 是真实等级(Lv5+N 已算进去)，up 升级价(null = 满级)，rep 修理价，at = "x,y" 格子',
   cards:'cards() 看可选的卡；pick(i) 选(不用再确认，亡灵卡 / 装置卡 / 挑战卡 / 通关同样用 pick)；reroll() 花刷新次数重抽',
   shop:'shop() 看商人(常规：pot:/item:/ware: 三页；幸存者：b0 商品、u0 装置升级)；buy(id)；leave() 离开。常规商人只在准备阶段能买，开下一波时自动离开',
   act:'act("build 类型 x y [兵种]" | "clear x y" | "up x,y [级数]" | "up keep" | "rep" | "rep x,y" | "sell x,y" | "unit x,y 兵种" | "ai on|off [英雄号]" | "skill 号 [x y] [h=英雄号]" | "wave" | "goto x y" | "stop" | "auto on|off")；失败返回 why；几条用 ; 隔开',
