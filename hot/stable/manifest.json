@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.12.7",
- "code": 201,
- "size": 17615164,
- "sha256": "46a68fd2de82645383782c5083d2e6aaebc26a55bd0fee91a3b074f4cbee5369",
+ "ver": "0.12.8",
+ "code": 202,
+ "size": 17632545,
+ "sha256": "316c2ac682c4fbf662f6f1f376590e8d2d742f275b87e180466bf9847ac3254c",
  "minLoader": 1,
- "sig": "N8P5OQUiaFV2Ym/BQ9yhPA8ykBOKCWkiJCZrQj1ZcP+iMntj8/MvE8IXKmK/vf+SSih2vMr+TwV+xvJ9ZEY2Lg==",
- "note": "0.12.7 稳定版更新：任务 / 签到 / 悬赏 / 幸存者宝箱改成图标收获弹窗、补全 buff 名字、修复一个会卡住游戏的报错",
- "at": "2026-11-02 00:08 UTC"
+ "sig": "BTbJ/wScEqsawY6r4cLVH40YahHIM/m6rlgAq+OVCM7jiNFReQxdUYwJGUW9Sc5iv8Lk9VDrx/dLlYo6PsyVfQ==",
+ "note": "训练所分教官 / 孩子；新增重点培养（培养方向、专精特性）；孩子和婴儿立绘；死国难度按钮、勋章火焰",
+ "at": "2026-11-02 01:49 UTC"
 }

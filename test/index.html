@@ -22530,11 +22530,11 @@ CFG.elite.focusLines={
     fRapid:['速射训练',[{aspd:0.05},{aspd:0.08},{aspd:0.12},{aspd:0.15}],v=>`攻击速度 +${efPc(v.aspd)}%`],
     fPierce:['破甲射击',[{penP:0.05},{penP:0.08},{penP:0.12},{penP:0.15}],v=>`远程物理攻击无视 ${efPc(v.penP)}% 护甲`]},
   warrior:{
-    fGuard:['抗击打训练',[{dr:0.04},{dr:0.06},{dr:0.09},{dr:0.12}],v=>`减伤 +${efPc(v.dr)}%`],
+    fGuard:['抗击训练',[{dr:0.04},{dr:0.06},{dr:0.09},{dr:0.12}],v=>`减伤 +${efPc(v.dr)}%`],
     fPower:['力量训练',[{atk:0.04},{atk:0.06},{atk:0.09},{atk:0.12}],v=>`物理攻击 +${efPc(v.atk)}%`],
     fStam: ['耐力训练',[{hp:0.06},{hp:0.09},{hp:0.13},{hp:0.18}],v=>`生命上限 +${efPc(v.hp)}%`]},
   all:{
-    fStudy:['勤学苦练',[{exp:0.1},{exp:0.15},{exp:0.2},{exp:0.25}],v=>`经验获取 +${efPc(v.exp)}%`]}};
+    fStudy:['勤学苦练',[{exp:0.25},{exp:0.5},{exp:0.75},{exp:1}],v=>`经验获取 +${efPc(v.exp)}%`]}};
 // 展开成 CFG.elite.focusTr['<线><等级>'] = {name, lv, line, dir, st, desc}（Ⅱ 进阶·、Ⅲ 精通·、Ⅳ 大师·，同训练特性）
 (function(){const O=CFG.elite.focusTr={},N=['','进阶·','精通·','大师·'];
   for(const dir in CFG.elite.focusLines){const D=CFG.elite.focusLines[dir];for(const line in D){const[nm,S,ds]=D[line];S.forEach((st,i)=>{O[line+(i+1)]={name:N[i]+nm, lv:i+1, line, dir, st, desc:ds(st)}})}}})();
@@ -77964,7 +77964,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=201,GAME_BUILD="3288fd8",GAME_BUILT=1793583511825,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.8',GAME_TAG='稳定版',GAME_CODE=202,GAME_BUILD="6175793",GAME_BUILT=1793584437746,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
