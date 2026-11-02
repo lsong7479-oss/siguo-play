@@ -21948,8 +21948,6 @@ CFG.heroes.scribe.passiveSk3='scrMemory';
 
 // 0.12.0（用户定）精英的等级成长改成线性（英雄每 10 级加速）：攻击、法攻每级 + slopeAtk 第一段，生命每级 + slopeHp 第一段（取 data/olv 的数，不另写）
 CFG.elite.lvLinear={atk:CFG.olv.slopeAtk[0], hp:CFG.olv.slopeHp[0]};
-// 0.12.8（用户定）训练所的「重点培养」：初始 n 个名额（科技「英才计划」每级 +1），age 岁（含下限、不含上限）的孩子能进；培养方向 dirs（以后学对应专精的训练特性，策划见《0.12.8策划-重点培养（草案）》）
-CFG.elite.focus={n:3, age:[5,15], dirs:{mage:'法师', archer:'射手', warrior:'战士'}};
 
 // ---------- 0.12.0 精英血脉（用户《0.12.0策划-家族精英大更新（用户原文）》「家族」；逻辑 game/el_blood.js）----------
 // 每个地区有一支「平民血脉」和家族血脉（现在每个地区一个家族）；每名精英的血脉 = 16 份（e.bl = {血脉: 份数}），老存档按籍贯算成那个地区的平民血脉
@@ -22513,6 +22511,33 @@ Object.assign(CFG.elite.traits,{
   for(const line in L){const[nm,S]=L[line];S.forEach((st,i)=>{T['tx_'+line+(i+1)]={name:(i?N[i]+'·':'')+nm, lv:i+1, line:'x_'+line, st}})}})();
 // 家族的寿命（0.12.0 用户定：德古拉、精灵这类家族长寿）：家族键 → 寿命 + 年（按血脉占比打折，出生 / 招募时定下）
 CFG.elite.bloodLife={dracula:30, bathory:15, starspeak:20, moonleaf:20, peng:20, ge:10, zhang:8, ymir:10, usher:-5, crusoe:5};
+
+// ---------- 0.12.8（用户定）训练所「重点培养」的数据（逻辑 game/el_focus，界面 ui/el_kidui；策划《0.12.8策划-重点培养（草案）》）----------
+// n 名额（科技「英才计划」每级 +1）；age 能进的年龄（含下限、不含上限）；dirs 培养方向
+// 学特性更容易（用户定 Claude 的草案）：跟教官学的概率 × insK、没有教官时自学 × selfK；训练特性至多 + tt 条（普通 3 条，重点培养 4 条：教官教的 kidTt、身上的 trainMax 都 +1）
+// 专精特性（重点培养特性）：选了方向的才学；每过一年 trP 概率（乘「刻苦训练」）学会一条线的 Ⅰ 级或把学会的线升一级；每人至多 lines 条线；等级上限 = 科技「精英训练」的等级；换方向时学会的保留
+CFG.elite.focus={n:3, age:[5,15], dirs:{mage:'法师', archer:'射手', warrior:'战士'}, insK:2, selfK:3, tt:1, trP:0.15, lines:2};
+// 专精特性：方向 → 线 [名字, 每级的属性(Ⅰ～Ⅳ), 说明]；all = 三个方向都能学。名字照训练特性的叫法（Claude 定，用户 2026-11-01 认可数值）
+//   st 的字段同训练特性：cd 技能冷却速度、ap 法攻、mdef 法防、rng 射程、critR 暴击率、aspd 攻速、penP 远程物理攻击无视护甲（新，game/el_battle.elRecalc）、dr 减伤（新，el_battle 的 dmgInF）、atk 物攻、hp 生命上限、exp 经验获取
+const efPc=x=>Math.round(x*1000)/10;   // 说明里的百分数（去掉浮点零头）
+CFG.elite.focusLines={
+  mage:{
+    fMed:  ['冥想修习',[{cd:0.05},{cd:0.08},{cd:0.12},{cd:0.15}],v=>`技能冷却速度 +${efPc(v.cd)}%`],
+    fSpell:['咒文研习',[{ap:0.04},{ap:0.06},{ap:0.09},{ap:0.12}],v=>`法术攻击 +${efPc(v.ap)}%`],
+    fWard: ['抗法训练',[{mdef:0.06},{mdef:0.09},{mdef:0.13},{mdef:0.18}],v=>`法术防御 +${efPc(v.mdef)}%`]},
+  archer:{
+    fEye:  ['远眺训练',[{rng:0.04,critR:0.02},{rng:0.06,critR:0.03},{rng:0.09,critR:0.04},{rng:0.12,critR:0.05}],v=>`射程 +${efPc(v.rng)}%、暴击率 +${efPc(v.critR)}%`],
+    fRapid:['速射训练',[{aspd:0.05},{aspd:0.08},{aspd:0.12},{aspd:0.15}],v=>`攻击速度 +${efPc(v.aspd)}%`],
+    fPierce:['破甲射击',[{penP:0.05},{penP:0.08},{penP:0.12},{penP:0.15}],v=>`远程物理攻击无视 ${efPc(v.penP)}% 护甲`]},
+  warrior:{
+    fGuard:['抗击打训练',[{dr:0.04},{dr:0.06},{dr:0.09},{dr:0.12}],v=>`减伤 +${efPc(v.dr)}%`],
+    fPower:['力量训练',[{atk:0.04},{atk:0.06},{atk:0.09},{atk:0.12}],v=>`物理攻击 +${efPc(v.atk)}%`],
+    fStam: ['耐力训练',[{hp:0.06},{hp:0.09},{hp:0.13},{hp:0.18}],v=>`生命上限 +${efPc(v.hp)}%`]},
+  all:{
+    fStudy:['勤学苦练',[{exp:0.1},{exp:0.15},{exp:0.2},{exp:0.25}],v=>`经验获取 +${efPc(v.exp)}%`]}};
+// 展开成 CFG.elite.focusTr['<线><等级>'] = {name, lv, line, dir, st, desc}（Ⅱ 进阶·、Ⅲ 精通·、Ⅳ 大师·，同训练特性）
+(function(){const O=CFG.elite.focusTr={},N=['','进阶·','精通·','大师·'];
+  for(const dir in CFG.elite.focusLines){const D=CFG.elite.focusLines[dir];for(const line in D){const[nm,S,ds]=D[line];S.forEach((st,i)=>{O[line+(i+1)]={name:N[i]+nm, lv:i+1, line, dir, st, desc:ds(st)}})}}})();
 
 // ---------- 0.12.0 精英的样貌（用户提议：不同种族样貌——发色、瞳色、肤色、耳朵、体型，合成小人；逻辑 game/el_look.js，画法 art/hd_heroes 的 hm / hdHead / hdFace 读 EL_LK）----------
 // 每人一份 e.lk = {sk 肤色, hr 发色, ey 瞳色, ear 耳朵, b 体型}（下标）；招募按地区文化圈、家族出，孩子每项随机拿父亲或母亲的（mut 概率换成本地区的随机一种）
@@ -73782,22 +73807,25 @@ function elKidName(id,given){const m=elSt(),c=m.kids.find(x=>x.id===id);given=St
 // 能学的特性 = 普通特性里 learn 的 + 解锁了的训练特性（科技「精英训练」的等级）
 function elLearnable(e){const L=[],T=EL().traits,R=EL().train,lv=elTM().elTrain||0;
   for(const k in T)if(T[k].learn&&elTraitsOk(e.tr,k))L.push(['tr',k]);
-  for(const k in R){const r=R[k];if(r.lv>lv||e.tt.includes(k))continue;const cur=e.tt.find(x=>R[x].line===r.line);if(cur&&R[cur].lv>=r.lv)continue;if(!cur&&e.tt.length>=EL().trainMax)continue;L.push(['tt',k])}
+  for(const k in R){const r=R[k];if(r.lv>lv||e.tt.includes(k))continue;const cur=e.tt.find(x=>R[x].line===r.line);if(cur&&R[cur].lv>=r.lv)continue;if(!cur&&e.tt.length>=EL().trainMax+(e.foc?EL().focus.tt:0))continue;L.push(['tt',k])}
   return L}
 function elGiveTrait(e,kind,k){if(kind==='tr'){const T=EL().traits[k];e.tr=e.tr.filter(x=>!(T.over||[]).includes(x));if(e.tr.length>=EL().traitMax&&!(T.over||[]).length)return false;e.tr.push(k)}
   else{const r=EL().train[k],cur=e.tt.find(x=>EL().train[x].line===r.line);if(cur)e.tt=e.tt.filter(x=>x!==cur);e.tt.push(k)}return true}
 // —— 训练所（0.12.0 用户定）——
 const elKidCap=()=>EL().kidCap0+EL().kidPer*elOpenRegs().length;   // 预备队（入了学的孩子）的上限
 // 孩子还能不能跟教官学这条：自己能学，且教会的普通 / 训练特性没到上限（c.ktr / c.ktt）
-const elKidCan=(c,kind,k)=>(kind==='tr'?(c.ktr||0)<EL().kidTr:(c.ktt||0)<EL().kidTt)&&elLearnable(c).some(([a,b])=>a===kind&&b===k);
+const elKidCan=(c,kind,k)=>(kind==='tr'?(c.ktr||0)<EL().kidTr:(c.ktt||0)<EL().kidTt+(c.foc?EL().focus.tt:0))&&elLearnable(c).some(([a,b])=>a===kind&&b===k);
 function elKidGive(c,kind,k){if(!elGiveTrait(c,kind,k))return false;if(kind==='tr')c.ktr=(c.ktr||0)+1;else c.ktt=(c.ktt||0)+1;return true}
 // 从 pool 里抽「期望 n × p 个」（零头按概率进位）不重复的孩子：一次判完，不逐个掷
 function elDraw(pool,p){const x=pool.length*p,k=Math.min(pool.length,Math.floor(x)+(Math.random()<x-Math.floor(x)?1:0)),L=pool.slice(),out=[];for(let i=0;i<k;i++){const j=Math.floor(Math.random()*L.length);out.push(L[j]);L.splice(j,1)}return out}
-function elSchoolYear(){const m=elSt(),F=EL().family,K=m.kids.filter(c=>c.enr&&c.age>=F.school[0]&&c.age<F.school[1]+1);if(!K.length)return;
+function elSchoolYear(){const m=elSt(),F=EL().family,FO=EL().focus,K=m.kids.filter(c=>c.enr&&c.age>=F.school[0]&&c.age<F.school[1]+1);if(!K.length)return;
   const T=m.ins.filter(key=>!String(key).startsWith('h:')&&elById(+key));
   if(T.length){const p=EL().kidP*(1+(elTM().elDilig||0));
-    for(const key of T){const tr=elInsTraits(key),pool=K.filter(c=>tr.some(([a,b])=>elKidCan(c,a,b)));for(const c of elDraw(pool,p)){const o=tr.filter(([a,b])=>elKidCan(c,a,b));if(o.length){const[a,b]=elPick(o);elKidGive(c,a,b)}}}}
-  else{const pool=K.filter(c=>(c.ktt||0)<EL().kidTt&&elLearnable(c).some(([a])=>a==='tt'));for(const c of elDraw(pool,EL().noInsP)){const o=elLearnable(c).filter(([a])=>a==='tt');if(o.length){const[a,b]=elPick(o);elKidGive(c,a,b)}}}}
+    for(const key of T){const tr=elInsTraits(key),pool=K.filter(c=>tr.some(([a,b])=>elKidCan(c,a,b)));for(const c of elFoDraw(pool,p,FO.insK)){const o=tr.filter(([a,b])=>elKidCan(c,a,b));if(o.length){const[a,b]=elPick(o);elKidGive(c,a,b)}}}}
+  else{const pool=K.filter(c=>(c.ktt||0)<EL().kidTt+(c.foc?FO.tt:0)&&elLearnable(c).some(([a])=>a==='tt'));for(const c of elFoDraw(pool,EL().noInsP,FO.selfK)){const o=elLearnable(c).filter(([a])=>a==='tt');if(o.length){const[a,b]=elPick(o);elKidGive(c,a,b)}}}
+  elFoYear(K)}   // 0.12.8 重点培养的专精特性（game/el_focus）
+// 0.12.8（用户定）重点培养的孩子概率 × k（至多 100%）：普通的、重点培养的分开抽
+const elFoDraw=(pool,p,k)=>elDraw(pool.filter(c=>!c.foc),p).concat(elDraw(pool.filter(c=>c.foc),Math.min(1,p*k)));
 // —— 退休、接替、名册 ——
 function elRetire(e,auto){const m=elSt(),F=EL().family;elUnequipAll(e);m.list=m.list.filter(x=>x!==e);e.st='retired';e.rAt=metaNow();e.dep=false;e.learn=null;
   if((!(e.ja>=0)||e.age-e.ja>=EL().rollYears)&&((e.log&&e.log.n)||0)>EL().rollBattles)m.roll.push(e);else e.noRoll=1;   // 0.12.1（用户定）入队 rollYears 年以上、出战超过 rollBattles 次的才进名册（老存档没有 ja 的只看出战）
@@ -73859,7 +73887,7 @@ const elOlvK=e=>'e'+e.id;
 const elLv=e=>e?(e.stLv||olvRec('e',elOlvK(e)).lv):1;   // stLv：剧情精英的固定等级
 function elExpTotal(e){const r=olvRec('e',elOlvK(e));let s=r.exp;for(let L=1;L<r.lv;L++)s+=olvNeedK('e','',L);return s}
 function elExpGain(e,a){if(!(a>0))return 0;return olvGain('e',elOlvK(e),a)}
-function elExpK(e){let k=0;for(const x of e.tr)k+=(EL().traits[x].st.exp||0);for(const x of e.tt)k+=(EL().train[x].st.exp||0);return k+es2TechExp()}   // es2TechExp：0.12.7 代理 ES 加（科技「精英教范」，game/el_skills3）
+function elExpK(e){let k=0;for(const x of e.tr)k+=(EL().traits[x].st.exp||0);for(const x of e.tt)k+=(EL().train[x].st.exp||0);if(e.ft)for(const x of e.ft)k+=((EL().focusTr[x]||{st:{}}).st.exp||0);return k+es2TechExp()}   // es2TechExp：0.12.7 代理 ES 加（科技「精英教范」，game/el_skills3）
 // —— 功勋阶 ——
 const elRankNeed=e=>e.rank>=5?null:{merit:EL().merit.need[e.rank],silver:EL().merit.silver[e.rank]};
 function elRankUp(e){const N=elRankNeed(e);if(!N)return'已经是最高阶';if(e.merit<N.merit)return`功勋不够(需要 ${N.merit})`;if((META.wallet.银币||0)<N.silver)return`银币不够(需要 ${N.silver})`;
@@ -73967,7 +73995,7 @@ function dbgResAll(n){for(const id in(META.settle&&META.settle.R)||{}){if(!stReg
 // 特性说明（0.12.0）：按属性自动写（data/el_famfx 的家族特性、自建家族的选项都不写说明）
 const EL_STD={hp:'生命上限',atk:'物理攻击',ap:'法术攻击',def:'物理防御',mdef:'法术防御',speed:'移动速度',aspd:'攻击速度',vision:'视野',rng:'射程',rngP:'物理远程射程',reloadK:'装填速度',regen:'生命恢复',prec:'精准',
   dmg:'造成伤害',dmgM:'近战物理伤害',dmgR:'远程物理伤害',dmgS:'法术伤害',critR:'暴击率',critDmg:'暴击伤害',cd:'冷却速度',dodgeR:'偏斜率',dodgeK:'偏斜值',hitK:'命中值',toughK:'坚韧值',drP:'物理减伤',drM:'法术减伤',
-  exp:'经验获取',marry:'提亲成功率',resPoison:'毒抗',resFrost:'冰抗',resFire:'火抗',slowRes:'寒冰减速抗性',kbA:'击退抗性',eva:'闪避率',boss:'对精英、首领、重型单位造成伤害'};
+  exp:'经验获取',penP:'远程物理攻击无视护甲',dr:'减伤',marry:'提亲成功率',resPoison:'毒抗',resFrost:'冰抗',resFire:'火抗',slowRes:'寒冰减速抗性',kbA:'击退抗性',eva:'闪避率',boss:'对精英、首领、重型单位造成伤害'};
 // 0.12.2 家族特性：独立乘区、100% 档的独特效果（game/el_fam3）
 const EL_STDX={hpX:'生命上限',atkX:'物理攻击',apX:'法术攻击',defX:'物理防御',mdefX:'法术防御'};
 const EL_STD3={dist:(v,pc)=>`目标每远 1 格，造成的伤害 +${pc(v[0])}，至多 +${pc(v[1])}`,cap:(v,pc)=>`每秒受到的伤害至多为生命上限的 ${pc(v)}`,
@@ -74097,7 +74125,7 @@ const elSpouse=x=>x?(x.sp||(x.spId?(elById(x.spId)||{id:x.spId,dead:1,gone:1}):n
 // 丧偶（0.12.0 用户定：只有一个配偶，丧偶后不再婚配）
 const elWidow=x=>{const S=elSpouse(x);return!!(S&&(S.dead||S.st==='dead'))};
 // 特性里某个属性的合计（普通、训练、家族特性）
-function elStT(x,k){let v=0;const add=st=>{if(st&&typeof st[k]==='number')v+=st[k]};for(const t of x.tr||[])add((EL().traits[t]||{}).st);for(const t of x.tt||[])add((EL().train[t]||{}).st);for(const t of x.bt||[])add((elBloodTr()[t]||{}).st);return v}
+function elStT(x,k){let v=0;const add=st=>{if(st&&typeof st[k]==='number')v+=st[k]};for(const t of x.tr||[])add((EL().traits[t]||{}).st);for(const t of x.tt||[])add((EL().train[t]||{}).st);for(const t of x.ft||[])add((EL().focusTr[t]||{}).st);for(const t of x.bt||[])add((elBloodTr()[t]||{}).st);return v}
 // 生育概率（0.12.0 用户定）：15～25 岁 50%，之后每岁 −2%，双方相乘，每有一个孩子 −5%；纵欲、强欲、风流乘上去
 function elFertP(x){const S=elSpouse(x),F=EL().family;if(!S||S.dead||S.st==='dead'||x.dead||x.wedP)return 0;   // wedP：婚宴还没办
  const fa=a=>a<15?0:a<=F.fertAge?F.fertP:Math.max(0,F.fertP-F.fertDrop*(a-F.fertAge));   // 丧偶不生
@@ -74310,7 +74338,7 @@ function elFtDo(fid,i,n){if(!elFtLv(fid))return{err:'声望到「接纳」才能
 // ---------- 0.12.8（用户定）训练所的「重点培养」（数据 data/el_elite 的 CFG.elite.focus、科技「英才计划」elFocus）----------
 // 孩子身上：c.foc = 1 在重点培养里；c.fo = 培养方向（mage 法师 / archer 射手 / warrior 战士，'' 还没选）
 // 重点培养的孩子同时占预备队的位子（不在预备队的，进重点培养时自动加入）；退出重点培养回到普通预备队；退学、长大离开训练所时一起清掉
-// 学特性更容易、学方向专精特性：还在策划（《0.12.8策划-重点培养（草案）》），这里只有名额、进出、选方向
+// 学特性更容易（跟教官 × insK、自学 × selfK，在 game/el_core.elSchoolYear）、训练特性多 1 条（elKidCan / elLearnable）；专精特性 c.ft（数据 data/el_focus 的 focusTr）
 const elFoCap=()=>EL().focus.n+(elTM().elFocus||0);
 const elFoList=()=>elSt().kids.filter(c=>c.foc);
 const elFoAgeOk=c=>c.age>=EL().focus.age[0]&&c.age<EL().focus.age[1];
@@ -74319,6 +74347,14 @@ function elFoAdd(id){const m=elSt(),c=m.kids.find(x=>x.id===id);if(!c)return'没
   if(!c.enr){const err=elKidEnroll(id);if(err)return err}c.foc=1;if(c.fo==null)c.fo='';saveMeta();return null}
 function elFoDrop(id){const c=elSt().kids.find(x=>x.id===id);if(!c)return'没有这个孩子';c.foc=0;saveMeta();return null}
 function elFoDir(id,d){const c=elSt().kids.find(x=>x.id===id);if(!c)return'没有这个孩子';if(!EL().focus.dirs[d])return'没有这个培养方向';c.fo=d;saveMeta();return null}
+// 专精特性：这个孩子现在能学的（新线的 Ⅰ 级，或把学会的线升一级；只看所选方向和 all 的线；等级不超过科技「精英训练」）
+function elFoCan(c){const F=EL().focus,T=EL().focusTr,cap=elTM().elTrain||0,ft=c.ft||[],out=[];if(!c.fo||!F.dirs[c.fo])return out;
+  const has=l=>ft.find(k=>T[k]&&T[k].line===l);
+  for(const k in T){const t=T[k];if(t.dir!==c.fo&&t.dir!=='all')continue;if(t.lv>cap)continue;const cur=has(t.line);if(cur?T[cur].lv!==t.lv-1:(t.lv!==1||ft.length>=F.lines))continue;out.push(k)}
+  return out}
+function elFoGive(c,k){const T=EL().focusTr,t=T[k];if(!t)return false;c.ft=(c.ft||[]).filter(x=>!T[x]||T[x].line!==t.line);c.ft.push(k);return true}
+// 训练所「过年」时调（game/el_core.elSchoolYear）：重点培养、选了方向的孩子各判一次
+function elFoYear(K){const p=EL().focus.trP*(1+(elTM().elDilig||0));for(const c of K){if(!c.foc||!c.fo||Math.random()>=p)continue;const L=elFoCan(c);if(L.length)elFoGive(c,elPick(L))}}
 
 // ---------- 0.12.2 精英派遣、精英驻军（用户定玩法，数据 data/el_disp 的 CFG.elite.disp / gar；界面 ui/el_disp、ui/settle 的驻扎弹窗）----------
 // 派遣：META.el.disp = [{id 精英, reg 地区, t 出发时间, h 已结算的小时数, got:{物资: 数量}, exp, log:[[第几小时, 文字, 'ok'|'fail'|'no']], end 受伤撤回}]
@@ -74462,7 +74498,7 @@ const elLvK=(L,k)=>1+(Math.max(1,L)-1)*EL().lvLinear[k];
 // 属性合计：地区、普通特性、训练特性、伤病、装配的被动（数组型的特殊效果取较强的）
 function elStatSum(e){const S={},add=st=>{if(!st)return;for(const k in st){const v=st[k];if(typeof v==='number')S[k]=(S[k]||0)+v;else if(Array.isArray(v)){const o=S[k];S[k]=!o||v[0]>o[0]?v:o}else S[k]=v}};
   const R=EL().regions[e.reg];if(R)add(R.st);const Jb=EL().jobs[e.job];if(Jb&&Jb.st)add(Jb.st);   // Jb.st：0.12.1 职业自带（圣骑士）
-  for(const k of e.tr)add(EL().traits[k].st);for(const k of e.tt)add(EL().train[k].st);if(e.bt)for(const k of e.bt){const T=elBloodTr()[k];if(T)add(T.st)}if(e.bsp)add(e.bsp);   // bt：0.12.0 家族特性；bsp：家族的特别属性
+  for(const k of e.tr)add(EL().traits[k].st);for(const k of e.tt)add(EL().train[k].st);if(e.ft)for(const k of e.ft){const T=EL().focusTr[k];if(T)add(T.st)}if(e.bt)for(const k of e.bt){const T=elBloodTr()[k];if(T)add(T.st)}if(e.bsp)add(e.bsp);   // bt：0.12.0 家族特性；bsp：家族的特别属性
   for(const k in e.inj){const I=EL().injuries[k];if(I)add(I.st[(e.inj[k].lv||1)-1])}{const w=elWType(e);for(const k of e.ep)if(elSkOk(e,k)&&elSkWOk(k,w))add(elPasSt(k,e.sk[k]||1))}add(es2TechSt());return S}   // 被动：0.12.0 1 级的属性 × 等级系数（game/el_sk2.elPasSt）按 1～4 级   // es2TechSt：0.12.7 代理 ES 加（精英科技的属性，game/el_skills3）
 function elDef(e){const J=elJobD(e),S=elStatSum(e),R=EL().regions[e.reg]||{},M=e.bm||{},p=k=>Math.max(0.1,1+(S[k]||0))*(M[k]||1);   // M：0.12.0 血脉的属性倍率（game/el_blood）
   return{name:elName(e),title:J.name,quality:'white',look:elSprLk(e),elite:true,allSkills:true,stars:[null,{},{},{},{}],skills:[EL_NONE,EL_NONE,EL_NONE],lore:'',
@@ -74484,6 +74520,7 @@ function elRecalc(h){const e=elById(h.elite);if(!e)return;const S=h.d.elS||{},w=
   const mag=w.cls==='magic'||!!w.magic,rg=w.cls==='ranged'&&!mag;
   h.gDmg+=(S.dmg||0)+(mag?S.dmgS||0:rg?S.dmgR||0:S.dmgM||0)+elMemK();h.gCritDmg+=S.critDmg||0;h.gCdr+=S.cd||0;
   if(S.aspdX>0)w.int/=1+S.aspdX;h.elSlowR=S.slowRes||0;elRecalc2(h,S);es2Recalc(h,S);   // 0.12.0 家族特性：攻速按比例（aspdX）、寒冰减速抗性（slowRes，engine/combat.chillMul）   // es2Recalc：0.12.7 代理 ES 加（破甲箭，game/el_skills3）
+  if(rg&&S.penP>0)w.penP=1-(1-(w.penP||0))*(1-S.penP);   // penP：0.12.8 专精「破甲射击」远程物理攻击无视护甲
   h.elRng=(S.rng||0)+(rg?S.rngP||0:0)+(((e.bm||{}).rng||1)-1);if(w.reload>0&&e.bm&&e.bm.reload>0)w.reload/=e.bm.reload;if(w.reload>0&&S.reloadK)w.reload/=Math.max(0.1,1+S.reloadK);h.elHit=S.hit||0;h.elHitK=(S.hitK||0)+(S.hitR||0);h.kbA=Math.min(1,S.kbA||0);if(h.d.elRes)h.resist=h.d.elRes;   // 0.12.0 血脉的射程、装填速度（e.bm）
   if(S.critTaken>0){h.ax=Object.assign({},h.ax||{});h.ax.critDmgRes=(h.ax.critDmgRes||0)+S.critTaken/(1-S.critTaken)}
   if(S.regen)h.regen=Math.max(0,(h.regen||0)*(1+S.regen));if(S.hps)h.regen=(h.regen||0)+S.hps;h.unlE=1;   // hps：0.12.0 家族特性「每秒恢复生命上限的比例」
@@ -74560,7 +74597,7 @@ function elHealSeek(h){if(G.phase!=='wave'||h.hp>=h.maxHp*0.75){h.elHPon=false;r
 const EL_WEAK=new Map();const elWeakEff=v=>{let e=EL_WEAK.get(v);if(!e){e={weak:v};EL_WEAK.set(v,e)}return e};
 // 减伤（陷阵、先登、我都记得）、先登免控
 feat('elite',{on:()=>!!(G&&((G.elites&&G.elites.length)||elMemOn())),hooks:{
-  dmgInF:(u,dmg,o)=>{if(u.isHero&&(u.elite||u.id==='scribe')){UF_DR+=elMemK();if(u.elite){const S=u.d.elS||{};if(o&&(S.drP||S.drM))UF_DR+=ufMg(o)?(S.drM||0):(S.drP||0);if(S.ss&&u.elSs>0)UF_DR+=u.elSs*S.ss[1];   // drP / drM：0.12.0 血脉的物理 / 法术减伤
+  dmgInF:(u,dmg,o)=>{if(u.isHero&&(u.elite||u.id==='scribe')){UF_DR+=elMemK();if(u.elite){const S=u.d.elS||{};if(o&&(S.drP||S.drM))UF_DR+=ufMg(o)?(S.drM||0):(S.drP||0);if(S.ss&&u.elSs>0)UF_DR+=u.elSs*S.ss[1];if(S.dr)UF_DR+=S.dr;   // drP / drM：0.12.0 血脉的物理 / 法术减伤
       if(S.xd){if(!(u.elXdU>G.time))u.elXdN=0;u.elXdN=Math.min(S.xd[2]/S.xd[0],(u.elXdN||0)+1);u.elXdU=G.time+S.xd[1];UF_DR+=u.elXdN*S.xd[0]}
       if(S.stk){if(!(u.elStkU>G.time))u.elStkN=0;u.elStkN=Math.min(S.stk[2],(u.elStkN||0)+1);u.elStkU=G.time+S.stk[1];UF_DR+=u.elStkN*S.stk[0]}UF_DR+=elDr2(u,S);if(S.hitSh&&dmg>0)elHitSh(u,S.hitSh)}}return dmg},   // stk：0.12.0 家族特性「每次受伤叠减伤」（不免控）
   ccInF:(u,t)=>u&&u.elite&&u.d.elS?(u.d.elS.xd?0:u.d.elS.ccR?t*Math.max(0,1-u.d.elS.ccR):t):t,   // ccR：0.12.0 训练「意志训练」
@@ -77927,7 +77964,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=201,GAME_BUILD="85734f3",GAME_BUILT=1793582600203,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=201,GAME_BUILD="3288fd8",GAME_BUILT=1793583511825,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -82370,13 +82407,14 @@ const elIc=k=>{const u=typeof eiIcon==='function'?eiIcon(k):'';return u?`<img cl
 let EL_TIP=null;
 function elTrInfo(kind,key){if(kind==='tr'){const T=EL().traits[key];return T&&{ico:elIc(T.q<0?'tr:neg':'tr:pos'),name:T.name,cls:T.q<0?'bad':'',desc:T.desc,sub:T.q<0?'负面特性':'特性'}}
   if(kind==='tt'){const T=EL().train[key];return T&&{ico:elIc('tr:train'),name:T.name,cls:'tt',desc:T.desc,sub:`训练特性 · ${T.lv} 阶`}}
+  if(kind==='ft'){const T=EL().focusTr[key];return T&&{ico:elIc('tr:train'),name:T.name,cls:'ft',desc:T.desc,sub:`重点培养特性 · ${T.dir==='all'?'各方向':EL().focus.dirs[T.dir]} · ${T.lv} 阶`}}   // 0.12.8 专精特性（data/el_focus）
   if(kind==='bt'){const T=elBloodTr()[key];if(!T)return null;const B=elBlood()[T.blood];return{ico:elCrI(T.blood),name:T.name,cls:'fam',desc:T.desc,sub:`${B?B.name:''}家族特性 · 血脉到 ${Math.round(T.min*100)}% 才可能有`}}
   if(kind==='pe'){const P=EL().personality[key];return P&&{ico:'',name:'性格「'+P.name+'」',cls:'',desc:P.desc||'',sub:'性格决定局内的走位、什么时候回城回血'}}   // 0.12.1（用户定）性格说明收进问号
   if(kind==='co'){const[thr,k]=String(key).split('|'),O=CFG.elite.cfam.trAll[k];if(!O)return null;const px=EL().bloodTrPX[+thr]||[0,0];return{ico:elIc('tr:pos'),name:O.name,cls:'fam',desc:O.desc,sub:`自建家族特性 · ${Math.round(+thr*100)}% 那一格 · 要家族 ${O.t} 阶`}}return null}
 const elTrChip=(kind,key)=>{const I=elTrInfo(kind,key);return I?`<span class="elchip${I.cls?' '+I.cls:''}" role="button" data-act="elxtip" data-v="${kind}|${key}">${I.ico}${I.name}</span>`:''};
 function elTipHTML(){const i=EL_TIP.indexOf('|'),I=elTrInfo(EL_TIP.slice(0,i),EL_TIP.slice(i+1));if(!I){EL_TIP=null;return''}
   return`<div class="mpopbg eltipbg" data-act="elxtipx" role="button" aria-label="关闭"></div><div class="mpop oppop elpop eltip" role="dialog"><div class="oph"><b>${I.ico}${I.name}</b><button class="px sq" type="button" data-act="elxtipx" aria-label="关闭">×</button></div><div class="opb"><p>${I.desc}</p><p class="meta">${I.sub}</p></div></div>`}
-const elTraitChips=e=>e.tr.map(k=>elTrChip('tr',k)).join('')+e.tt.map(k=>elTrChip('tt',k)).join('')+(e.bt||[]).map(k=>elTrChip('bt',k)).join('');
+const elTraitChips=e=>e.tr.map(k=>elTrChip('tr',k)).join('')+e.tt.map(k=>elTrChip('tt',k)).join('')+(e.ft||[]).map(k=>elTrChip('ft',k)).join('')+(e.bt||[]).map(k=>elTrChip('bt',k)).join('');
 const elInjChips=e=>Object.keys(e.inj).map(k=>{const J=e.inj[k],I=EL().injuries[k];return elChip(I.name[J.lv-1],'inj',J.lv===1?`${Math.max(0,Math.ceil((J.t+EL().injury.healH*3600000-metaNow())/3600000))} 小时后恢复`:'残疾，不会自己恢复')}).join('');
 const elAgeTxt=e=>`${Math.floor(e.age)} 岁`;
 const elBtn=(a,v,t,o)=>{o=o||{};return`<button class="px${o.on?' on':''}" type="button" data-act="${a}" data-v="${v}"${o.dis?' disabled':''}${o.ti?` title="${o.ti}"`:''}>${t}</button>`};
@@ -82432,7 +82470,7 @@ function elInfoHTML(e){const J=elJobD(e),P=EL().personality[e.pers],R=EL().regio
     <p class="meta">${elAgeTxt(e)}(${e.life-EL().retireBefore} 岁退休) · ${CFG.maps[e.reg]?CFG.maps[e.reg].name:''}${R?`(${R.desc})`:''}<br>性格「${P.name}」<span class="hq" role="button" data-act="elxtip" data-v="pe|${e.pers}" aria-label="说明">?</span></p>
     ${elMeritBar(e,N)}<p class="meta">${N?`升到 ${e.rank+1} 阶要 ${N.merit} 功勋 + ${N.silver} 银币 · `:''}出战 ${e.log.n} 次、击杀 ${e.log.k}</p>${L}
     <div class="elchips">${elTraitChips(e)||'<span class="meta">没有特性</span>'}${elInjChips(e)}</div>
-    <p class="meta">${e.tr.map(k=>EL().traits[k]).concat(e.tt.map(k=>EL().train[k])).map(T=>`${T.name}：${T.desc}`).join('<br>')}</p>
+    <p class="meta">${e.tr.map(k=>EL().traits[k]).concat(e.tt.map(k=>EL().train[k]),(e.ft||[]).map(k=>EL().focusTr[k]).filter(Boolean)).map(T=>`${T.name}：${T.desc}`).join('<br>')}</p>
     <h4 class="sh">属性</h4><p class="meta">已含等级加成(Lv${lv}：生命 ×${f2_(elLvK(lv,'hp'))}、攻击 ×${f2_(elLvK(lv,'atk'))})、装备、血脉和特性</p>${elStatGrid(e)}
     <h4 class="sh">血脉</h4>${elBloodHTML(e)}
     ${e.kid||e.st?`<div class="elrow">${elBtn('elxpop','tree:'+e.id,'族谱')}</div>`:''}<h5>技能</h5>${elSlotsHTML(e,true)}<p class="meta">主动：${e.ea.map(k=>EL().skills[k].name+' '+elRoman(e.sk[k])+' 级').join('、')||'无'}<br>被动：${e.ep.map(k=>EL().skills[k].name+' '+elRoman(e.sk[k])+' 级').join('、')||'无'}</p></div>`}
@@ -82879,7 +82917,7 @@ function elSkSlotSet(e,t,i,k){const pas=t==='p',arr=pas?e.ep:e.ea,cur=arr[i]||nu
   if(cur){const r=elEquipSk(e,cur,false);if(r)return r}if(!k)return null;if(arr.includes(k)){const r=elEquipSk(e,k,false);if(r)return r}
   const r=elEquipSk(e,k,true);if(r&&cur)elEquipSk(e,cur,true);return r}
 // —— 详情属性：特性（一条一排）→ 属性 → 血脉和属性倍率 ——
-function elAtStHTML(e){const K=[].concat(e.tr.map(k=>['tr',k]),e.tt.map(k=>['tt',k]),(e.bt||[]).map(k=>['bt',k]));
+function elAtStHTML(e){const K=[].concat(e.tr.map(k=>['tr',k]),e.tt.map(k=>['tt',k]),(e.ft||[]).map(k=>['ft',k]),(e.bt||[]).map(k=>['bt',k]));
   const tr=K.map(([kind,key])=>{const I=elTrInfo(kind,key);return I?`<div><span class="eltri">${I.ico}</span><div class="eltrm"><b class="${I.cls}">${I.name}</b><br><span>${I.desc}</span><br><span class="meta">${I.sub}</span></div></div>`:''}).join('');
   const inj=elInjChips(e),M=e.bm||{},r=v=>(Math.round(v*20)/20).toFixed(2),lv=elLv(e);
   return`<h5>特性</h5><div class="eltrl">${tr||'<p class="meta">没有特性</p>'}</div>${inj?`<div class="elchips">${inj}</div>`:''}
@@ -82931,13 +82969,15 @@ function elKidTabHTML(){const m=elSt(),FO=elFoList().sort((a,b)=>b.age-a.age),ca
     <div class="elfol">${FO.map(elFoRow).join('')}${cap>FO.length?`<div class="elfo emp"><span class="meta">空位 ×${cap-FO.length}：在下面 ${A[0]}～${A[1]-1} 岁的孩子上点「重点培养」</span></div>`:''}</div>
     <h5>预备队 ${m.kids.filter(c=>c.enr).length} / ${elKidCap()} <span class="meta">孩子共 ${m.kids.length} 名</span>${helpBtn('el-kids')}</h5>
     <div class="elkg">${R.map(elKidCard).join('')||'<p class="meta">还没有别的孩子。</p>'}</div>`}
-// 选培养方向的弹窗
-function elFoDirHTML(c){const D=EL().focus.dirs,T={mage:'法术方向：法术伤害、技能冷却、法攻这一类',archer:'远程方向：远程物理伤害、射程、攻速这一类',warrior:'近战方向：近战物理伤害、生命、减伤这一类'};
-  return`<p class="meta">选好方向，以后学这个方向的专精训练特性(专精特性还在做，现在选的先记着，随时能换)。</p>
-    <div class="elroll">${Object.keys(D).map(k=>`<div><b>${D[k]}</b><span class="meta">${T[k]||''}</span><span class="elbr">${elBtn('elxfodir',c.id+'|'+k,c.fo===k?'当前':'选这个',{on:c.fo===k,dis:c.fo===k})}</span></div>`).join('')}</div>`}
-HELP['el-focus']=()=>{const A=EL().focus.age;return{t:'训练所 · 重点培养',b:hpL([`${A[0]}～${A[1]-1} 岁的孩子可以进重点培养，名额 ${EL().focus.n} 个(科技「英才计划」每级 +1，至多 +3)；进重点培养的孩子同时占预备队的位子`,'可以选培养方向：法师、射手、战士；以后重点培养的孩子学特性的概率更高，还能学到所选方向的专精训练特性(这部分还在做)','「退学」只是退出重点培养，孩子还在预备队；长大(15 岁)离开训练所时自动退出'])}};
+// 选培养方向的弹窗：每个方向列出能学的专精特性（Ⅰ 级 / Ⅳ 级的效果）
+function elFoDirHTML(c){const D=EL().focus.dirs,L=EL().focusLines,F=EL().focus,cap=elTM().elTrain||0,ln=(dir,l)=>{const[nm,S,ds]=L[dir][l];return`<span class="elfol1"><b>${nm}</b>：${ds(S[0])}<span class="meta">(Ⅳ 级：${ds(S[S.length-1])})</span></span>`};
+  return`<p class="meta">重点培养的孩子每年有 ${pc_(F.trP*(1+(elTM().elDilig||0)))} 概率学会所选方向的一条专精特性，或把学会的升一级(每人至多 ${F.lines} 条，等级不超过科技「精英训练」，现在 ${cap?elRoman(cap):'0'} 级)；换方向时学会的保留。</p>
+    <div class="elroll">${Object.keys(D).map(k=>`<div class="elfodr"><div><b>${D[k]}</b>${Object.keys(L[k]).map(l=>ln(k,l)).join('')}</div><span class="elbr">${elBtn('elxfodir',c.id+'|'+k,c.fo===k?'当前':'选这个',{on:c.fo===k,dis:c.fo===k})}</span></div>`).join('')}</div>
+    <p class="meta">各方向都能学：${Object.keys(L.all).map(l=>ln('all',l)).join('')}</p>`}
+HELP['el-focus']=()=>{const A=EL().focus.age;return{t:'训练所 · 重点培养',b:hpL([`${A[0]}～${A[1]-1} 岁的孩子可以进重点培养，名额 ${EL().focus.n} 个(科技「英才计划」每级 +1，至多 +3)；进重点培养的孩子同时占预备队的位子`,`跟教官学特性的概率 ×${EL().focus.insK}、没有教官时自学 ×${EL().focus.selfK}；训练特性至多 ${EL().trainMax+EL().focus.tt} 条(普通 ${EL().trainMax} 条)`,`选了培养方向(法师、射手、战士)的，每年还有概率学会这个方向的专精特性(重点培养特性)，每人至多 ${EL().focus.lines} 条；等级不超过科技「精英训练」`,'「退学」只是退出重点培养，孩子还在预备队；长大(15 岁)离开训练所时自动退出'])}};
 function elKidCss(){if(typeof document==='undefined'||document.getElementById('elkidcss'))return;const s=document.createElement('style');s.id='elkidcss';s.textContent=`
 .elksub{margin:0 0 8px}
+.elchip.ft,.eltrl b.ft{color:#c8b8ff}.elchip.ft{box-shadow:inset 0 0 0 1px #4a3c7a}
 .elfol{display:grid;gap:6px;margin:0 0 10px}.elfo{display:flex;gap:10px;align-items:center;background:#1d1830;padding:6px 8px;box-shadow:inset 0 0 0 1px #4a3c7a}.elfo.emp{background:#16131b;box-shadow:inset 0 0 0 1px var(--iron);justify-content:center}
 .elfom{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.elfom b,.elkm b{color:var(--bone);font-weight:400}.elfo .elbtns,.elkc .elbtns{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}.elfo .elbtns{max-width:15em}.elkc .elbtns{width:100%}
 .elfod{font-size:.74rem;padding:1px 6px;background:#2e2650;color:#c8b8ff}.elfod.no{background:#120f17;color:var(--ash)}
@@ -82947,6 +82987,7 @@ function elKidCss(){if(typeof document==='undefined'||document.getElementById('e
 .elktg{font-size:.72rem;padding:0 5px;background:#120f17;color:var(--ash)}.elktg.on{color:var(--moss)}
 .elkpr{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.76rem}.elkpa{display:inline-flex;align-items:center;gap:3px}.elkpa[role=button]{cursor:pointer}.elkpa img{width:24px;height:24px;image-rendering:pixelated;background:#120f17;box-shadow:inset 0 0 0 1px var(--iron)}.elkpa small{color:var(--bone)}
 .elkc .elchips,.elfo .elchips{margin:0}
+.elfodr{flex-wrap:nowrap!important}.elfodr>div{flex:1;display:flex;flex-direction:column;gap:2px}.elfol1{display:block;font-size:.8rem;line-height:1.45}.elfol1 b{color:#c8b8ff}
 @media (max-width:520px){.elfo{flex-wrap:wrap}.elfo .elbtns{max-width:none;width:100%}}`;document.head.appendChild(s)}
 elKidCss();
 
