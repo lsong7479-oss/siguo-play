@@ -77964,7 +77964,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.8',GAME_TAG='稳定版',GAME_CODE=202,GAME_BUILD="6175793",GAME_BUILT=1793584437746,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.8',GAME_TAG='稳定版',GAME_CODE=202,GAME_BUILD="abee26e",GAME_BUILT=1793588511647,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -84062,6 +84062,42 @@ function aipNewRun(o){o=o||{};const mode=o.mode||'regular',map=o.map||'wild',dif
   const lo=o.loadout?[].concat(o.loadout).filter(t=>BDEF[t]&&(o.force||designUnlocked(t))).slice(0,o.force?99:loadoutMax()):undefined;
   newGame({mode,diff,map,seed:o.seed!=null?(+o.seed>>>0):undefined,oath:!!o.oath,sg:!!o.sg,prepEv:o.merchant!==false,heroes:o.heroes?[].concat(o.heroes).map(id=>currentHeroSpec(id)):undefined,loadout:lo});   // sg：0.12.7 代理 SG 加，死国
   chInit();saveRun();beginRun();G.autoNext=false;aipDsSnap();aipAutoAck();return Object.assign({ok:true},aipState())}
+// —— 局外（2026-11-02 用户提议，工坊加）：科技、建筑解锁 / 携带、建筑科技与进化、开拓地收取。只包现有函数（techBuy、designUnlock、toggleLoadout、btBuy、evoBuy / evo2Buy / evo3Buy、collectAll），规则和界面上一样 ——
+const aipW=()=>({科研点:META.wallet.科研点||0,银币:META.wallet.银币||0,设计点:META.wallet.设计点||0,建材:META.wallet.建材||0});
+function aipOut(){if(running)return'在局内：局外操作要等这一局结束(结算后 press 返回营地)';return null}
+// techs([分类])：科技列表。lv / max、cost = 下一级 [科研点, 银币]、ok = 现在能研究、need = 还缺的前置、d = 说明、v = 下一级的数值
+function aipTechs(cat){const L=[];for(const id in CFG.techs){const t=CFG.techs[id];if(cat&&t.cat!==cat)continue;const lv=techLv(id),mx=techMax(t),x={id,n:t.name,cat:t.cat,lv,max:mx};
+    if(lv<mx){const c=techCost(t,lv+1);x.cost=c;x.v=aipR(techVal(t,lv+1),3);const rq=techReqOk(t);if(!rq)x.need=aipTxt(techReqText(t));x.ok=rq&&META.wallet.科研点>=c[0]&&META.wallet.银币>=c[1]?1:0}
+    x.d=aipTxt(t.desc||'').slice(0,80);if(!techOn(id))x.off=1;L.push(x)}
+  return{wallet:aipW(),cats:CFG.techCats.map(c=>c[0]+'='+c[1]),list:L}}
+// research(科技 id, [级数])：研究（一次可以连升几级，钱不够就停）
+function aipResearch(id,n){const e=aipOut();if(e)return{ok:false,why:e};const t=CFG.techs[id];if(!t)return{ok:false,why:'没有这项科技：'+id};let k=0,why=null;
+  for(let i=0;i<Math.max(1,+n||1);i++){why=techBuy(id);if(why)break;k++}return{ok:k>0,n:t.name,up:k,lv:techLv(id),why:k?undefined:why,wallet:aipW()}}
+// designs()：建筑解锁树。unl 已解锁、carry 已携带、can 现在能解锁、cost [设计点, 银币]、need 前置、cat 分类
+function aipDesigns(){const lo=currentLoadout();return{wallet:aipW(),carry:lo.length+'/'+loadoutMax(),list:CFG.designTree.map(d=>{const D=BDEF[d.id]||{},x={id:d.id,n:D.name||d.id,cat:D.cat||''};
+    if(designUnlocked(d.id))x.unl=1;else{x.cost=[d.cost,designSilver(d)];if(designCanUnlock(d))x.can=1;else{const r=d.req.filter(q=>!META.design.includes(q)).map(q=>BDEF[q]?BDEF[q].name:q);const m=designReqTxt(d);x.need=r.join('、')+(m?(r.length?'；':'')+m:'')}}
+    if(lo.includes(d.id))x.carry=1;return x})}}
+function aipUnlock(id){const e=aipOut();if(e)return{ok:false,why:e};const d=CFG.designTree.find(x=>x.id===id);if(!d)return{ok:false,why:'没有这座建筑：'+id};if(designUnlocked(id))return{ok:true,n:BDEF[id].name,already:1};
+  if(!designCanUnlock(d))return{ok:false,why:'前置没满足'};if(!designUnlock(id))return{ok:false,why:`要 设计点 ${d.cost} + 银币 ${designSilver(d)}`};return{ok:true,n:BDEF[id].name,wallet:aipW()}}
+// carry(建筑 id, true|false)：带不带出征（不写 = 切换）
+function aipCarry(id,on){const e=aipOut();if(e)return{ok:false,why:e};if(!BDEF[id])return{ok:false,why:'没有这座建筑：'+id};const has=currentLoadout().includes(id);
+  if(on==null||!!on!==has){const err=toggleLoadout(id);if(err)return{ok:false,why:aipTxt(err)}}return{ok:true,loadout:currentLoadout(),max:loadoutMax()}}
+// btech(建筑 id)：这座建筑自己的科技（基础加成 base：lv / max（= 建筑等级 lvB）/ cost [设计点, 银币]）和进化（evo1 / evo2 / evo3：has 已研发、sel 带着）
+function aipBtech(t){if(!BTT[t])return{err:'这座建筑没有科技：'+t};const st=btState(t),k1=evoK(t),s1=btState(k1);
+  const ev=(O,has,sel,tier)=>O?Object.keys(O).map(id=>{const e=O[id],x={id,n:e.name,d:aipTxt(e.desc||'').slice(0,90),tier};if(has(id))x.has=1;if(sel===id)x.sel=1;if(e.req)x.req=e.req;return x}):[];
+  return{t,n:BDEF[t].name,wallet:aipW(),lvB:olvRec('b',t).lv,base:(BTT[t].base||[]).filter(k=>CFG.olv.items[k]).map(k=>{const I=CFG.olv.items[k],lv=bbLv(t,k),cap=olvRec('b',t).lv,x={k,n:I.name,lv,max:cap};if(lv<cap)x.cost=bbCost(lv+1);return x}),
+    evoCost:[BTT[k1].evoCost,evo2Cost(t),evo3Cost(t)],evo2Open:evo2Open()?1:0,evo3Open:evo3Open()?1:0,
+    evo:ev(BTT[k1].evo,id=>evoHas(t,id),s1.sel,1).concat(ev(BTT[t].evo2,id=>evo2Has(t,id),st.sel2,2),ev(BTT[t].evo3,id=>evo3Has(t,id),st.sel3,3))}}
+// btup(建筑 id, 加成键 | 'all', [级数])：升基础加成（all = 一键升级全部）；evo(建筑 id, 进化 id)：没研发就研发，研发了就带上（每阶只能带一个）
+function aipBtUp(t,k,n){const e=aipOut();if(e)return{ok:false,why:e};if(!BTT[t])return{ok:false,why:'没有这座建筑：'+t};if(k==='all'){const r=bbBuyAll(t);return{ok:r.n>0,up:r.n,wallet:aipW()}}   // all = 一键升级全部基础加成
+  if(!(BTT[t].base||[]).includes(k)||!CFG.olv.items[k])return{ok:false,why:'没有这项加成：'+t+' '+k};let m=0,why=null;
+  for(let i=0;i<Math.max(1,+n||1);i++){why=bbBuy(t,k);if(why)break;m++}return{ok:m>0,up:m,lv:bbLv(t,k),why:m?undefined:why,wallet:aipW()}}
+function aipEvo(t,id){const e=aipOut();if(e)return{ok:false,why:e};if(!BTT[t])return{ok:false,why:'没有这座建筑：'+t};const k1=evoK(t);
+  const T=BTT[k1].evo&&BTT[k1].evo[id]?1:BTT[t].evo2&&BTT[t].evo2[id]?2:BTT[t].evo3&&BTT[t].evo3[id]?3:0;if(!T)return{ok:false,why:'没有这个进化：'+id};
+  const has=[0,evoHas,evo2Has,evo3Has][T](t,id);if(!has){const err=[0,evoBuy,evo2Buy,evo3Buy][T](t,id);if(err)return{ok:false,why:err}}
+  const st=btState(T===1?k1:t),sk=['','sel','sel2','sel3'][T];if(st[sk]!==id)[0,evoSel,evo2Sel,evo3Sel][T](t,id);return{ok:true,tier:T,sel:st[sk],wallet:aipW()}}
+// collect()：开拓地「一键收取所有地区」
+function aipCollect(){const e=aipOut();if(e)return{ok:false,why:e};const got=collectAll();return{ok:true,got:got||null,wallet:aipW()}}
 // 弹窗兜底：读当前弹窗的标题、文字、按钮（接口没专门包的弹窗：誓约、五神法、隐士、剧情……），press(i) 点第 i 个按钮（走游戏自己的点击处理）
 function aipUi(){if(modal.hidden)return{m:null};const B=[...sheet.querySelectorAll('button')].filter(b=>!b.disabled&&b.offsetParent!==null);
   return{m:modalState,h:aipTxt((sheet.querySelector('h2')||{}).innerHTML||''),x:aipTxt(sheet.innerHTML).slice(0,600),btn:B.slice(0,30).map((b,i)=>({i,t:aipTxt(b.innerHTML).slice(0,40),a:b.dataset.act||'',v:b.dataset.v||b.dataset.i||''}))}}
@@ -84082,10 +84118,12 @@ const AIP_HELP={
   move:'move(dx, dy, 秒) 按住方向走(北 = dy<0)，goto(x, y, 秒) 走到格子；幸存者模式靠这两个走位',
   log:'log() 上一段快进的大事；log(true) 最近 120 条',
   out:'meta() 存档概况(英雄 / 星级 / 等级、可开的地图和难度)；newRun({map, diff, mode, heroes, loadout, seed, oath, merchant, auto, force})',
-  misc:'ui() / press(i) 读 / 点任意弹窗；hold(true|false) 保持暂停 / 实时；speed(1|2|3…)；scr(x, y) 格子的屏幕坐标'};
+  misc:'ui() / press(i) 读 / 点任意弹窗；hold(true|false) 保持暂停 / 实时；speed(1|2|3…)；scr(x, y) 格子的屏幕坐标',
+  camp:'局外(不在局内时)：techs([分类]) 科技列表、research(id,[级数]) 研究；designs() 建筑解锁树、unlock(id) 解锁、carry(id,[true|false]) 携带；btech(建筑) 建筑科技与进化、btup(建筑,加成键|all,[级数])、evo(建筑,进化id) 研发并带上；collect() 收开拓地产出'};
 function aipHelp(k){return k&&AIP_HELP[k]?AIP_HELP[k]:AIP_HELP}
 window.__ai={help:aipHelp,state:aipState,cards:aipCards,pick:aipPick,reroll:aipReroll,shop:aipShop,buy:aipBuy,leave:aipLeave,act:aipAct,run:aipRun,move:aipMove,goto:aipGoto,log:aipLog,
-  meta:aipMeta,newRun:aipNewRun,ui:aipUi,press:aipPress,scr:aipScr,hold:aipHold,speed:aipSpeed};
+  meta:aipMeta,newRun:aipNewRun,ui:aipUi,press:aipPress,scr:aipScr,hold:aipHold,speed:aipSpeed,
+  techs:aipTechs,research:aipResearch,designs:aipDesigns,unlock:aipUnlock,carry:aipCarry,btech:aipBtech,btup:aipBtUp,evo:aipEvo,collect:aipCollect};   // 局外：2026-11-02 工坊加
 for(const k in window.__ai){const f=window.__ai[k];window.__ai[k]=(...a)=>aipCall(f,a)}
 
 </script>
