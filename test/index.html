@@ -77981,7 +77981,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.9',GAME_TAG='稳定版',GAME_CODE=203,GAME_BUILD="0cb2b7d",GAME_BUILT=1793594534092,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.9',GAME_TAG='稳定版',GAME_CODE=203,GAME_BUILD="b78797c",GAME_BUILT=1793595845721,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -80542,6 +80542,7 @@ function sgChainURL(){if(SG_IMG.ch)return SG_IMG.ch;const W=88,H=24,c=canvasOf(W
   x.fillStyle='#1a1a20';x.fillRect(lx+1,ly-5,6,1);x.fillRect(lx,ly-4,1,4);x.fillRect(lx+7,ly-4,1,4);x.fillStyle='#c9ced6';x.fillRect(lx+2,ly-4,4,1);x.fillRect(lx+1,ly-3,1,3);x.fillRect(lx+6,ly-3,1,3);   // 锁梁
   return SG_IMG.ch=c.toDataURL()}
 // 0.12.7i（用户定）死国难度按钮：右上角直角三角形火焰角标 + 整个按钮包一圈火焰，都是 3 帧；选中的那个动起来、更亮，没选中的停在第 1 帧、更暗
+//   类名 sgfw（四边）/ sgfk（角标）：0.12.9 修——原来叫 sgw / sgc，和签到日历（ui/daily）撞名，签到的星期栏被套上绝对定位
 //   火舌从按钮四条边往里烧（不伸出按钮：难度按钮之间只隔 10px）；文字、问号压在火上面
 //   火舌条：16 × 6 像素一块（横向平铺），3 帧竖着排成 16 × 18 的图，CSS 用 background-position 按 steps(3) 轮播；左右两边用转过 90° 的那份（6 × 16 一块，3 帧横排 18 × 16）
 const sgR=(a,b)=>{let h=(a*374761393+b*668265263)|0;h=(h^(h>>>13))*1274126177|0;return((h^(h>>>16))>>>0)/4294967296};
@@ -80565,29 +80566,29 @@ function sgBgFlame(){const W=32,H=40,c=canvasOf(W,H*3),x=c.getContext('2d');
 function sgFlImgs(){if(SG_IMG.ft)return;SG_IMG.fg=sgBgFlame().toDataURL();SG_IMG.ft=sgTongue(false).toDataURL();SG_IMG.fs=sgTongue(true).toDataURL();SG_IMG.fc=sgCorner().toDataURL()}
 // 难度按钮上的装饰：k = 1 锁着（锁链），2 死国可选（火焰）；on = 选中
 function sgDecor(k,on){if(k===1)return`<img alt="" class="sgch" src="${sgChainURL()}">`;if(k!==2)return'';sgFlImgs();
-  return`<i class="sgwrap${on?' on':''}" aria-hidden="true"><i class="sgw t"></i><i class="sgw b"></i><i class="sgw l"></i><i class="sgw r"></i><i class="sgc"></i></i>`}
+  return`<i class="sgwrap${on?' on':''}" aria-hidden="true"><i class="sgfw t"></i><i class="sgfw b"></i><i class="sgfw l"></i><i class="sgfw r"></i><i class="sgfk"></i></i>`}
 function sgFlCss(){sgFlImgs();return`
 .sgwrap{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;filter:brightness(.6) saturate(.75);opacity:.8}
 .dc.sgf>b,.dc.sgf>.dst{z-index:2}.dc.sgf>b{position:relative;text-shadow:0 0 3px #000,0 0 2px #000}.dc.sgf .hq{z-index:2}
 .sgwrap.on{filter:brightness(1.25) drop-shadow(0 0 4px rgba(138,100,255,.9));opacity:1}
-.sgw{position:absolute;image-rendering:pixelated;background-repeat:repeat-x}
-.sgw.t,.sgw.b{left:0;right:0;height:12px;background-image:url(${SG_IMG.ft});background-size:32px 36px}
-.sgw.t{top:0;transform:scaleY(-1)}.sgw.b{bottom:0;height:18px;background-size:48px 54px}   /* 底边火舌放大 3 倍，烧得最旺 */
-.sgw.l,.sgw.r{top:0;bottom:0;width:12px;background-image:url(${SG_IMG.fs});background-size:36px 32px;background-repeat:repeat-y}
-.sgw.r{right:0}.sgw.l{left:0;transform:scaleX(-1)}
-.dc .sgc{position:absolute;top:0;right:0;width:28px;height:28px;background:url(${SG_IMG.fc}) 0 0/84px 28px;image-rendering:pixelated}
-.sgwrap.on .sgw.t,.sgwrap.on .sgw.b{animation:sgfy .45s steps(3) infinite}
-.sgwrap.on .sgw.l,.sgwrap.on .sgw.r{animation:sgfx .45s steps(3) infinite}
-.dc .sgwrap.on .sgc{animation:sgfc .45s steps(3) infinite}
+.sgfw{position:absolute;image-rendering:pixelated;background-repeat:repeat-x}
+.sgfw.t,.sgfw.b{left:0;right:0;height:12px;background-image:url(${SG_IMG.ft});background-size:32px 36px}
+.sgfw.t{top:0;transform:scaleY(-1)}.sgfw.b{bottom:0;height:18px;background-size:48px 54px}   /* 底边火舌放大 3 倍，烧得最旺 */
+.sgfw.l,.sgfw.r{top:0;bottom:0;width:12px;background-image:url(${SG_IMG.fs});background-size:36px 32px;background-repeat:repeat-y}
+.sgfw.r{right:0}.sgfw.l{left:0;transform:scaleX(-1)}
+.dc .sgfk{position:absolute;top:0;right:0;width:28px;height:28px;background:url(${SG_IMG.fc}) 0 0/84px 28px;image-rendering:pixelated}
+.sgwrap.on .sgfw.t,.sgwrap.on .sgfw.b{animation:sgfy .45s steps(3) infinite}
+.sgwrap.on .sgfw.l,.sgwrap.on .sgfw.r{animation:sgfx .45s steps(3) infinite}
+.dc .sgwrap.on .sgfk{animation:sgfc .45s steps(3) infinite}
 @keyframes sgfy{from{background-position-y:0}to{background-position-y:-36px}}
-.sgwrap.on .sgw.b{animation-name:sgfb}@keyframes sgfb{from{background-position-y:0}to{background-position-y:-54px}}
+.sgwrap.on .sgfw.b{animation-name:sgfb}@keyframes sgfb{from{background-position-y:0}to{background-position-y:-54px}}
 @keyframes sgfx{from{background-position-x:0}to{background-position-x:-36px}}
 @keyframes sgfc{from{background-position-x:0}to{background-position-x:-84px}}
 .sgbg{position:absolute;left:0;right:0;bottom:0;height:80px;background:url(${SG_IMG.fg}) 0 0/64px 240px repeat-x;image-rendering:pixelated;opacity:.75;animation:sgfg .6s steps(3) infinite}
 @keyframes sgfg{from{background-position-y:0}to{background-position-y:-240px}}
 .chb.sgf{position:relative;background:#120a26;border-color:rgba(154,130,255,.6)}.chb.sgf>img,.chb.sgf>b,.chb.sgf>small{position:relative;z-index:2}.chb.sgf>b,.chb.sgf>small{text-shadow:0 0 3px #000,0 0 2px #000}
 .chb.sgf .sgwrap.on{filter:brightness(1.1);z-index:1}
-@media (prefers-reduced-motion:reduce){.sgwrap.on .sgw,.sgwrap.on .sgc,.sgwrap.on .sgbg{animation:none}}`}
+@media (prefers-reduced-motion:reduce){.sgwrap.on .sgfw,.sgwrap.on .sgfk,.sgwrap.on .sgbg{animation:none}}`}
 // 出征设置的开关（誓约、流浪商人下面）
 const sgRow=()=>{const on=SET.sgOn===true;return`<div class="shrow sgrow"><h4 class="sh">死国${helpBtn('sg')}</h4><button class="px sm${on?' on':''}" type="button" data-act="sgTog">${on?'开':'关'}</button></div>`};
 // showDiff 开头调：死国开着时难度不在三档里就换成噩梦
@@ -80595,7 +80596,7 @@ function sgDiffFix(ex){if(sgUiOn(ex)&&!CFG.sg.diffs.includes(menuDiff))menuDiff=
 function sgAct(a){if(a==='sgTog'){SET.sgOn=SET.sgOn!==true;saveSettings();showDiff()}else if(a==='sgLock'){sfx('click');toast('死国只能选噩梦及以上')}}
 // 徽章外加一圈火焰（80 × 80，徽章 64 画在正中）：每 2 × 2 一个像素块，火舌的高度按角度起伏
 // 勋章墙的一格用哪张图（ui/ch_ach.chWallHTML）
-const sgBadgeImg=(k,on)=>on&&sgFlameOn(k)?(sgFlImgs(),`<i class="sgwrap on" aria-hidden="true"><i class="sgbg"></i><i class="sgw t"></i><i class="sgw b"></i><i class="sgw l"></i><i class="sgw r"></i></i><img alt="" class="sgfr" src="${chBadgeURL(k,on)}">`):`<img alt="" src="${chBadgeURL(k,on)}">`;   // 0.12.7i（用户定）：死国绝境通关的那一格，方框四边燃起 + 背景蓝紫色火焰，徽章本身照旧
+const sgBadgeImg=(k,on)=>on&&sgFlameOn(k)?(sgFlImgs(),`<i class="sgwrap on" aria-hidden="true"><i class="sgbg"></i><i class="sgfw t"></i><i class="sgfw b"></i><i class="sgfw l"></i><i class="sgfw r"></i></i><img alt="" class="sgfr" src="${chBadgeURL(k,on)}">`):`<img alt="" src="${chBadgeURL(k,on)}">`;   // 0.12.7i（用户定）：死国绝境通关的那一格，方框四边燃起 + 背景蓝紫色火焰，徽章本身照旧
 // 战绩（ui/hub.recordBox）常规一格后面：死国打到的最高难度
 function sgRecTxt(k){const D=CFG.sg.diffs;for(let i=D.length-1;i>=0;i--){const b=sgBestOf(k,D[i]);if(b===undefined)continue;return`<br><small>死国 ${sgClear(k,D[i])?`<b>${diffName(D[i],true)}</b> 通关`:`${diffName(D[i],true)} <b>${b}</b> 波`}</small>`}return''}
 // 地图情报的英雄之魄一行（ui/hub.mapInfo）
