@@ -1,11 +1,11 @@
 {
  "ch": "stable",
  "ver": "0.12.7",
- "code": 200,
- "size": 17610107,
- "sha256": "41705df616b7baa93cfc0d80569d907aeef422d5b17f8b6a8bd00525cdae4e82",
+ "code": 201,
+ "size": 17615164,
+ "sha256": "46a68fd2de82645383782c5083d2e6aaebc26a55bd0fee91a3b074f4cbee5369",
  "minLoader": 1,
- "sig": "pRM2GqAji0qoCxKHvI5YHdn8m7mMYXKKvK4Y8QzCSXKUeUwV78qFhZS2PsIYOZQP+3hxRyWUGhxkmWetoPOi3A==",
- "note": "0.12.7 稳定版：死国开关（噩梦 / 炼狱 / 绝境、3 轮、10 张新亡灵卡）、娱乐模式·幸存者模式、在线热更新、进阶-马可·波罗、AI 游玩接口、塔楼与兵营平衡",
- "at": "2026-11-01 20:50 UTC"
+ "sig": "N8P5OQUiaFV2Ym/BQ9yhPA8ykBOKCWkiJCZrQj1ZcP+iMntj8/MvE8IXKmK/vf+SSih2vMr+TwV+xvJ9ZEY2Lg==",
+ "note": "0.12.7 稳定版更新：任务 / 签到 / 悬赏 / 幸存者宝箱改成图标收获弹窗、补全 buff 名字、修复一个会卡住游戏的报错",
+ "at": "2026-11-02 00:08 UTC"
 }
