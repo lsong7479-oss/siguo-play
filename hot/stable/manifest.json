@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.12.9",
- "code": 203,
- "size": 17639388,
- "sha256": "e01e9f3d2aecf3196b3536baaef2db1687a7277d3f4dc12914071f939717fef8",
+ "ver": "0.12.10",
+ "code": 204,
+ "size": 17650612,
+ "sha256": "871a137237a8b98400a9d57583cbe1d76d39cb8c2ecb13bcecca317d0c6b7802",
  "minLoader": 1,
- "sig": "+j3vzoDcECXswy058AGjozXc7QJWehFrI7g4O/6idjKmyfzVNyy2vdzMI6Hq0AlA5t3nNmCkhtBurPyXzb+zKw==",
- "note": "新增纪念勋章「开拓骑士」，慰劳一直陪着游戏测试的玩家",
- "at": "2026-11-02 04:38 UTC"
+ "sig": "jwmWwhMWD7eBgYV3HKT1LQEaXgTLKAMKflhO25xHag3i98juGrhwqtc8uJFXa4B1vGicPvIWG1ovqMOJAm3iQQ==",
+ "note": "新剧情引子「开拓前夕」；死国奖励分开算（银币、建材 ×1.5，其余 ×1.25）；马可·波罗家族声望随星级 +25～50%；修复日常签到的星期栏",
+ "at": "2026-11-02 06:28 UTC"
 }

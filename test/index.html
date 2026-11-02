@@ -12679,8 +12679,8 @@ CFG.story.regions.push(
      城墙在主堡外 10 × 10 一圈；第四节添的箭塔在四角各 3 座、民兵训练营在主堡两侧各 2 座；找夜鸦的地点（主堡东北林子边）；王都的布局（game/st_new.stRoyalTiles） */
 // 对话框头像（用户定：精英模板 + 职业画的小人）：配角的职业、年龄（Claude 定）；马丁、路德、奥托、托比、阿兰按章节 els 的兵器；enemy = 用这种亡灵的图
 CFG.story.npcLook={'军官':{job:'musketeer', age:42}, '副官':{job:'recruit', age:30}, '汉斯':{job:'engineer', age:66}, '亡灵大法师':{enemy:'lich'}};
-// 0.12.9b 引子「开拓前夕」（用户台本）的御前会议：国王、财政官、博蒙公爵、劳伦斯伯爵、奥斯本伯爵、罗兰（职业、年龄 Claude 定，只管对话框头像）
-Object.assign(CFG.story.npcLook,{'国王':{job:'paladin', age:62}, '财政官':{job:'alchemist', age:55}, '博蒙公爵':{job:'bard', age:52}, '劳伦斯伯爵':{job:'shieldGuard', age:46}, '奥斯本伯爵':{job:'musketeer', age:50}, '罗兰':{job:'recruit', age:30}});
+// 0.12.9b 引子「开拓前夕」（用户台本）的御前会议：国王、财政官、博蒙公爵、劳伦斯伯爵、奥斯本伯爵、罗兰（职业、年龄 Claude 定，只管对话框头像；国王用专门画的小人 art/st_npc，用户定）
+Object.assign(CFG.story.npcLook,{'国王':{spr:'npc_king'}, '财政官':{job:'alchemist', age:55}, '博蒙公爵':{job:'bard', age:52}, '劳伦斯伯爵':{job:'shieldGuard', age:46}, '奥斯本伯爵':{job:'musketeer', age:50}, '罗兰':{job:'recruit', age:30}});
 Object.assign(CFG.story.plans,{
   // 王都：开拓地大地图（96 × 96）正中，外城 60 × 60 带四座瓮城、内城 28 × 28、王宫 10 × 10；塔楼、兵营、民居按规则排（game/st_new），全部满级（章节 maxLv）
   royal:{ring:30, inner:14, palace:5, barb:{d:3, w:4}, gen:'royal', lv:1, people:1},
@@ -15056,8 +15056,8 @@ Object.assign(CFG.skills,{
     byStar:{v:[5,5,5,5,5], p:[0.1,0.15,0.2,0.25,0.3]},
     desc:p=>`被动：上阵后击杀亡灵获得的铜币 +${p.v}，且获得的铜币 +${pc_(p.p)}；阵亡后仍然生效`},
   // 被动：结算的银币、建材、科研点、设计点、家族声望、地区材料、核心特产 +v；精英、首领的掉宝率 +drop（固定）
-  mp2Loot:{name:'攫财之道', passive:true, cd:0, aim:'self', drop:0.5, rep:0.5,   // rep：0.12.9b（用户定）家族声望 +100% → 固定 +50%（和掉宝率一档），不再跟着 v
-    byStar:{v:[0.5,0.6,0.7,0.85,1]},
+  mp2Loot:{name:'攫财之道', passive:true, cd:0, aim:'self', drop:0.5,
+    byStar:{v:[0.5,0.6,0.7,0.85,1], rep:[0.25,0.3,0.35,0.4,0.5]},   // rep：0.12.9b（用户定）家族声望单独一档 +25 / 30 / 35 / 40 / 50%（原来跟着 v，最高 +100%）
     desc:p=>`被动：上阵后战后结算的银币、建材、科研点、设计点、地区材料、核心特产 +${pc_(p.v)}；家族声望 +${pc_(p.rep)}；精英、首领的掉宝率 +${pc_(p.drop)}；阵亡后仍然生效`},
   // 主堡陷落时：花 (base + per × 波次²) × k 铜币（取整），主堡恢复满生命、立刻进入准备阶段、场上所有亡灵回到地图边缘；每局限一次
   mp2Mill:{name:'亡灵推磨', passive:true, cd:0, aim:'self', base:1000, per:100,
@@ -42851,6 +42851,26 @@ function ekBaby(fr){return hdFig(32,32,S=>{
 })}
 Object.assign(HD_HEROES,{el_kid:ekBoy,elf_kid:ekGirl,el_baby:ekBaby});
 
+// ---------- 0.12.9b 剧情配角的专门小人（用户定：国王要老一点，专门画一个）----------
+// 进 HD_HEROES（启动时和英雄小人一起画进图集），剧情对话框的头像用 CFG.story.npcLook[名字].spr（game/st_new.stNpcPor）
+// 国王（样子 Claude 定）：老人，白发、长白胡子，戴金冠（红宝石），红色长袍、白貂皮披肩（黑点），手里一根金权杖；身子有点佝偻
+function npcKing(fr){return hdFig(32,32,S=>{
+  const robe=hm('#9a2430','cloth'),robeD=hm('#6e1820','cloth'),erm=hm('#eeeae0','cloth'),skin=hm('#e8c4a0','skin'),hair=hm('#e4e2dc','hair'),gold=hdM('gold'),ruby='#d02838',shoe=hm('#4a2c20','leather');
+  S.part(robe,{R:2},p=>p.poly(fr?[[10,17],[22,17],[24.6,31],[7.4,31]]:[[10,17],[22,17],[24,31],[8,31]]));S.ln(16,20,16,30.6,[robeD,1]);   // 长袍（拖到地）
+  S.rect(10,29.6,4,1.6,shoe,{R:0.6});S.rect(18,29.6,4,1.6,shoe,{R:0.6});
+  S.cap(10.5,18,9.4,24,2.2,1.9,robe);S.ell(9.2,24.6,1.8,1.7,skin);   // 后面的胳膊
+  S.part(erm,{R:2},p=>{p.ell(16,17.4,7.4,2.8);p.poly([[11,17],[15,17],[13,23]])});for(const[x,y]of[[11.6,17],[14.6,18.2],[17.6,17.4],[20.4,17.6],[12.8,20.6]])S.px(x,y,'#2a2420');   // 白貂皮披肩 + 黑点
+  S.ln(23,12,23.6,29,[gold,2],1);S.dt(22.9,11.4,1.6,'#e0b040');S.dt(22.9,11.4,0.7,ruby);   // 权杖
+  S.cap(21.4,18,22.6,22.4,2.2,1.9,robe);S.ell(22.8,22.8,1.8,1.7,skin);   // 前面的胳膊（握着权杖）
+  hdHead(S,{skin});
+  S.part(hair,{},p=>{p.ell(11.6,10.8,2.2,3.8);p.ell(15,6.4,5.4,1.8)});   // 白发（后脑、鬓角）
+  S.part(hair,{R:1},p=>p.poly([[16.8,13.2],[22.4,12.8],[21.6,17.4],[19.6,20.4],[17.6,17.6]]));S.ln(18.8,14.6,19.6,19,[hair,0],1);   // 长白胡子
+  S.part(gold,{R:0.6},p=>{p.rect(11.2,4,9.6,2.6,0.4);p.poly([[11.2,4.4],[11.8,1.2],[13.2,4.2]]);p.poly([[14.6,4.2],[16,0.6],[17.4,4.2]]);p.poly([[18.8,4.2],[20.2,1.2],[20.8,4.4]])});   // 金冠
+  S.px(16,2.4,ruby);S.px(12,3,ruby);S.px(20,3,ruby);S.ln(12,5.4,20,5.4,[gold,4],1);
+  hdFace(S,{skin,ey:10,brow:'#d8d4cc',mouth:false});S.ln(17.4,8.4,18.6,8.4,[skin,0],1);S.ln(20,8.4,21,8.4,[skin,0],1);   // 白眉；额头的皱纹
+},{})}
+Object.assign(HD_HEROES,{npc_king:npcKing});
+
 // ---------- 0.12.4 守望长城四位统领、可汗的占位小人（代理 B；代理 A 在 art/nb_art.js 画好登记后，这里的 if 就不生效；order.txt 里排在 A 的文件后面）----------
 if(!HD_ENEMY.nbPegasusCmd)HD_ENEMY.nbPegasusCmd=HD_ENEMY.obCavCmd;
 if(!HD_ENEMY.nbSkyWolfCmd)HD_ENEMY.nbSkyWolfCmd=HD_ENEMY.obCavCmd;
@@ -68614,7 +68634,7 @@ const mp2HpK=()=>mp2C().hp;   // structs/structs.structMax：建筑生命的独�
 const mp2Buy=()=>G?mp2C().buy:1;   // game/merchant094：商人的价格倍率
 const mp2Loot=()=>mp2C().loot;   // 结算各项 +X%
 const mp2Drop=()=>mp2C().drop;   // 掉宝率 +X%
-const mp2Rep=()=>mp2C().rep;   // 家族声望 +X%（0.12.9b 用户定：固定 +50%，不跟着攫财之道的 v）
+const mp2Rep=()=>mp2C().rep;   // 家族声望 +X%（0.12.9b 用户定：单独一档 +25～50%，不跟着攫财之道的 v）
 function mp2Join(h){if(h&&h.id==='merchant2'&&G.structs&&G.structs.length)rescaleStructs()}   // game/game.joinHero：他上场时建筑的生命上限重算（按比例，满血的还是满血）
 Object.assign(SK,{mp2Cost:PASSIVE_SK,mp2Scrap:PASSIVE_SK,mp2Loot:PASSIVE_SK,mp2Mill:PASSIVE_SK});
 // ================= 进阶条件 =================
@@ -76202,7 +76222,8 @@ function stRoyalTiles(P,L,cx,cy){const used=new Set(L.map(p=>p.y*MAP_W+p.x)),put
 const ST_POR=new Map();
 function stNpcPor(nm,R0){const x=R0?{R:R0}:stCur();if(!x||!x.R.nv)return null;if(ST_POR.has(nm))return ST_POR.get(nm);let u=null;
   try{const L=SDY.npcLook||{},o=L[nm];
-    if(o&&o.enemy){if(EIDX[o.enemy]!==undefined)u=enemyIcon(o.enemy)}
+    if(o&&o.spr){if(typeof SPR!=='undefined'&&SPR.heroes[o.spr])u=heroIcon(o.spr,2)}   // spr：0.12.9b 专门画的小人（art/st_npc，国王）
+    else if(o&&o.enemy){if(EIDX[o.enemy]!==undefined)u=enemyIcon(o.enemy)}
     else{let job=o&&o.job;if(!job)for(const C of x.R.chapters)for(const r of C.els||[])if(r[0]===nm)job=(STE_W[r[1]]||STE_W.ss).job;
       if(job){const e=stElGen(nm,{sex:(o&&o.sex)||'m',age:(o&&o.age)||24});e.job=job;e.given=nm;u=elIcon(e)}}}catch(err){console.warn('stNpcPor',err)}
   ST_POR.set(nm,u);return u}
@@ -78015,7 +78036,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.9',GAME_TAG='稳定版',GAME_CODE=203,GAME_BUILD="ba5576a",GAME_BUILT=1793600038569,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.10',GAME_TAG='稳定版',GAME_CODE=204,GAME_BUILD="8060baa",GAME_BUILT=1793601151235,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
