@@ -77981,7 +77981,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.9',GAME_TAG='稳定版',GAME_CODE=203,GAME_BUILD="b78797c",GAME_BUILT=1793595845721,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.9',GAME_TAG='稳定版',GAME_CODE=203,GAME_BUILD="c50d092",GAME_BUILT=1793597536763,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -83826,7 +83826,7 @@ function aipAutoAck(){for(let k=0;k<4;k++){const m=modalState;
 
 // ========== 局面 ==========
 function aipState(part,o){if(!G||!G.base)return{err:'没有对局'};o=o||{};
-  if(part==='structs')return aipStructs();
+  if(part==='structs')return aipStructs();if(part==='cmd')return aipCmd();
   if(part==='heroes')return G.heroes.map(aipHero);
   if(part==='enemies')return aipEnemies(o.all);
   if(part==='next')return aipNext();
@@ -83846,6 +83846,12 @@ function aipState(part,o){if(!G||!G.base)return{err:'没有对局'};o=o||{};
   if(G.phase==='prep'||G.phase==='reward')r.next=aipNext(true);
   if(sv)r.sv=aipSvState(false);
   return r}
+// state('cmd')：指令面板的现状——出怪口(号 / 名字 / 格子)、各种塔的选目标方式、兵营的模式和指令、英雄的模式和指令
+function aipCmd(){const SN=spawnNames(),pt=p=>p?Math.round((p.x-8)/16)+','+Math.round((p.y-8)/16):undefined;
+  return{spawns:(G.spawns||[]).map((p,i)=>({i,n:SN[i],at:p.x+','+p.y})),towers:cmdTowerTypes().map(([t,L])=>({t,n:BDEF[t].name,count:L.length,modes:[...new Set(L.map(x=>x.tgt||'free'))]})),
+    camps:G.structs.filter(b=>!b.dead&&isCampT(b.type)).map(b=>{const C=b.cmd||{};return{at:aipXY(b),n:b.cfg.name,mode:b.mode,dir:C.c!=null?SN[C.c]:undefined,guard:pt(C.g),follow:C.f,lock:b.locked?1:undefined}}),
+    heroes:G.heroes.map((h,i)=>{const C=heroCmd(h)||{};return{i,n:h.d.name,mode:heroModeOf(h),ai:h.ai?1:0,dir:C.c!=null?SN[C.c]:undefined,guard:pt(C.g)}}),
+    modes:{tower:TWR_MODES.map(m=>m+'='+TWR_NAMES[m]).join(' '),camp:SOLD_MODES.map(m=>m+'='+SOLD_NAMES[m]).join(' '),hero:Object.keys(HERO_MODES).map(m=>m+'='+HERO_MODES[m]).join(' ')}}}
 function aipStructs(){return G.structs.map(s=>{const x={n:s.cfg.name,t:s.type,at:aipXY(s),lv:lvShow(s),hp:Math.ceil(s.hp),max:Math.round(s.maxHp),up:upgradeCost(s),rep:repairCost(s)};
   if(s.isCamp){x.u=s.unit;x.un=CFG.units[s.unit]?CFG.units[s.unit].name:s.unit;x.us=(BDEF[s.type].units||[]).join('/');let n=0;for(const u of G.soldiers)if(!u.dead&&u.camp===s&&!u.summon)n++;x.men=n}
   if(BDEF[s.type]&&BDEF[s.type].weapon&&!s.isCamp)try{const T=towerW(s);x.r=aipR(T.range/16,1);x.dmg=aipR(T.dmg,1)}catch(e){}   // r 射程（格）、dmg 一发的伤害：2026-11-02 工坊加，布塔时看覆盖
@@ -84002,6 +84008,29 @@ function aipAct1(cmd){let w=cmd.split(/\s+/).filter(Boolean),h=G.hero;const hw=w
   if(op==='skill'||op==='sk'){if(!h)return R({ok:false,why:'没有英雄'});const k=num(0);if(!(k>=0&&k<3)||!h.skills[k])return R({ok:false,why:'技能号 0～2'});const p=skP(h,h.sp[k]);
     if(G.phase!=='wave')return R({ok:false,why:'只能在战斗中放技能'});if(h.dead)return R({ok:false,why:h.d.name+'倒下了'});if(!h.unl[k])return R({ok:false,why:'还没解锁(升星)'});if(h.cds[k]>0)return R({ok:false,why:'冷却中，还要 '+aipR(h.cds[k],1)+' 秒'});
     const aim=a.length>=3?{x:num(1)*16+8,y:num(2)*16+8}:null;const ok=castSkill(k,p.aim==='self'?null:aim,true,h);return R(ok?{ok:true,n:p.name}:{ok:false,why:'放不出来(在施法 / 被控 / 没有目标 / 武器不对)',n:p.name})}
+  // 整段 / 同类（2026-11-02 用户提议，工坊加）：upseg = 城墙整段升级（Lv5 后是相邻强化）、upsame = 同类一键升级（满级后是同类强化）、repseg / repsame = 整段 / 同类修理；走游戏自己的 upgradeGroup / upgradeSame / repairGroup / repairSame
+  if(op==='upseg'||op==='upsame'||op==='repseg'||op==='repsame'){const s=aipAt(ref2(0));if(!s||s===G.base)return R({ok:false,why:'那里没有建筑(写 x,y)'});const seg=op.endsWith('seg'),up=op.startsWith('up');
+    if(seg&&!isWallT(s.type))return R({ok:false,why:'整段只对城墙'});if(up&&G.noBuild)return R({ok:false,why:'这一局不能升级建筑'});if(!up&&(G.phase==='wave'||G.invade))return R({ok:false,why:G.invade?'入侵战不能修理':'战斗中不能修理'});
+    const L=seg?wallGroup(s):sameType(s),lv0=L.map(lvShow),g0=G.gold;(up?(seg?upgradeGroup:upgradeSame):(seg?repairGroup:repairSame))(s);
+    const n=up?L.filter((t,i)=>lvShow(t)>lv0[i]).length:undefined;return R({ok:G.gold<g0,n:s.cfg.name,count:L.length,changed:n,cost:Math.round(g0-G.gold),gold:Math.floor(G.gold),why:G.gold<g0?undefined:'没有能'+(up?'升':'修')+'的，或者铜币不够'})}
+  // 指令面板（同游戏里左上「指令」）：tmode 塔类型|* 模式(free/near/hp/back)；cmode x,y|* 模式(guard/charge/follow) [跟随的英雄号]；cdir x,y 出怪口号|free；cguard x,y gx gy|home
+  //   hmode 英雄号|* 模式(guard/sortie)；hdir 英雄号 出怪口号|free；hguard 英雄号 gx gy|home。出怪口号见 state('cmd')
+  if(op==='tmode'){const t=a[0],m=a[1];if(!TWR_MODES.includes(m))return R({ok:false,why:'模式：'+TWR_MODES.join('/')});if(t==='*'){setTowerMode(m);return R({ok:true,mode:m})}
+    let n=0;for(const x of G.structs)if(!x.dead&&x.type===t&&isTowerS(x)&&!x.locked){x.tgt=m;n++}return R({ok:n>0,n,mode:m,why:n?undefined:'没有这种塔(或都锁定了)'})}
+  if(op==='cmode'){const m=a[a[0]==='*'?1:a.length>2&&/^\d+$/.test(a[1])?2:1],hi=a[a.indexOf(m)+1];if(!SOLD_MODES.includes(m))return R({ok:false,why:'模式：'+SOLD_MODES.join('/')});
+    const L=a[0]==='*'?G.structs.filter(b=>!b.dead&&isCampT(b.type)&&!b.locked):[aipAt(ref2(0))].filter(b=>b&&b.isCamp);if(!L.length)return R({ok:false,why:'没有兵营'});
+    const fh=m==='follow'?(hi!=null?G.heroes[+hi]:G.hero):null;if(m==='follow'&&!fh)return R({ok:false,why:'没有这位英雄'});
+    for(const b of L){b.mode=m;if(fh)campCmdSet(b,'f',fh.id)}if(UI.ready)refreshCtl();return R({ok:true,n:L.length,mode:m,follow:fh?fh.d.name:undefined})}
+  if(op==='cdir'||op==='cguard'){const b=aipAt(ref2(0)),rest=a.slice(/^\d+$/.test(a[0]||'')?2:1);if(!b||!b.isCamp)return R({ok:false,why:'那里不是兵营'});
+    if(op==='cdir'){const v=rest[0]==='free'||rest[0]==null?null:+rest[0];if(v!=null&&!(G.spawns&&G.spawns[v]))return R({ok:false,why:'没有这个出怪口(state("cmd") 看)'});b.mode='charge';campCmdSet(b,'c',v);return R({ok:true,mode:'charge',dir:v==null?'自由':spawnNames()[v]})}
+    if(rest[0]==='home'||rest[0]==null){campCmdSet(b,'g',null);b.mode='guard';return R({ok:true,mode:'guard',at:'兵营附近'})}const gx=+rest[0],gy=+rest[1];if(!(gx>=0&&gy>=0))return R({ok:false,why:'cguard x,y gx gy'});
+    b.mode='guard';campCmdSet(b,'g',{x:gx*16+8,y:gy*16+8});return R({ok:true,mode:'guard',at:gx+','+gy})}
+  if(op==='hmode'||op==='hdir'||op==='hguard'){const all=a[0]==='*',hh=all?null:G.heroes[+a[0]];if(!all&&!hh)return R({ok:false,why:'没有这位英雄(英雄号 0、1、2…)'});
+    if(op==='hmode'){const m=a[1];if(!HERO_MODES[m])return R({ok:false,why:'模式：'+Object.keys(HERO_MODES).join('/')});setHeroMode(m,all?null:hh.id,all?'h':undefined);return R({ok:true,mode:m})}
+    if(all)return R({ok:false,why:'要写英雄号'});
+    if(op==='hdir'){const v=a[1]==='free'||a[1]==null?null:+a[1];if(v!=null&&!(G.spawns&&G.spawns[v]))return R({ok:false,why:'没有这个出怪口'});setHeroMode('sortie',hh.id);heroCmdSet(hh.id,'c',v);return R({ok:true,mode:'sortie',dir:v==null?'自由':spawnNames()[v]})}
+    if(a[1]==='home'||a[1]==null){heroCmdSet(hh.id,'g',null);setHeroMode('guard',hh.id);return R({ok:true,mode:'guard',at:'默认'})}const gx=+a[1],gy=+a[2];if(!(gx>=0&&gy>=0))return R({ok:false,why:'hguard 英雄号 gx gy'});
+    setHeroMode('guard',hh.id);heroCmdSet(hh.id,'g',{x:gx*16+8,y:gy*16+8});return R({ok:true,mode:'guard',at:gx+','+gy})}
   if(op==='wave'||op==='go'){const r=aipWave();return R(r)}
   if(op==='goto'||op==='moveto'){if(!h||h.dead)return R({ok:false,why:'英雄倒下了'});const x=num(0),y=num(1);if(!(x>=0&&y>=0))return R({ok:false,why:'goto x y(格)'});h.ai=false;h.moveTo={x:x*16+8,y:y*16+8};h.tgtI=-1;if(UI.ready)refreshCtl();return R({ok:true,n:h.d.name,note:'要 run / move 让时间往前走才会走过去'})}
   if(op==='stop'){if(h)h.moveTo=null;AIP.mv=null;return R({ok:true})}
@@ -84135,7 +84164,7 @@ const AIP_HELP={
   state:'state() 概况；state("structs"|"heroes"|"enemies"|"next"|"picked"|"stats"|"grid"|"build"|"sv")；grid 可带 {x,y,r,cov}（cov=1 把射程覆盖到的空地画成 *）。structs 里攻击建筑有 r 射程(格)、dmg。lv 是真实等级(Lv5+N 已算进去)，up 升级价(null = 满级)，rep 修理价，at = "x,y" 格子',
   cards:'cards() 看可选的卡；pick(i) 选(不用再确认，亡灵卡 / 装置卡 / 挑战卡 / 通关同样用 pick)；reroll() 花刷新次数重抽',
   shop:'shop() 看商人(常规：pot:/item:/ware: 三页；幸存者：b0 商品、u0 装置升级)；buy(id)；leave() 离开。常规商人只在准备阶段能买，开下一波时自动离开',
-  act:'act("build 类型 x y [兵种]" | "clear x y" | "up x,y [级数]" | "up keep" | "rep" | "rep x,y" | "sell x,y" | "unit x,y 兵种" | "ai on|off [英雄号]" | "skill 号 [x y] [h=英雄号]" | "wave" | "goto x y" | "stop" | "auto on|off")；失败返回 why；几条用 ; 隔开',
+  act:'act("build 类型 x y [兵种]" | "clear x y" | "up x,y [级数]" | "up keep" | "rep" | "rep x,y" | "upseg / upsame / repseg / repsame x,y"(城墙整段 / 同类一键) | "tmode 塔类型|* 模式" | "cmode x,y|* 模式 [英雄号]" | "cdir x,y 出怪口号|free" | "cguard x,y gx gy|home" | "hmode 英雄号|* 模式" | "hdir 英雄号 出怪口号|free" | "hguard 英雄号 gx gy|home"(指令面板，state("cmd") 看现状和出怪口号) | "sell x,y" | "unit x,y 兵种" | "ai on|off [英雄号]" | "skill 号 [x y] [h=英雄号]" | "wave" | "goto x y" | "stop" | "auto on|off")；失败返回 why；几条用 ; 隔开',
   run:'run() 快进到下一个决定 / 首领出场 / 主堡 < 50% / 英雄倒下 / 结束；run("wave") 只停在决定和结束；run(秒数)；选项 {sec, ms, base, low, boss:false, hero:false}；返回 stop(停下的原因) 和 ev(这一段的大事)',
   move:'move(dx, dy, 秒) 按住方向走(北 = dy<0)，goto(x, y, 秒) 走到格子；幸存者模式靠这两个走位',
   log:'log() 上一段快进的大事；log(true) 最近 120 条',
