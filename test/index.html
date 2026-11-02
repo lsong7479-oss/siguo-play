@@ -22855,6 +22855,7 @@ CFG.hot={pub:'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEe3VydwF6MOQeH1oOVjcTUS1ysEHFBO
 // name 名字；desc 勋章墙上的说明；how 没获得时显示的获得方式。加新勋章：这里加一条、art/medals.js 的 MD_ART 加画法，再跑 python3 tools/redeem_gen_sync.py 更新生成器
 CFG.medals={
   obsidianPioneer:{code:1, name:'黑曜先驱', desc:'通关黑曜要塞深渊难度的纪念', how:'通关黑曜要塞深渊难度后，把存档 ID 发给作者领取专属兑换码'},
+  pioneerKnight:{code:2, name:'开拓骑士', desc:'和我们一起测试《死国开拓者》的纪念：谢谢每一位报 bug、提建议、陪着游戏一版一版长大的开拓骑士', how:'参与过测试的玩家，把存档 ID 发给作者领取专属兑换码'},   // 0.12.9（用户定：慰劳一直在测试的玩家）
 };
 
 // ---------- 0.11.4 开拓地加工坊、铁匠铺（用户 2026-10-24：通关三阶地区后解锁；产量、造价 Claude 定）----------
@@ -39099,7 +39100,23 @@ function mdObsidian(){const gold=bdM('#e0b040','metal'),obs=bdM('#2c1c3c','gem')
     S.px(32.8,26,ink);S.ln(30.4,35.4,29.2,37.2,[eg,1],1);S.ln(33.6,35.4,34.8,37.2,[eg,1],1);   // 眼、爪子
     S.dt(32,6.5,1.6,'#d83a4a');S.dt(32,57.5,1.6,'#d83a4a');S.dt(6.5,32,1.6,'#d83a4a');S.dt(57.5,32,1.6,'#d83a4a');   // 四个臂端的红宝石
   },{k:2})}
-const MD_ART={obsidianPioneer:mdObsidian};
+// 开拓骑士（0.12.9，用户要的「慰劳测试玩家」；样子 Claude 定）：蓝底银边的骑士盾，盾上插着一面开拓者的金色旗帜，盾后交叉两把剑，下面一圈月桂枝
+function mdKnight(){const silver=bdM('#c8d0dc','metal'),blue=bdM('#2a4c9a','cloth'),gold=bdM('#e0b040','metal'),steel=bdM('#aeb6c2','metal'),leaf=bdM('#5c9a3c','plain'),leafL=bdM('#8cc45a','plain'),red=bdM('#c83a3a','cloth');
+  return hdFig(64,64,S=>{
+    for(const sg of[1,-1]){const X=x=>32+sg*(x-32);   // 交叉的两把剑（剑身斜着从盾后伸出，剑柄在下）
+      S.poly([[X(10),8],[X(13),6],[X(50),45],[X(47),48]],steel,{R:0.8});
+      S.poly([[X(44),49],[X(50),43],[X(52),45],[X(46),51]],gold,{R:0.8});S.ln(X(49),48,X(54),53,[gold,1],2);S.dt(X(55),54,1.6,'#e0b040')}
+    for(const sg of[1,-1])for(let i=0;i<7;i++){const a=bdRad(sg>0?96+i*13:84-i*13),x=32+Math.cos(a)*25,y=33+Math.sin(a)*25;S.ell(x,y,3.6,2.2,i%2?leafL:leaf,{R:1})}   // 月桂枝（下半圈）
+    S.dt(32,59,2,'#c83a3a');S.poly([[29,58],[35,58],[37,62],[32,60],[27,62]],red,{R:0.6});   // 月桂枝底下的红丝带
+    const SH=[[14,12],[50,12],[50,30],[47,40],[40,48],[32,53],[24,48],[17,40],[14,30]];
+    S.poly(SH,silver,{R:1.4});S.poly([[17,15],[47,15],[47,30],[44.6,38.6],[38.6,45.6],[32,49.6],[25.4,45.6],[19.4,38.6],[17,30]],blue,{R:2});   // 盾：银边、蓝底
+    S.ln(18,16,46,16,'#6a8ad8',1);S.ln(18,17,18,30,'#4a6cc0',1);   // 盾面的高光
+    S.poly([[30.6,17],[33.2,17],[33.2,46],[30.6,46]],gold,{R:0.6});S.dt(31.9,16.4,1.8,'#f0d070');   // 旗杆 + 杆头
+    S.poly([[33.2,18],[45,20.6],[41.6,24.6],[45,28.6],[33.2,30]],gold,{R:0.8});S.ln(34,21,41,22.4,'#f6dc84',1);   // 金色燕尾旗
+    S.poly([[25.6,40],[38.2,40],[37,42.6],[26.8,42.6]],bdM('#6a4a2c','wood'),{R:0.5});   // 插旗的土堆（开拓的意思）
+    S.dt(32,12,2.2,'#d83a4a');S.dt(32,12,1,'#ff8a96');   // 盾顶的红宝石
+  },{k:2})}
+const MD_ART={obsidianPioneer:mdObsidian,pioneerKnight:mdKnight};
 const MD_CACHE={},MD_SHADOW={};
 function mdSprite(id){if(MD_CACHE[id])return MD_CACHE[id];const f=MD_ART[id];if(!f)return null;let c=null;try{c=f()}catch(e){console.warn('medal',id,e)}return MD_CACHE[id]=c}
 function mdShadow(id){if(MD_SHADOW[id])return MD_SHADOW[id];const s=mdSprite(id);if(!s)return null;   // 剪影：同 art/bd_badges.badgeShadow（不透明的像素涂黑、透明度 0.6）
@@ -77964,7 +77981,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.8',GAME_TAG='稳定版',GAME_CODE=202,GAME_BUILD="d55310d",GAME_BUILT=1793590904158,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.9',GAME_TAG='稳定版',GAME_CODE=203,GAME_BUILD="0cb2b7d",GAME_BUILT=1793594534092,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');

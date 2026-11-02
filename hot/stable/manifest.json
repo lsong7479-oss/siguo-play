@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.12.8",
- "code": 202,
- "size": 17632545,
- "sha256": "316c2ac682c4fbf662f6f1f376590e8d2d742f275b87e180466bf9847ac3254c",
+ "ver": "0.12.9",
+ "code": 203,
+ "size": 17639388,
+ "sha256": "e01e9f3d2aecf3196b3536baaef2db1687a7277d3f4dc12914071f939717fef8",
  "minLoader": 1,
- "sig": "BTbJ/wScEqsawY6r4cLVH40YahHIM/m6rlgAq+OVCM7jiNFReQxdUYwJGUW9Sc5iv8Lk9VDrx/dLlYo6PsyVfQ==",
- "note": "训练所分教官 / 孩子；新增重点培养（培养方向、专精特性）；孩子和婴儿立绘；死国难度按钮、勋章火焰",
- "at": "2026-11-02 01:49 UTC"
+ "sig": "+j3vzoDcECXswy058AGjozXc7QJWehFrI7g4O/6idjKmyfzVNyy2vdzMI6Hq0AlA5t3nNmCkhtBurPyXzb+zKw==",
+ "note": "新增纪念勋章「开拓骑士」，慰劳一直陪着游戏测试的玩家",
+ "at": "2026-11-02 04:38 UTC"
 }
