@@ -931,6 +931,7 @@ h4.sh .meta{font-family:var(--f-body);letter-spacing:0;margin-left:6px}
 .ptabs{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;min-width:0;max-width:100%;touch-action:pan-x;overscroll-behavior-x:contain;scrollbar-width:none}.ptabs::-webkit-scrollbar{display:none}.ptabs .px{font-size:.82rem;padding:3px 10px;flex:none;white-space:nowrap}   /* v0.10.2（用户要）地区页签一行放不下时左右滑 */
 .rtabs{margin:2px 0 6px}   /* v0.10.2 战绩按地区阶筛选 */
 .dc{position:relative}.dc>.hq{position:absolute;top:7px;right:7px;margin:0}.dc>b{padding-right:22px}   /* v0.10.2（用户要）难度的说明收进问号 */
+.dc>.dst{position:absolute;top:50%;right:32px;transform:translateY(-50%);font-size:.74rem;line-height:1;color:var(--ash);white-space:nowrap}.dc>.dst.ok{color:var(--moss)}.dc>b{white-space:nowrap}.dc>.hq{top:50%;transform:translateY(-50%)}body.noHelp .dc>.dst{right:10px}   /* 0.12.7i（用户定）通关 / 未通关放名字右边，不加按钮高度 */
 .mpager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:none;flex:none}   /* v0.8.18（用户定）地区照旧左右滑；同一阶地图多了在这一页里上下滑 */
 .mpager::-webkit-scrollbar{display:none}
 
@@ -73368,7 +73369,7 @@ const soulTgtOf=()=>{const L=(META.lineup||[]).slice(0,typeof lineupSize==='func
 //   亡灵：start 钩子（读档时也跑：newGame 重算 G.dHp / G.dDmg 之后）再 × hp / dmg
 //   英雄之魄：sgSoulSrc()（game/soul_pt 每轮固定给）；培养值 × sgPtK()
 //   精英的装备 / 打造书原来只吃 dropMul，不吃难度掉宝倍率：game/items.onEliteKill 单独 × sgDropK()；首领必掉的装备、打造书：sgBossExtra（game/items.onBossKill）
-// 纪录：META.sgRec[地图][难度] = 死国下最多守到几波（守满 sgWaves 波 = 死国通关；绝境通关 → 成就里这张图的徽章加蓝紫色火焰外框，ui/sg_ui）；
+// 纪录：META.sgRec[地图][难度] = 死国下最多守到几波（守满 sgWaves 波 = 死国通关；绝境通关 → 成就勋章墙这张图那一格燃起蓝紫色火焰，ui/sg_ui）；
 //   死国的一局同时按常规记最好成绩，但封顶常规的波数（sgBestCap），老的解锁、徽章、开拓判断照旧
 function sgOk(o,d){return!!(o&&o.sg&&(o.mode||'regular')==='regular'&&o.expand==null&&!o.story&&!o.invade&&!o.stMap&&d&&CFG.sg.diffs.includes(d.id))}
 // 难度名：死国下深渊叫「绝境」；d 可以是难度 id、CFG.difficulties 的一项或派生的难度
@@ -73392,7 +73393,7 @@ const sgFlameOn=m=>sgClear(m,'abyss');
 // 结算（game/meta.awardMeta，saveMeta 之前调）
 function sgRunEnd(win,cleared,got,ban){if(!G||!G.sg||ban||MODE!=='regular'||G.expand!=null||G.invade||G.story)return;
   const m=G.map||'wild',d=DIFF.id,R=sgRec(),M=R[m]||(R[m]={}),was=sgClear(m,d);if(!(M[d]>=cleared))M[d]=cleared|0;
-  if(!was&&sgClear(m,d)){got.sgClear=d;const nm=CFG.maps[m]?CFG.maps[m].name:m;setTimeout(()=>toast(d==='abyss'?`死国·${diffName(d,true)}通关：${nm}的徽章加上了蓝紫色火焰外框`:`死国·${diffName(d,true)}通关：${nm}`),1500)}}
+  if(!was&&sgClear(m,d)){got.sgClear=d;const nm=CFG.maps[m]?CFG.maps[m].name:m;setTimeout(()=>toast(d==='abyss'?`死国·${diffName(d,true)}通关：成就里${nm}的勋章燃起了蓝紫色火焰`:`死国·${diffName(d,true)}通关：${nm}`),1500)}}
 // 常规的最好成绩：死国的一局封顶常规的波数（死国 3 轮，记进常规的键会出现「最佳 60 波」）
 const sgBestCap=c=>G&&G.sg?Math.min(c,regWavesOf(DIFF.sgB||DIFF,G.map||'wild')):c;
 
@@ -77857,7 +77858,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=201,GAME_BUILD="d69955e",GAME_BUILT=1793581188939,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.7',GAME_TAG='稳定版',GAME_CODE=201,GAME_BUILD="2d4735d",GAME_BUILT=1793581865111,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -78688,6 +78689,9 @@ function dexPopHTML(){if(!dexPop||!bookDef(dexPop.base))return'';const{base,book
     ${gearCard({base,book:!!book},'','',true)}<p class="meta">${book?'打造书掉落时工艺随机；下面是打造要的材料，和普通工艺、不强化时的标准属性':'下面是普通工艺、不强化时的标准属性'}</p>${dexStats(base,book,mp)}</div>`}
 let menuExpand=null,menuExpandR='wild';   // v0.7.0 开拓（扩张战）打哪个地区：地区 id = 地图 id
 const diffOpen=d=>d.open||DEV||testOn();   // v0.4.4 噩梦、炼狱直接开放
+// 0.12.7i（用户定）难度按钮右边一个小字：常规 / 死国 = 通关 / 未通关（死国看死国纪录），无尽 = 最佳几波；锁着的写未开放，死国锁链的、开拓战的不写。放在名字那一行的右边（问号左边），不加按钮高度
+function dcStat(d,sk,lock,ex,mp,b){const t=sk===1||ex?'':lock?'未开放':menuMode==='regular'?((sk?sgClear(mp,d.id):b!==undefined&&b>=regWavesOf(d,mp))?'通关':'未通关'):b!==undefined?`最佳 ${b} 波`:'';
+  return t?`<span class="dst${t==='通关'?' ok':''}">${t}</span>`:''}
 // v0.3.3 地图分页（按难度，CFG.mapPages）：一页一页横向滑动；页签点了就滑到那一页
 function mapPages(ex){if(ex)return[{name:'开拓',maps:[menuExpandR]}];const seen=new Set(),P=CFG.mapPages.map(p=>({name:p.name,maps:p.maps.filter(k=>CFG.maps[k]&&!seen.has(k)&&seen.add(k))}));
   const rest=Object.keys(CFG.maps).filter(k=>!seen.has(k));if(rest.length)P[P.length-1].maps.push(...rest);return P.filter(p=>p.maps.length)}
@@ -78707,7 +78711,7 @@ function showDiff(){
       ${wmv?wmHTML('diff'):`<div class="mpager" data-sk="mpager">${pages.map(P=>`<div class="mpage">${P.maps.map(k=>mapCard(k,ex,best)).join('')}</div>`).join('')}</div>`}
       <h4 class="sh">难度</h4><div class="diffs">${CFG.difficulties.map(d=>{const sk=sgUiOn(ex)?(CFG.sg.diffs.includes(d.id)?2:1):0,lock=ex?d.id!==ex.diff:!diffOpen(d),mp=ex?menuExpandR:menuMap,b=sk?sgBestOf(mp,d.id):best[(mp!=='wild'?mp+'.':'')+menuMode+'.'+d.id];   // sk：0.12.7 代理 SG 加，死国开着时 1 = 锁链锁上、2 = 火焰角标（ui/sg_ui）
         return`<button class="dc${d.id===menuDiff&&sk!==1?' on':''}${lock||sk===1?' dlock':''}${sk===1?' sglk':sk===2?' sgf':''}" type="button" ${sk===1?'aria-disabled="true" data-act="sgLock"':lock?'aria-disabled="true"':`data-act="diff" data-v="${d.id}"`}><b>${sk?diffName(d,true):d.name}</b>${helpBtn('diff-'+d.id)}
-        <span class="sm">${sk===1?'死国不可选':lock?(ex?'':'未开放'):b!==undefined&&!ex?`最佳：${b} 波`:''}</span>${sgDecor(sk,d.id===menuDiff)}</button>`}).join('')}</div>
+        ${dcStat(d,sk,lock,ex,mp,b)}${sgDecor(sk,d.id===menuDiff)}</button>`}).join('')}</div>
       ${ex?'':`<div class="dfopt"><div class="shrow"><h4 class="sh">誓约${helpBtn('oath')}</h4><button class="px sm${SET.oathOn!==false?' on':''}" type="button" data-act="oathTog">${SET.oathOn!==false?'开':'关'}</button></div><div class="shrow"><h4 class="sh">流浪商人${helpBtn('pmerch')}</h4><button class="px sm${SET.prepEvOn!==false?' on':''}" type="button" data-act="pevTog">${SET.prepEvOn!==false?'开':'关'}</button></div>${menuMode==='regular'?sgRow():''}</div>${menuMode==='endless'?chDiffRow():''}`}
       ${mapInfo(ex?menuExpandR:menuMap)}</div>
     <aside class="col side" data-sk="df-r">
@@ -80399,7 +80403,7 @@ function chCss(){if(typeof document==='undefined'||document.getElementById('chcs
 // ---------- 0.12.7 代理 SG：「死国」的界面（机制 game/sg_dead.js，数据 data/deadland.js）----------
 // 出征设置（ui/hub.showDiff）：誓约、流浪商人下面的开关 sgRow（只在常规模式、不是开拓时出现）；开着时难度只能选噩梦 / 炼狱 / 绝境：
 //   简单～困难的按钮变灰、盖两条交叉锁链（点了提示），噩梦～绝境右上角直角三角形火焰角标 + 整个按钮包一圈蓝紫色火焰（0.12.7i，3 帧：选中的动、亮，没选中的静、暗）；深渊显示「绝境」（diffName）
-// 成就勋章墙（ui/ch_ach.chWallHTML）：死国下通关绝境的地图，徽章外面加一圈蓝紫色火焰（sgBadgeURL）
+// 成就勋章墙（ui/ch_ach.chWallHTML）：死国下通关绝境的地图，那一格方框四边燃起蓝紫色火焰、背景也是火焰（sgBadgeImg，0.12.7i 用户定）
 // 图都是代码画的像素图（canvas → dataURL，有缓存）；CSS 在 sgCss 里一次插进页面
 const sgUiOn=ex=>!ex&&menuMode==='regular'&&SET.sgOn===true;
 const SG_IMG={};
@@ -80430,41 +80434,45 @@ function sgCorner(){const S=14,c=canvasOf(S*3,S),x=c.getContext('2d');
     const tongue=d>=-2&&d<0&&sgR(i*3+y,k+7)<0.55;if(d<0&&!tongue)continue;
     const dep=(d+2)/(S+2),col=tongue?SG_FC[1]:dep>0.7?SG_FC[3]:dep>0.45?SG_FC[2]:dep>0.2?SG_FC[1]:SG_FC[0];x.fillStyle=col;x.fillRect(k*S+i,y,1,1)}
   return c}
-function sgFlImgs(){if(SG_IMG.ft)return;SG_IMG.ft=sgTongue(false).toDataURL();SG_IMG.fs=sgTongue(true).toDataURL();SG_IMG.fc=sgCorner().toDataURL()}
+// 勋章格子的背景火焰：32 × 40 一块（横向平铺），从底往上烧到七成高，颜色只用暗的两档（徽章要看得清）；3 帧竖排 32 × 120
+function sgBgFlame(){const W=32,H=40,c=canvasOf(W,H*3),x=c.getContext('2d');
+  for(let k=0;k<3;k++)for(let i=0;i<W;i++){let h=4;for(let j=-1;j<3;j++){const cx=j*13+((k*5)%13),pk=[28,20,24][((j%3)+3+k)%3],dx=Math.abs(i-cx);h=Math.max(h,Math.round(pk*(1-dx/7.5)+(sgR(i,k+3)<0.3?2:0)))}
+    for(let y=0;y<h;y++){const t=y/h;x.fillStyle=t<0.45?SG_FC[1]:SG_FC[0];x.fillRect(i,k*H+H-1-y,1,1)}}
+  return c}
+function sgFlImgs(){if(SG_IMG.ft)return;SG_IMG.fg=sgBgFlame().toDataURL();SG_IMG.ft=sgTongue(false).toDataURL();SG_IMG.fs=sgTongue(true).toDataURL();SG_IMG.fc=sgCorner().toDataURL()}
 // 难度按钮上的装饰：k = 1 锁着（锁链），2 死国可选（火焰）；on = 选中
 function sgDecor(k,on){if(k===1)return`<img alt="" class="sgch" src="${sgChainURL()}">`;if(k!==2)return'';sgFlImgs();
   return`<i class="sgwrap${on?' on':''}" aria-hidden="true"><i class="sgw t"></i><i class="sgw b"></i><i class="sgw l"></i><i class="sgw r"></i><i class="sgc"></i></i>`}
 function sgFlCss(){sgFlImgs();return`
-.dc .sgwrap{position:absolute;inset:0;pointer-events:none;z-index:1;filter:brightness(.6) saturate(.75);opacity:.8}
-.dc.sgf>b,.dc.sgf>span.sm{position:relative;z-index:2;text-shadow:0 0 3px #000,0 0 2px #000}.dc.sgf .hq{z-index:2}
-.dc .sgwrap.on{filter:brightness(1.25) drop-shadow(0 0 4px rgba(138,100,255,.9));opacity:1}
-.dc .sgw{position:absolute;image-rendering:pixelated;background-repeat:repeat-x}
-.dc .sgw.t,.dc .sgw.b{left:0;right:0;height:12px;background-image:url(${SG_IMG.ft});background-size:32px 36px}
-.dc .sgw.t{top:0;transform:scaleY(-1)}.dc .sgw.b{bottom:0;height:18px;background-size:48px 54px}   /* 底边火舌放大 3 倍，烧得最旺 */
-.dc .sgw.l,.dc .sgw.r{top:0;bottom:0;width:12px;background-image:url(${SG_IMG.fs});background-size:36px 32px;background-repeat:repeat-y}
-.dc .sgw.r{right:0}.dc .sgw.l{left:0;transform:scaleX(-1)}
+.sgwrap{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;filter:brightness(.6) saturate(.75);opacity:.8}
+.dc.sgf>b,.dc.sgf>.dst{z-index:2}.dc.sgf>b{position:relative;text-shadow:0 0 3px #000,0 0 2px #000}.dc.sgf .hq{z-index:2}
+.sgwrap.on{filter:brightness(1.25) drop-shadow(0 0 4px rgba(138,100,255,.9));opacity:1}
+.sgw{position:absolute;image-rendering:pixelated;background-repeat:repeat-x}
+.sgw.t,.sgw.b{left:0;right:0;height:12px;background-image:url(${SG_IMG.ft});background-size:32px 36px}
+.sgw.t{top:0;transform:scaleY(-1)}.sgw.b{bottom:0;height:18px;background-size:48px 54px}   /* 底边火舌放大 3 倍，烧得最旺 */
+.sgw.l,.sgw.r{top:0;bottom:0;width:12px;background-image:url(${SG_IMG.fs});background-size:36px 32px;background-repeat:repeat-y}
+.sgw.r{right:0}.sgw.l{left:0;transform:scaleX(-1)}
 .dc .sgc{position:absolute;top:0;right:0;width:28px;height:28px;background:url(${SG_IMG.fc}) 0 0/84px 28px;image-rendering:pixelated}
-.dc .sgwrap.on .sgw.t,.dc .sgwrap.on .sgw.b{animation:sgfy .45s steps(3) infinite}
-.dc .sgwrap.on .sgw.l,.dc .sgwrap.on .sgw.r{animation:sgfx .45s steps(3) infinite}
+.sgwrap.on .sgw.t,.sgwrap.on .sgw.b{animation:sgfy .45s steps(3) infinite}
+.sgwrap.on .sgw.l,.sgwrap.on .sgw.r{animation:sgfx .45s steps(3) infinite}
 .dc .sgwrap.on .sgc{animation:sgfc .45s steps(3) infinite}
 @keyframes sgfy{from{background-position-y:0}to{background-position-y:-36px}}
-.dc .sgwrap.on .sgw.b{animation-name:sgfb}@keyframes sgfb{from{background-position-y:0}to{background-position-y:-54px}}
+.sgwrap.on .sgw.b{animation-name:sgfb}@keyframes sgfb{from{background-position-y:0}to{background-position-y:-54px}}
 @keyframes sgfx{from{background-position-x:0}to{background-position-x:-36px}}
 @keyframes sgfc{from{background-position-x:0}to{background-position-x:-84px}}
-@media (prefers-reduced-motion:reduce){.dc .sgwrap.on .sgw,.dc .sgwrap.on .sgc{animation:none}}`}
+.sgbg{position:absolute;left:0;right:0;bottom:0;height:80px;background:url(${SG_IMG.fg}) 0 0/64px 240px repeat-x;image-rendering:pixelated;opacity:.75;animation:sgfg .6s steps(3) infinite}
+@keyframes sgfg{from{background-position-y:0}to{background-position-y:-240px}}
+.chb.sgf{position:relative;background:#120a26;border-color:rgba(154,130,255,.6)}.chb.sgf>img,.chb.sgf>b,.chb.sgf>small{position:relative;z-index:2}.chb.sgf>b,.chb.sgf>small{text-shadow:0 0 3px #000,0 0 2px #000}
+.chb.sgf .sgwrap.on{filter:brightness(1.1);z-index:1}
+@media (prefers-reduced-motion:reduce){.sgwrap.on .sgw,.sgwrap.on .sgc,.sgwrap.on .sgbg{animation:none}}`}
 // 出征设置的开关（誓约、流浪商人下面）
 const sgRow=()=>{const on=SET.sgOn===true;return`<div class="shrow sgrow"><h4 class="sh">死国${helpBtn('sg')}</h4><button class="px sm${on?' on':''}" type="button" data-act="sgTog">${on?'开':'关'}</button></div>`};
 // showDiff 开头调：死国开着时难度不在三档里就换成噩梦
 function sgDiffFix(ex){if(sgUiOn(ex)&&!CFG.sg.diffs.includes(menuDiff))menuDiff=CFG.sg.diffs[0]}
 function sgAct(a){if(a==='sgTog'){SET.sgOn=SET.sgOn!==true;saveSettings();showDiff()}else if(a==='sgLock'){sfx('click');toast('死国只能选噩梦及以上')}}
 // 徽章外加一圈火焰（80 × 80，徽章 64 画在正中）：每 2 × 2 一个像素块，火舌的高度按角度起伏
-function sgBadgeURL(id){if(SG_IMG['b'+id])return SG_IMG['b'+id];let b=null;try{b=(typeof badgeSprite==='function'&&badgeSprite(id))||chBadgeFallback(id)}catch(e){b=null}
-  const c=canvasOf(80,80),x=c.getContext('2d');
-  for(let py=0;py<80;py+=2)for(let px=0;px<80;px+=2){const dx=px+1-40,dy=py+1-40,r=Math.hypot(dx,dy),a=Math.atan2(dy,dx),h=34+3.2*(0.5+0.5*Math.sin(a*14))+1.8*Math.sin(a*5+1.3)+(Math.sin(a*14)>0.8?1.5:0);
-    if(r<29||r>h)continue;const f=(r-29)/Math.max(1,h-29);x.fillStyle=SG_FC[f>0.82?0:f>0.55?1:f>0.28?2:3];x.fillRect(px,py,2,2)}
-  if(b)x.drawImage(b,0,0,b.width,b.height,8,8,64,64);return SG_IMG['b'+id]=c.toDataURL()}
 // 勋章墙的一格用哪张图（ui/ch_ach.chWallHTML）
-const sgBadgeImg=(k,on)=>on&&sgFlameOn(k)?`<img alt="" class="sgfr" src="${sgBadgeURL(k)}">`:`<img alt="" src="${chBadgeURL(k,on)}">`;
+const sgBadgeImg=(k,on)=>on&&sgFlameOn(k)?(sgFlImgs(),`<i class="sgwrap on" aria-hidden="true"><i class="sgbg"></i><i class="sgw t"></i><i class="sgw b"></i><i class="sgw l"></i><i class="sgw r"></i></i><img alt="" class="sgfr" src="${chBadgeURL(k,on)}">`):`<img alt="" src="${chBadgeURL(k,on)}">`;   // 0.12.7i（用户定）：死国绝境通关的那一格，方框四边燃起 + 背景蓝紫色火焰，徽章本身照旧
 // 战绩（ui/hub.recordBox）常规一格后面：死国打到的最高难度
 function sgRecTxt(k){const D=CFG.sg.diffs;for(let i=D.length-1;i>=0;i--){const b=sgBestOf(k,D[i]);if(b===undefined)continue;return`<br><small>死国 ${sgClear(k,D[i])?`<b>${diffName(D[i],true)}</b> 通关`:`${diffName(D[i],true)} <b>${b}</b> 波`}</small>`}return''}
 // 地图情报的英雄之魄一行（ui/hub.mapInfo）
@@ -80472,7 +80480,7 @@ const sgSoulNote=()=>SET.sgOn===true&&menuMode==='regular'?`；死国：${CFG.sg
 function sgCss(){if(typeof document==='undefined'||document.getElementById('sgcss'))return;const s=document.createElement('style');s.id='sgcss';s.textContent=`
 .dc.sglk{filter:grayscale(1)}.dc.sglk>b,.dc.sglk>span.sm{position:relative;z-index:1;text-shadow:0 0 3px #000,0 0 2px #000}
 .dc .sgch{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;image-rendering:pixelated;opacity:.85}
-.chb img.sgfr{width:80px;height:80px;margin:-8px;image-rendering:pixelated}`+sgFlCss();document.head.appendChild(s)}
+`+sgFlCss();document.head.appendChild(s)}
 sgCss();
 HELP.sg=()=>({t:'死国',b:hpL(['只有常规模式有；开拓、剧情、入侵战、无尽、幸存者没有。默认关闭，记住上次的选择',
   `难度只能选噩梦、炼狱、绝境(死国下的深渊)，三个难度都要打 ${CFG.sg.rounds} 轮`,
@@ -80481,7 +80489,7 @@ HELP.sg=()=>({t:'死国',b:hpL(['只有常规模式有；开拓、剧情、入�
   `掉宝率额外 +${Math.round((CFG.sg.drop-1)*100)}%：打造书、装备、核心材料、首领专属装备；首领必掉的装备、打造书每件有 ${Math.round((CFG.sg.drop-1)*100)}% 概率多掉一件`,
   `来源地图的英雄之魄每轮 ${CFG.sg.diffs.map(d=>diffName(d,true)+' '+CFG.sg.souls[d]).join('、')} 个；培养值同比例提升(${CFG.sg.diffs.map(d=>diffName(d,true)+' ×'+Math.round(CFG.sg.souls[d]/CFG.soulSrc[d]*100)/100).join('、')})`,
   '和卡牌、英雄(搜山检海、攫财之道……)的加成分开相乘',
-  '死国的纪录单独记(战绩里常规那一格下面)；死国下通关绝境，成就里这张地图的徽章加上蓝紫色火焰外框'])});
+  '死国的纪录单独记(战绩里常规那一格下面)；死国下通关绝境，成就勋章墙里这张地图那一格燃起蓝紫色火焰'])});
 // 死国开着时，噩梦～深渊的「?」里补死国的倍率和波数
 for(const id of CFG.sg.diffs){const f=HELP['diff-'+id];if(!f)continue;HELP['diff-'+id]=()=>{const r=f();if(!sgUiOn(menuExpand!==null?CFG.settlement.expansions[menuExpand]:null))return r;
   return{t:`死国·${diffName(id,true)}`,b:r.b+hpP(`死国：亡灵生命再 ×${CFG.sg.hp}、伤害再 ×${CFG.sg.dmg}；结算再 ×${CFG.sg.reward}、掉宝再 ×${CFG.sg.drop}；守 ${sgWaves(menuMap)} 波`)}}}
