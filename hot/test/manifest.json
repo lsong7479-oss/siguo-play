@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.0a",
- "code": 205,
- "size": 17697299,
- "sha256": "bec818042af4ba9e5db48c004174744d73c968a3da93e2c47326c013c7a5e6da",
+ "ver": "0.13.0b",
+ "code": 206,
+ "size": 17736336,
+ "sha256": "96190e2f709bf57c15bd875acaf6d19101e337e58231f4bc02eb7e052e7af4f5",
  "minLoader": 1,
- "sig": "RhwxFS9hhDQ3Lx7p5Mw8t9264eAj9DCFDDZCuuiLO1Itvzyt2xCD5joGRZa/zRKLMqLcvrz4hcG2TYyIid2cKA==",
- "note": "0.13.0a 测试版：新剧情「荒野」换成定稿的荒野篇（6 章），剧情对话里有了选项和分支",
- "at": "2026-11-02 15:15 UTC"
+ "sig": "92gMoriDReHuMsHisxPz5DO1DTLiroI2GbQ8VkFf8YFjnvndJngVSQuD++qP1/1RqGund0SGN12wD8qbUnvTzg==",
+ "note": "0.13.0b 测试版：新剧情腐化之地篇（第四、五章）；录制行动（设置里打开，每局记下操作）",
+ "at": "2026-11-02 17:23 UTC"
 }
