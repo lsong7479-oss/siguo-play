@@ -12679,6 +12679,8 @@ CFG.story.regions.push(
      城墙在主堡外 10 × 10 一圈；第四节添的箭塔在四角各 3 座、民兵训练营在主堡两侧各 2 座；找夜鸦的地点（主堡东北林子边）；王都的布局（game/st_new.stRoyalTiles） */
 // 对话框头像（用户定：精英模板 + 职业画的小人）：配角的职业、年龄（Claude 定）；马丁、路德、奥托、托比、阿兰按章节 els 的兵器；enemy = 用这种亡灵的图
 CFG.story.npcLook={'军官':{job:'musketeer', age:42}, '副官':{job:'recruit', age:30}, '汉斯':{job:'engineer', age:66}, '亡灵大法师':{enemy:'lich'}};
+// 0.12.9b 引子「开拓前夕」（用户台本）的御前会议：国王、财政官、博蒙公爵、劳伦斯伯爵、奥斯本伯爵、罗兰（职业、年龄 Claude 定，只管对话框头像）
+Object.assign(CFG.story.npcLook,{'国王':{job:'paladin', age:62}, '财政官':{job:'alchemist', age:55}, '博蒙公爵':{job:'bard', age:52}, '劳伦斯伯爵':{job:'shieldGuard', age:46}, '奥斯本伯爵':{job:'musketeer', age:50}, '罗兰':{job:'recruit', age:30}});
 Object.assign(CFG.story.plans,{
   // 王都：开拓地大地图（96 × 96）正中，外城 60 × 60 带四座瓮城、内城 28 × 28、王宫 10 × 10；塔楼、兵营、民居按规则排（game/st_new），全部满级（章节 maxLv）
   royal:{ring:30, inner:14, palace:5, barb:{d:3, w:4}, gen:'royal', lv:1, people:1},
@@ -12689,6 +12691,33 @@ Object.assign(CFG.story.plans,{
 {const EL5=lv=>[['马丁','ss',lv],['路德','as',lv],['奥托','bow',lv],['托比','bow',lv],['阿兰','ss',lv]],N=(nm,t)=>['npc',nm,t];
 CFG.story.regions.push(
   {id:'nwild', nv:1, keepLv:1, name:'荒野', map:'wild', seed:61061, hero:'assassin', chapters:[
+    // ===== 引子 开拓前夕（0.12.9b 用户台本，原样搬；纯剧情，在王都演，不打仗）=====
+    //   payW：这一章的首通奖励直接写（用户定：金币 20、银币 500、建材 500、设计点 50、科研点 50；台本写的「科技点」按设计点算），不走 CFG.story.pay 按金币折算
+    {id:'n0', name:'开拓前夕', place:'王都', scene:true, stMap:true, waves:1, diff:'easy', lineup:['arthur'], preset:'royal', maxLv:true, fill:true, tod0:1, gold:20, payW:{银币:500, 建材:500, 设计点:50, 科研点:50},
+     desc:'那年冬天，王都的粮仓快见底了。御前会议上，大臣们为接下来怎么办吵了起来。',
+     say:{start:[['n','那年冬天，御前会议照例在午后开。议事厅里生了三个火盆，国王坐在长桌尽头，膝上盖着毯子。'],
+       N('国王','粮仓里的粮食还能撑到什么时候？'),N('财政官','回陛下，国库所有的粮食加起来，省着用……也只能吃到开春。离夏收还差两个月。'),N('国王','怎么会这样？'),
+       N('博蒙公爵','今年秋天收成不好，而且，王都还接纳了荒野来的一批流民，要是没有这些流民，兴许还能多撑一段时间。是吧，劳伦斯伯爵？'),
+       N('劳伦斯伯爵','博蒙公爵，这个问题您问我是什么意思？'),N('博蒙公爵','没有什么意思，如果不是有些人留下来的烂摊子，王都也不见得会如此捉襟见肘。'),
+       N('劳伦斯伯爵','你……公爵先生，事情要讲一个因果，我不是没有做出努力，几次的北伐我都是出人、出力、出粮的主力，不像某些人，居安不肯思危。身居高位，却不肯出一份力，守着自己的粮仓，放着烂也不肯支援一步。'),
+       N('劳伦斯伯爵','三年前，如果不是后勤断粮，荒野就重新拿下来了！'),
+       N('博蒙公爵','是谁借着王都的财产打自己的算盘？好难猜啊，还后勤断粮，别忘了三年前出征用的是谁家的粮食。结果呢？一点回报也没有，平白丢粮、白白损失了那么多士兵。'),
+       N('国王','两位都先不要争了……谈论过去的事情已经没有意义了，眼下的事情，是接下来该怎么办。'),
+       N('博蒙公爵','陛下，倘若不是有些人执意打自己的算盘，恐怕三年前的余粮早够现在吃的了。'),
+       N('劳伦斯伯爵','你想表达什么？如果不是你中断支援，荒野会拿不下来？如果荒野拿下来了，今年的粮食还会不够吃吗？'),
+       N('国王','好了两位，我说，别吵了。'),N('劳伦斯伯爵','陛下！是他先一直话里话外讽刺我的。'),N('博蒙公爵','陛下，你可不要忘记现在到底是谁在拖累王国，是谁在支持王国。'),
+       ['n','国王的眼色低沉，面容有些憔悴。'],N('国王','还是想想办法吧……'),['n','两人在会议桌上依然互相讽刺，国王叹了口气，扶额摇了摇头。'],N('国王','这里我说了还算话吗？'),
+       ['n','博蒙公爵和劳伦斯伯爵的争吵停了下来。'],N('博蒙公爵','陛下，我只是不希望王国的蛀虫堂而皇之地侵吞陛下您的财产。'),
+       N('博蒙公爵','不如这样，可以照旧例，发开拓令。愿意回乡的，开出来的地归他自己，再以免税许诺。'),N('国王','可这样还是不会有人去的。'),
+       N('博蒙公爵','（思索片刻）那就再添一些粗粮杂粮，让这些牲口离开王都，自求多福。而且，劳伦斯伯爵不是一直想收复荒野吗？就让他带头吧。'),
+       N('劳伦斯伯爵','你这是什么意思？'),N('博蒙公爵','没什么意思，身为王国的臣子，就应该为王国分忧。既然劳伦斯伯爵一直执意北伐，这一次不如就让劳伦斯伯爵带头吧。'),
+       N('劳伦斯伯爵','前些年劳伦斯家族一直为王国呕心沥血，如今家中男丁十不足一，倒是博蒙公爵家丁脂满膘满，怎么不见你为王国分忧？'),
+       N('博蒙公爵','我的兵派出去了，亡灵进攻王都怎么办？荒野丢了，本就是你镇守不力，我镇守王都多年，又为王都供粮，你身为伯爵，竟还敢多次顶撞，谁给你的胆子！'),
+       N('国王','别争了……此事就这么定下吧，劳伦斯伯爵……'),
+       N('奥斯本伯爵','陛下，不如这样，就从流民中抽调北伐，既是为王都减少了吃饭的嘴，也算是给大家都有一个交代。'),N('国王','这样？'),
+       N('博蒙公爵','我看可行，也算是让那些吃白饭的流民发挥一些余热。'),
+       N('国王','那好吧……罗兰，草拟一份征召令……不、开拓令，写给军营，让他们的人征召士兵，然后……让劳伦斯家族的人带着他们重新夺回荒野。'),
+       N('罗兰','是。'),N('国王','此事就到此为止吧，我累了……')]}},
     // ===== 第一节 开拓令 =====
     {id:'n1', name:'开拓令', place:'王都', scene:true, stMap:true, waves:1, diff:'easy', lineup:['arthur'], preset:'royal', maxLv:true, fill:true, tod0:0, gold:5,
      desc:'国王下了开拓令。王都城门口的登记处，正在招开拓荒野的人。',
@@ -15027,9 +15056,9 @@ Object.assign(CFG.skills,{
     byStar:{v:[5,5,5,5,5], p:[0.1,0.15,0.2,0.25,0.3]},
     desc:p=>`被动：上阵后击杀亡灵获得的铜币 +${p.v}，且获得的铜币 +${pc_(p.p)}；阵亡后仍然生效`},
   // 被动：结算的银币、建材、科研点、设计点、家族声望、地区材料、核心特产 +v；精英、首领的掉宝率 +drop（固定）
-  mp2Loot:{name:'攫财之道', passive:true, cd:0, aim:'self', drop:0.5,
+  mp2Loot:{name:'攫财之道', passive:true, cd:0, aim:'self', drop:0.5, rep:0.5,   // rep：0.12.9b（用户定）家族声望 +100% → 固定 +50%（和掉宝率一档），不再跟着 v
     byStar:{v:[0.5,0.6,0.7,0.85,1]},
-    desc:p=>`被动：上阵后战后结算的银币、建材、科研点、设计点、家族声望、地区材料、核心特产 +${pc_(p.v)}；精英、首领的掉宝率 +${pc_(p.drop)}；阵亡后仍然生效`},
+    desc:p=>`被动：上阵后战后结算的银币、建材、科研点、设计点、地区材料、核心特产 +${pc_(p.v)}；家族声望 +${pc_(p.rep)}；精英、首领的掉宝率 +${pc_(p.drop)}；阵亡后仍然生效`},
   // 主堡陷落时：花 (base + per × 波次²) × k 铜币（取整），主堡恢复满生命、立刻进入准备阶段、场上所有亡灵回到地图边缘；每局限一次
   mp2Mill:{name:'亡灵推磨', passive:true, cd:0, aim:'self', base:1000, per:100,
     byStar:{k:[1,0.95,0.9,0.85,0.8]},
@@ -15719,7 +15748,9 @@ CFG.soulSrc={easy:0, normal:0, hard:1, nightmare:1.5, inferno:2, abyss:2.5};
 //   drop：掉宝率（打造书、装备、核心材料、首领专属装备……= 难度掉宝倍率 DIFF.drop 再 × 这个；精英的装备 / 打造书原来不吃难度掉宝倍率，单独 × 这个；
 //         首领必掉的装备、打造书每件再有 drop − 1 的概率多掉一件，期望 × drop）
 //   souls：来源地图的专属英雄每轮固定给几个英雄之魄（替换 CFG.soulSrc 的值）；培养值（CFG.soulPt.diff）按同样的比例上调 = souls ÷ CFG.soulSrc（噩梦 ×2、炼狱 ×1.75、绝境 ×1.6）
-CFG.sg={hp:1.5, dmg:1.25, reward:1.25, drop:1.5, rounds:3,   // reward：0.12.9b（用户定）1.5 → 1.25（3 轮本来就多打一轮、后面的波奖励系数更高，再 ×1.5 叠得太多：玩家两把绝境就到「信仰」声望）
+//   res：0.12.9b（用户定）个别资源的倍率（代替 reward）：银币、建材 ×1.5；其余（科研点、设计点、金币、经验、家族声望、地区材料、强化石）照 reward ×1.25，掉宝率 ×1.25
+//     （原来全部 ×1.5：死国本来就多打一轮、后面几波的奖励系数也更高，叠在一起太多，玩家两把绝境就到「信仰」声望）
+CFG.sg={hp:1.5, dmg:1.25, reward:1.25, res:{银币:1.5, 建材:1.5}, drop:1.25, rounds:3,
   souls:{nightmare:3, inferno:3.5, abyss:4},
   diffs:['nightmare','inferno','abyss'], abyssName:'绝境'};
 
@@ -68571,18 +68602,19 @@ SKFX.as2Dance=h=>{vfx('flare',{x:h.x,y:h.y-10,r:10,c:AS2_PUR,life:0.3})};
 //   每局限一次：G.mp2U（存档 save / load 钩子）；推磨的准备阶段不存档（亡灵在场，存不下），只把上一次准备阶段的存档补上「用过了」——退出再读档回到这一波开打前，推磨不能再用
 //   弹窗开着时这一波不会结束（waveBusy），万一弹窗被关掉了（tick 里看）重新弹
 // 幸存者模式没有主堡、开拓地场景没有波次，都不会走到；入侵战、剧情、无尽、开拓战照常能用
-const MP2={g:null,n:-1,on:false,hp:1,buy:1,kf:0,kp:1,loot:0,drop:0};   // 缓存：g / n 算的时候的 G、G.heroes 的长度
-function mp2Sync(){const M=MP2;M.g=G;M.n=G&&G.heroes?G.heroes.length:-1;M.on=false;M.hp=1;M.buy=1;M.kf=0;M.kp=1;M.loot=0;M.drop=0;if(!G||!G.heroes)return;
+const MP2={g:null,n:-1,on:false,hp:1,buy:1,kf:0,kp:1,loot:0,drop:0,rep:0};   // 缓存：g / n 算的时候的 G、G.heroes 的长度
+function mp2Sync(){const M=MP2;M.g=G;M.n=G&&G.heroes?G.heroes.length:-1;M.on=false;M.hp=1;M.buy=1;M.kf=0;M.kp=1;M.loot=0;M.drop=0;M.rep=0;if(!G||!G.heroes)return;
   for(let i=0;i<G.heroes.length;i++){const h=G.heroes[i];if(h.id!=='merchant2'||!h.sp)continue;const P=sid=>{const k=h.skills.indexOf(sid);return k>=0&&h.unl[k]?h.sp[k]:null};
     const a=P('mp2Cost'),b=P('mp2Scrap'),c=P('mp2Loot');M.on=true;
     if(a){M.hp=Math.max(M.hp,1+a.hp);M.buy=Math.min(M.buy,1-a.buy)}
     if(b){M.kf=Math.max(M.kf,b.v);M.kp=Math.max(M.kp,1+b.p)}
-    if(c){M.loot=Math.max(M.loot,c.v);M.drop=Math.max(M.drop,c.drop)}}}
+    if(c){M.loot=Math.max(M.loot,c.v);M.drop=Math.max(M.drop,c.drop);M.rep=Math.max(M.rep,c.rep!=null?c.rep:c.v)}}}
 const mp2C=()=>{if(MP2.g!==G||!G||!G.heroes||MP2.n!==G.heroes.length)mp2Sync();return MP2};
 const mp2HpK=()=>mp2C().hp;   // structs/structs.structMax：建筑生命的独立乘区
 const mp2Buy=()=>G?mp2C().buy:1;   // game/merchant094：商人的价格倍率
 const mp2Loot=()=>mp2C().loot;   // 结算各项 +X%
 const mp2Drop=()=>mp2C().drop;   // 掉宝率 +X%
+const mp2Rep=()=>mp2C().rep;   // 家族声望 +X%（0.12.9b 用户定：固定 +50%，不跟着攫财之道的 v）
 function mp2Join(h){if(h&&h.id==='merchant2'&&G.structs&&G.structs.length)rescaleStructs()}   // game/game.joinHero：他上场时建筑的生命上限重算（按比例，满血的还是满血）
 Object.assign(SK,{mp2Cost:PASSIVE_SK,mp2Scrap:PASSIVE_SK,mp2Loot:PASSIVE_SK,mp2Mill:PASSIVE_SK});
 // ================= 进阶条件 =================
@@ -71338,7 +71370,7 @@ function endWave(){
   // 每波结束：英雄与士兵回复 20% 最大生命
   // 科技「战地医院」（v0.2.3）每级 +4%
   const hl=CH_NOREG?0:CFG.run.waveHeal+(TM.waveHealT||0);for(let i_10=0,a_10=G.heroes;i_10<a_10.length;i_10++){const h=a_10[i_10];if(!h.dead)healF(h,h.maxHp*hl);}for(let i_11=0,a_11=G.soldiers;i_11<a_11.length;i_11++){const s=a_11[i_11];if(!s.dead)healF(s,s.maxHp*hl);}   // CH_NOREG：代理 CH 无尽挑战「后勤切断 / 禁止治疗」
-  {const tk=k=>k==='建材'?1:mapRewardK(G.map),wk=waveRewK(G.wave);for(const k in CFG.rewardPerWave)G.meta[k]=(G.meta[k]||0)+CFG.rewardPerWave[k]*tk(k)*DIFF.reward*wk}   // wk：v0.10.2（用户定，方案 D）按波数涨   // v0.8.18 按地区阶   // v0.6.71（用户）入侵战结算的银币照常给（0.6.7 误删）
+  {const tk=k=>k==='建材'?1:mapRewardK(G.map),wk=waveRewK(G.wave);for(const k in CFG.rewardPerWave)G.meta[k]=(G.meta[k]||0)+CFG.rewardPerWave[k]*tk(k)*DIFF.reward*wk*sgResK(k)}   // sgResK：0.12.9b 死国下银币、建材另算   // wk：v0.10.2（用户定，方案 D）按波数涨   // v0.8.18 按地区阶   // v0.6.71（用户）入侵战结算的银币照常给（0.6.7 误删）
   if(G.wave>=G.total){hfxEnd();victory();return}
   const P=G.lastPlan,minQ=P&&P.boss?CFG.cardRules.bossMin:P&&P.eliteWave?CFG.cardRules.eliteMin:null;
   G.cardOpts=G.invade?[]:drawCards(cardOptN(),minQ);G.lastReward=reward;G.lastMinQ=minQ;
@@ -73473,6 +73505,8 @@ function diffName(d,sg){const D=typeof d==='string'?DIFFS[d]:d;if(!D)return'';co
 function sgDiff(d,o){if(!sgOk(o,d))return d;const C=CFG.sg,r=v=>Math.round(v*1000)/1000;
   return Object.assign({},d,{name:'死国·'+diffName(d,true),reward:r(d.reward*C.reward),drop:r(d.drop*C.drop),rounds:C.rounds,sgB:d})}
 const sgDropK=()=>G&&G.sg?CFG.sg.drop:1;
+// 0.12.9b（用户定）银币、建材另算：每波结算资源（game/game.endWave）再 × res[资源] ÷ reward（DIFF.reward 里已经乘了 reward）
+const sgResK=k=>{if(!G||!G.sg)return 1;const R=CFG.sg.res;return R&&R[k]?R[k]/CFG.sg.reward:1};
 // 首领必掉的装备、打造书（每件 / 噩梦起每两件）：各再有 drop − 1 的概率多掉一件；gl 是 onBossKill 里的掉落函数（两轮后的随机首领照样按它的概率）
 function sgBossExtra(gl,night){if(!G||!G.sg)return;const p=CFG.sg.drop-1;for(let k=0;k<(night?2:1);k++){if(Math.random()<p)gl('w');if(Math.random()<p)gl('b')}}
 const sgSoulSrc=()=>{const id=DIFF&&DIFF.id,S=CFG.sg.souls;return G&&G.sg&&S[id]!=null?S[id]:CFG.soulSrc[id]||0};
@@ -74624,7 +74658,7 @@ feat('elite',{on:()=>!!(G&&((G.elites&&G.elites.length)||elMemOn())),hooks:{
 // 克劳德自己的增伤（heroRecalc 末尾，和精英一起）
 function elMemRecalc(h){if(h.id==='scribe')h.gDmg+=elMemK()}
 // —— 结算：战报、功勋、经验 ——
-function elAward(got){elAllySync();if(G&&!G.invade&&!G.story)got.rep=elRepBattle(G.map,got.cleared||0,((typeof DIFF!=='undefined'&&DIFF.reward)||1)*(1+((pm&&pm.repUp)||0))*(1+mp2Loot()));   // 0.12.0 打地区地图给本地家族声望（game/el_mar）；0.12.5 代理 F：× (1 + pm.repUp) 卡牌「名声大噪 / 四海名扬」   // mp2Loot：0.12.7 代理 MP 加，进阶-马可·波罗「攫财之道」家族声望 ×(1 + X)（heroes/merchant2）
+function elAward(got){elAllySync();if(G&&!G.invade&&!G.story)got.rep=elRepBattle(G.map,got.cleared||0,((typeof DIFF!=='undefined'&&DIFF.reward)||1)*(1+((pm&&pm.repUp)||0))*(1+mp2Rep()));   // 0.12.0 打地区地图给本地家族声望（game/el_mar）；0.12.5 代理 F：× (1 + pm.repUp) 卡牌「名声大噪 / 四海名扬」   // mp2Loot：0.12.7 代理 MP 加，进阶-马可·波罗「攫财之道」家族声望 ×(1 + X)（heroes/merchant2）
   if(!G||!G.elites||!G.elites.length)return;const M=EL().merit,now=metaNow(),out=[];
   for(const x of G.elites){const e=elById(x.id);if(!e)continue;if(!e.log||!Array.isArray(e.log.L))e.log={n:0,k:0,d:0,t:0,h:0,c:0,L:[]};   // 0.12.0 防御：记录不全的也能结算
  const r=DSK['h:el'+x.id]||{dmg:0,tak:0,heal:0,cc:0,kill:0},h=G.heroes.find(q=>q.elite===x.id);
@@ -75963,7 +75997,7 @@ function stFmt(tx){if(tx.indexOf('{dead')<0)return tx;const S=G&&G.story,x=stCur
   const f=k=>k>0?String(k):'零';return tx.replace(/\{deadR\}/g,f(r)).replace(/\{dead\}/g,f(n))}
 // v0.7.0 首通奖励只给一次（重置阶段后重打不再给）：金币、英雄之魄（souls）；整个地区通关 → 英雄入队
 // v0.9.51 首通的额外奖励（CFG.story.pay）：{wallet:{银币,科研点,设计点}, wares:{物资:数量}}
-function stExtra(R,C){const P=SDY.pay,g=C.gold||0,o={wallet:{},wares:{}};if(!P||!g)return o;
+function stExtra(R,C){const P=SDY.pay,g=C.gold||0,o={wallet:{},wares:{}};if(C.payW){Object.assign(o.wallet,C.payW);return o}if(!P||!g)return o;   // payW：0.12.9b 章节直接写首通给什么（引子「开拓前夕」）
   o.wallet.银币=Math.round(g*P.silver);o.wallet.科研点=Math.round(g*P.sci);o.wallet.设计点=Math.round(g*P.design);
   const mp=R.map,T=CFG.wares.tiers[mapTierOf(mp)],M=T&&T.maps[mp];
   if(T){for(const kind in T.basic){const w=T.basic[kind],n=Math.ceil(g*(M&&M.basic.includes(w)?P.basic:P.other));if(n>0)o.wares[w]=n}if(M&&M.core)o.wares[M.core]=Math.ceil(g*P.core)}
@@ -77981,7 +78015,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.12.9',GAME_TAG='稳定版',GAME_CODE=203,GAME_BUILD="22fec4b",GAME_BUILT=1793598138826,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.12.9',GAME_TAG='稳定版',GAME_CODE=203,GAME_BUILD="ba5576a",GAME_BUILT=1793600038569,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -80609,14 +80643,14 @@ sgCss();
 HELP.sg=()=>({t:'死国',b:hpL(['只有常规模式有；开拓、剧情、入侵战、无尽、幸存者没有。默认关闭，记住上次的选择',
   `难度只能选噩梦、炼狱、绝境(死国下的深渊)，三个难度都要打 ${CFG.sg.rounds} 轮`,
   `所有亡灵的生命 ×${CFG.sg.hp}、伤害 ×${CFG.sg.dmg}(乘在难度倍率上)`,
-  `结算的基础奖励(银币、建材、科研点、设计点、金币、经验)、地区材料、强化石 / 洗练石的数量额外 +${Math.round((CFG.sg.reward-1)*100)}%`,
+  `结算的${Object.keys(CFG.sg.res||{}).join('、')}额外 +${Math.round((Object.values(CFG.sg.res||{})[0]-1)*100)}%；科研点、设计点、金币、经验、家族声望、地区材料、强化石 / 洗练石的数量额外 +${Math.round((CFG.sg.reward-1)*100)}%`,
   `掉宝率额外 +${Math.round((CFG.sg.drop-1)*100)}%：打造书、装备、核心材料、首领专属装备；首领必掉的装备、打造书每件有 ${Math.round((CFG.sg.drop-1)*100)}% 概率多掉一件`,
   `来源地图的英雄之魄每轮 ${CFG.sg.diffs.map(d=>diffName(d,true)+' '+CFG.sg.souls[d]).join('、')} 个；培养值同比例提升(${CFG.sg.diffs.map(d=>diffName(d,true)+' ×'+Math.round(CFG.sg.souls[d]/CFG.soulSrc[d]*100)/100).join('、')})`,
   '和卡牌、英雄(搜山检海、攫财之道……)的加成分开相乘',
   '死国的纪录单独记(战绩里常规那一格下面)；死国下通关绝境，成就勋章墙里这张地图那一格燃起蓝紫色火焰'])});
 // 死国开着时，噩梦～深渊的「?」里补死国的倍率和波数
 for(const id of CFG.sg.diffs){const f=HELP['diff-'+id];if(!f)continue;HELP['diff-'+id]=()=>{const r=f();if(!sgUiOn(menuExpand!==null?CFG.settlement.expansions[menuExpand]:null))return r;
-  return{t:`死国·${diffName(id,true)}`,b:r.b+hpP(`死国：亡灵生命再 ×${CFG.sg.hp}、伤害再 ×${CFG.sg.dmg}；结算再 ×${CFG.sg.reward}、掉宝再 ×${CFG.sg.drop}；守 ${sgWaves(menuMap)} 波`)}}}
+  return{t:`死国·${diffName(id,true)}`,b:r.b+hpP(`死国：亡灵生命再 ×${CFG.sg.hp}、伤害再 ×${CFG.sg.dmg}；银币、建材再 ×${(CFG.sg.res||{}).银币||CFG.sg.reward}、其它结算再 ×${CFG.sg.reward}、掉宝再 ×${CFG.sg.drop}；守 ${sgWaves(menuMap)} 波`)}}}
 
 // ---------- 挑战任务的界面：营地「日常 → 签到 · 任务」右栏、日常任务下面（逻辑 game/ch_task.js）----------
 // 插入点只有一个：ui/ch_ach.js 的 chDaily 用 ctkWrap(hubDaily()) 把这一块塞进右栏末尾（不改 ui/daily.js，方便和日常任务的改动合并）
