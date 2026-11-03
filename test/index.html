@@ -21978,8 +21978,8 @@ CFG.elite.rep={lv:[['仇恨',-12000],['厌恶',-4000],['抗拒',-1000],['冷淡'
 //   sp 地区特产材料（这张地图自己的基础材料）· mat 这一阶的基础材料各几个 · core 地区特殊材料 · gs 地区特产加工品 · go 这一阶其它加工品各几个；sp、mat 再乘地区材料倍率 matK[地区阶]（一阶起）
 //   声望可以超出最高一级一直积累（本来就不封顶）；0.12.7 加「信仰」一档（用户定：50000 声望，上贡量翻倍）
 CFG.elite.tribute={lv:{'接纳':{sp:10, mat:5, core:0, gs:0, go:0}, '信任':{sp:60, mat:30, core:4, gs:20, go:10}, '尊敬':{sp:120, mat:60, core:8, gs:40, go:20}, '忠诚':{sp:240, mat:120, core:15, gs:80, go:40}, '狂热':{sp:480, mat:240, core:30, gs:160, go:80},
-    '信仰':{sp:960, mat:480, core:60, gs:320, go:160, cur:{银币:1000, 建材:1000, 设计点:100, 科研点:100}, gold:10}},   // 0.13（用户定）：接纳起上贡；基础材料 / 加工品照表、特产翻倍（sp = 2 × mat、gs = 2 × go）；信仰另给银币、建材、设计点、科研点（× 地区倍率）和金币（gold：几个信仰家族一起上贡时打折，goldK，索贡不给）   // 0.12.7 代理 EG 加：信仰的上贡量 = 狂热的两倍（用户定）
-  matK:[1, 1.1, 1.25, 1.45, 1.7, 2, 2.35, 2.75, 3.2], askN:3, askRep:{'接纳':500, '信任':1000, '尊敬':1500, '忠诚':2000, '狂热':3000, '信仰':4000}, goldK:0.7};   // 0.13 索贡消耗照表（用户定）；goldK：第 2 个信仰家族起每家的金币 × 0.7、× 0.7²……（Claude 定的「折算衰减」）   // 0.12.7 代理 EG 加：信仰索贡扣 3000（Claude 定：上贡翻倍，扣的声望也翻倍）
+    '信仰':{sp:960, mat:480, core:60, gs:320, go:160, cur:{银币:1000, 建材:1000, 设计点:100, 科研点:100}, gold:10}},   // 0.13（用户定）：接纳起上贡；基础材料 / 加工品照表、特产翻倍（sp = 2 × mat、gs = 2 × go）；信仰另给银币、建材、设计点、科研点（× 地区倍率）和金币（gold：几个信仰家族一起上贡时打折，goldStep，索贡不给）   // 0.12.7 代理 EG 加：信仰的上贡量 = 狂热的两倍（用户定）
+  matK:[1, 1.1, 1.25, 1.45, 1.7, 2, 2.35, 2.75, 3.2], askN:3, askRep:{'接纳':500, '信任':1000, '尊敬':1500, '忠诚':2000, '狂热':3000, '信仰':4000}, goldStep:0.2};   // 0.13 索贡消耗照表（用户定）；goldStep：几个信仰家族一起上贡时的「折算衰减」（用户定）：第 k 家的金币 × 1 / (1 + 0.2 × (k − 1))，即 100/10、100/12、100/14……   // 0.12.7 代理 EG 加：信仰索贡扣 3000（Claude 定：上贡翻倍，扣的声望也翻倍）
 // 0.12.2 家族贸易（用户定：王都里和结盟的家族做买卖，家族卖出 / 收购自己地区这一阶的材料；笔数、每笔次数看关系，关系越好买得越便宜、卖得越贵；数 Claude 定）
 //   每个家族每小时一批报价（和地区贸易一样整点刷新）；buy = 玩家买的单价 × 标准价，sell = 玩家卖的单价 × 标准价；sellP 一笔是「家族收购」的概率；
 //   货：coreP 这个地区的特产（一组 core 个）、goodsP 这一阶的加工品（一组 goods 个），其余这一阶的基础材料（一组 lots 里随机，本地产的 localP 优先）
@@ -22948,8 +22948,9 @@ CFG.elite.eg={enhTo:10, maxTry:500};   // 0.12.7a（用户定）enhTo 只是默�
 // 王都四家（用户定）：特殊声望，只有剧情能涨（初始「接纳」；剧情第一～四阶段完成后改成信任 / 尊敬 / 忠诚 / 狂热，game/el_fam13.elRoyalStage）；没有特色兵种
 // 家族技能（用户定）：声望到「尊敬」开放家族特殊技能、到「狂热」开放秘传技能；谁都能学，要任命这个家族当「顾问教官」来教（训练所「英雄 · 顾问」子页签：英雄教官、顾问教官各 1 个位置，不占普通教官位置）
 //   技能数值「20～30%」= 1～10 级的表（同精英新技能的 10 级规律，LV）；「五级：……」= 5 级起的效果
-// Claude 定：家徽（奥马金蓝底银盾、克略红底金双剑、霍利白底金太阳、西奥绿底金天平）、属性档位（L，同老家族的写法）、波动；面相的肤色按 1～20 对到现有的 6 档（白皙 / 常见 / 小麦 / 褐 / 深）；身高现在没有单独的数，先不做
-//   坚固营造「维修量」= 物攻 + 职业的维修量，× (1 + 家族特性「筑垒」)；筑城之垒冷却技能单没写，先定 15 秒
+// 身高（望楼拟的 1～20：1 矮、10 中、20 高）→ 体型（瘦小 / 匀称 / 魁梧）的权重：[max(0, 10 − 身高), 3, max(0, 身高 − 10)]（Claude 定，用户 2026-11-03 让按自己的理解填）
+// Claude 定：家徽（奥马金蓝底银盾、克略红底金双剑、霍利白底金太阳、西奥绿底金天平）、属性档位（L，同老家族的写法）、波动；面相的肤色按 1～20 对到现有的 6 档（白皙 / 常见 / 小麦 / 褐 / 深）；身高按下面的体型权重做
+//   坚固营造「维修量」= 物攻 + 职业的维修量，× (1 + 家族特性「筑垒」)；筑城之垒冷却 15 秒（用户定）
 {const LV=(a,b)=>[a,a+(b-a)*0.1,a+(b-a)*0.2,a+(b-a)*0.3,a+(b-a)*0.5,a+(b-a)*0.6,a+(b-a)*0.7,a+(b-a)*0.8,a+(b-a)*0.9,b].map(v=>Math.round(v*1000)/1000);
  const E=CFG.elite,R=E.bloodSrc.royal;
  R.f=[].concat(R.f||[],[
@@ -22974,7 +22975,8 @@ CFG.elite.eg={enhTo:10, maxTry:500};   // 0.12.7a（用户定）enhTo 只是默�
   theo:  {head:'卢西安·西奥', desc:'掌握经贸和商业，管控通关贸易、市场等经济命脉。只想守成、赚钱，不想赔钱北伐。主钱派。'},
  });
  // 面相（look 的序号：发色 0 黑 1 深棕 2 棕 3 浅棕 4 金 5 红 6 银 7 铂金；瞳色 0 黑 1 褐 2 蓝 3 绿 4 灰 5 红 6 琥珀；肤色 0 白皙 1 常见 2 小麦 3 褐 4 深）
- Object.assign(E.look.fam,{omagin:{hr:[1], ey:[4], sk:[1]}, kleo:{hr:[0], ey:[6], sk:[1,2]}, holly:{hr:[4,7], ey:[2], sk:[0]}, theo:{hr:[5], ey:[3], sk:[1]}});
+ const BD=h=>[Math.max(0,10-h),3,Math.max(0,h-10)];
+ Object.assign(E.look.fam,{omagin:{hr:[1], ey:[4], sk:[1], b:BD(15)}, kleo:{hr:[0], ey:[6], sk:[1,2], b:BD(13)}, holly:{hr:[4,7], ey:[2], sk:[0], b:BD(9)}, theo:{hr:[5], ey:[3], sk:[1], b:BD(8)}});
  // 王都家族的声望（用户定）：只有剧情能涨；初始「接纳」；剧情各阶段完成后的等级
  E.royalRep={reg:'royal', init:'接纳', stage:['信任','尊敬','忠诚','狂热']};
  // 顾问教官、英雄教官的位置（用户定：各 1 个，不占普通教官位置）
@@ -75724,7 +75726,7 @@ const LKD=()=>CFG.elite.look;
 const elLkW=W=>{let t=0;for(const w of W)t+=w;let r=Math.random()*t;for(let i=0;i<W.length;i++){r-=W[i];if(r<0)return i}return W.length-1};
 function elLkGen(x){const L=LKD(),R=EL().regions[x.reg]||{},C=L.cul[R.culture]||L.cul.west,o={sk:elLkW(C.sk),hr:elLkW(C.hr),ey:elLkW(C.ey),ear:C.ear||0,b:elLkW([1,3,1])};
   let fk=null,fb=0;const B=elBlood();for(const id in x.bl||{}){const F=B[id];if(F&&F.key&&L.fam[F.key]&&x.bl[id]>fb){fb=x.bl[id];fk=F.key}}
-  if(fk&&Math.random()<fb/EL().bloodN+0.2){const F=L.fam[fk];for(const k of['sk','hr','ey'])if(F[k])o[k]=elPick(F[k]);if(F.ear!=null)o.ear=F.ear}
+  if(fk&&Math.random()<fb/EL().bloodN+0.2){const F=L.fam[fk];for(const k of['sk','hr','ey'])if(F[k])o[k]=elPick(F[k]);if(F.ear!=null)o.ear=F.ear;if(F.b)o.b=elLkW(F.b)}   // b：0.13 家族的体型权重（瘦小 / 匀称 / 魁梧，按身高）
   return o}
 function elLkKid(x,a,b){const L=LKD(),r=elLkGen(x),o={};for(const k of['sk','hr','ey','ear','b']){const s=Math.random()<0.5?a:b;o[k]=Math.random()<L.mut||!s?r[k]:s[k]}return o}
 function elLook(x){if(!x)return null;if(x.lk&&x.lk.sk!=null)return x.lk;let lk=null;
@@ -75941,7 +75943,7 @@ function elInsFam(fid,on){const m=elSt(),key='f:'+fid,B=elBlood()[fid];if(!on){e
 const elFamSkFams=()=>{const B=elBlood(),S=EL().skills,F=[];for(const k in S){const s=S[k];if(s.fsk){const fid='f_'+s.fsk;if(B[fid]&&!F.includes(fid))F.push(fid)}}return F};
 // —— 上贡：信仰档另给的货币、金币（金币第 2 家起打折，索贡不给）——
 const EL_CUR={银币:1,建材:1,设计点:1,科研点:1};
-function elTribGold(fids){const T=EL().tribute;let g=0,n=0;for(const fid of fids){const v=elTribV(fid);if(!v||!v.gold)continue;g+=v.gold*Math.pow(T.goldK,n);n++}return Math.round(g)}
+function elTribGold(fids){const T=EL().tribute;let g=0,n=0;for(const fid of fids){const v=elTribV(fid);if(!v||!v.gold)continue;g+=v.gold/(1+T.goldStep*n);n++}return Math.round(g)}
 // —— 家族技能的逻辑 ——
 const elRepAmt=h=>{const S=h.d.elS||{};return(heroStatG(h,'atk')+(S.repF||0))*(1+(S.repK||0))};   // 维修量 = 物攻 + 职业的维修量，× (1 + 筑垒)
 const EL_SSH=new Map();   // 建筑的护盾（坚固营造）：建筑 → 剩余护盾值；波次结束清掉
@@ -79016,7 +79018,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.0b',GAME_TAG='测试版',GAME_CODE=206,GAME_BUILD="0a219ce",GAME_BUILT=1793686506526,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.0b',GAME_TAG='测试版',GAME_CODE=206,GAME_BUILD="2487b85",GAME_BUILT=1793687110063,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
