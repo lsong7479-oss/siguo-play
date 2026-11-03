@@ -22698,7 +22698,6 @@ Object.assign(CFG.skills,{
 });
 // V 级质变（同 data/el_jobs2 的 skV：Ⅴ 级起生效，Claude 定）
 Object.assign(CFG.elite.skV,{
-  el_es2throat:{set:{low:0.5}, t:'目标生命低于 50% 时即伤害加倍'},
   el_es2sunder:{add:{arm:0.1, t:2}, t:'破甲 +10%、持续 +2 秒'},
   el_es2taunt:{add:{dur:1.5}, t:'持续 +1.5 秒'},
   el_es2concuss:{add:{stun:0.4}, t:'眩晕 +0.4 秒'},
@@ -22835,6 +22834,109 @@ CFG.elite.eg={enhTo:10, maxTry:500};   // 0.12.7a（用户定）enhTo 只是默�
   ['ranged','远程兵',['archer','xbowman','marksman','ranger','musketeer','cannoneer','heavyGunner','sharpshooter','elemBowman']],['cav','骑兵',['scoutCav','lightCav','heavyCav','horseArcher','gunCav','camelCav','saintMaid']],
   ['magic','特殊',['wizard','mage','priest','engineer','alchemist','druid','bard']]];
  CFG.elite.jobTierName=['新兵','一阶','二阶','三阶','四阶'];
+}
+
+// ---------- 0.13 精英技能：职业第一批新技能 + 各职业能学的技能（用户 2026-11-03 给的技能单；逻辑 game/el_jsk.js，图标 art/el_jsk_art.js）----------
+// 用户定：名字、类型、需要的武器 / 副手、数值（每级的数照技能单的 1～10 级表，lvT）；技能单上的数就是精英的数，不再按 0.12.0 的规矩削弱（raw）
+// Claude 定：
+//   伤害的固定值、AD 比例照老规矩按技能等级系数涨（skLvK：1 级 = 技能单写的数）；技能单按级写了表的项照表，不再乘系数
+//   牺牲援护的冷却技能单没写，先定 15 秒；它的减伤表写了 11 个数（10/11/12/12/13/…），按其他技能的 10/11/12/13/15/16/17/18/19/20% 算
+//   近卫拦截技能单没写伤害，只拦截、虚弱，不另外造成伤害
+//   多重箭「无冷却」= 按住持续释放（同战意之风）：射程里没有亡灵就停；托管时别的技能好了先停下放别的，再接着射（用户 2026-11-03 定）
+//   需求：大盾 = 副手是大盾（size 3：塔盾这类）；盾牌 = 副手是任何盾；物理远程武器 = 弓、弩、火器；单手枪 / 骑枪 = 枪；牧师杖 = 法杖；手炮 = 火器
+// 各职业能学的技能（Claude 定，用户 2026-11-03「老技能你可以自己配一波合适的」）：CFG.elite.jobs[职业].sks = 能学的技能（fam 为 null 的通用被动不用写，谁都能学）；
+//   没写 sks 的职业（新兵）照老规矩按「系」（fam）开放；要英雄 5★ 教的技能（need）照样要找那位英雄当教官
+{const LV=(a,b)=>[a,a+(b-a)*0.1,a+(b-a)*0.2,a+(b-a)*0.3,a+(b-a)*0.5,a+(b-a)*0.6,a+(b-a)*0.7,a+(b-a)*0.8,a+(b-a)*0.9,b].map(v=>Math.round(v*1000)/1000);   // 技能单的 10 级表都是这个样子：1～4 级每级 +1 份，5 级跳 2 份，之后每级 +1 份
+ const BOW=['bow','crossbow'],PR=['bow','crossbow','gun'];
+ Object.assign(CFG.elite.skills,{
+  el_jsHold:   {name:'镇守', fam:['shield'], sk:'jkHold', oreq:'bigShield', raw:true, sc:[], lvT:{dr:LV(0.1,0.2)}},
+  el_jsBash:   {name:'盾击', fam:['shield'], sk:'jkBash', oreq:'shield', raw:true},
+  el_jsFire:   {name:'火矢', fam:['archer'], sk:'jkFire', wreq:BOW, raw:true, lvT:{burn:LV(0.2,0.3)}},
+  el_jsFlare:  {name:'照明弹', fam:['archer'], sk:'jkFlare', wreq:['gun'], raw:true, lvT:{r:LV(1.5,2.5)}},
+  el_jsPurge:  {name:'毒素净化', fam:['mage','alch'], sk:'jkPurge', wreq:['staff','tome','flask'], raw:true, sc:[], lvT:{r:LV(1,2)}},
+  el_jsHeavy:  {name:'重簇箭矢', fam:['archer'], sk:'jkHeavy', wreq:BOW, raw:true, lvT:{n:[3,3,3,3,5,5,5,5,5,5]}},
+  el_jsCover:  {name:'牺牲援护', fam:['shield'], sk:'jkCover', oreq:'shield', raw:true, sc:[], lvT:{r:LV(2.5,3.5), dr:LV(0.1,0.2)}},
+  el_jsGuard:  {name:'近卫拦截', fam:['warrior','cav'], sk:'jkGuard', wreq:['spear'], raw:true, sc:[], lvT:{weak:LV(0.1,0.2)}},
+  el_jsLeg:    {name:'瞄准腿部', fam:['archer'], sk:'jkLeg', wreq:PR, raw:true, lvT:{slow:LV(0.5,0.7), t:LV(2,3)}},
+  el_jsHand:   {name:'瞄准手部', fam:['archer'], sk:'jkHand', wreq:PR, raw:true, lvT:{weak:LV(0.25,0.35), t:LV(2,3)}},
+  el_jsHead:   {name:'瞄准头部', fam:['archer'], sk:'jkHead', wreq:PR, raw:true, lvT:{mul:LV(5,7)}},
+  el_jsMulti:  {name:'多重箭', fam:['archer'], sk:'jkMulti', wreq:['bow'], raw:true, lvT:{n:[1,1,1,1,2,2,2,2,2,2]}},
+  // 被动
+  el_jsHoly:   {name:'圣焰药水', pas:true, fam:['alch'], wreq:['flask'], st1:{holyAdd:0.1}, lvT:{holyAdd:LV(0.1,0.2)}},
+  // —— 第二批（用户 2026-11-03 00:52）——
+  el_jsTrap:   {name:'兽夹', fam:['mech'], sk:'jkTrap', raw:true, lvT:{root:LV(1.5,2.5), max:[3,3,3,3,5,5,5,5,5,5], use:[1,1,1,1,2,2,2,2,2,2]}},
+  el_jsShade:  {name:'游影', fam:['assassin','warrior'], sk:'jkShade', raw:true, sc:[], lvT:{dur:LV(3,5), mv:LV(0.1,0.2)}},
+  el_jsRuin:   {name:'毁灭冲锋', fam:['cav'], sk:'jkRuin', raw:true, sc:['b'], lvT:{hpK:LV(0.1,0.2), kb:LV(2,3)}},
+  el_jsAxe:    {name:'飞斧', fam:['warrior'], sk:'jkAxe', wreq:['axe'], raw:true, lvT:{bt:LV(2,3)}},
+  el_jsJav:    {name:'标枪', fam:['warrior','cav'], sk:'jkJav', wreq:['spear'], raw:true, lvT:{igDef:LV(0.3,0.5)}},
+  el_jsInertia:{name:'惯性冲击', pas:true, fam:['cav'], st1:{inertia:0.02}, lvT:{inertia:LV(0.02,0.04)}},
+  el_jsRide:   {name:'游骑训练', pas:true, fam:['cav'], st1:{movePrec:0.5}, lvT:{movePrec:LV(0.5,0.8)}},
+  el_jsSlay:   {name:'屠杀战意', pas:true, fam:null, st1:{slay:0.1}, lvT:{slay:LV(0.1,0.2)}},
+ });
+ // 割喉：换成技能单的新版（键不变，学过的照样用；原来的「低血加倍」和 V 级质变不要了，data/el_skills3 里删了）；老的被动「标枪」（猎豹教的、自动扔）改名，和新的主动「标枪」分开
+ Object.assign(CFG.elite.skills.el_es2throat,{sk:'jkThroat', wreq:['dagger','sword'], raw:true, lvT:{crit:LV(0.2,0.3), cdmg:LV(1,1.5)}});
+ CFG.elite.skills.el_javelin.name='随身标枪';
+ // 技能参数（1 级；伤害 = b + ad × 物攻）
+ Object.assign(CFG.skills,{
+  jkHold:   {name:'镇守', cd:15, aim:'self', dur:5, dr:0.1, desc:p=>`站到最近的格子中心，${p.dur} 秒内不能移动，当作 1×1 的实心障碍(地面的亡灵挤不过去)，减伤 +${pc_(p.dr)}`},
+  jkBash:   {name:'盾击', cd:8, aim:'self', b:10, ad:1, r:1, kb:1, stun:1, shK:40, desc:p=>`对 ${p.r} 格内的亡灵造成 ${sv_(p.b,p.ad)} ×(1 + 格挡值 / ${p.shK}) 伤害，击退 ${p.kb} 格并眩晕 ${p.stun} 秒`},
+  jkFire:   {name:'火矢', cd:10, aim:'enemy', req:'ranged', b:20, ad:1, burn:0.2, bt:10, desc:p=>`在射程内射出一支火矢，造成 ${sv_(p.b,p.ad)} 伤害，并灼烧 ${pc_(p.burn)}(每秒造成这一下伤害的 ${pc_(p.burn)})，持续 ${p.bt} 秒`},
+  jkFlare:  {name:'照明弹', cd:10, aim:'enemy', req:'ranged', b:20, ad:1, r:1.5, lit:3, desc:p=>`在射程内打出一发照明弹，造成 ${sv_(p.b,p.ad)} 伤害，照亮落点半径 ${p.r} 格(破隐)：范围里的亡灵显形 ${p.lit} 秒`},
+  jkPurge:  {name:'毒素净化', cd:15, aim:'point', range:7.5, r:1, desc:p=>`施法范围 ${p.range} 格：解除 ${p.r} 格内所有友军身上伤害最高的一层中毒`},
+  jkHeavy:  {name:'重簇箭矢', cd:15, aim:'line', req:'ranged', b:30, ad:2, n:3, igDef:0.5, rest:0.5, desc:p=>`向指定方向射出一支重箭，直线飞到最大射程，最多穿透 ${p.n} 个亡灵，无视 ${pc_(p.igDef)} 物理防御：第一个造成 ${sv_(p.b,p.ad)} 伤害，之后的造成 ${pc_(p.rest)}`},
+  jkCover:  {name:'牺牲援护', cd:15, aim:'self', dur:3, r:2.5, dr:0.1, desc:p=>`${p.dur} 秒内替半径 ${p.r} 格内的友军承受全部伤害(持续伤害除外)，期间自身减伤 +${pc_(p.dr)}`},
+  jkGuard:  {name:'近卫拦截', cd:10, aim:'enemy', req:'melee', t:3, weak:0.1, desc:p=>`拦截攻击范围内的一个亡灵：${p.t} 秒内不能移动，并虚弱 ${pc_(p.weak)}(造成的伤害降低)`},
+  jkLeg:    {name:'瞄准腿部', cd:10, aim:'enemy', req:'ranged', b:20, ad:1, slow:0.5, t:2, desc:p=>`射击射程内的一个亡灵，造成 ${sv_(p.b,p.ad)} 伤害，并使其移动速度 −${pc_(p.slow)}，持续 ${p.t} 秒`},
+  jkHand:   {name:'瞄准手部', cd:10, aim:'enemy', req:'ranged', b:20, ad:1, weak:0.25, t:2, desc:p=>`射击射程内的一个亡灵，造成 ${sv_(p.b,p.ad)} 伤害，并使其虚弱 ${pc_(p.weak)}(造成的伤害降低)，持续 ${p.t} 秒`},
+  jkHead:   {name:'瞄准头部', cd:10, aim:'enemy', req:'ranged', b:20, ad:1, chance:0.1, mul:5, desc:p=>`射击射程内的一个亡灵，造成 ${sv_(p.b,p.ad)} 伤害，${pc_(p.chance)} 概率变成 ${p.mul} 倍伤害`},
+  jkTrap:   {name:'兽夹', cd:8, aim:'point', range:5, b:5, ad:0.5, root:1.5, max:3, use:1, desc:p=>`在 ${p.range} 格内放一个兽夹：下一个踩上去的地面亡灵受到 ${sv_(p.b,p.ad)} 伤害并定身 ${p.root} 秒；最多同时有 ${p.max} 个`+(p.use>1?`，每个能用 ${p.use} 次`:'')},
+  jkShade:  {name:'游影', cd:15, aim:'self', dur:3, mv:0.1, desc:p=>`${p.dur} 秒内移动时无视碰撞(能穿过树木、建筑、城墙)，移动速度 +${pc_(p.mv)}`},
+  jkThroat: {name:'割喉', cd:15, aim:'enemy', req:'melee', b:20, ad:1, crit:0.2, cdmg:1, desc:p=>`对身前的目标造成 ${sv_(p.b,p.ad)} 伤害，这一下暴击率 +${pc_(p.crit)}、暴击伤害 +${pc_(p.cdmg)}`},
+  jkRuin:   {name:'毁灭冲锋', cd:15, aim:'enemy', dist:2, b:50, hpK:0.1, kb:2, desc:p=>`向目标冲锋 ${p.dist} 格，造成 ${Math.round(p.b*10)/10}(+${pc_(p.hpK)}自身最大生命) 伤害，并击退 ${p.kb} 格`},
+  jkAxe:    {name:'飞斧', cd:10, aim:'line', len:5, b:20, ad:1.5, bleed:0.1, bt:2, desc:p=>`向前方 ${p.len} 格投出斧头，命中第一个亡灵造成 ${sv_(p.b,p.ad)} 伤害，并流血 ${pc_(p.bleed)}(每秒造成这一下伤害的 ${pc_(p.bleed)})，持续 ${p.bt} 秒`},
+  jkJav:    {name:'标枪', cd:10, aim:'line', len:5, b:20, ad:1, igDef:0.3, desc:p=>`向前方 ${p.len} 格投出标枪，命中第一个亡灵造成 ${sv_(p.b,p.ad)} 伤害，无视目标 ${pc_(p.igDef)} 物理防御`},
+  jkMulti:  {name:'多重箭', cd:0, aim:'self', req:'ranged', chan:true, chMv:0.5, b:10, ad:0.6, n:1, desc:p=>`持续释放：不停地朝射程内的亡灵射箭(期间不普通攻击，移动速度 −${pc_(1-p.chMv)})，每半个攻击间隔射出一支，造成 ${sv_(p.b,p.ad)} 伤害，穿透 ${p.n} 个亡灵；无冷却`},
+ });
+ // 各职业能学的技能（不含通用被动）
+ const J=CFG.elite.jobs,set=(k,L)=>{if(J[k])J[k].sks=L.map(s=>'el_'+s)};
+ const AS=['stealth','dart','blink','backstab','night','es2throat','es2leech','gale','burrow','pounce','chainbomb','es3throw','es3hide','jsShade'];
+ set('scout',    ['stealth','dart','backstab','night','es2throat','es2leech','pounce','gale','es3throw','es3hide','jsShade']);
+ set('warrior',  ['cleave','pierce','es2sunder','es2leech','es2last','undying','whirl','pounce','hammer','gale','burrow','es3stand','es3charge','guard','jsBash','jsShade','jsAxe']);
+ set('assassin', AS);
+ set('berserker',['cleave','es2sunder','es2leech','es2last','undying','whirl','hammer','pounce','burrow','es3stand','es3charge','jsBash','jsShade','jsAxe']);
+ set('greatsword',['cleave','pierce','es2sunder','es2last','undying','whirl','holyjud','gale','sever','es3stand','es3charge','es3gods','jsShade']);
+ set('infantry', ['cleave','pierce','es2sunder','es2last','guard','es2taunt','es2shield','bulwark','ironwall','holyjud','jsBash','jsCover','jsGuard','jsJav']);
+ set('spearman', ['pierce','cleave','es2sunder','guard','es2taunt','es2shield','ironwall','es3charge','jsBash','jsGuard','jsJav']);
+ set('shieldGuard',['cleave','pierce','guard','es2taunt','es2shield','bulwark','ironwall','faith','hshield','holyjud','jsHold','jsBash','jsCover','jsGuard','jsJav']);
+ set('archer',   ['snipe','lob','es2concuss','es2pen','scatter','arrowrain','jsFire','jsHeavy','jsLeg','jsHand','jsHead','jsMulti']);
+ set('xbowman',  ['snipe','lob','es2concuss','es2pen','arrowrain','hook','frenzy','lethal','jsFire','jsHeavy','jsLeg','jsHand','jsHead']);
+ set('marksman', ['snipe','lob','es2concuss','es2pen','scatter','arrowrain','es3pierce','es3snipe','jsFire','jsHeavy','jsLeg','jsHand','jsHead','jsMulti']);
+ set('ranger',   ['snipe','lob','es2concuss','es2pen','scatter','arrowrain','jsFire','jsLeg','jsHand','jsMulti']);
+ set('musketeer',['snipe','es2concuss','es2pen','barrage','burst','lethal','frenzy','hook','jsFlare','jsLeg','jsHand','jsHead']);
+ set('cannoneer',['snipe','es2concuss','es2pen','artillery','chainbomb','barrage','burst','jsFlare','jsHead']);
+ set('scoutCav', ['charge','sprint','es2ride','es2last','es2banner','rush','jsGuard','jsRuin','jsInertia','jsJav']);
+ set('lightCav', ['charge','sprint','es2ride','es2last','es2banner','rush','stomp','hcharge','es3charge','es3horn','jsGuard','jsBash','jsRuin','jsInertia','jsJav']);
+ set('heavyCav', ['charge','sprint','es2ride','es2last','rush','stomp','hcharge','es3charge','es3horn','guard','es2shield','jsGuard','jsBash','jsCover','jsRuin','jsInertia','jsJav']);
+ set('horseArcher',['sprint','es2ride','es2banner','caravan','snipe','lob','scatter','es2concuss','jsFire','jsLeg','jsHand','jsMulti','jsRuin','jsInertia','jsRide']);
+ set('gunCav',   ['charge','sprint','es2ride','snipe','es2concuss','barrage','burst','jsFlare','jsLeg','jsHand','jsHead','jsRuin','jsInertia','jsRide']);
+ set('wizard',   ['fireball','icicle','spike','cyclone','frostbite','blizzard','thunder','acid','es2nova','es2focus','es3chain']);
+ set('mage',     ['fireball','icicle','spike','cyclone','frostbite','blizzard','thunder','acid','es2nova','es2focus','es3chain']);
+ set('priest',   ['heal','revive','ward','mheal','es3word','es3rally','es2focus','jsPurge']);
+ set('engineer', ['repair','overload','mine','mines','fieldfix','es2fort','es2arc','chainbomb','artillery','es3throw','jsFlare','jsTrap']);
+ set('shadowKiller',AS);
+ set('jungleWarrior',['pierce','pounce','es2leech','gale','snipe','lob','es2concuss','es2pen','es3throw','jsFire','jsLeg','jsHand','jsGuard','jsShade','jsJav']);
+ set('alchemist',['acid','toxburst','mheal','molotov','elixir','corrode','alchemy','es2frost','es2focus','es3rally','jsHoly','jsPurge']);
+ set('paladin',  ['cleave','guard','holyjud','faith','hshield','es2shield','es2taunt','bulwark','es3gods','jsHold','jsBash','jsCover','jsJav']);
+ set('camelCav', ['sprint','es2ride','es2banner','stomp','rush','caravan','snipe','barrage','burst','jsFlare','jsLeg','jsHead','jsRuin','jsInertia','jsRide']);
+ set('heavyGunner',['snipe','es2concuss','artillery','chainbomb','barrage','burst','mine','jsFlare']);
+ set('sharpshooter',['snipe','es2pen','frenzy','lethal','hook','es3snipe','es3pierce','jsFlare','jsLeg','jsHand','jsHead']);
+ set('druid',    ['cyclone','spike','heal','revive','wolves','thorns','rejuv','natural','es2focus','es2bark','es3rally','es3wrath']);
+ set('bard',     ['song','lullaby','warsong','echo','es2discord','es2focus','es3word','es3hide']);
+ set('ironCaptain',['cleave','es2last','undying','guard','es2taunt','es2shield','bulwark','ironwall','es2banner','es3stand','jsHold','jsBash','jsCover']);
+ set('elemBowman',['snipe','scatter','arrowrain','elemrain','elemarrow','frostbite','es2focus','jsFire','jsHeavy','jsHead','jsMulti']);
+ set('saintMaid',['charge','sprint','hcharge','es3horn','es2banner','holyjud','faith','hshield','guard','jsGuard','jsBash','jsCover','jsRuin','jsInertia','jsJav']);
+ set('punisher', ['cleave','es2sunder','es2taunt','guard','sever','holyjud','faith','hshield','es3gods','jsBash','jsCover']);
+ for(const k in CFG.elite.skills)CFG.elite.skills[k].id=k;   // 技能自己的键（game/el_core.elFamOk 按职业的 sks 查）
 }
 
 // ---------- 0.12.1 不老之泉的禁疗（用户定：史诗、传说卡和商人独特商品；名字 Claude 定；效果在 maps/bl_spring 的 afterHitE）----------
@@ -23704,7 +23806,7 @@ deflE
 ydvG ydvGU ydvA ydvAU ydvAT
 hmFlU hmFlC hmGo hmSt hmTg hmLc
 es2Rd es2Bn es2ArcN
-svSq elBC elMvP elGun elChg elMvT elChgOn elRepT elHealT visFix elHealF elHealK`.trim().split(/\s+/);   // elBC…elHealK：0.13 精英职业技能（game/el_jobfx）   // svSq：0.12.7b 幸存者模式的队员位置（game/sv_squad）   // es2Rd es2Bn es2ArcN：0.12.7 代理 ES 加（精英技能第三批，game/el_skills3）   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）   // ydv*：0.12.5 第二轮代理 T，源能装置给的护盾、攻击加成（structs/yn_tdev）
+svSq elBC elMvP elGun elChg elMvT elChgOn elRepT elHealT visFix elHealF elHealK jsHoldU jsHX jsHY jsCvU jsCvR jsGhU jsKs jsKsU`.trim().split(/\s+/);   // elBC…elHealK：0.13 精英职业技能（game/el_jobfx）；jsHoldU…jsKsU：0.13 精英新技能（game/el_jsk）   // svSq：0.12.7b 幸存者模式的队员位置（game/sv_squad）   // es2Rd es2Bn es2ArcN：0.12.7 代理 ES 加（精英技能第三批，game/el_skills3）   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）   // ydv*：0.12.5 第二轮代理 T，源能装置给的护盾、攻击加成（structs/yn_tdev）
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -23745,7 +23847,7 @@ gwlCd
 foe
 ytlT ytlN ytlO ydvM ydvSh ydvShM ydvShT ydvEt ydvHt ydvRt ydvStop ydvG ydvGU ydvA ydvAU ydvAT`.trim().split(/\s+/);   // foe：0.12.5 代理 K，被骇入（structs/hack）   // isCamp：P3 加（0.12.2d 性能），见 structs/structs.makeStruct   // ytl* / ydv*：0.12.5 第二轮代理 T，电能塔的增伤叠层、源能装置（structs/yn_tdev）
 const SOLDIER_NUM='x y hp maxHp baseHp chp def dodge block shield stagMul taunt vision facing dir anim flash stag atkCd shotCd ammo rel think ti tid recoil thrust swing calm chg patrolT px py slot statMul lastHit slA layer elev atkAdd atkMul rgMul critAdd critMulAdd pierceN mvSp kiteK gdTile gdSeen gdV mgA mgK mgU s2Dr s2Chg cv _sx _sy shieldHp shieldMax shieldT critPt cmdU gwlR'.split(' ');   // P2 加（0.12.2d）cv…cmdU：每帧 / 每次受击都写小数、读的地方都是 ||0 或比大小的字段，先填 0 让它一直是数字（原来先装 undefined，之后每写一次小数都新建一个数字对象）   // gwlR：GW 加（0.12.4 长城城墙，structs/gwall）
-const HERO_NUM='gwlL star slot x y hp maxHp def dodge block shield facing dx dy dir aimA wi swapT atkCd swing swingA thrust recoil ammo rel shieldHp shieldMax shieldT reflect whirlT whirlTk whirlA dashT dvx dvy inv flash anim respawn aiT aiTi aiTid tgtI tgtId lastHit layer elev calm vision tvNx mdef speed crit regen aspd stnU lastAtk cv gwlR hh2Rq'.split(' ');   // P2 加（0.12.2d）mdef…lastAtk：同上   // gwlR：GW 加（0.12.4 长城城墙，structs/gwall）   // hh2Rq：代理 H 加（0.12.4 胡寒，heroes/huhan）
+const HERO_NUM='gwlL star slot x y hp maxHp def dodge block shield facing dx dy dir aimA wi swapT atkCd swing swingA thrust recoil ammo rel shieldHp shieldMax shieldT reflect whirlT whirlTk whirlA dashT dvx dvy inv flash anim respawn aiT aiTi aiTid tgtI tgtId lastHit layer elev calm vision tvNx mdef speed crit regen aspd stnU lastAtk cv gwlR hh2Rq jsHoldU jsHX jsHY jsCvU jsCvR jsGhU jsKs jsKsU'.split(' ');   // P2 加（0.12.2d）mdef…lastAtk：同上   // gwlR：GW 加（0.12.4 长城城墙，structs/gwall）   // hh2Rq：代理 H 加（0.12.4 胡寒，heroes/huhan）
 const STRUCT_NUM='tx ty x y level flash cd ammo rel aim recoil mgA mgK mgU stEff shcU shcF xgVn xgRgT hp maxHp def rsh gwlCd'.split(' ');   // P2 加（0.12.2d）hp maxHp def rsh：建筑每挨一下都写 hp，同上   // gwlCd：GW 加（0.12.4 长城城墙，structs/gwall）
 const Soldier=shapeCtor(SOLDIER_KEYS,SOLDIER_NUM),Hero=shapeCtor(HERO_KEYS,HERO_NUM),Struct=shapeCtor(STRUCT_KEYS,STRUCT_NUM);
 // P2 加（0.12.2d 性能）：把每个字段预先「写宽」一遍（造几个丢掉的实例：数字字段写一次小数，其它字段先写数字再写对象、字符串、null，最后写回 undefined）。
@@ -25522,6 +25624,34 @@ Object.assign(SKI,{
   el_es2focus:S=>{skicLotus(S,16,24,'#d88ac8');S.disc(16,10,5,'#7a4aa8');S.disc(16,10,3,'#b07ad8');spark(S,16,10,'#f0d8ff');skicArc(S,16,10,8,1,'#c8a8f0',200,340);skicPas(S)},   // 冥想（被动）：莲花上的法球
   el_es2arc:S=>{skicGear(S,12,18,10,'#8a8f9a',8);S.disc(12,18,2.4,'#5f6472');S.poly([[24,1],[16,13],[21,13],[17,24],[28,9],[22,9],[27,1]],'#f0c040');S.poly([[23.5,3.5],[19,11.5],[22.5,11.5],[20,19],[25.5,10.5],[21.5,10.5]],'#fff0a0',1);skicPas(S)},   // 电弧（被动）：齿轮 + 闪电
   el_es2bark:S=>{skicShield(S,14,15,11,13,'#5a3a20','#8a5a38');for(const[x,y,h]of[[8,6,14],[13,4,18],[18,6,15]])S.r(x,y,1,h,'#5a3a20',1);S.poly([[20,22],[29,13],[27,23]],'#5fbf6a');S.line(21,22,27,16,'#3a8a3a',1);skicPas(S)},   // 树皮术（被动）：树皮盾 + 绿叶
+});
+
+// ---------- 0.13 精英职业技能第一批的图标（数据 data/el_jsk.js）----------
+// 画法同 art/ski_c 的精英通用技能：32×32，被动右下角 skicPas 小菱形
+Object.assign(SKI,{
+  // ===== 主动 =====
+  el_jsHold:S=>{S.r(1,26,30,4,'#7a5a3a');for(const[a,b,c,d]of[[5,27,9,29],[26,27,23,29],[13,29,11,31],[19,29,21,31]])S.line(a,b,c,d,'#4e3020',1);S.r(9,2,14,22,'#5f6472');S.r(11,4,10,18,'#7a8a9a');S.poly([[11,23],[21,23],[16,29]],'#5f6472');S.disc(16,13,3.2,'#c3cad6');for(const[x,y]of[[12,5],[19,5],[12,20],[19,20]])S.p(x,y,'#c3cad6',1);for(const[x,y,sx,sy]of[[2,2,1,1],[29,2,-1,1],[2,22,1,-1],[29,22,-1,-1]]){S.r(sx>0?x:x-3,y,4,1,'#e8b84a',1);S.r(x,sy>0?y:y-3,1,4,'#e8b84a',1)}},   // 镇守：插进地里的塔盾 + 四角定位框
+  el_jsBash:S=>{for(const[y,l]of[[9,5],[16,7],[23,5]])S.r(1,y,l,1,'#e8dcb8',1);skicBurst(S,24,15,8,5,['#f0a040','#ffe070','#fff8c0']);skicShield(S,14,16,8,11,'#7a4a2a','#b8862a');S.disc(14,13,2.4,'#e8b84a');spark(S,27,4,'#ffe070');spark(S,29,25,'#ffe070')},   // 盾击：往前砸的盾 + 冲击爆闪
+  el_jsFire:S=>{skicArrow(S,4,28,28,4,'#c8a070','#e2e6ee','#e8dcb8');skicAlong(S,23,9,3,29,(u,v,L)=>{if(u<0||u>20)return null;const t=u/20,hw=(t<0.2?5.6*Math.sqrt(t/0.2):5.6*(1-t)/0.8)*(1+0.22*Math.sin(u*1.4)),d=Math.abs(v)/Math.max(hw,0.01);if(d>1)return null;if(d<0.35)return null;return d<0.62&&t<0.65?'#ffe070':d<0.82?'#f08a2a':'#d8402a'});spark(S,8,15,'#ffb040');spark(S,15,26,'#ffb040')},   // 火矢：箭杆裹着往后拖的火
+  el_jsFlare:S=>{for(const[x,y]of[[5,27],[7,24],[9,22],[11,20],[13,18]])S.r(x,y,2,2,'#8a8f9a');for(let k=0;k<12;k++){const a=k*Math.PI/6+0.13,c=Math.cos(a),s=Math.sin(a),R=k%2?8.5:12.5,w=k%2?1:1.5;S.poly([[19+c*5-s*w,12+s*5+c*w],[19+c*R,12+s*R],[19+c*5+s*w,12+s*5-c*w]],k%2?'#fff0a0':'#ffe070')}S.disc(19,12,5.5,'#ffe070');S.disc(19,12,3.8,'#fff8d0');S.disc(19,12,2,'#ffffff',1);S.r(1,28,4,3,'#c43a3a');S.r(1,30,4,1,'#d39b3a')},   // 照明弹：打上天的信号弹炸成一团强光
+  el_jsPurge:S=>{skicDrop(S,12,20,7.5,'#5fbf3a');S.disc(10,21,2.4,'#3a8a2a',1);for(let y=8;y<30;y++)for(let x=8;x<22;x++)if(x-y>-4&&(x+y)%2===0)S.clr(x,y);for(const[x,y,c]of[[19,9,'#bfe8f8'],[22,13,'#9fdcf4'],[24,7,'#e8f8ff'],[20,4,'#9fdcf4'],[26,11,'#bfe8f8']])S.r(x,y,2,2,c,1);spark(S,27,4,'#9fdcf4');spark(S,28,17,'#9fdcf4');spark(S,16,3,'#e8f8ff')},   // 毒素净化：毒滴碎成白蓝光点
+  el_jsHeavy:S=>{for(const[x,r]of[[5,11],[11,9],[17,7]]){S.ell(x,16,2.2,r,'#c8d4e8');S.ellClr(x,16,1.1,r-1.6)}skicAlong(S,1,16,31,16,(u,v,L)=>{const a=Math.abs(v);if(u>L-8&&u<=L)return a<=(L-u)*0.6+0.5?'#9aa0ac':null;if(u>=0&&u<=L-8&&a<1.6)return a<0.6?'#b98552':'#8a5a38';if(u>=0&&u<4&&a<1.6+(4-u)*0.7)return '#e8dcb8';return null})},   // 重簇箭矢：粗重的箭一口气射穿好几层，身后留下一圈圈冲击环
+  el_jsCover:S=>{S.disc(8,12,3.2,'#8fb0d8');S.poly([[3,27],[13,27],[12,17],[4,17]],'#5a7ab0');skicArc(S,14,19,15,1.6,'#f6e8a0',200,340);skicShield(S,19,18,7,10,'#7a4a2a','#b8862a');skicCross(S,19,16,4,1,'#fff4c0',1);for(const y of[11,22])skicArrow(S,31,y,27,y,'#c8a070','#e2e6ee')},   // 牺牲援护：挡在队友前面的盾 + 护罩弧
+  el_jsGuard:S=>{S.disc(23,9,3.2,'#a8303a');S.poly([[18,26],[28,26],[27,14],[19,14]],'#7a2a30');for(const[x,y,sx,sy]of[[16,3,1,1],[30,3,-1,1],[16,28,1,-1],[30,28,-1,-1]]){S.r(sx>0?x:x-3,y,4,1,'#e8b84a',1);S.r(x,sy>0?y:y-3,1,4,'#e8b84a',1)}S.r(1,19,15,2,'#8a5a38');S.poly([[14,16.5],[24,20],[14,23.5]],'#c3cad6');S.r(13,17,2,6,'#5f6472');skicBurst(S,24,20,3,4,['#fff8c0'])},   // 近卫拦截：长枪刺住目标，四角锁定框（定身）
+  el_jsLeg:S=>{S.r(11,3,7,15,'#9aa0ac');S.r(11,8,7,2,'#5f6472');S.poly([[10,17],[19,17],[19,21],[26,23],[27,28],[10,28]],'#7a4a2a');S.r(10,27,17,2,'#4e3020');skicAim(S,15,17,9,'#e0443a')},   // 瞄准腿部：准星对着腿和靴子
+  el_jsHand:S=>{S.r(9,24,14,6,'#7a4a2a');S.r(10,13,11,11,'#9aa0ac');for(const[x,y,h]of[[10,6,8],[13,3,11],[16,4,10],[19,6,8]])S.r(x,y,2,h,'#9aa0ac');S.poly([[21,17],[27,11],[29,13],[23,21]],'#9aa0ac');skicAim(S,15,15,9,'#e0443a')},   // 瞄准手部：准星对着铁手套
+  el_jsHead:S=>{skicSkull(S,16,15,8,'#e6dcc2');skicAim(S,16,15,13,'#e0443a');S.disc(16,15,1.6,'#ff4040',1);S.glow(16,15,'#ffffff')},   // 瞄准头部：准星对着骷髅头
+  el_jsMulti:S=>{for(const d of[8,26,44,62,80]){const a=d*Math.PI/180;skicArrow(S,3+Math.cos(a)*6,29-Math.sin(a)*6,3+Math.cos(a)*27,29-Math.sin(a)*27,'#c8a070','#e2e6ee','#e8dcb8')}},   // 多重箭：一次射出的一扇箭
+  el_jsTrap:S=>{S.ell(16,26,14,3.5,'#5f6472');S.ell(16,25.5,4,1.6,'#c3cad6');skicArc(S,16,22,13,2.4,'#9aa0ac',180,262);skicArc(S,16,22,13,2.4,'#9aa0ac',278,360);for(const d of[192,212,232,252,288,308,328,348]){const a=d*Math.PI/180,c=Math.cos(a),s=Math.sin(a),px=-s,py=c;S.poly([[16+c*10.8+px*2,22+s*10.8+py*2],[16+c*5.4,22+s*5.4],[16+c*10.8-px*2,22+s*10.8-py*2]],'#e2e6ee')}for(const x of[3,29])S.disc(x,23,2.4,'#7a7f8a');skicChain(S,27,28,31,31,'#9aa0ac')},   // 兽夹：张开的铁兽夹，一圈尖齿
+  el_jsShade:S=>{const run=(o,c)=>{S.disc(o+4,6,2.6,c);S.poly([[o+1,9],[o+5,9],[o+4,18],[o,18]],c);S.poly([[o,17],[o+3,17],[o-2,23],[o-5,27],[o-7,26],[o-4,22]],c);S.poly([[o+2,17],[o+4,17],[o+8,22],[o+7,28],[o+5,28],[o+5,23]],c);S.poly([[o+2,10],[o+4,11],[o-1,15],[o-3,14]],c);S.poly([[o+3,10],[o+5,10],[o+9,14],[o+8,15]],c)};run(5,'#b8a0e0');run(10,'#8a6ac0');for(const x of[13,20])S.r(x,2,1,28,'#8a8f9a',1);for(let y=2;y<30;y+=4){S.r(13,y,8,1,'#8a8f9a',1);S.r(y%8===2?16:18,y,1,4,'#8a8f9a',1)}run(18,'#4a2a78');S.glow(23,6,'#e0c8ff')},   // 游影：深紫的人影带着残影，穿墙而过
+  el_jsRuin:S=>{skicBurst(S,24,10,8,6,['#c8402a','#f08a2a','#ffe070']);for(const[y,x,l]of[[22,1,6],[26,3,7],[29,7,5]])S.r(x,y,l,1,'#e8dcb8',1);skicAlong(S,2,27,24,10,(u,v,L)=>{const a=Math.abs(v);if(u<0||u>L)return null;if(u<4)return a<1.2?'#4e3020':null;if(u<9){const w=1.2+(u-4)*0.85;return a<w?(a>w-1?'#8a8f9a':'#c3cad6'):null}const w=2.2*(L-u)/(L-9)+0.4;return a<w?(Math.floor((u-9)/3)%2?'#c43a3a':'#e8dcb8'):null});for(const[x,y]of[[29,20],[17,3],[30,3],[27,22]])S.r(x,y,2,2,'#8a5a38')},   // 毁灭冲锋：骑枪冲撞出的大爆裂 + 碎石
+  el_jsAxe:S=>{skicArc(S,15,16,14,1.2,'#e8dcb8',100,160);skicArc(S,15,16,14,1.2,'#e8dcb8',280,340);skicAlong(S,8,25,21,8,(u,v,L)=>u>=0&&u<=L&&Math.abs(v)<1.1?(Math.floor(u/3)%2&&u<8?'#4e3020':'#8a5a38'):null);S.poly([[20.6,7.2],[28.5,10],[26.1,15.7],[21.3,19.6],[16.4,12.8]],'#c3cad6');S.poly([[25.5,9.5],[28.5,10],[26.1,15.7],[21.3,19.6],[22.5,16.5]],'#e2e6ee');S.poly([[20.6,7.2],[16.4,12.8],[13.5,7.5]],'#8a8f9a');skicDrop(S,26,25,3,'#c43a3a');S.p(21,28,'#c43a3a')},   // 飞斧：转着飞的斧头 + 血滴
+  el_jsJav:S=>{S.r(9,9,14,15,'#8a8f9a');S.r(10,10,12,4,'#a8aeb8');for(const[x,y]of[[10,10],[21,10],[10,22],[21,22]])S.p(x,y,'#c3cad6',1);S.ellClr(16,16,1.8,1.8);for(const[a,b,c,d]of[[16,16,11,11],[16,16,22,13],[16,16,12,22],[16,16,20,23],[16,16,15,10]])S.line(a,b,c,d,'#2a2733',1);skicAlong(S,2,30,30,2,(u,v,L)=>{const a=Math.abs(v);if(u<0||u>L)return null;if(u>L-7)return a<=(L-u)*0.3+0.3?'#e2e6ee':null;return a<0.8?'#b98552':null})},   // 标枪：斜飞的标枪扎穿开裂的铁甲
+  // ===== 被动 =====
+  el_jsHoly:S=>{S.r(12,3,6,6,'#c3cad6');S.r(11,2,8,2,'#8a5a38');S.disc(15,20,10,'#c3cad6');S.disc(15,20,8.5,(x,y)=>y>=23?'#d8a838':'#3e4a6a');skicFlame(S,15,26,5,15,['#f0c040','#fff0a0','#ffffff']);spark(S,24,9,'#fff0a0');spark(S,5,12,'#fff0a0');skicPas(S)},   // 圣焰药水（被动）：烧瓶里烧着金白色的圣焰
+  el_jsInertia:S=>{skicBurst(S,24,16,8,6,['#c8402a','#f08a2a','#ffe070']);for(const[y,l]of[[12,6],[16,8],[20,6]])S.r(1,y,l,1,'#e8dcb8',1);skicArc(S,15,16,8.5,3.4,'#9aa0ac',215,505);for(const[x,y]of[[10,10],[16,8],[22,11],[22,20],[16,23],[10,21]])S.p(x,y,'#5f6472',1);skicPas(S)},   // 惯性冲击（被动）：马蹄铁冲出速度线，撞出橙色冲击
+  el_jsRide:S=>{for(const[y,l]of[[8,6],[24,6],[28,9]])S.r(1,y,l,1,'#e8dcb8',1);skicArc(S,7,16,14,2.2,'#8a5a38',305,415);S.line(15,4,15,28,'#e8dcb8',1);skicArrow(S,6,16,29,16,'#c8a070','#e2e6ee','#e8dcb8');skicAim(S,25,7,4.5,'#e0443a');skicPas(S)},   // 游骑训练（被动）：拉满的弓 + 稳稳的准星 + 速度线
+  el_jsSlay:S=>{skicSkull(S,11,14,8.5,'#c43a3a');for(let k=0;k<5;k++){const y=20-k*4,c=['#7a2a30','#a8303a','#c43a3a','#e0443a','#ff6a5a'][k];S.poly([[22,y+3],[26,y],[30,y+3],[30,y+5],[26,y+2],[22,y+5]],c)}skicPas(S)},   // 屠杀战意（被动）：红骷髅 + 叠起来的五层层数
 });
 
 // ---------- 0.12.0 小图标（代理 EI，用户 2026-10-25 定）：属性面板（英雄 / 精英）、精英特性、家族徽记 ----------
@@ -74504,7 +74634,7 @@ function elJobSet(e,job){if(!EL().jobs[job]||job==='recruit'||job===e.job)return
   if(C.ware&&(W[C.ware]||0)<C.n)return`${CFG.wares.items[C.ware].name}不够(需要 ${C.n}，有 ${Math.floor(W[C.ware]||0)})`;if(C.ware)W[C.ware]-=C.n;
   META.wallet.银币-=c;e.job=job;e.ea=e.ea.filter(k=>elSkOk(e,k));e.ep=e.ep.filter(k=>elSkOk(e,k));elGearFix(e);elAutoSk(e,true);saveMeta();return null}
 // —— 技能 ——
-const elFamOk=(e,S)=>!S.fam||S.fam.some(f=>elJobD(e).fam.includes(f));
+const elFamOk=(e,S)=>{if(!S.fam)return true;const J=elJobD(e);return J.sks?J.sks.includes(S.id):S.fam.some(f=>J.fam.includes(f))};   // sks：0.13 职业自己能学的技能（data/el_jsk）；没写的（新兵）照「系」
 const elFormLe=(a,b)=>a===b||(!!CFG.heroes[a]&&!!CFG.heroes[b]&&advBase(a)===advBase(b)&&heroFormRank(a)<=heroFormRank(b));   // 0.12.7a a 是 b 自己或 b 进阶前的形态
 const elNeedOk=S=>!S.need||HIDS.some(id=>elFormLe(S.need,id)&&META.heroes[id]&&META.heroes[id].owned&&(META.heroes[id].star||1)>=5);   // 0.12.7a 进阶后的形态 5★ 也算
 const elSkOk=(e,k)=>{const S=EL().skills[k];return!!S&&(e.id<0&&e.stLv?true:elFamOk(e,S)&&elNeedOk(S))};   // e.id < 0 && stLv：0.13 剧情精英，剧情教的技能不看系和前置英雄（用户定）
@@ -75083,7 +75213,7 @@ const EL_NONE='elNone';
 CFG.skills.elNone={name:'空', cd:999, aim:'self', desc:()=>'没有装配技能'};
 // 技能参数（0.12.0 用户定）：那个技能的数据（byStar 取 1★ 那一档）+ 精英的覆盖参数 o = 1 级；削弱后，sc 列的项 × 等级系数 skLvK
 const elSkLvK=lv=>{const K=EL().skLvK;return K[clamp(lv|0,1,K.length)-1]};
-function elSkP(k,lv){const S=EL().skills[k],B=CFG.skills[S.sk]||CFG.skills.elNone,p=Object.assign({},B);if(B.byStar)for(const x in B.byStar)p[x]=B.byStar[x][0];if(S.o)Object.assign(p,S.o);elSkNerf(p,S);
+function elSkP(k,lv){const S=EL().skills[k],B=CFG.skills[S.sk]||CFG.skills.elNone,p=Object.assign({},B);if(B.byStar)for(const x in B.byStar)p[x]=B.byStar[x][0];if(S.o)Object.assign(p,S.o);if(!S.raw)elSkNerf(p,S);   // raw：0.13 技能单上的数就是精英的数，不削弱
   const c=elSkLvK(lv);for(const x of S.sc||EL().skSc)if(typeof p[x]==='number')p[x]*=c;p.name=S.name;p.elK=k;p.lv=lv;
   const V=EL().skV&&EL().skV[k];if(S.lvT)for(const x in S.lvT){const T=S.lvT[x];p[x]=T[Math.min(T.length,Math.max(1,lv|0))-1]}   // lvT：0.12.1 按等级查表（赞颂之歌）
   if(V&&lv>=EL().skVLv){if(V.set)Object.assign(p,V.set);if(V.add)for(const x in V.add)p[x]=(p[x]||0)+V.add[x];p.elV=V.t}   // 0.12.1 V 级质变（data/el_jobs2）
@@ -75113,7 +75243,7 @@ function elSpec(e){const it=u=>{const x=itemByUid(u);return x&&!x.book?{base:x.b
   const w=it(e.gear.w);return{id:'el'+e.id,d:elDef(e),el:e.id,star:1,weapons:w?[w]:[],offhand:it(e.gear.o),armor:['head','body','feet'].map(s=>it(e.gear[s])).filter(Boolean),acc:[],spc:null,spr:elLkSpr(e)}}
 // heroRecalc 末尾调：技能、按武器的伤害加成、射程、命中、抗性
 function elRecalc(h){const e=elById(h.elite);if(!e)return;const S=h.d.elS||{},w=h.ws;
-  const A=e.ea.filter(k=>e.sk[k]>0&&elSkOk(e,k)&&!EL().skills[k].pas&&elSkWOk(k,w)).slice(0,3);   // elSkWOk：0.12.0 箭雨只有弓、弩能放
+  const oc=h.offhand&&w.hands===1?CFG.weapons[h.offhand.base]||null:null,A=e.ea.filter(k=>e.sk[k]>0&&elSkOk(e,k)&&!EL().skills[k].pas&&elSkWOk(k,w,oc)).slice(0,3);   // oc：0.13 副手（双手武器时盾不算）   // elSkWOk：0.12.0 箭雨只有弓、弩能放
   h.skills=[0,1,2].map(i=>A[i]?EL().skills[A[i]].sk:EL_NONE);h.sp=[0,1,2].map(i=>A[i]?elSkP(A[i],e.sk[A[i]]):Object.assign({},CFG.skills.elNone));h.unl=[0,1,2].map(i=>!!A[i]);
   const mag=w.cls==='magic'||!!w.magic,rg=w.cls==='ranged'&&!mag;
   h.gDmg+=(S.dmg||0)+(mag?S.dmgS||0:rg?S.dmgR||0:S.dmgM||0)+elMemK();h.gCritDmg+=S.critDmg||0;h.gCdr+=S.cd||0;
@@ -75130,7 +75260,7 @@ function elRecalc(h){const e=elById(h.elite);if(!e)return;const S=h.d.elS||{},w=
   if(h.elGrief){const B=EL().bond,gx=1+(S.griefX||0);h.def*=1-Math.min(0.9,B.griefDef*gx);h.mdef*=1-Math.min(0.9,B.griefDef*gx)}}   // griefX：0.12.0 特性「护短」   // 0.12.0（用户定）亲人倒下：双防 −10%
 // 亲人同队的双攻倍率（heroRecalc 开头算，武器伤害要用）：亲人倒下过 +20%，否则有活着的亲人同队 +10%
 function elBondCalc(h){const B=EL().bond,gx=1+((h.d.elS&&h.d.elS.griefX)||0);h.elAtkK=1+(h.elGrief?B.griefAtk*gx:h.elRel&&h.elRel.length&&G&&G.heroes&&G.heroes.some(o=>o.elite&&!o.dead&&h.elRel.includes(o.elite))?B.atk:0)}
-const elSkWOk=(k,w)=>{const S=EL().skills[k];return!S||!S.wreq||!!(w&&S.wreq.includes(w.type))};
+const elSkWOk=(k,w,oc)=>{const S=EL().skills[k];if(!S)return true;if(S.wreq&&!(w&&S.wreq.includes(w.type)))return false;if(!S.oreq)return true;const o=oc===undefined?w&&w.o:oc;return!!(o&&o.type==='shield'&&(S.oreq!=='bigShield'||(o.size||2)>=3))};   // oreq：0.13 要副手（shield 任何盾 / bigShield 大盾，size 3）；oc = 副手的 CFG.weapons 条目（不传就看 w.o，elWType 带的）
 // —— 克劳德「我都记得」（用户定）：名册（含删掉的）每到第 n 层需要 1 + n(n−1)/2 名，每层克劳德自己和精英 +1% 增伤、减伤，至多 1000% ——
 function elMemLv(){if(!META||!META.el)return 0;const N=elRollN();let n=0;while(n<1000&&1+(n+1)*n/2<=N)n++;return n}
 const elMemOn=()=>!!(G&&G.heroes&&G.heroes.some(h=>h.id==='scribe'));
@@ -75345,10 +75475,10 @@ function elPasSt(k,lv){const key=k+'|'+lv;let o=EL_PAS.get(key);if(o)return o;co
   if(P.lvT)for(const x in P.lvT){const T=P.lvT[x];o[x]=T[Math.min(T.length,Math.max(1,lv|0))-1]}   // lvT：0.12.1 按等级查表（赞颂之歌）
   EL_PAS.set(key,o);return o}
 // 技能说明：按这一级的参数写（主动用那个技能的 desc(p)，被动按属性自动写）
-function elSkDesc(k,lv){const S=EL().skills[k];if(!S)return'';lv=Math.max(1,lv|0);const wq=S.wreq?`(要拿${S.wreq.map(t=>(CFG.weaponTypes[t]||{name:t}).name).join(' / ')})`:'';if(S.pas)return(elStDesc(elPasSt(k,lv))||S.desc||'')+wq;
+function elSkDesc(k,lv){const S=EL().skills[k];if(!S)return'';lv=Math.max(1,lv|0);const wq=(S.wreq?`(要拿${S.wreq.map(t=>(CFG.weaponTypes[t]||{name:t}).name).join(' / ')})`:'')+(S.oreq?`(副手要拿${S.oreq==='bigShield'?'大盾':'盾'})`:'');if(S.pas)return(elStDesc(elPasSt(k,lv))||S.desc||'')+wq;
   const B=CFG.skills[S.sk],V=EL().skV&&EL().skV[k],vt=V?(lv>=EL().skVLv?`【V 级】${V.t}`:`(V 级起：${V.t})`):'';try{if(B&&typeof B.desc==='function')return B.desc(elSkP(k,lv))+wq+vt}catch(e){console.warn('elSkDesc',k,e)}return(S.desc||'')+wq}
 // 精英拿的武器类型（被动的武器要求用）
-const elWType=e=>{const w=e&&e.gear&&e.gear.w?itemByUid(e.gear.w):null;return w&&CFG.weapons[w.base]?{type:CFG.weapons[w.base].type}:null};
+const elWType=e=>{const w=e&&e.gear&&e.gear.w?itemByUid(e.gear.w):null,o=e&&e.gear&&e.gear.o?itemByUid(e.gear.o):null;return w&&CFG.weapons[w.base]?{type:CFG.weapons[w.base].type,o:o&&CFG.weapons[o.base]||null}:null};   // o：0.13 副手（技能的 oreq）
 // —— 每帧（EL_FX.tick 开头）：大地重锤蓄力、驼队到时间、各种被动 ——
 const EL_SONG_E=new Map(),EL_CMD_E=new Map(),EL_WALL_E=new Map(),EL_TMP_E=new Map(),EL_LEAD_E=new Map();
 const elEffOf=(M,k,f)=>{let e=M.get(k);if(!e){e=f();M.set(k,e)}return e};
@@ -75603,6 +75733,107 @@ SK.es2Discord={cast(h,p,a){const ang=Math.atan2(a.y-h.y,a.x-h.x),eff=elEffOf(ES2
   ai(h,p){const j=nearestEnemy(h.x,h.y,p.len*16,true);return j>=0?{x:E.x[j],y:E.y[j]}:null}};
 // —— 0.12.7 第四批（参照英雄技能，数据 data/el_skills4.js）：只换了说明的两个，施放、托管照原英雄技能 ——
 SK.es3GodsName=SK.godsName;SK.es3Snipe=SK.gwSnipe;if(SKFX.godsName)SKFX.es3GodsName=SKFX.godsName;   // 施法特效也借原技能的
+
+// ---------- 0.13 精英技能：职业第一批新技能的逻辑（数据 data/el_jsk.js，用户 2026-11-03 的技能单）----------
+// 主动技能 = SK 表的 cast / ai（同 game/el_battle、game/el_skills3）；持续的部分在特性 elJsk 的钩子里：
+//   镇守：站定期间每帧把挤进这一格的地面亡灵推出去（jsHoldU 到期时刻、jsHX / jsHY 站的格子中心）；
+//   牺牲援护：dmgInF 把范围里友军受到的直接伤害整笔转给放技能的人（jsCvU 到期、jsCvR 半径像素）；
+//   多重箭：按住持续释放（chan），每半个攻击间隔射一支；
+//   圣焰药水（被动 holyAdd）：afterHitE 补一下神圣伤害；
+//   第二批：兽夹（JK_TP，tick 里看踩没踩、drawUnder 画）、游影（jsGhU 到期时刻，穿行借 u.hmGo）、惯性冲击 / 屠杀战意（dmgBaseE；jsKs 层数、jsKsU 到期）
+const JK_HOLD=[],JK_CV=[],JK_DB={debuff:true},JK_WK=new Map(),JK_DR=new Map();   // JK_HOLD / JK_CV：场上正在镇守 / 援护的（tick 里重排）
+let JK_HX=0,JK_HY=0;   // 推亡灵时的格子中心（eQuery 回调借用，不新建闭包）
+const jkTgt=(h,a,R)=>nearestEnemy(a?a.x:h.x,a?a.y:h.y,R,true);
+const jkShotFx=(h,j,c)=>{if(inViewPt(E.x[j],E.y[j])){addFx({k:'tracer',x0:Math.round(h.x),y0:Math.round(h.y-6),x1:Math.round(E.x[j]),y1:Math.round(E.y[j]-6),life:0.12});addFx({k:'ring',x:Math.round(E.x[j]),y:Math.round(E.y[j]-6),r:7,life:0.25,c})}h.facing=E.x[j]>=h.x?1:-1;sfx('shot',h.x,h.y)};
+const jkRangedAI=(h,p)=>{const j=nearestEnemy(h.x,h.y,heroRange(h)*0.95,true);return j>=0?{x:E.x[j],y:E.y[j]}:null};
+// 直线上的亡灵按远近排好（重簇箭矢、多重箭）：返回前 n 个的下标
+const JK_LN=[];function jkLine(x,y,ang,len,w,n){JK_LN.length=0;const ux=Math.cos(ang),uy=Math.sin(ang);
+  eQuery(x+ux*len/2,y+uy*len/2,len/2+w,j=>{const dx=E.x[j]-x,dy=E.y[j]-y,al=dx*ux+dy*uy,pe=Math.abs(dx*uy-dy*ux);if(al<-4||al>len+E.r[j]||pe>w/2+E.r[j])return;JK_LN.push(j)},true);
+  JK_LN.sort((a,b)=>((E.x[a]-x)*ux+(E.y[a]-y)*uy)-((E.x[b]-x)*ux+(E.y[b]-y)*uy));if(JK_LN.length>n)JK_LN.length=n;return JK_LN}
+SK.jkHold={cast(h,p){const cx=Math.floor(h.x/16)*16+8,cy=Math.floor(h.y/16)*16+8;if(boxFree(cx,cy)){h.x=cx;h.y=cy}h.jsHX=h.x;h.jsHY=h.y;h.jsHoldU=G.time+p.dur;
+    bfAdd(h,'jkHold',elEffOf(JK_DR,p.dr,()=>({dr:p.dr})),p.dur);if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-4),r:10,life:0.4,c:'#e8c66a'});sfx('clank',h.x,h.y);return true},
+  ai(h,p){return G.phase==='wave'&&countNear(h.x,h.y,40)>=3?{}:null}};
+SK.jkBash={cast(h,p){const R=p.r*16,dmg=skD(h,p)*(1+(h.shield||0)/p.shK);let n=0;
+    eQuery(h.x,h.y,R,j=>{n++;dealE(j,dmg,{hk:h,crit:h.crit,mix:{blunt:1},melee:true});if(E.alive[j]){eStun(j,p.stun);const dx=E.x[j]-h.x,dy=E.y[j]-h.y,l=Math.hypot(dx,dy)||1;knockback(j,dx/l,dy/l,p.kb*16,0.2)}},true);
+    if(!n)return false;h.swing=0.2;if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-4),r:R,life:0.3,c:'#e8d0a0'});sfx('clank',h.x,h.y);return true},
+  ai(h,p){return countNear(h.x,h.y,p.r*16)>=1?{}:null}};
+SK.jkFire={cast(h,p,a){const j=jkTgt(h,a,heroRange(h));if(j<0)return false;bkHitE(j,{mix:{pierce:0.5,fire:0.5},st:{burn:{p:p.burn,t:p.bt}}},bkCH(h,skD(h,p)),0);jkShotFx(h,j,'#ff9a3c');return true},ai:jkRangedAI};
+SK.jkFlare={cast(h,p,a){const j=jkTgt(h,a,heroRange(h));if(j<0)return false;const x=E.x[j],y=E.y[j],R=p.r*16,u=G.time+p.lit;dealE(j,skD(h,p),{hk:h,crit:h.crit,mix:{pierce:1}});
+    for(let k=0;k<E.n;k++){if(!E.alive[k]||Math.hypot(E.x[k]-x,E.y[k]-y)>R+E.r[k])continue;if(E.rvU[k]<u)E.rvU[k]=u;if(E.rvT[k]<p.lit)E.rvT[k]=p.lit;E.gr[k]=1}   // 破隐：强隐身也照出来
+    jkShotFx(h,j,'#fff0a0');if(inViewPt(x,y))addFx({k:'flash',x:Math.round(x),y:Math.round(y-6),r:R,life:0.5,c:'#fff4c0'});return true},
+  ai(h,p){const R=heroRange(h)*0.95;for(let k=0;k<E.n;k++)if(E.alive[k]&&(ETG[E.t[k]]||E.clk[k]>G.time)&&Math.hypot(E.x[k]-h.x,E.y[k]-h.y)<=R+p.r*16)return{x:E.x[k],y:E.y[k]};return jkRangedAI(h,p)}};   // 有隐身的亡灵就先照它
+const jkPsnN=(x,y,R)=>{let n=0;for(const u of G.friends)if(!u.dead&&u.fpN>0&&Math.hypot(u.x-x,u.y-y)<=R)n++;return n};
+SK.jkPurge={cast(h,p,a){const c=clampAim(h,a||h,p.range*16),R=p.r*16;let n=0;
+    for(const u of G.friends){if(u.dead||!(u.fpN>0)||Math.hypot(u.x-c.x,u.y-c.y)>R)continue;u.fpN--;if(u.fpN<=0){u.fpN=0;u.fpT=0;u.fpD=0}n++;healFx(u.x,u.y-(u.isHero?14:8),'#a8f0d0')}
+    if(!n)return false;if(inViewPt(c.x,c.y))addFx({k:'ring',x:Math.round(c.x),y:Math.round(c.y-4),r:R,life:0.4,c:'#a8f0d0'});sfx('pick',c.x,c.y);return true},
+  ai(h,p){let b=null,bn=0;const RR=p.range*16;for(const u of G.friends){if(u.dead||!(u.fpN>0)||Math.hypot(u.x-h.x,u.y-h.y)>RR)continue;const n=jkPsnN(u.x,u.y,p.r*16);if(n>bn){bn=n;b=u}}return b?{x:b.x,y:b.y}:null}};
+SK.jkHeavy={cast(h,p,a){const t=a||jkRangedAI(h,p);if(!t)return false;const ang=Math.atan2(t.y-h.y,t.x-h.x),L=heroRange(h),D=skD(h,p),hit=jkLine(h.x,h.y,ang,L,16,p.n);
+    for(let q=0;q<hit.length;q++)dealE(hit[q],D*(q?p.rest:1),{hk:h,crit:h.crit,mix:{pierce:1},igDef:p.igDef});
+    h.facing=Math.cos(ang)>=0?1:-1;if(inViewPt(h.x,h.y))addFx({k:'tracer',x0:Math.round(h.x),y0:Math.round(h.y-6),x1:Math.round(h.x+Math.cos(ang)*L),y1:Math.round(h.y-6+Math.sin(ang)*L),life:0.2});sfx('shot',h.x,h.y);return true},
+  ai(h,p){const j=nearestEnemy(h.x,h.y,heroRange(h)*0.95,true);return j>=0&&countNear(E.x[j],E.y[j],48)>=2?{x:E.x[j],y:E.y[j]}:null}};
+SK.jkCover={cast(h,p){h.jsCvU=G.time+p.dur;h.jsCvR=p.r*16;bfAdd(h,'jkCover',elEffOf(JK_DR,p.dr,()=>({dr:p.dr})),p.dur);
+    if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-4),r:p.r*16,life:0.5,c:'#e8c66a'});sfx('horn',h.x,h.y);return true},
+  ai(h,p){if(G.phase!=='wave'||h.hp<h.maxHp*0.5)return null;const R=p.r*16;let n=0;for(const u of G.friends)if(u!==h&&!u.dead&&u.hp<u.maxHp*0.8&&Math.hypot(u.x-h.x,u.y-h.y)<=R)n++;return n>=2&&countNear(h.x,h.y,6*16)>=2?{}:null}};
+SK.jkGuard={cast(h,p,a){const R=(h.ws.reach||1)*16+20,j=jkTgt(h,a,R);if(j<0)return false;eRoot(j,p.t);if(E.alive[j])bfAddE(j,'jkGuard',elEffOf(JK_WK,p.weak,()=>({weak:p.weak})),p.t,JK_DB);
+    h.swing=0.2;h.swingA=Math.atan2(E.y[j]-h.y,E.x[j]-h.x);if(inViewPt(E.x[j],E.y[j]))addFx({k:'ring',x:Math.round(E.x[j]),y:Math.round(E.y[j]-6),r:9,life:0.4,c:'#e8c66a'});sfx('swing',h.x,h.y);return true},
+  ai(h,p){const j=nearestEnemy(h.x,h.y,(h.ws.reach||1)*16+16,true);return j>=0?{x:E.x[j],y:E.y[j]}:null}};
+SK.jkLeg={cast(h,p,a){const j=jkTgt(h,a,heroRange(h));if(j<0)return false;bkHitE(j,{mix:{pierce:1},st:{slow:{f:p.slow,t:p.t}}},bkCH(h,skD(h,p)),0);jkShotFx(h,j,'#a8c0ff');return true},ai:jkRangedAI};
+SK.jkHand={cast(h,p,a){const j=jkTgt(h,a,heroRange(h));if(j<0)return false;dealE(j,skD(h,p),{hk:h,crit:h.crit,mix:{pierce:1}});if(E.alive[j])bfAddE(j,'jkHand',elEffOf(JK_WK,p.weak,()=>({weak:p.weak})),p.t,JK_DB);jkShotFx(h,j,'#e8c66a');return true},ai:jkRangedAI};
+SK.jkHead={cast(h,p,a){const j=jkTgt(h,a,heroRange(h));if(j<0)return false;const hd=Math.random()<p.chance;dealE(j,skD(h,p)*(hd?p.mul:1),{hk:h,crit:h.crit,mix:{pierce:1}});jkShotFx(h,j,hd?'#ff5040':'#e8d0a0');return true},ai:jkRangedAI};
+// 多重箭 = 按住持续释放（heroes/heroes070 的 chan：期间不普攻、移速 × chMv；托管时别的技能好了会先松手放别的，再按回来；射程里没亡灵 0.6 秒自己松手）
+SK.jkMulti={start(h,p,a,C){C.k=0;sfx('pick',h.x,h.y)},
+  tick(h,p,a,dt,C){if((C.k-=dt)>0)return;const R=heroRange(h),j=nearestEnemy(h.x,h.y,R,true);if(j<0)return;C.k=Math.max(0.05,(h.ws.int||1)/2);   // 每半个攻击间隔一支
+    const ang=Math.atan2(E.y[j]-h.y,E.x[j]-h.x),hit=jkLine(h.x,h.y,ang,R,12,p.n),D=skD(h,p);for(let q=0;q<hit.length;q++)dealE(hit[q],D,{hk:h,crit:h.crit,mix:{pierce:1}});jkShotFx(h,j,'#e8dcb8')},
+  chAI(h,p){return nearestEnemy(h.x,h.y,heroRange(h),true)>=0?{}:null},
+  ai(h,p){return nearestEnemy(h.x,h.y,heroRange(h)*0.95,true)>=0?{}:null}};
+const jkPush=j=>{if(E.air[j]||ETC[E.t[j]].esb)return;const m=8+E.r[j],dx=E.x[j]-JK_HX,dy=E.y[j]-JK_HY;if(Math.abs(dx)>=m||Math.abs(dy)>=m)return;
+  if(Math.abs(dx)>=Math.abs(dy))E.x[j]=JK_HX+(dx<0?-m:m);else E.y[j]=JK_HY+(dy<0?-m:m)};
+EL_STD3.holyAdd=(v,pc)=>`攻击时附带额外 ${pc(v)} 的神圣伤害`;
+// —— 第二批（用户 2026-11-03 00:52）——
+// 兽夹：JK_TP = [{h 放的人, x, y, n 还能用几次, d 伤害, rt 定身秒数, lid 上次夹到的 E.id}]；每帧看有没有地面亡灵踩上去（不看隐身，同陷阱）
+const JK_TP=[];let JK_TQ=null,JK_TJ=-1;
+const jkTrapQ=j=>{if(JK_TJ>=0||E.air[j]||ETC[E.t[j]].esb||E.id[j]===JK_TQ.lid)return;JK_TJ=j};
+function jkTrapTick(){for(let q=JK_TP.length-1;q>=0;q--){const T=JK_TP[q];JK_TQ=T;JK_TJ=-1;eQuery(T.x,T.y,10,jkTrapQ,false);const j=JK_TJ;if(j<0)continue;
+    dealE(j,T.d,{hk:T.h.dead?null:T.h,mix:{pierce:1},sure:true});if(E.alive[j])eRoot(j,T.rt);T.lid=E.id[j];T.n--;if(inViewPt(T.x,T.y))addFx({k:'ring',x:Math.round(T.x),y:Math.round(T.y-2),r:8,life:0.3,c:'#c6c9d2'});sfx('clank',T.x,T.y);if(T.n<=0)JK_TP.splice(q,1)}}
+function jkTrapDraw(){for(let q=0;q<JK_TP.length;q++){const T=JK_TP[q];if(!inViewPt(T.x,T.y))continue;const x=Math.round(T.x),y=Math.round(T.y);rectW(x-4,y-1,9,3,'#5f6472');rectW(x-4,y-3,1,2,'#c6c9d2');rectW(x+4,y-3,1,2,'#c6c9d2');rectW(x-2,y-2,1,1,'#c6c9d2');rectW(x+2,y-2,1,1,'#c6c9d2');if(T.n>1)rectW(x,y,1,1,'#e8c66a')}}
+SK.jkTrap={cast(h,p,a){const c=clampAim(h,a||h,p.range*16),w=walkableNear(c.x,c.y,2,0)||c;let n=0;for(let q=0;q<JK_TP.length;q++)if(JK_TP[q].h===h)n++;
+    if(n>=p.max){const q=JK_TP.findIndex(T=>T.h===h);if(q>=0)JK_TP.splice(q,1)}   // 满了：拿掉最早放的
+    JK_TP.push({h,x:w.x,y:w.y,n:p.use,d:skD(h,p),rt:p.root,lid:0});h.facing=w.x>=h.x?1:-1;sfx('clank',w.x,w.y);return true},
+  ai(h,p){if(G.phase!=='wave')return null;const j=nearestEnemy(h.x,h.y,p.range*16+6*16,true);if(j<0)return null;const d=Math.hypot(E.x[j]-h.x,E.y[j]-h.y)||1,R=Math.min(p.range*16,d*0.6);return{x:h.x+(E.x[j]-h.x)/d*R,y:h.y+(E.y[j]-h.y)/d*R}}};   // 放在自己和最近的亡灵之间
+// 游影：穿行同隐士的「神行」（u.hmGo：moveFriend 不被挡、寻路走直线）；到时间停下，站在障碍里就挪到最近的空地
+SK.jkShade={cast(h,p){h.jsGhU=G.time+p.dur;h.hmGo=1;h.nav=null;bfAdd(h,'jkShade',elEffOf(JK_MV,p.mv,()=>({mspd:p.mv})),p.dur);if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-6),r:12,life:0.4,c:'#8a7ab8'});sfx('dash',h.x,h.y);return true},
+  ai(h,p){return G.phase==='wave'&&(countNear(h.x,h.y,6*16)>=2||h.hp<h.maxHp*0.35)?{}:null}};
+const JK_MV=new Map();
+function jkShadeEnd(h){h.jsGhU=0;if(!(G.hmArt==='sx'||h.hmFlU>G.time))h.hmGo=0;h.nav=null;if(!friendPassPt(h.x,h.y)){const q=walkableNear(h.x,h.y,6);if(q){h.x=q.x;h.y=q.y}}}
+SK.jkThroat={cast(h,p,a){const j=es2Melee(h,a);if(j<0)return false;const x=E.x[j],y=E.y[j];
+    dealE(j,skD(h,p),{hk:h,crit:Math.min(1,(h.crit||0)+p.crit),critMul:(heroCritMul(h)||CFG.combat.critMul)+p.cdmg,mix:h.ws.mix||{slash:1},melee:true});
+    h.swing=0.2;h.swingA=Math.atan2(y-h.y,x-h.x);if(inViewPt(x,y))addFx({k:'ring',x:Math.round(x),y:Math.round(y-6),r:9,life:0.25,c:'#e0443a'});sfx('swing',h.x,h.y);return true},
+  ai:es2MeleeAI};
+SK.jkRuin={cast(h,p,a){const j=jkTgt(h,a,(p.dist+1)*16+(h.ws.reach||1)*16);if(j<0)return false;const dx=E.x[j]-h.x,dy=E.y[j]-h.y,d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d,go=Math.max(0,Math.min(p.dist*16,d-12));
+    for(let s=4;s<=go;s+=4){const nx=h.x+ux*4,ny=h.y+uy*4;if(!boxFree(nx,ny))break;h.x=nx;h.y=ny}   // 冲过去（被挡就停在挡住的地方）
+    dealE(j,p.b+h.maxHp*p.hpK,{hk:h,crit:h.crit,mix:h.ws.mix||{pierce:1},melee:true});if(E.alive[j])knockback(j,ux,uy,p.kb*16,0.3);
+    h.facing=ux>=0?1:-1;h.swing=0.2;h.swingA=Math.atan2(uy,ux);if(inViewPt(h.x,h.y))addFx({k:'ring',x:Math.round(E.x[j]),y:Math.round(E.y[j]-6),r:12,life:0.3,c:'#e8d0a0'});sfx('dash',h.x,h.y);return true},
+  ai(h,p){const j=nearestEnemy(h.x,h.y,(p.dist+1)*16+(h.ws.reach||1)*16,true);return j>=0?{x:E.x[j],y:E.y[j]}:null}};
+// 飞斧、标枪：朝瞄准方向扔，打中直线上第一个亡灵
+const jkThrow=(h,p,a)=>{const t=a||jkRangedAI2(h,p);if(!t)return-1;const ang=Math.atan2(t.y-h.y,t.x-h.x),hit=jkLine(h.x,h.y,ang,p.len*16,12,1);h.facing=Math.cos(ang)>=0?1:-1;h.swing=0.2;h.swingA=ang;
+  if(inViewPt(h.x,h.y)){const L=hit.length?Math.hypot(E.x[hit[0]]-h.x,E.y[hit[0]]-h.y):p.len*16;addFx({k:'tracer',x0:Math.round(h.x),y0:Math.round(h.y-6),x1:Math.round(h.x+Math.cos(ang)*L),y1:Math.round(h.y-6+Math.sin(ang)*L),life:0.15})}sfx('swing',h.x,h.y);return hit.length?hit[0]:-1};
+const jkRangedAI2=(h,p)=>{const j=nearestEnemy(h.x,h.y,p.len*16,true);return j>=0?{x:E.x[j],y:E.y[j]}:null};
+SK.jkAxe={cast(h,p,a){const j=jkThrow(h,p,a);if(j>=0)bkHitE(j,{mix:{slash:1},crit:h.crit,st:{bleed:{p:p.bleed,t:p.bt}}},bkCH(h,skD(h,p)),0);return true},ai:jkRangedAI2};
+SK.jkJav={cast(h,p,a){const j=jkThrow(h,p,a);if(j>=0)dealE(j,skD(h,p),{hk:h,crit:h.crit,mix:{pierce:1},igDef:p.igDef});return true},ai:jkRangedAI2};
+EL_STD3.inertia=(v,pc)=>`攻击时每有 1 点移动速度，伤害 +${pc(v)}`;EL_STD3.slay=(v,pc)=>`每击杀一个亡灵，5 秒内造成的伤害 +${pc(v)}(至多叠 5 层)`;EL_STD3.movePrec=(v,pc)=>`移动时射击的精准惩罚 −${pc(v)}`;
+feat('elJsk',{ord:521,on:()=>!!(G&&G.heroes&&G.heroes.some(h=>h.elite)),hooks:{
+  start:()=>{JK_HOLD.length=0;JK_CV.length=0;JK_TP.length=0},
+  drawUnder:()=>{if(JK_TP.length)jkTrapDraw()},
+  tick:()=>{JK_HOLD.length=0;JK_CV.length=0;for(let k=0;k<G.heroes.length;k++){const h=G.heroes[k];if(h.dead||!h.elite)continue;if(h.jsHoldU>G.time)JK_HOLD.push(h);if(h.jsCvU>G.time)JK_CV.push(h)}
+    for(let k=0;k<JK_HOLD.length;k++){const h=JK_HOLD[k];h.x=h.jsHX;h.y=h.jsHY;JK_HX=h.x;JK_HY=h.y;eQuery(h.x,h.y,28,jkPush,false)}
+    if(JK_TP.length&&G.phase==='wave')jkTrapTick()},   // 镇守：钉在格子上，挤进来的地面亡灵推到格子外
+  dmgInF:(u,dmg,o)=>{if(!JK_CV.length||o.shPr||o.dot||!(dmg>0)||u.cfg)return dmg;
+    for(let k=0;k<JK_CV.length;k++){const c=JK_CV[k];if(c===u||c.dead||Math.hypot(c.x-u.x,c.y-u.y)>c.jsCvR)continue;hurtF(c,dmg,Object.assign({},o,{shPr:1}));return 0}return dmg},   // 牺牲援护：整笔转过去（shPr 防止再转）
+  friend:(u,dt,isHero)=>{if(!isHero)return;if(u.jsHoldU>G.time){u.x=u.jsHX;u.y=u.jsHY}if(u.jsGhU>0&&G.time>=u.jsGhU)jkShadeEnd(u)},   // 镇守：每帧钉回格子中心（不写定身字段：不是被控制）
+  dmgBaseE:(i,d,o)=>{const h=o&&o.hk;if(!h||!h.elite)return d;const S=h.d.elS;if(!S)return d;if(S.inertia>0)d*=1+S.inertia*(h.speed||0);if(S.slay>0&&h.jsKsU>G.time)d*=1+h.jsKs*S.slay;return d},   // 惯性冲击、屠杀战意
+  afterHitE:(i,dmg,o)=>{const h=o&&o.hk;if(!h||!h.elite||o.jkH)return;const S=h.d.elS;if(!S)return;
+    if(S.slay>0&&E.hp[i]<=0){h.jsKs=h.jsKsU>G.time?Math.min(5,h.jsKs+1):1;h.jsKsU=G.time+5}   // 屠杀战意：这一下打死了（afterHitE 在扣血之后、死亡结算之前）就叠一层（至多 5 层），刷新 5 秒
+    if(o.dot||!(dmg>0)||!(S.holyAdd>0)||!E.alive[i]||E.hp[i]<=0)return;dealE(i,dmg*S.holyAdd,{hk:h,magic:true,mix:{holy:1},sure:true,dot:true,jkH:1})}}});
 
 // ---------- 0.12.7 代理 EG：精英装备「一键购买」「一键强化」（用户 0.12.7 预告第 3、4 条；数据 data/el_gear2.js 的 CFG.elite.eg，界面 ui/el_gear2.js）----------
 // 一键购买 egBuyPlan()：上阵的精英（锁定配置的跳过），按 主武器 → 副手 → 头 → 身 → 脚 的顺序，每个格子在「常规商店现在能买的」和「仓库里没人穿的」里挑最好的一件：
@@ -78646,7 +78877,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.0b',GAME_TAG='测试版',GAME_CODE=206,GAME_BUILD="5893f06",GAME_BUILT=1793670794830,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.0b',GAME_TAG='测试版',GAME_CODE=206,GAME_BUILD="d10b69f",GAME_BUILT=1793679842173,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
