@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.0c",
- "code": 207,
- "size": 17848697,
- "sha256": "9b3f1e43a2b060fbbd3f5843d7abfcc672fde6c4987672f60892ccf8d313fe19",
+ "ver": "0.13.0d",
+ "code": 208,
+ "size": 17856788,
+ "sha256": "108f331f101eec0b58ef9073e5175d68226a456dd4d762e1eb1ff487884089a3",
  "minLoader": 1,
- "sig": "6uvLU46XQ524cRl5rl16c62SZPUG9maaHDdGtS5YokBJctKfcUReDa+Tc/Nfy5prwhuNzXx77CYG3YssV+Kyqw==",
- "note": "0.13.0c：精英职业改版、精英新技能 22 个、家族重置第一批（王都四家、家族技能、顾问教官）、存档文字导出导入（老手机能用）、源能王城出击默认打亡灵主堡",
- "at": "2026-11-03 19:02 UTC"
+ "sig": "AtmrZyTR1MgHhDg5zaUIapFlhOmqUKMxsGoE+4g8qjzBiyfIP4cURjZ5TilIsnpy0mSbG7GSSLhHF9osLQ7/nw==",
+ "note": "0.13.0d 测试版：新娱乐模式「搜打撤」粗糙版；幸存者 / 搜打撤倍速提示",
+ "at": "2026-11-03 23:45 UTC"
 }
