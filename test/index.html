@@ -23714,6 +23714,60 @@ function lzsUnpack(z){
 const lzsZip=s=>typeof s==='string'&&s.length>4096?LZS_TAG+lzsPack(s):s;   // 短的不压
 const lzsOpen=v=>typeof v==='string'&&v.startsWith(LZS_TAG)?lzsUnpack(v.slice(LZS_TAG.length)):v;
 
+// ---------- 0.13 纯 JS 的 gzip 压缩 / 解压（用户要：老手机也能导出 / 导入「gz 格式的那种文字」）----------
+// 浏览器有 CompressionStream 时导出照旧用它（压得更小）；老手机没有时用这里的 gzJsPack。解压一律用 gzJsOpen（不挑浏览器），
+//   .gz 文件、存档文字（SGPZ1: + base64(gzip 字节)）都走它。格式就是标准 gzip：这里压出来的能被别的解压工具打开，别的工具压的这里也能解。
+// 压缩：LZ77（32 KB 窗口、3 字节哈希链）+ 固定哈夫曼码（不建动态码表，比浏览器自带的大一点，但代码短、够用）
+// 解压：完整的 inflate（不压缩块、固定码、动态码都认），校验 CRC32 和长度
+const GZ_LB=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258],GZ_LE=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];   // 长度码 257～285 的起点、附加位
+const GZ_DB=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577],GZ_DE=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];   // 距离码 0～29
+const GZ_CL=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];   // 动态码表里码长码的顺序
+let GZ_CRC=null;
+function gzCrc32(u){if(!GZ_CRC){GZ_CRC=new Int32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;GZ_CRC[n]=c}}
+  let c=-1;for(let i=0;i<u.length;i++)c=GZ_CRC[(c^u[i])&255]^(c>>>8);return(c^-1)>>>0}
+const gzUtf8=s=>typeof TextEncoder==='function'?new TextEncoder().encode(s):Uint8Array.from(unescape(encodeURIComponent(s)),c=>c.charCodeAt(0));
+const gzUtf8d=u=>{if(typeof TextDecoder==='function')return new TextDecoder('utf-8').decode(u);let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return decodeURIComponent(escape(s))};
+// —— 压缩 ——
+function gzJsPack(str){const src=gzUtf8(str),n=src.length,out=[];let bb=0,bn=0;
+  const put=(v,k)=>{bb|=v<<bn;bn+=k;while(bn>=8){out.push(bb&255);bb>>>=8;bn-=8}};   // 低位先出
+  const rev=(v,k)=>{let r=0;for(let i=0;i<k;i++){r=(r<<1)|(v&1);v>>=1}return r};   // 哈夫曼码高位先出：倒过来再按低位先写
+  const lit=v=>{if(v<144)put(rev(0x30+v,8),8);else if(v<256)put(rev(0x190+v-144,9),9);else if(v<280)put(rev(v-256,7),7);else put(rev(0xC0+v-280,8),8)};
+  const match=(len,dist)=>{let c=28;while(GZ_LB[c]>len)c--;lit(257+c);if(GZ_LE[c])put(len-GZ_LB[c],GZ_LE[c]);let d=29;while(GZ_DB[d]>dist)d--;put(rev(d,5),5);if(GZ_DE[d])put(dist-GZ_DB[d],GZ_DE[d])};
+  for(const b of[0x1f,0x8b,8,0,0,0,0,0,0,255])out.push(b);   // gzip 头：deflate、没有文件名、时间 0
+  put(1,1);put(1,2);   // 一个块（最后一块），固定码
+  const H=1<<15,head=new Int32Array(H).fill(-1),prev=new Int32Array(32768),hash=i=>((src[i]<<10)^(src[i+1]<<5)^src[i+2])&(H-1);
+  let i=0;while(i<n){let bl=0,bd=0;
+    if(i+2<n){const h=hash(i);let j=head[h],chain=64;while(j>=0&&i-j<=32768&&chain-->0){if(src[j+bl]===src[i+bl]){let l=0;const mx=Math.min(258,n-i);while(l<mx&&src[j+l]===src[i+l])l++;if(l>bl){bl=l;bd=i-j;if(l===mx)break}}j=prev[j&32767]}
+      prev[i&32767]=head[h];head[h]=i}
+    if(bl>=3){match(bl,bd);for(let k=1;k<bl;k++){const p=i+k;if(p+2<n){const h=hash(p);prev[p&32767]=head[h];head[h]=p}}i+=bl}else{lit(src[i]);i++}}
+  lit(256);if(bn>0){out.push(bb&255);bb=0;bn=0}
+  const crc=gzCrc32(src);for(const v of[crc,n])for(let k=0;k<4;k++)out.push((v>>>(8*k))&255);
+  return Uint8Array.from(out)}
+// —— 解压 ——
+function gzHuff(lens,n){const cnt=new Uint16Array(16),offs=new Uint16Array(16),sym=new Uint16Array(n);for(let i=0;i<n;i++)cnt[lens[i]]++;cnt[0]=0;for(let i=1;i<16;i++)offs[i]=offs[i-1]+cnt[i-1];
+  for(let i=0;i<n;i++)if(lens[i])sym[offs[lens[i]]++]=i;return{cnt,sym}}
+function gzInflate(u,p){const out=[];let bb=0,bn=0;
+  const need=k=>{while(bn<k){if(p>=u.length)throw new Error('gz: 数据不完整');bb|=u[p++]<<bn;bn+=8}};
+  const bits=k=>{need(k);const v=bb&((1<<k)-1);bb>>>=k;bn-=k;return v};
+  const dec=T=>{let code=0,first=0,idx=0;for(let l=1;l<16;l++){code|=bits(1);const c=T.cnt[l];if(code-c<first)return T.sym[idx+(code-first)];idx+=c;first+=c;first<<=1;code<<=1}throw new Error('gz: 码错')};
+  let fixL=null,fixD=null,last=0;
+  while(!last){last=bits(1);const t=bits(2);
+    if(t===0){bb=0;bn=0;if(p+4>u.length)throw new Error('gz: 数据不完整');const len=u[p]|(u[p+1]<<8);p+=4;for(let k=0;k<len;k++)out.push(u[p++]);continue}
+    let L,D;if(t===1){if(!fixL){const a=new Uint8Array(288);a.fill(8,0,144);a.fill(9,144,256);a.fill(7,256,280);a.fill(8,280,288);fixL=gzHuff(a,288);fixD=gzHuff(new Uint8Array(30).fill(5),30)}L=fixL;D=fixD}
+    else if(t===2){const hl=bits(5)+257,hd=bits(5)+1,hc=bits(4)+4,cl=new Uint8Array(19);for(let k=0;k<hc;k++)cl[GZ_CL[k]]=bits(3);const C=gzHuff(cl,19),ln=new Uint8Array(hl+hd);
+      for(let k=0;k<hl+hd;){const s=dec(C);if(s<16)ln[k++]=s;else{let r,v=0;if(s===16){v=ln[k-1];r=3+bits(2)}else if(s===17)r=3+bits(3);else r=11+bits(7);while(r--)ln[k++]=v}}
+      L=gzHuff(ln.subarray(0,hl),hl);D=gzHuff(ln.subarray(hl),hd)}
+    else throw new Error('gz: 块类型错');
+    for(;;){const s=dec(L);if(s<256)out.push(s);else if(s===256)break;else{const c=s-257,len=GZ_LB[c]+bits(GZ_LE[c]),d=dec(D),dist=GZ_DB[d]+bits(GZ_DE[d]),st=out.length-dist;if(st<0)throw new Error('gz: 距离错');for(let k=0;k<len;k++)out.push(out[st+k])}}}
+  return{data:Uint8Array.from(out),p}}
+function gzJsOpen(u){if(!(u&&u.length>18&&u[0]===0x1f&&u[1]===0x8b&&u[2]===8))throw new Error('不是 gzip');const fl=u[3];let p=10;
+  if(fl&4)p+=2+(u[p]|(u[p+1]<<8));if(fl&8){while(u[p++]);}if(fl&16){while(u[p++]);}if(fl&2)p+=2;
+  const r=gzInflate(u,p),q=u.length-8,crc=(u[q]|(u[q+1]<<8)|(u[q+2]<<16)|(u[q+3]<<24))>>>0;if(gzCrc32(r.data)!==crc)throw new Error('gz: 校验不对(文件不完整)');
+  return gzUtf8d(r.data)}
+// base64 ↔ 字节
+const gzB64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
+const gzB64d=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
+
 // ---------- v0.6.4 对象形状（V8 隐藏类）----------
 // 为什么要有这个文件：V8 给每个对象一个「形状」（有哪些字段、什么顺序）。代码里每处 s.xxx 的读写都会记住见过的形状，
 //   同一处见过 1～4 种形状 = 很快；超过 4 种（「超多态」）就要去一张全局缓存表里查，形状和字段一多缓存就不停失效，退回很慢的路径。
@@ -79018,7 +79072,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.0b',GAME_TAG='测试版',GAME_CODE=206,GAME_BUILD="2487b85",GAME_BUILT=1793687110063,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.0b',GAME_TAG='测试版',GAME_CODE=206,GAME_BUILD="cf8d3f6",GAME_BUILT=1793688369306,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -79627,11 +79681,17 @@ function showCopyBox(t){textBox({title:'战报',hint:'没能自动复制：长�
 copyEl.addEventListener('click',e=>{if(e.target===copyEl||e.target.closest('[data-act=cclose]')){copyEl.hidden=true;cbOk=null;return}
   const b=e.target.closest('[data-act=cok]');if(b&&cbOk)cbOk(cbTa.value,b)});
 // —— 存档导出 / 导入（设置界面）——
-function showExport(mr){const t=exportSave(typeof mr==='string'?mr:undefined),box=ok=>textBox({title:'导出存档',hint:(ok?'已复制到剪贴板。':'')+'这段文字就是你的全部进度(局外进度、设置、最好成绩、未打完的对局)。存到备忘录或发给自己，换设备 / 重装后在「导入存档」里粘贴即可。',text:t});
-  copyText(t,()=>{box(true);sfx('pick')},()=>box(false))}
-function showImport(){textBox({title:'导入存档',hint:'把「导出存档」得到的文字粘贴到下面。导入会覆盖本机当前进度；导入前的进度会另存一份，导错了可以在设置里「撤销上次导入」。',edit:true,ph:'SGPN1:……',ok:'导入',
+// 0.13（用户要：老手机文件导出 / 导入用不了）存档文字 = SGPZ1: + base64(gzip 压缩的存档 JSON)，和 .gz 存档文件是同一份东西（比旧版 SGPN1 文字短十倍左右，剪贴板放得下）
+const SAVE_TAG_GZ='SGPZ1:';
+function exportGz(mr){let j;try{j=exportJson(typeof mr==='string'?mr:undefined)}catch(e){return Promise.reject(e)}return GZ_OK()?gzPack(j).catch(()=>gzJsPack(j)):Promise.resolve().then(()=>gzJsPack(j))}   // 没有 CompressionStream 的老设备用纯 JS 压（core/gzjs）
+function showExport(mr){exportGz(mr).then(u=>{const t=SAVE_TAG_GZ+gzB64(u),box=ok=>textBox({title:'导出存档文字',hint:(ok?'已复制到剪贴板。':'没能自动复制：长按 / 全选下面的文字复制。')+`这段文字就是你的全部进度(局外进度、设置、最好成绩、未打完的对局，${Math.round(t.length/1024)} KB)。存到备忘录或发给自己，换设备 / 重装后在「从文字导入」里粘贴即可。`,text:t});
+  copyText(t,()=>{box(true);sfx('pick')},()=>box(false))},e=>toast('存档导出失败：'+(e&&e.message||e)))}
+// 存档文字 → 存档 JSON（SGPZ1: / 直接粘贴 .gz 的 base64（H4sI 开头）→ 解压；SGPN1: 和 JSON 原样交给 importSave）
+function saveTextOpen(v){const s=String(v||'').replace(/\s+/g,'');if(s.startsWith(SAVE_TAG_GZ)||s.startsWith('H4sI')){const b=s.startsWith(SAVE_TAG_GZ)?s.slice(SAVE_TAG_GZ.length):s;return gzJsOpen(gzB64d(b))}return String(v||'')}
+function showImport(){textBox({title:'从文字导入',hint:'把「导出为文字」得到的文字(SGPZ1: 开头；旧版 SGPN1: 开头的也认)粘贴到下面。导入会覆盖本机当前进度；导入前的进度会另存一份，导错了可以在设置里「撤销上次导入」。',edit:true,ph:'SGPZ1:……',ok:'导入',
   onOk:(v,b)=>{if(!v.trim()){toast('先粘贴存档文字');return}if(!b.dataset.ok){b.dataset.ok='1';b.textContent='再点一次确认覆盖';return}
-    const err=importSave(v);if(err){toast(err);delete b.dataset.ok;b.textContent='导入';return}
+    let t;try{t=saveTextOpen(v)}catch(e){toast('存档文字不完整或被改动过(复制时可能少了一截)');delete b.dataset.ok;b.textContent='导入';return}
+    const err=importSave(t);if(err){toast(err);delete b.dataset.ok;b.textContent='导入';return}
     toast('导入成功，正在重新载入…');sfx('pick');setTimeout(()=>location.reload(),700)}})}
 // —— v0.8.18（用户要）存档导出 / 导入成文件：导出下载一个文件（手机上能分享就走分享），导入选文件读进来（不用粘贴长文字）——
 // 0.12.5（用户定）导出成 .gz（gzip 压缩的存档 JSON，约是旧版 .txt 的 1/10）；浏览器没有 CompressionStream 的老设备退回旧版 .txt。导入两种都认（看文件头，不看后缀）
@@ -79639,8 +79699,7 @@ const GZ_OK=()=>typeof CompressionStream==='function'&&typeof DecompressionStrea
 const gzPack=s=>new Response(new Blob([s]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer().then(b=>new Uint8Array(b));
 const gzOpen=u=>new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
 function exportFile(mr){const d=new Date(),p=n=>String(n).padStart(2,'0'),stem=`死国开拓者存档-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`,old=()=>saveTextFile(stem+'.txt',exportSave(mr),'text/plain','保存存档文件',()=>showExport(mr));
-  if(!GZ_OK()){old();return}let j;try{j=exportJson(mr)}catch(e){toast('存档导出失败：'+(e&&e.message||e));return}
-  gzPack(j).then(u=>saveTextFile(stem+'.gz',u,'application/gzip','保存存档文件',old),()=>old())}
+  exportGz(mr).then(u=>saveTextFile(stem+'.gz',u,'application/gzip','保存存档文件',()=>showExport(mr)),e=>{toast('存档导出失败：'+(e&&e.message||e));old()})}   // 0.13 老设备也导出 .gz（纯 JS 压），存不了文件就给存档文字
 // 把一段文字存成文件（v0.10.0 从 exportFile 抽出来，翻译表导出也用）；fallback：都存不了时（比如 App 缺插件）怎么办
 // v0.8.24 修（玩家反馈：安卓导出没反应）：App 里 WebView 不支持 <a download>，原来提示「已导出」其实什么也没存。
 //   App 里改成：Filesystem 插件把文件写进缓存目录 → Share 插件「文件分享」，用户自己选存到文件管理 / 网盘 / 发给自己；插件没装好（没有 npx cap sync）就退回 fallback
@@ -79665,8 +79724,8 @@ function importFile(){const inp=document.createElement('input'),CP=window.Capaci
   inp.style.display='none';document.body.appendChild(inp);
   inp.addEventListener('change',()=>{const f=inp.files&&inp.files[0];inp.remove();if(!f)return;const r=new FileReader();
     r.onload=()=>{const u=new Uint8Array(r.result||new ArrayBuffer(0));if(!u.length){toast('文件是空的');return}
-      const gz=u[0]===0x1f&&u[1]===0x8b;if(gz&&!GZ_OK()){toast('这台设备的浏览器太旧，读不了 .gz 存档(请更新系统 WebView / 浏览器)');return}
-      (gz?gzOpen(u):Promise.resolve(new TextDecoder('utf-8').decode(u))).then(t=>{t=String(t||'').trim();if(!t){toast('文件是空的');return}importAsk(f.name,u.length,t)},()=>toast('这个 .gz 文件解不开(可能不完整)'))};
+      const gz=u[0]===0x1f&&u[1]===0x8b;   // 0.13 解压一律用纯 JS（core/gzjs），老设备也能读 .gz
+      (gz?new Promise(ok=>ok(gzJsOpen(u))):Promise.resolve(gzUtf8d(u))).then(t=>{t=String(t||'').trim();if(!t){toast('文件是空的');return}try{t=saveTextOpen(t)}catch(e){toast('文件里的存档文字不完整');return}importAsk(f.name,u.length,t)},()=>toast('这个 .gz 文件解不开(可能不完整)'))};
     r.onerror=()=>toast('读不出这个文件');r.readAsArrayBuffer(f)});inp.click()}
 function importAsk(name,n,t){const kb=n>=1024?Math.round(n/1024)+' KB':n+' 字节';
   textBox({title:'从文件导入',hint:`读到「${name}」(${kb})。导入会覆盖本机当前进度；导入前的进度会另存一份，导错了可以在设置里「撤销上次导入」。`,text:t[0]==='{'?'(存档文件)':t.slice(0,200)+(t.length>200?' …':''),ok:'导入',
@@ -80163,7 +80222,7 @@ function showSettings(from){if(from)setFrom=from;const K=SET.keys;
   else if(setSec==='save')body=`<div class="setrows"><div class="sr"><span>存档位${ui2Q('存档位',hpL(['本机自动保存。换设备、重装或备份时：导出成文件(或一段文字)，在新设备上导入','一台设备三个存档，互不影响(比如一个自己玩、一个测试)；游戏设置三个共用','切换会回到主界面']))}</span>
       <span class="profs">${[1,2,3].map(p=>{const I=profInfo(p);return`<button class="px${p===PROFILE?' on':''}" type="button" data-act="sprof" data-v="${p}" ${running&&p!==PROFILE?'disabled':''}><b>存档 ${p}</b><em>${p===PROFILE?'当前':I?`${I.runs} 局 · ${I.tier?'通关'+CFG.mapPages[I.tier-1].name:'未通关'}`:'空'}</em></button>`}).join('')}</span></div></div>${running?'<p class="meta">切换存档位要回到主界面再操作。</p>':''}
     <div class="rule"></div>
-    <div class="actions"><button class="px" type="button" data-act="sexpf">导出为文件</button>${running?'':'<button class="px" type="button" data-act="simpf">从文件导入</button>'}${!running&&preImport()?'<button class="px" type="button" data-act="sundo">撤销上次导入</button>':''}</div>
+    <div class="actions"><button class="px" type="button" data-act="sexpf">导出为文件</button>${running?'':'<button class="px" type="button" data-act="simpf">从文件导入</button>'}<button class="px" type="button" data-act="sexport">导出为文字</button>${running?'':'<button class="px" type="button" data-act="simport">从文字导入</button>'}${!running&&preImport()?'<button class="px" type="button" data-act="sundo">撤销上次导入</button>':''}</div>
     <div class="rule"></div><div class="setrows"><div class="sr"><span>存档保护${ui2Q('存档保护','读档出事时，那一份存档会自动放进保护区(最多 3 份，以后不会被盖掉)；另有最近 3 次正常启动时的备份。恢复会先把现在的进度另存，点「撤销上次导入」能换回来。')}</span></div>
       ${guardItems().map((g,k)=>`<div class="sr"><span>${g.kind==='guard'?`保护区 · ${guardTs(g.ts)}<br><span class="meta">${g.why}</span>`:g.i?`备份 · 之前第 ${g.i+1} 次启动`:'备份 · 上次启动'}<br><span class="meta">${g.info?`${g.info.runs} 局 · 通关 ${g.info.clr} 张地图`:'读不出来'}</span></span><span class="devpw">${running?'':`<button class="px" type="button" data-act="sgrest" data-v="${k}">恢复</button>`}<button class="px" type="button" data-act="sgexp" data-v="${k}">导出</button></span></div>`).join('')||'<div class="sr"><span class="meta">还没有备份</span></div>'}</div>
     <div class="rule"></div><div class="setrows">${rdIdRow()}<div class="sr"><span>兑换码${ui2Q('兑换码','输入兑换码领取内容。专属兑换码要先把上面的存档 ID 发给作者')}</span><span class="devpw"><input type="text" id="codeIn" autocomplete="off" placeholder="兑换码"><button class="px on" type="button" data-act="redeem">兑换</button></span></div></div>
