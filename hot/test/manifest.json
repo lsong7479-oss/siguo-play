@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.0b",
- "code": 206,
- "size": 17736336,
- "sha256": "96190e2f709bf57c15bd875acaf6d19101e337e58231f4bc02eb7e052e7af4f5",
+ "ver": "0.13.0c",
+ "code": 207,
+ "size": 17848697,
+ "sha256": "9b3f1e43a2b060fbbd3f5843d7abfcc672fde6c4987672f60892ccf8d313fe19",
  "minLoader": 1,
- "sig": "92gMoriDReHuMsHisxPz5DO1DTLiroI2GbQ8VkFf8YFjnvndJngVSQuD++qP1/1RqGund0SGN12wD8qbUnvTzg==",
- "note": "0.13.0b 测试版：新剧情腐化之地篇（第四、五章）；录制行动（设置里打开，每局记下操作）",
- "at": "2026-11-02 17:23 UTC"
+ "sig": "6uvLU46XQ524cRl5rl16c62SZPUG9maaHDdGtS5YokBJctKfcUReDa+Tc/Nfy5prwhuNzXx77CYG3YssV+Kyqw==",
+ "note": "0.13.0c：精英职业改版、精英新技能 22 个、家族重置第一批（王都四家、家族技能、顾问教官）、存档文字导出导入（老手机能用）、源能王城出击默认打亡灵主堡",
+ "at": "2026-11-03 19:02 UTC"
 }
