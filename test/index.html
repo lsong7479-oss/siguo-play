@@ -78787,7 +78787,7 @@ function svECardDo(){const S=G.sv,mode=DIFF.enemyCards;S.eq=0;if(!mode)return nu
 /* ---------- 0.13.0e 搜打撤的地图生成（机制 game/ext.js）----------
    0.13.0f（用户 11-04 晚定）的顺序：先河、湖（熔岩地区是熔岩河、熔岩湖）→ 地标 → 主路（过水搭桥，熔岩上是石桥）→ 主路分出支路接普通建筑 → 野外零散的建筑
    地形：0 草地、1 路、2 树（挡路）、3 岩石、4 墓碑、5 树丛 / 庄稼、7 墙（挡路）、8 地板（屋里；桥也是 8，EXT_BR 记着是桥）、9 碎石（废墟的墙）、11 浅水（能走）、13 深水（挡路，借齿轮的格子值）
-   建筑（EXT_GEN.bld）：0.13.0g 起一座建筑由几块长方形拼成，每块一条 {x0,y0,x1,y1 含墙, k 种类, z 档, roof 屋顶样式（null = 没顶）, dir 屋脊 'h' 东西 / 'v' 南北, pal 配色, snow 积雪, seed, main 主屋, par 接在哪块上（bld 下标，-1 没有）, att 接在那块的哪面（0 北 1 南 2 西 3 东）, kids 接在这块上的几块,
+   建筑（EXT_GEN.bld）：0.13.0g 起一座建筑由几块长方形拼成，每块一条 {x0,y0,x1,y1 含墙, k 种类, z 档, roof 屋顶样式（null = 没顶）, dir 屋脊 'h' 东西 / 'v' 南北, pal 配色, snow 积雪, seed, main 主屋, par 接在哪块上（bld 下标，-1 没有）, att 接在那块的哪面（0 北 1 南 2 西 3 东）, kids 接在这块上的几块, adj 跟这块共用一段墙的所有块 [下标, 哪面],
      lm 属于哪个地标, ok 走得到, door {side 1 南 2 西 3 东（极少 0 北）, p 从哪格开始, w 几格宽}（朝外的门在这块的墙上才有）, grp 哪座建筑}；墙一格一格（EXT_WM 材质、EXT_DG 门洞），2.5D 的墙和屋顶在 ui/ext.extDpush 排序、art/ext_art 画
    地标（EXT_GEN.lms）：{k, x, y 中心, gx, gy 路接到哪, r}；ufort 亡灵要塞、utower 亡灵哨塔的城墙 / 塔在开局 extPlace 用亡灵建筑（structs/estruct.esPlace）摆；
    主路（EXT_GEN.roads）：每条一串格子下标（巡逻队沿着走） */
@@ -78861,6 +78861,8 @@ function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_C
         roof:rs0?p.rs||(pi===0||rl.length<2||rng()<0.6?rs0:pick(rl)):null,dir:p.x1-p.x0>=p.y1-p.y0?'h':'v',pal,snow,seed:randi(0,999999)};   // 别的几块 6 成跟主屋一样的屋顶
       if(!dn&&DX>=b.x0&&DX<=b.x1&&DY>=b.y0&&DY<=b.y1){b.door={side:s,p:s<2?DX:DY,w:dw};dn=true}B.push(b)});
     for(let q=b0;q<B.length;q++)if(B[q].par>=0)B[B[q].par].kids.push(q);
+    for(let q=b0;q<B.length;q++){const a=B[q];a.adj=[];for(let r=b0;r<B.length;r++){if(r===q)continue;const c=B[r],ox=Math.min(a.x1,c.x1)-Math.max(a.x0,c.x0),oy=Math.min(a.y1,c.y1)-Math.max(a.y0,c.y0);   // adj：同一座房子里跟这块共用一段墙的（不只是碰个角）：[bld 下标, 在这块的哪面 0 北 1 南 2 西 3 东]
+      if(oy===0&&ox>0)a.adj.push([r,c.y0===a.y1?1:0]);else if(ox===0&&oy>0)a.adj.push([r,c.x0===a.x1?3:2])}}
     const cx=DX+(s<2?dw>>1:0),cy=DY+(s<2?0:dw>>1);return{x0:X0,y0:Y0,x1:X0+BW-1,y1:Y0+BH-1,k,ox:cx+ox,oy:cy+oy}};
   const bldAt=(k,x,y,li)=>{const S=plan(k);return put(S,x-(S.W>>1),y-(S.H>>1),1,x,0,li)};   // 以 (x, y) 为中心放，门朝南
   const lane=(ax,ay,bx,by)=>{let x=ax,y=ay;const st=()=>{if(In(x,y)){const t=at(x,y);if(!isB(t)&&!isW(t))T[y*W+x]=1}};st();while(x!==bx){x+=Math.sign(bx-x);st()}while(y!==by){y+=Math.sign(by-y);st()}};   // 一条小路：先横后竖（不压建筑、不过水）
@@ -80333,7 +80335,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.0i',GAME_TAG='测试版',GAME_CODE=213,GAME_BUILD="f1ec4a0",GAME_BUILT=1793802099546,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.0i',GAME_TAG='测试版',GAME_CODE=213,GAME_BUILD="f0181b5+",GAME_BUILT=1793802356407,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -85959,9 +85961,8 @@ const EXD={};const exCol=h=>EXD[h]||(EXD[h]=C(h));
 function extDraw(cx0,cy0,cx1,cy1){const S=G.sv,X=S&&S.ext;if(!X)return;extSteps(cx0,cy0,cx1,cy1);const C=CFG.ext,K=C.box.kinds,inV=(x,y,m)=>x>cx0-m&&x<cx1+m&&y>cy0-m&&y<cy1+m&&extSeen(x,y),sh=exCol('#000000');
   for(const e of X.ex){if(!inV(e.x,e.y,60))continue;const r=C.exit.r*16,K=C.exit[e.k]||C.exit.fast,fs=e.k==='fast',col=exCol(fs?'#6af06a':'#f0b040');dotRing(e.x,e.y,r,col,0.8);dotRing(e.x,e.y,r*(0.55+0.35*((G.time*0.8)%1)),col,0.35);   // 快速撤离点绿旗、长撤离点橙旗
     rectW(e.x-1,e.y-22,2,22,exCol('#3a2a1a'));rectW(e.x+1,e.y-22,9,6,exCol(fs?'#3ac83a':'#d08a20'));if(e.p>0){const f=Math.min(1,e.p/K.stay);rectW(e.x-12,e.y+r+4,24,3,exCol('#0c0910'));rectW(e.x-12,e.y+r+4,Math.round(24*f),3,col)}}
-  {const B=X.bal;if(B&&inV(B.x,B.y,80)){const x=Math.round(B.x),y=Math.round(B.y),bob=Math.round(Math.sin(G.time*1.5)*2),up=X.dv?0.6:0.25,r=C.exit.r*16;dotRing(x,y,r,exCol('#7ac8ff'),X.dv?0.8:0.4);   // 热气球：吊篮、绳子、气囊（有发动装置时鼓起来、亮一点）
-    rectW(x-12,y+6,25,2,sh,0.3);rectW(x-6,y-2,13,8,exCol('#6a4a2a'));rectW(x-5,y-1,11,2,exCol('#9a7a4a'));rectW(x-6,y-14+bob,1,12-bob,exCol('#3a2a1a'));rectW(x+6,y-14+bob,1,12-bob,exCol('#3a2a1a'));
-    const cy=y-30+bob,rr=X.dv?16:13;fillCirc(x,cy,rr,exCol('#c84a3a'));fillCirc(x,cy,rr-3,exCol('#e86a4a'),up+0.3);rectW(x-2,cy-rr,4,rr*2,exCol('#f0d070'),0.7);rectW(x-rr+3,cy-1,rr*2-6,2,exCol('#f0d070'),0.5);rectW(x-4,cy+rr-2,9,4,exCol('#7a2a20'));
+  {const B=X.bal;if(B&&inV(B.x,B.y,80)){const x=Math.round(B.x),y=Math.round(B.y),r=C.exit.r*16,F=SPR.units&&SPR.units.abBalloon;dotRing(x,y,r,exCol('#7ac8ff'),X.dv?0.8:0.4);   // 热气球：用空军基地热气球的图（用户定：复用资产），停在地上；有发动装置时圈亮一点
+    if(F)drawUnitSpr(F,x,y+Math.round(Math.sin(G.time*1.5)*1.5),false,G.time,1,false,0,1,null);
     if(B.p>0){const f=Math.min(1,B.p/C.balloon.stay);rectW(x-12,y+r+4,24,3,exCol('#0c0910'));rectW(x-12,y+r+4,Math.round(24*f),3,exCol('#7ac8ff'))}}}
   for(let k=0;k<X.bx.length;k++){const b=X.bx[k];if(!inV(b.x,b.y,16))continue;const D=K[b.k],x=Math.round(b.x),y=Math.round(b.y);rectW(x-7,y+4,15,2,sh,0.3);
     if(b.done){rectW(x-6,y-2,13,6,exCol(D.dk),0.6);rectW(x-5,y-1,11,3,exCol('#1a1410'),0.6);continue}
