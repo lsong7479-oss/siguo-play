@@ -31185,7 +31185,15 @@ Object.assign(HD_HEROES,{merlinPrime:hdMerlinPrime});
        圆顶 = 平顶上按块的长短放 1～3 个圆顶（4 种大小，图里带鼓座）；尖塔 = 平顶正中一座方尖顶（56 像素见方）+ 四角小尖塔
      布棚（awning）：没有墙，前面两根柱子落地；布 = 底色（亮）+ 条纹（中），下沿一排花边
      烟囱（两坡 / 四坡 / 茅草）、老虎窗都按 b.seed 放（每次一样）；独特建筑不放，它有自己的装饰（extArtDeco：风车四帧转、旗三帧飘、烟一团团往上飘、光一明一暗）
-   每帧的贴图：墙一格 1～2 张（顶面 + 墙面）；屋顶一块大约 10～80 张（越大越多，积雪再加一倍；队长在屋顶下时 ui/ext 分五块裁着画，那一块 ×5） */
+   每帧的贴图：墙一格 1～2 张（顶面 + 墙面）；屋顶一块大约 10～80 张（越大越多，积雪再加一倍；队长在屋顶下时 ui/ext 分五块裁着画，那一块 ×5）
+   —— 交接（0.13.0g 用户 11-04 定：相连两块屋顶的十字脊 / 丁字脊；数据是 game/ext_gen 记的 b.par / b.att / b.kids，两块共用一条墙线）——
+     屋脊垂直于共用墙线的那块叫「客」，平行的叫「主」：客块的两面坡伸到主块的坡上长出一个三角，尖顶到主块屋脊（照用户画的），两条天沟从客块屋顶挨着主块那头的两个角斜着连到尖；
+     子块垂直、父块平行（用户说的情况）→ 子块是客；反过来、两块一样宽 → 父块是客（父块比子块宽时，它的人字头 / 山墙本来就对，不动）；两块屋脊同向 → 不画三角，子块那头去掉，一样宽时父块那头也去掉（两段坡直接接上）
+     客块挨着主块那头不画端头（人字头、山墙、通风口、封檐板、四坡的斜脊、飞檐翘角和鸱吻），坡面平着画到头；东西接时客块屋顶裁到主块边上（exaJ 的 c / x0 / x1）
+     三角由主块在画完自己的屋顶（和雪）以后画（exaJDraw），所以排序不出问题、主块屋顶不画时三角也不画；主块的屋脊在尖上补一小段压住，老虎窗避开、挨着三角的飞檐翘角不画
+     画法：南北接（客块南北屋脊）按列，一列 8 像素（两垄）；东西接按行，后坡一行 4、前坡一行 12；每列 / 行贴客块自己的纹理（原点对齐客块自己画的，接缝看不出）、客块的配色和明暗；
+       斜边那一小截贴「坡口」小三角（exaFam 的 jc / jb / jf：纹理的截面，顺着条纹拉伸不走样），沿天沟贴几段半透明黑线（S.jl，5 种斜率），客块屋脊接到尖；积雪的客块整个三角换成积雪那套
+     四坡的主块：三角碰到两头斜脊的地方跟着斜脊收（不出界）；要贴的图每块屋顶第一次画时算好记下（EXA_JC，WeakMap），每帧照着贴；一个三角大约 30～50 张 */
 const EXT_WH=18;
 const EXT_MATS=['','wood','woodDark','stone','brick','plaster','sandstone','ice','darkStone'];
 const EXT_ROOFS=['gable','hip','flat','dome','thatch','tent','crenel','spire','awning','eave'];
@@ -31312,7 +31320,7 @@ function exaTeF(x,v){const s=(x>>4)&1,u=x&15,n=(exaH(x>>2,v>>3,71)-0.5)*8;if(u==
 function exaTeB(x,w){const s=(x>>4)&1,u=x&15;if(u===0)return 136;return(s?228:182)+(w&8?-6:0)}
 function exaTeS(x,y){const w=y+(x>>1),s=(w>>4)&1,u=w&15;if(u===0)return 132;return(s?222:174)+Math.round((exaH(x>>2,w>>3,72)-0.5)*8)}
 // 一套坡屋顶的图：tf / tb / ts 纹理；o 边：g1 / g2（人字顶的斜边：t = 离斜边的距离）、rh 屋脊（rhH 高）、fa 前檐（faH 高）、ve 山墙封檐板（veW 宽）
-function exaFam(tf,tb,ts,o,hip,R){const F={},P=(w,h,f)=>exaPc(w,h,f,R),L=o.hl||[46,240,204,92];   // R：色表（积雪那套是彩色的）；hl：斜脊 [墨线, 亮, 中, 暗]
+function exaFam(tf,tb,ts,o,hip,R,st){const F={},P=(w,h,f)=>exaPc(w,h,f,R),L=o.hl||[46,240,204,92];   // R：色表（积雪那套是彩色的）；hl：斜脊 [墨线, 亮, 中, 暗]；st：条纹纹理（筒瓦、帐篷：侧坡斜条、前后坡竖条）
   F.hf=P(64,24,(x,y)=>tf(x,47-y));F.hb=P(64,16,tb);F.sv=P(32,32,ts);
   F.g1=P(32,16,(x,y)=>{const t=y+0.5-(32-(x+0.5)/2);if(t<0)return -1;const e=o.g1(t,x,y);return e>=0?e:ts(x,y)});
   F.g2=P(32,16,(x,y)=>{const t=(32-(x+0.5)/2)-(y+0.5);if(t<0)return -1;const e=o.g2(t,x,y);return e>=0?e:ts(x,y)});
@@ -31323,6 +31331,14 @@ function exaFam(tf,tb,ts,o,hip,R){const F={},P=(w,h,f)=>exaPc(w,h,f,R),L=o.hl||[
     F.h2=P(32,16,(x,y)=>{const t=(y+0.5)-(x+0.5)/2;if(t<0)return -1;if(t<1)return L[0];if(t<3)return L[1];if(t<4)return L[2];if(t<5)return L[3];return ts(x,y)});
     F.h3=P(32,48,(x,y)=>{const p=(96-1.5*(x+0.5)-(y+0.5))/1.803;if(p<0)return -1;if(p<0.8)return L[0];if(p<2.3)return L[1];if(p<3.1)return L[2];if(p<3.9)return L[3];return ts(x,y)});
     F.h4=P(32,48,(x,y)=>{const p=((y+0.5)-(96-1.5*(x+0.5)))/1.803;if(p<0)return -1;const v=tf(x,95-y);return p<1.6?Math.round(v*0.7):v})}
+  const md=v=>Math.round(v.reduce((p,q)=>p+q,0)/v.length),cp=[],bp=[],fp=[];   // 交接三角的坡口（0.13.0g 交接）：纹理的截面（侧坡按列、前后坡按行取平均），没有接缝，顺着条纹拉伸不走样
+  for(let x=0;x<16;x++){const v=[];for(let y=0;y<64;y++)v.push(ts(x,y));cp.push(md(v))}
+  for(let y=0;y<8;y++){const v=[];for(let x=0;x<128;x++)v.push(tb(x,y));bp.push(md(v))}
+  for(let y=0;y<24;y++){const v=[];for(let x=0;x<128;x++)v.push(tf(x,23-y));fp.push(md(v))}
+  const tr=(n,A,f)=>P(n,n,(x,y)=>(A?x+y>=2*n-1:x>=y)?f(x,y):-1);   // [A, B]：A 斜边左下→右上、填右下；B 斜边左上→右下、填右上
+  F.jc=[tr(8,1,x=>cp[x]),tr(8,0,x=>cp[x])];F.jb=[tr(4,1,(x,y)=>bp[y]),tr(4,0,(x,y)=>bp[y])];F.jf=[tr(12,1,(x,y)=>fp[y]),tr(12,0,(x,y)=>fp[y])];   // jc 侧坡一列（8 宽 = 两垄）、jb 后坡一行（4 高）、jf 前坡两行（12 高）
+  if(st){const cs=(fn,H)=>[0,1,2,3].map(q=>{const v=[];for(let x=0;x<16;x++){let s=0;for(let y=0;y<H;y++)s+=fn(8*q+x,y);v.push(Math.round(s/H))}return v}),sq=(f,p)=>P(8,8,(x,y)=>f(x,y)?p[x]:-1),pb=cs(tb,32),pf=cs((x,y)=>tf(x,47-y),48);   // 条纹的前后坡是竖条：坡口按列截面，竖着拉伸不走样；离纹理原点 0 / 4 / 8 / 12 像素四种
+    F.jv=[[(x,y)=>x+y>=15,(x,y)=>y>=x].map(f=>pb.map(p=>sq(f,p))),[(x,y)=>x>=y,(x,y)=>x+y<=15].map(f=>pf.map(p=>sq(f,p)))]}   // jv[0] 后坡 [右下, 左下]、jv[1] 前坡 [右上, 左上]，再按偏移
   return F}
 function exaGen(p){const S={},t0=performance.now(),px0=EXA_PX;   // 分 6 份延后画（一份几十毫秒，标题画面空闲时一份一份画）
   if(p==='w'){   // —— 墙：5 种画法 × 16 种四邻（顶面）、× 4 种两头 + 4 种带窗（墙面）、× 4 种门洞 ——
@@ -31336,7 +31352,7 @@ function exaGen(p){const S={},t0=performance.now(),px0=EXA_PX;   // 分 6 份延
     rhH:7,rh:(x,y)=>{if(y>=11)return 3840|[110,70,36][y-11];if(y===0)return 48;if(y===10)return 62;if((x&15)===0&&y<9)return 140;return[0,248,238,216,214,212,206,190,162,150][y]},
     faH:5,fa:(x,y)=>(x&63)===0&&y>1&&y<7?118:[70,238,184,182,180,176,170,150,64,40][y],
     veW:4,ve:(x,y)=>x===7?3840|80:(y&63)===0&&x>0&&x<6?118:[40,238,206,184,180,150,92][x]};
-  S.sh=exaFam(exaShF,exaShB,exaShS,sh,true);S.cl=exaFam(exaEaF,exaEaB,exaEaS,sh,true);   // cl：红瓦、沙色用筒瓦（陶瓦）
+  S.sh=exaFam(exaShF,exaShB,exaShS,sh,true);S.cl=exaFam(exaEaF,exaEaB,exaEaS,sh,true,undefined,1);   // cl：红瓦、沙色用筒瓦（陶瓦）
   }if(p==='r2'){
   const th={g1:(t,x,y)=>t<1.5?44:t<5.5?Math.round(214+(exaH(x,y>>1,51)-0.5)*40):t<7?110:-1,
     g2:(t,x,y)=>t<1.4?40:t<3?Math.round(150+exaH(x,y,52)*20):t<7?Math.round(206+exaH(x,(y+x)>>1,52)*36-((x*3)%5===0?22:0)):t<8?96:-1,
@@ -31347,12 +31363,12 @@ function exaGen(p){const S={},t0=performance.now(),px0=EXA_PX;   // 分 6 份延
   const ea={g1:t=>t<1.5?44:t<4?226:t<5?120:-1,g2:t=>t<1.2?40:t<3.4?150:t<5?220:t<6?70:-1,
     rhH:8,rh:(x,y)=>{if(y>=14)return 3840|(y===14?100:56);if(y===0)return 44;if(y===13)return 60;return[0,246,226,226,120,0,0,0,0,120,210,210,150][y]||(((x%8)<4)!==(y&1)?204:160)},
     faH:5,fa:(x,y)=>{if(y>=7)return[150,70,40][y-7];const d=Math.hypot((x&7)-3.5,y-3.2);return d<2.4?(d<1.2?250:226):d<3.3?96:132},veW:4,ve:(x,y)=>x===0?40:x===7?60:x===6?150:x===1?236:(y&7)===0?120:196};
-  ea.hl=[44,238,198,80];S.ea=exaFam(exaEaF,exaEaB,exaEaS,ea,true);
+  ea.hl=[44,238,198,80];S.ea=exaFam(exaEaF,exaEaB,exaEaS,ea,true,undefined,1);
   }if(p==='r3'){
   const te={g1:t=>t<1.4?44:t<2.8?214:t<3.6?110:-1,g2:t=>t<1.2?40:t<3.5?200:t<4.3?96:-1,
     rhH:4,rh:(x,y)=>y>=6?3840|(y===6?90:46):[46,230,170,170,170,60][y],
     faH:5,fa:(x,y)=>{const d=6+3*Math.sin(Math.PI*((x&15)+0.5)/16);if(y>d+0.5)return 70;if(y>d-0.5)return 44;if(y===0)return 120;return((x>>4)&1?226:182)+(y===1?12:0)},veW:2,ve:(x,y)=>[40,214,160,70][x]};
-  te.hl=[48,222,182,96];S.te=exaFam(exaTeF,exaTeB,exaTeS,te,true);
+  te.hl=[48,222,182,96];S.te=exaFam(exaTeF,exaTeB,exaTeS,te,true,undefined,1);
   const SWR=[exaRamp([[0,'#4a5a6e'],[150,'#a8bccc'],[208,'#dfe9f2'],[236,'#f2f7fb'],[255,'#ffffff']])];   // 积雪那套（彩色）：南北屋脊、四坡下雪时整个盖一遍
   S.sw=exaFam(exaSwF,exaSwB,exaSwS,{g1:t=>t<1.5?168:t<4?252:-1,g2:t=>t<1.2?150:t<3.5?230:t<4.5?252:-1,rhH:7,rh:(x,y)=>y>=11?3840|[70,40,20][y-11]:[160,252,250,246,242,236,228,216,200,180,150][y],hl:[176,252,244,214]},true,SWR);
   // 三角山墙（竖的木板，乘这座房子的墙色）：gg 斜边下面那一块（1 : 2）、gf 平铺
@@ -31366,6 +31382,8 @@ function exaGen(p){const S={},t0=performance.now(),px0=EXA_PX;   // 分 6 份延
   // 东方飞檐：翘起来的檐角（左；右边翻过来）、屋脊两头的鸱吻
   S.ec=exaPcV(12,12,(x,y)=>{const yc=19-14*Math.pow((23.5-x)/23.5,2.2),t=y+0.5-yc;if(x<3&&t<-2.5&&t>-6.5)return 214;if(t<-3||t>3)return -1;return t<-2?242:t<0?206:t<1?150:t<2?100:62});
   S.eo=exaPcV(7,12,(x,y)=>{const px=x+0.5,py=y+0.5;const inB=px>=2&&px<=12&&py>=13;const tail=py<13&&py>1&&px>=2+Math.max(0,(9-py))*0.45&&px<=6+py*0.6&&!(px>5&&px<9&&py>4&&py<10);if(!inB&&!tail)return -1;return px<5?232:px<9?196:150});
+  S.jl=[0.25,0.5,1,2,4].map(k=>{const w=k<=1?32:32/k,h=k<=1?32*k:32,W=2*w,H=2*h,L=Math.hypot(W,H);   // 交接的天沟线（黑、半透明；斜线左下→右上，斜率 1/4～4 五张，按实际斜率挑最近的一张拉伸）
+    return exaPc(w,h,(x,y)=>{const d=Math.abs((H*(x+0.5)+W*(y+0.5)-W*H)/L);return d<1?3840|150:d<2?3840|55:-1})});
   }if(p==='f'){   // —— 平顶、垛口 ——
   const slab=(x,y,s)=>{const u=x&15,q=y&15,n=(exaH(x>>4,y>>4,s)-0.5)*14;if(u===0||q===0)return 150;if(u===1||q===1)return 226;if(u===15||q===15)return 184;return Math.round(206+n+(exaH(x>>2,y>>2,s+1)<0.05?-14:0))};
   const flag=(x,y)=>{const r=(y/16)|0,o=(r&1)*12,u=(x+o)%24,q=y&15,n=(exaH(((x+o)/24)|0,r,81)-0.5)*16;if(u===0||q===0)return 132;if(u===1||q===1)return 228;if(u===23||q===15)return 176;return Math.round(204+n)};
@@ -31497,50 +31515,143 @@ function extArtSteps(b){const D=b.door;if(!D)return;const S=exaSpr(),w=Math.max(
   if(D.side===1)sprW(S.st[w],D.p*16-5,(b.y1+1)*16);else if(D.side===0)sprW(S.st[w],D.p*16-5,b.y0*16-9);
   else{const r=S.se[w],y=D.p*16-3;if(D.side===3)sprW(r,(b.x1+1)*16,y);else sprW(r,b.x0*16-r.w,y,true)}}
 // —— 屋顶 ——
-function extArtRoof(b,a){const S=exaSpr(),r=b.roof,T=exaPT(b.pal),X0=b.x0*16-2,X1=(b.x1+1)*16+2,RT=b.y0*16-EXT_WH,RB=(b.y1+1)*16-EXT_WH,sn=b.snow;
+function extArtRoof(b,a){const S=exaSpr(),r=b.roof,T=exaPT(b.pal),J=exaJ(b),cu=J.c,X0=Math.max(b.x0*16-2,J.x0),X1=Math.min((b.x1+1)*16+2,J.x1),RT=b.y0*16-EXT_WH,RB=(b.y1+1)*16-EXT_WH,sn=b.snow;   // J：跟别的块的交接（下面「交接」一段）
   if(r==='awning'){exaAwn(S,b,a,T,X0,X1,RT,RB);if(sn)exaFill(S.sn,X0,RT,X1-X0,RB-RT-6,null,0.75*a);return}
   if(r==='flat'||r==='crenel'||r==='dome'||r==='spire'){exaFlat(S,b,a,T,X0+1,X1-1,RT,RB,r);return}
-  const F=r==='thatch'?S.th:r==='eave'?S.ea:r==='tent'?S.te:EXA_CLAY[b.pal]?S.cl:S.sh;
-  if(r==='hip'||b.dir!=='v'&&(r==='thatch'||r==='eave'||r==='tent')){exaHip(F,a,T,X0,X1,RT,RB,false,r==='thatch');if(r==='hip')exaDorm(S,b,a,T,X0,X1,RT,RB,true);if(sn)exaHip(S.sw,a*0.94,EXA_SNT,X0,X1,RT,RB,true)}   // 茅草、飞檐、帐篷东西屋脊时也画成四坡（歇山 / 庑殿、圆角草顶、方帐）
-  else if(b.dir==='v'){exaGabV(F,S,b,a,T,X0,X1,RT,RB,false);if(sn)exaGabV(S.sw,S,b,a*0.94,EXA_SNT,X0,X1,RT,RB,true)}
-  else{const yr=exaGabH(F,a,T,X0,X1,RT,RB);if(r==='gable')exaDorm(S,b,a,T,X0,X1,RT,RB,false);
+  const F=exaFm(S,b),e0=Math.min(((b.x1-b.x0+1)*16+4)>>1,(RB-RT)>>1);   // e0：四坡两头斜脊的宽（按没裁的宽算）
+  if(exaHL(b)){exaHip(F,a,T,X0,X1,RT,RB,false,r==='thatch',cu,e0);if(r==='hip')exaDorm(S,b,a,T,X0,X1,RT,RB,true,J);if(sn)exaHip(S.sw,a*0.94,EXA_SNT,X0,X1,RT,RB,true,false,cu,e0)}   // 茅草、飞檐、帐篷东西屋脊时也画成四坡（歇山 / 庑殿、圆角草顶、方帐）
+  else if(b.dir==='v'){exaGabV(F,S,b,a,T,X0,X1,RT,RB,false,cu);if(sn)exaGabV(S.sw,S,b,a*0.94,EXA_SNT,X0,X1,RT,RB,true,cu)}
+  else{const yr=exaGabH(F,a,T,X0,X1,RT,RB,cu);if(r==='gable')exaDorm(S,b,a,T,X0,X1,RT,RB,false,J);
     if(sn){const W=X1-X0,hs=Math.round((RB-yr)*0.42);exaFill(S.sn,X0,RT,W,yr-RT+hs,null,0.94*a);exaFill(S.sne,X0,yr+hs,W,6,null,0.94*a);exaFill(S.sw.rh,X0,yr-(S.sw.rh.h>>1),W,S.sw.rh.h,null,a)}}
-  if(r==='eave')exaEaveX(S,b,a,T,X0,X1,RT,RB);
+  if(J.tri.length)exaJDraw(b,J,a);   // 接在这块坡上的交接三角（压在自己的屋顶、积雪上面；烟囱、翘角在它上面）
+  if(r==='eave')exaEaveX(S,b,a,T,X0,X1,RT,RB,J,e0);
   if(r!=='tent'&&r!=='eave')exaChim(S,b,a,X0,X1,RT,RB)}
-// 两坡（东西屋脊）：后坡、前坡（分三段：靠屋脊亮、靠屋檐暗）、北檐、前檐、两边封檐板、屋脊；返回屋脊的 y
-function exaGabH(F,a,T,X0,X1,RT,RB){const W=X1-X0,hh=RB-RT,yr=RT+Math.max(6,Math.round(hh/4)),hf=RB-yr,b3=Math.min(hf,12*Math.max(1,Math.round(hf*0.3/12))),b2=Math.min(hf-b3,12*Math.max(1,Math.round(hf*0.36/12)));   // 段高都是 12 的倍数（纹理一个周期，接缝对得上）
+// 两坡（东西屋脊）：后坡、前坡（分三段：靠屋脊亮、靠屋檐暗）、北檐、前檐、两边封檐板、屋脊；返回屋脊的 y；cu 哪头接着别的块（4 西 8 东：那头不画封檐板）
+function exaGabH(F,a,T,X0,X1,RT,RB,cu){const W=X1-X0,hh=RB-RT,yr=RT+Math.max(6,Math.round(hh/4)),hf=RB-yr,b3=Math.min(hf,12*Math.max(1,Math.round(hf*0.3/12))),b2=Math.min(hf-b3,12*Math.max(1,Math.round(hf*0.36/12)));   // 段高都是 12 的倍数（纹理一个周期，接缝对得上）
   exaFill(F.hb,X0,RT,W,yr-RT,T.L,a);exaFill(F.hf,X0,RB-b3,W,b3,T.M2,a,false,true);exaFill(F.hf,X0,RB-b3-b2,W,b2,T.M,a,false,true);exaFill(F.hf,X0,yr,W,hf-b3-b2,T.LM,a,false,true);
   exaFill(F.te,X0,RT,W,F.te.h,T.D,a);exaFill(F.fa,X0,RB-F.fa.h,W,F.fa.h,T.D,a);
-  exaFill(F.ve,X0,RT,F.ve.w,hh,T.D,a);exaFill(F.ve,X1-F.ve.w,RT,F.ve.w,hh,T.D,a,true);
+  if(!(cu&4))exaFill(F.ve,X0,RT,F.ve.w,hh,T.D,a);if(!(cu&8))exaFill(F.ve,X1-F.ve.w,RT,F.ve.w,hh,T.D,a,true);
   exaFill(F.rh,X0,yr-(F.rh.h>>1),W,F.rh.h,T.L,a);return yr}
-// 老虎窗：东西屋脊的两坡 / 四坡，块够大时按 seed 在前坡开 1～2 个（四坡的避开两边的斜脊；独特建筑不开，它有自己的装饰）
-function exaDorm(S,b,a,T,X0,X1,RT,RB,hip){const W=X1-X0,hh=RB-RT;if(b.dir==='v'||b.k==='uniq'||W<100||hh<60||exaH(b.seed,7,0)>=0.75)return;const yr=RT+(hh>>2),yb=Math.round(yr+(RB-yr)*0.8),B=S.dmB,R=S.dmR;
+// 老虎窗：东西屋脊的两坡 / 四坡，块够大时按 seed 在前坡开 1～2 个（四坡的避开两边的斜脊；独特建筑不开，它有自己的装饰；南边接着别的块的那一段不开）
+function exaDorm(S,b,a,T,X0,X1,RT,RB,hip,J){const W=X1-X0,hh=RB-RT;if(b.dir==='v'||b.k==='uniq'||W<100||hh<60||exaH(b.seed,7,0)>=0.75)return;const yr=RT+(hh>>2),yb=Math.round(yr+(RB-yr)*0.8),B=S.dmB,R=S.dmR;
   const ex=hip?Math.ceil((RB-yb+B.h+4)/1.5)+2:6,xl=X0+ex,xr=X1-ex-B.w;if(xr<=xl)return;
-  const n=W>=180&&xr-xl>60?2:1;for(let q=0;q<n;q++){const x=Math.round(n===1?(xl+xr)/2+(exaH(b.seed,8,0)-0.5)*Math.min(30,xr-xl):xl+(xr-xl)*(q?0.85:0.15)),y=yb-B.h;sprW(B,x,y,false,0,a);sprW(R,x-1,y-4,false,0,a,T.L)}}
-// 两坡（南北屋脊）：一列一列拼左右两面坡（右边翻过来），北头人字形往上翘、南头三角山墙
-function exaGabV(F,S,b,a,T,X0,X1,RT,RB,sn){const W=X1-X0,hh=RB-RT,hf=W>>1,cx=X0+hf,rise=hf>>1,GT=sn?null:exaT(EXA_GC[EXT_WM[b.y1*MAP_W+b.x0]||3]||EXA_GC[3]);
-  for(let j=0;32*j<hf;j++){const cw=Math.min(32,hf-32*j);
+  const n=W>=180&&xr-xl>60?2:1;for(let q=0;q<n;q++){const x=Math.round(n===1?(xl+xr)/2+(exaH(b.seed,8,0)-0.5)*Math.min(30,xr-xl):xl+(xr-xl)*(q?0.85:0.15)),y=yb-B.h;
+    let ok=true;for(let i=0;i<J.tri.length;i+=2){const g=J.tri[i];if(J.tri[i+1]===1&&x+B.w+6>g.x0*16-2&&x-6<(g.x1+1)*16+2)ok=false}if(ok){sprW(B,x,y,false,0,a);sprW(R,x-1,y-4,false,0,a,T.L)}}}
+// 两坡（南北屋脊）：一列一列拼左右两面坡（右边翻过来），北头人字形往上翘、南头三角山墙；cu 哪头接着别的块（1 北：不翘人字头，坡面平着到 RT；2 南：不画山墙，坡面平着到 RB）
+function exaGabV(F,S,b,a,T,X0,X1,RT,RB,sn,cu){const W=X1-X0,hh=RB-RT,hf=W>>1,cx=X0+hf,rise=hf>>1,cN=cu&1,cS=cu&2,GT=sn?null:exaT(EXA_GC[EXT_WM[b.y1*MAP_W+b.x0]||3]||EXA_GC[3]);
+  for(let j=0;32*j<hf;j++){const cw=Math.min(32,hf-32*j),oy=RT-16*j,y0=cN?RT:oy,y1=cS?RB:RB-16*j-16;
     for(let s=0;s<2;s++){const fl=s===1,x=fl?X1-32*j-cw:X0+32*j,t=fl?T.MD:T.L;
-      sprW(exaSub(F.g1,0,0,cw,16),x,RT-16*j-16,fl,0,a,t);exaFill(F.sv,x,RT-16*j,cw,hh-16,t,a,fl);sprW(exaSub(F.g2,0,0,cw,16),x,RB-16*j-16,fl,0,a,t);
-      if(!sn){sprW(exaSub(S.gg,0,0,cw,16),x,RB-16*j-16,fl,0,a,GT);if(j)exaFill(S.gf,x,RB-16*j,cw,16*j,GT,a,fl)}}}
-  if(!sn){exaFill(F.ve,X0,RT,F.ve.w,hh,T.D,a);exaFill(F.ve,X1-F.ve.w,RT,F.ve.w,hh,T.D,a,true);if(rise>=12)sprW(S.gv,cx-4,RB-rise+Math.round(rise*0.32),false,0,a)}
-  const rw=F.rv.w;exaFill(F.rv,cx-(rw>>1),RT-rise+(rw>>1),rw,hh-(rw>>1),T.L,a);sprW(F.rc,cx-(rw>>1),RT-rise-1,false,0,a,T.L)}
-// 四坡：两边按列拼（侧坡三角 + 斜脊），中间一段（东西屋脊时）是后坡 + 前坡；方块 = 四棱锥（尖上一个金顶，nf = 不放：茅草）；sn = 积雪那一遍（不画檐口、封檐板）
-function exaHip(F,a,T,X0,X1,RT,RB,sn,nf){const W=X1-X0,hh=RB-RT,hf=W>>1,e=Math.min(hf,hh>>1),yr=RT+(hh>>2);
+      if(!cN)sprW(exaSub(F.g1,0,0,cw,16),x,RT-16*j-16,fl,0,a,t);exaTex(F.sv,x,y0,cw,y1-y0,fl?X1-32*j:X0+32*j,oy,t,a,fl);
+      if(!cS){sprW(exaSub(F.g2,0,0,cw,16),x,RB-16*j-16,fl,0,a,t);if(!sn){sprW(exaSub(S.gg,0,0,cw,16),x,RB-16*j-16,fl,0,a,GT);if(j)exaFill(S.gf,x,RB-16*j,cw,16*j,GT,a,fl)}}}}
+  if(!sn){exaFill(F.ve,X0,RT,F.ve.w,hh,T.D,a);exaFill(F.ve,X1-F.ve.w,RT,F.ve.w,hh,T.D,a,true);if(rise>=12&&!cS)sprW(S.gv,cx-4,RB-rise+Math.round(rise*0.32),false,0,a)}
+  const rw=F.rv.w,rx=cx-(rw>>1),ro=RT-rise+(rw>>1),ry0=cN?RT:ro,ry1=cS?RB:RB-rise;exaTex(F.rv,rx,ry0,rw,ry1-ry0,rx,ro,T.L,a,false);if(!cN)sprW(F.rc,rx,RT-rise-1,false,0,a,T.L)}
+// 四坡：两边按列拼（侧坡三角 + 斜脊），中间一段（东西屋脊时）是后坡 + 前坡；方块 = 四棱锥（尖上一个金顶，nf = 不放：茅草）；sn = 积雪那一遍（不画檐口、封檐板）；cu 哪头接着别的块（1 北 2 南：南北屋脊时那头不收斜脊，侧坡平着到头；4 西 8 东：东西屋脊时那头不画侧坡三角，前后坡和屋脊一直铺到头）；e0 斜脊宽（块被裁过时按原来的宽算）
+function exaHip(F,a,T,X0,X1,RT,RB,sn,nf,cu,e0){const W=X1-X0,hh=RB-RT,hf=W>>1,e=e0||Math.min(hf,hh>>1),yr=RT+(hh>>2),cN=cu&1,cS=cu&2,cW=cu&4,cE=cu&8;
   for(let j=0;32*j<e;j++){const cw=Math.min(32,e-32*j);
-    for(let s=0;s<2;s++){const fl=s===1,x=fl?X1-32*j-cw:X0+32*j,ts=fl?T.MD:T.L;let y3=RB-48*j-48,c3=0;if(y3<RT){c3=RT-y3;y3=RT}
-      if(c3<48)sprW(exaSub(F.h3,0,c3,cw,48-c3),x,y3,fl,0,a,ts);
-      if(j)exaFill(F.hb,x,RT,cw,16*j,T.L,a,fl);sprW(exaSub(F.h1,0,0,cw,16),x,RT+16*j,fl,0,a,T.L);
-      const yb=RT+16*j+16;if(y3>yb)exaFill(F.sv,x,yb,cw,y3-yb,ts,a,fl);sprW(exaSub(F.h2,0,0,cw,16),x,RT+16*j,fl,0,a,ts);
-      if(c3<48)sprW(exaSub(F.h4,0,c3,cw,48-c3),x,y3,fl,0,a,T.M);if(j)exaFill(F.hf,x,RB-48*j,cw,48*j,T.M,a,fl,true)}}
-  const mw=W-2*e;if(mw>0){exaFill(F.hb,X0+e,RT,mw,yr-RT,T.L,a);exaFill(F.hf,X0+e,yr,mw,RB-yr,T.M,a,false,true)}
-  if(!sn){exaFill(F.te,X0,RT,W,F.te.h,T.D,a);exaFill(F.fa,X0,RB-F.fa.h,W,F.fa.h,T.D,a);exaFill(F.ve,X0,RT,F.ve.w,hh,T.D,a);exaFill(F.ve,X1-F.ve.w,RT,F.ve.w,hh,T.D,a,true)}
-  const rh=F.rh.h;if(mw>4)exaFill(F.rh,X0+e-2,yr-(rh>>1),mw+4,rh,T.L,a);
-  else if(hh>W+8){const y0=RT+(hf>>1),y1=RB-Math.round(hf*1.5);exaFill(F.rv,X0+hf-(rh>>1),y0-2,rh,y1-y0+4,T.L,a)}
+    for(let s=0;s<2;s++){if(s?cE:cW)continue;const fl=s===1,x=fl?X1-32*j-cw:X0+32*j,ts=fl?T.MD:T.L;let y3=RB-48*j-48,c3=0;if(y3<RT){c3=RT-y3;y3=RT}
+      const yb=RT+16*j+16,ya=cN?RT:yb,yz=cS?RB:y3;if(!cS&&c3<48)sprW(exaSub(F.h3,0,c3,cw,48-c3),x,y3,fl,0,a,ts);
+      if(!cN){if(j)exaFill(F.hb,x,RT,cw,16*j,T.L,a,fl);sprW(exaSub(F.h1,0,0,cw,16),x,RT+16*j,fl,0,a,T.L)}
+      if(yz>ya)exaTex(F.sv,x,ya,cw,yz-ya,fl?X1-32*j:X0+32*j,yb,ts,a,fl);if(!cN)sprW(exaSub(F.h2,0,0,cw,16),x,RT+16*j,fl,0,a,ts);
+      if(!cS){if(c3<48)sprW(exaSub(F.h4,0,c3,cw,48-c3),x,y3,fl,0,a,T.M);if(j)exaFill(F.hf,x,RB-48*j,cw,48*j,T.M,a,fl,true)}}}
+  const xl=cW?X0:X0+e,mw=(cE?X1:X1-e)-xl;if(mw>0){exaTex(F.hb,xl,RT,mw,yr-RT,xl,RT,T.L,a,false);exaTex(F.hf,xl,yr,mw,RB-yr,xl,RB,T.M,a,false)}
+  if(!sn){if(!cN)exaFill(F.te,X0,RT,W,F.te.h,T.D,a);if(!cS)exaFill(F.fa,X0,RB-F.fa.h,W,F.fa.h,T.D,a);if(!cW)exaFill(F.ve,X0,RT,F.ve.w,hh,T.D,a);if(!cE)exaFill(F.ve,X1-F.ve.w,RT,F.ve.w,hh,T.D,a,true)}
+  const rh=F.rh.h;if(mw>4||cW||cE){const r0=cW?X0:X0+e-2;exaTex(F.rh,r0,yr-(rh>>1),(cE?X1:X1-e+2)-r0,rh,r0,yr-(rh>>1),T.L,a,false)}
+  else if(hh>W+8){const rx=X0+hf-(rh>>1),o=RT+(hf>>1)-2,ya=cN?RT:o,yz=cS?RB:RB-Math.round(hf*1.5)+2;exaTex(F.rv,rx,ya,rh,yz-ya,rx,o,T.L,a,false)}
   else if(!sn&&!nf)sprW(exaSpr().fin,X0+hf-2,yr-14,false,0,a)}
-// 东方飞檐：前檐两头的翘角（南北屋脊时在山墙两个下角）、东西屋脊两头的鸱吻
-function exaEaveX(S,b,a,T,X0,X1,RT,RB){const ec=S.ec,eo=S.eo;sprW(ec,X0-6,RB-12,false,0,a,T.M);sprW(ec,X1+6-ec.w,RB-12,true,0,a,T.M);
-  if(b.dir!=='v'){const hh=RB-RT,e=Math.min((X1-X0)>>1,hh>>1),yr=RT+(hh>>2);sprW(eo,X0+e-4,yr+3-eo.h,false,0,a,T.D);sprW(eo,X1-e+4-eo.w,yr+3-eo.h,true,0,a,T.D)}}
+// 东方飞檐：前檐两头的翘角（南北屋脊时在山墙两个下角）、东西屋脊两头的鸱吻；接着别的块的那头不画（南边接着交接三角的那个角也不翘）
+function exaEaveX(S,b,a,T,X0,X1,RT,RB,J,e0){const ec=S.ec,eo=S.eo,cu=J.c;let l=!(cu&6),r=!(cu&10);
+  for(let i=0;i<J.tri.length;i+=2){const g=J.tri[i];if(J.tri[i+1]===1){if(g.x0*16-2<=X0+8)l=false;if((g.x1+1)*16+2>=X1-8)r=false}}
+  if(l)sprW(ec,X0-6,RB-12,false,0,a,T.M);if(r)sprW(ec,X1+6-ec.w,RB-12,true,0,a,T.M);
+  if(b.dir!=='v'){const yr=RT+((RB-RT)>>2);if(!(cu&4))sprW(eo,X0+e0-4,yr+3-eo.h,false,0,a,T.D);if(!(cu&8))sprW(eo,X1-e0+4-eo.w,yr+3-eo.h,true,0,a,T.D)}}
+// —— 交接（十字脊 / 丁字脊；做法见文件开头「交接」）——
+const EXA_SL={gable:1,hip:1,thatch:1,eave:1,tent:1};   // 坡屋顶（有屋脊、能交接）
+const exaHL=b=>b.roof==='hip'||b.dir!=='v'&&(b.roof==='thatch'||b.roof==='eave'||b.roof==='tent');   // 画成四坡（exaHip）
+const exaFm=(S,b)=>b.roof==='thatch'?S.th:b.roof==='eave'?S.ea:b.roof==='tent'?S.te:EXA_CLAY[b.pal]?S.cl:S.sh;   // 坡屋顶用哪套图
+const EXA_JC=new WeakMap();   // 每块屋顶的交接（第一次画时算好）：c 哪头接着别的块、不画端头（1 北 2 南 4 西 8 东）；x0 / x1 东西接时屋顶裁到哪；tri 这块坡上要画的三角 [客块, 客块在这块的哪面, …]；ops 三角要贴的图
+function exaJ(b){let J=EXA_JC.get(b);if(J)return J;J={c:0,x0:-1e9,x1:1e9,tri:[],ops:null};EXA_JC.set(b,J);
+  const B=EXT_GEN&&EXT_GEN.bld;if(!B||!b.roof)return J;const L=[];if(b.par>=0&&B[b.par])L.push(B[b.par],b);if(b.kids)for(const q of b.kids)if(B[q])L.push(b,B[q]);
+  for(let i=0;i<L.length;i+=2){const p=L[i],c=L[i+1],at=c.att,op=at^1,v=at<2?'v':'h';if(!p.roof||!c.roof||!(at>=0&&at<4))continue;   // at：子块在父块的哪面；op：父块在子块的哪面
+    const pc=c.dir===v&&EXA_SL[c.roof],pp=p.dir===v&&EXA_SL[p.roof],sl=EXA_SL[p.roof]&&EXA_SL[c.roof],eq=at<2?c.x0===p.x0&&c.x1===p.x1:c.y0===p.y0&&c.y1===p.y1;   // pc / pp：子块 / 父块是屋脊垂直于共用墙线的坡屋顶
+    let host=null,gp=0;if(pc){if(sl&&!pp)host=p;else if(pp&&eq)gp=1}else if(pp&&sl&&eq){host=c;gp=2}   // gp：父块那头也去掉（1 两块同向一样宽，2 父块是客）
+    if(b===c&&pc){J.c|=1<<op;if(at===3)J.x0=Math.max(J.x0,(p.x1+1)*16+2);else if(at===2)J.x1=Math.min(J.x1,p.x0*16-2)}
+    if(b===p&&gp){J.c|=1<<at;if(gp===2){if(at===3)J.x1=Math.min(J.x1,c.x0*16-2);else if(at===2)J.x0=Math.max(J.x0,(c.x1+1)*16+2)}}
+    if(b===host)J.tri.push(host===p?c:p,host===p?at:op)}
+  return J}
+function exaGeo(b){const J=exaJ(b),X0=Math.max(b.x0*16-2,J.x0),X1=Math.min((b.x1+1)*16+2,J.x1),RT=b.y0*16-EXT_WH,RB=(b.y1+1)*16-EXT_WH,hh=RB-RT,hf=(X1-X0)>>1,hip=exaHL(b);   // 一块屋顶画出来的样子（同 extArtRoof）
+  return{b,X0,X1,RT,RB,hf,cx:X0+hf,rise:hf>>1,hip,e:Math.min(((b.x1-b.x0+1)*16+4)>>1,hh>>1),yr:hip?RT+(hh>>2):RT+Math.max(6,Math.round(hh/4)),c:J.c}}
+let EXA_REC=null;   // 不是 null 时 exaQ 只记下来不画（交接三角每块屋顶算一次）
+function exaQ(r,sx,sy,sw,sh,x,y,w,h,fl,a,t){if(EXA_REC){EXA_REC.push(r,sx,sy,sw,sh,x,y,w,h,fl,a,t);return}   // 贴图里的一块 (sx, sy, sw, sh)，拉伸到 (x, y, w, h)
+  R.img(sx===0&&sy===0&&sw===r.w&&sh===r.h?r:exaSub(r,sx,sy,sw,sh),(x-CX)*zoom+OX,(y-CY)*zoom+OY,w*zoom,h*zoom,!!fl,a,0,t)}
+function exaTex(r,x,y,w,h,ox,oy,t,a,fl){if(w<=0||h<=0)return;const rw=r.w,rh=r.h;   // 用能无缝重复的图铺 (x, y, w, h)，纹理原点在 (ox, oy)；fl 左右翻（ox 是右边线）
+  for(let yy=0;yy<h;){const v=((y+yy-oy)%rh+rh)%rh,ph=Math.min(rh-v,h-yy);
+    for(let xx=0;xx<w;){const px=x+xx;let u,pw;if(fl){const u0=((ox-1-px)%rw+rw)%rw;pw=Math.min(u0+1,w-xx);u=u0-pw+1}else{u=((px-ox)%rw+rw)%rw;pw=Math.min(rw-u,w-xx)}
+      exaQ(r,u,v,pw,ph,px,y+yy,pw,ph,fl,a,t);xx+=pw}
+    yy+=ph}}
+function exaLn(S,x0,y0,x1,y1,a){if(x1<x0){let q=x0;x0=x1;x1=q;q=y0;y0=y1;y1=q}const dx=x1-x0,dy=Math.abs(y1-y0);if(dx<1||dy<1)return;   // 天沟线：按斜率挑一张（S.jl），沿长的方向一段 32 像素，最后一段截一截
+  const s=dy/dx,k=s<0.354?0:s<0.707?1:s<1.414?2:s<2.83?3:4,r=S.jl[k],L=k<=2?dx:dy,N=k<=2?r.w:r.h;
+  for(let p=0;p<L;p+=N){const q=Math.min(L,p+N),f=(q-p)/N,sw=f<1?Math.max(0.5,Math.round(r.w*f*2)/2):r.w,sh=f<1?Math.max(0.5,Math.round(r.h*f*2)/2):r.h,xa=x0+dx*p/L,xb=x0+dx*q/L,ya=y0+(y1-y0)*p/L,yb=y0+(y1-y0)*q/L;
+    exaQ(r,0,r.h-sh,sw,sh,xa,Math.min(ya,yb),xb-xa,Math.abs(yb-ya),y1>y0,a,null)}}
+function exaJDraw(b,J,a){if(!J.ops){const S=exaSpr(),H=exaGeo(b),o=[];EXA_REC=o;try{for(let i=0;i<J.tri.length;i+=2)exaTri(S,H,exaGeo(J.tri[i]),J.tri[i+1])}finally{EXA_REC=null}J.ops=o}   // 交接三角：第一次画时记下要贴的图，以后每帧照着贴
+  const O=J.ops;for(let i=0;i<O.length;i+=12)exaQ(O[i],O[i+1],O[i+2],O[i+3],O[i+4],O[i+5],O[i+6],O[i+7],O[i+8],O[i+9],O[i+10]*a,O[i+11])}
+const EXA_SNA=[0.945,0.965,0.98],EXA_SNC=new Map();   // 积雪那套图（侧坡、前后坡）的平均色；EXA_SNC：exaSnM 的缓存
+function exaSnM(pt,st){const key=pt.css+(st?st.css:''),o=EXA_SNC.get(key);if(o)return o;const s=st||EXA_W1,S3=[s.r,s.g,s.b],c=[pt.r,pt.g,pt.b].map((v,i)=>Math.min(1,0.94*S3[i]+0.06*v*208/255/EXA_SNA[i]));   // 积雪的交接三角只贴一层雪：乘上「94% 雪（st 乘色）盖在 6% 瓦（pt 乘色）上」的平均色，跟客块自己（两层）对得上
+  const r={r:c[0],g:c[1],b:c[2],css:key};EXA_SNC.set(key,r);return r}
+// 一个交接三角：H 主块、G 客块（exaGeo），gs 客块在主块的哪面
+function exaTri(S,H,G,gs){const g=G.b,hb=H.b,P=exaPT(g.pal),PH=exaPT(hb.pal),sn=g.snow,F0=exaFm(S,g),FH=exaFm(S,hb);
+  if(gs<2){   // 客块南北屋脊：三角在主块前坡（gs 1，客块在南，尖朝北）或后坡（gs 0，尖朝南）上，按列贴客块的两面侧坡（左亮右暗）
+    const F=sn?S.sw:F0,cW=H.c&4,cE=H.c&8,Yb=gs?G.RT:H.RT,tx=G.cx,
+      lim=x=>{let y=H.yr;if(H.hip){if(gs){if(!cW)y=Math.max(y,H.RB-1.5*(x-H.X0));if(!cE)y=Math.max(y,H.RB-1.5*(H.X1-x))}else{if(!cW)y=Math.min(y,H.RT+(x-H.X0)/2);if(!cE)y=Math.min(y,H.RT+(H.X1-x)/2)}}return y},   // 主块这面坡在 x 处最高到哪（屋脊；四坡两头是斜脊）
+      ty=Math.round(lim(tx));if(gs?ty>Yb-4:ty<Yb+4)return;
+    const val=x=>Yb+(ty-Yb)*(x<=tx?(x-G.X0)/(tx-G.X0):(G.X1-x)/(G.X1-tx)),bd=x=>Math.round(gs?Math.max(val(x),lim(x)):Math.min(val(x),lim(x))),oy=j=>G.hip?G.RT+16*j+16:G.RT-16*j,vx=[[1e9,-1e9],[1e9,-1e9]];   // val 天沟；bd 三角的边（被斜脊截住的地方跟着斜脊）；oy 客块侧坡第 j 列的纹理原点；vx 两边天沟从哪到哪
+    const hc=!sn&&F0.jv&&FH.jv,hax=H.hip&&!cW?H.X0+H.e:H.X0,hf3=H.RB-H.yr,b3=Math.min(hf3,12*Math.max(1,Math.round(hf3*0.3/12))),b2=Math.min(hf3-b3,12*Math.max(1,Math.round(hf3*0.36/12))),   // hc：客块是条纹（侧坡斜条，按列截面不对）、主块也是条纹（前后坡竖条）→ 坡口小三角改用主块的纹理，客块的瓦往上多铺到每列高的那头
+      hbt=y=>!gs?PH.L:H.hip?PH.M:y>=H.RB-b3?PH.M2:y>=H.RB-b3-b2?PH.M:PH.LM,rk=FH.rh.h>>1;let pa=1e9,pb=-1e9;   // hbt 主块那面坡在 y 处的颜色（同 exaGabH 三段）；pa～pb 多铺的瓦压到主块屋脊的那几列（尖上补屋脊要盖住）
+    for(let s=0;s<2;s++){const fl=s===1,t=sn?(fl?exaSnM(P.MD,EXA_SNT.MD):exaSnM(P.L,null)):fl?P.MD:P.L;
+      for(let m=0;;m++){const xa=fl?Math.max(tx,G.X1-8*m-8):G.X0+8*m,xb=fl?G.X1-8*m:Math.min(tx,G.X0+8*m+8);if(xb<=xa)break;
+        const cw=xb-xa,ya=bd(xa),yb=bd(xb),lo=Math.min(ya,yb),hi=Math.max(ya,yb),j=(fl?G.X1-xb:xa-G.X0)>>5,ox=fl?G.X1-32*j:G.X0+32*j;
+        if(hc){const q=((((xa-hax)%16)+16)%16)>>2,tt=hbt((lo+hi)>>1);if(gs?lo<H.yr+rk+1:hi>H.yr-rk){pa=Math.min(pa,xa);pb=Math.max(pb,xb)}
+          if(gs){exaTex(F.sv,xa,lo,cw,Yb-lo,ox,oy(j),t,1,fl);if(hi>lo)exaQ(FH.jv[1][fl?0:1][q],0,fl?0:8-cw,cw,cw,xa,lo,cw,hi-lo,false,1,tt)}
+          else{exaTex(F.sv,xa,Yb,cw,hi-Yb,ox,oy(j),t,1,fl);if(hi>lo)exaQ(FH.jv[0][fl?0:1][q],0,fl?8-cw:0,cw,cw,xa,lo,cw,hi-lo,false,1,tt)}}
+        else if(gs){exaTex(F.sv,xa,hi,cw,Yb-hi,ox,oy(j),t,1,fl);if(hi>lo)exaQ(F.jc[0],0,8-cw,cw,cw,xa,lo,cw,hi-lo,ya<yb,1,t)}
+        else{exaTex(F.sv,xa,Yb,cw,lo-Yb,ox,oy(j),t,1,fl);if(hi>lo)exaQ(F.jc[1],0,0,cw,cw,xa,lo,cw,hi-lo,ya>yb,1,t)}
+        for(const x of[xa,xb])if(Math.abs(bd(x)-val(x))<1.5){const V=vx[s];V[0]=Math.min(V[0],x);V[1]=Math.max(V[1],x)}}}
+    for(const V of vx)if(V[1]>V[0])exaLn(S,V[0],val(V[0]),V[1],val(V[1]),1);
+    const sl=Math.abs(ty-Yb)/(tx-G.X0),rid=(Fr,t,am)=>{const R2=Fr.rv,rw=R2.w,x=G.cx-(rw>>1),o=G.hip?G.RT+(G.hf>>1)-2:G.RT-G.rise+(rw>>1),d=Math.round(rw*sl/2);   // 客块屋脊伸到尖（尖上窄的那一截不画）
+      if(gs)exaTex(R2,x,ty+d,rw,Yb-ty-d,x,o,t,am,false);else exaTex(R2,x,Yb,rw,ty-d-Yb,x,o,t,am,false)};
+    if(sn)rid(S.sw,null,1);else rid(F0,P.L,1);   // 积雪的屋脊：客块自己是瓦脊被雪坡盖住、上面再压雪脊，这里只贴雪脊
+    if(ty===Math.round(H.yr)){const ax=H.hip?(cW?H.X0:H.X0+H.e-2):H.X0,pr=(Fr,t)=>{const R2=Fr.rh,y=H.yr-(R2.h>>1),k=R2.h>>1,w=Math.ceil(R2.h/2/sl)+1,x0=Math.min(pa,tx-w-(gs?0:1)),x1=Math.max(pb,tx+w+(gs?0:1));if(gs)exaTex(R2,x0,y+k,x1-x0,R2.h-k,ax,y,t,1,false);else exaTex(R2,x0,y,x1-x0,k,ax,y,t,1,false)};if(hb.snow)pr(S.sw,null);else pr(FH,PH.L)}}   // 主块屋脊在尖上补一小段压住（只补三角盖住的那半边、那一截：多补了屋脊的影子会叠两层）
+  else{   // 客块东西屋脊：三角在主块东坡（gs 3，客块在东，尖朝西）或西坡（gs 2）上，按行贴客块的后坡（亮）、前坡（两坡分三段颜色）
+    const E=gs===3,Xb=E?H.X1:H.X0,cN=H.c&1,cS=H.c&2,ty=G.yr,
+      lim=y=>{let x=H.cx;if(E){if(H.hip){if(!cN)x=Math.max(x,H.X1-2*(y-H.RT));if(!cS)x=Math.max(x,H.X1-(H.RB-y)/1.5)}else if(!cS)x=Math.max(x,H.X1-2*(H.RB-y))}
+        else{if(H.hip){if(!cN)x=Math.min(x,H.X0+2*(y-H.RT));if(!cS)x=Math.min(x,H.X0+(H.RB-y)/1.5)}else if(!cS)x=Math.min(x,H.X0+2*(H.RB-y))}return x},   // 主块这面坡在第 y 行离屋脊最近到哪（两坡南头是山墙，四坡南北两头是斜脊）
+      tx=Math.round(lim(ty));if(E?tx>Xb-4:tx<Xb+4)return;
+    const val=y=>Xb+(tx-Xb)*(y<=ty?(y-G.RT)/(ty-G.RT):(G.RB-y)/(G.RB-ty)),bd=y=>Math.round(E?Math.max(val(y),lim(y)):Math.min(val(y),lim(y))),
+      gh=G.hip,FR=sn&&gh?S.sw:F0,ax=gh?(G.c&4?G.X0:G.X0+G.e):G.X0,hf3=G.RB-ty,b3=Math.min(hf3,12*Math.max(1,Math.round(hf3*0.3/12))),b2=Math.min(hf3-b3,12*Math.max(1,Math.round(hf3*0.36/12))),vy=[[1e9,-1e9],[1e9,-1e9]];   // ax 客块纹理横向原点；b3 / b2 两坡前坡的三段（同 exaGabH）
+    const row=(ya,yb,tex,cap,n,ox,oy,t,am,top,k)=>{const xa=bd(ya),xb=bd(yb),h=yb-ya,lo=Math.min(xa,xb),hi=Math.max(xa,xb);   // 一行：坡口小三角 + 到主块边上的一条；top：这行是一个周期的上半截（后坡最下一行），不然是下半截（前坡最上一行）
+      if(E)exaTex(tex,hi,ya,Xb-hi,h,ox,oy,t,am,false);else exaTex(tex,Xb,ya,lo-Xb,h,ox,oy,t,am,false);
+      if(hi>lo){const A=E?xa>xb:xa<xb;exaQ(cap[A?0:1],h===n||A!==top?0:n-h,h===n||top?0:n-h,h,h,lo,ya,hi-lo,h,!E,am,t)}
+      if(k>=0)for(const y of[ya,yb])if(Math.abs(bd(y)-val(y))<1.5){const V=vy[k];V[0]=Math.min(V[0],y);V[1]=Math.max(V[1],y)}};
+    const band=y=>gh?[P.M,G.RB,G.RB]:y>=G.RB-b3?[P.M2,G.RB,G.RB]:y>=G.RB-b3-b2?[P.M,G.RB-b3,G.RB-b3]:[P.LM,G.RB-b3-b2,G.RB-b3-b2];   // 前坡第 y 行：[颜色, 纹理原点（这段的下沿）, 这段到哪]
+    if(FR.jv&&!sn){   // 条纹的客块（筒瓦、帐篷）：前后坡是竖条，按列贴（一列 8 像素，上下两头各一个坡口小三角，顺着竖条拉伸）
+      const dd=x=>E?H.X1-x:x-H.X0,f=x=>(x-Xb)/(tx-Xb),t0=x=>G.RT+(ty-G.RT)*f(x),b0=x=>G.RB-(G.RB-ty)*f(x),vu=[1e9,-1e9],vl=[1e9,-1e9],
+        ct=x=>{let t=t0(x),b=b0(x);if(H.hip){if(!cN)t=Math.max(t,H.RT+dd(x)/2);if(!cS)b=Math.min(b,H.RB-1.5*dd(x))}else if(!cS)b=Math.min(b,H.RB-dd(x)/2);return[Math.round(t),Math.round(b)]};   // 这一列三角的上下边（被主块斜脊、山墙截住的跟着截）
+      for(let m=0;;m++){const xa=E?Math.max(tx,Xb-8*m-8):Xb+8*m,xb=E?Xb-8*m:Math.min(tx,Xb+8*m+8);if(xb<=xa)break;
+        const cw=xb-xa,A2=ct(xa),B2=ct(xb),y0=Math.max(A2[0],B2[0]),y1=Math.min(A2[1],B2[1]),q=((((xa-ax)%16)+16)%16)>>2;
+        if(y0<ty)exaTex(F0.hb,xa,y0,cw,Math.min(ty,y1)-y0,ax,G.RT,P.L,1,false);
+        for(let y=Math.max(ty,y0);y<y1;){const bt=band(y),ye=Math.min(y1,bt[2]);exaTex(F0.hf,xa,y,cw,ye-y,ax,bt[1],bt[0],1,false);y=ye}
+        if(A2[0]!==B2[0])exaQ(F0.jv[0][E?0:1][q],0,E?8-cw:0,cw,cw,xa,Math.min(A2[0],B2[0]),cw,Math.abs(A2[0]-B2[0]),false,1,P.L);
+        if(A2[1]!==B2[1]){const lo=Math.min(A2[1],B2[1]);exaQ(F0.jv[1][E?0:1][q],0,E?0:8-cw,cw,cw,xa,lo,cw,Math.abs(A2[1]-B2[1]),false,1,band(lo)[0])}
+        for(const x of[xa,xb]){const c=ct(x);if(Math.abs(c[0]-t0(x))<1.5){vu[0]=Math.min(vu[0],x);vu[1]=Math.max(vu[1],x)}if(Math.abs(c[1]-b0(x))<1.5){vl[0]=Math.min(vl[0],x);vl[1]=Math.max(vl[1],x)}}}
+      if(vu[1]>vu[0])exaLn(S,vu[0],t0(vu[0]),vu[1],t0(vu[1]),1);if(vl[1]>vl[0])exaLn(S,vl[0],b0(vl[0]),vl[1],b0(vl[1]),1)}
+    else{const ys=sn&&!gh?ty+Math.round((G.RB-ty)*0.42):-1e9,SN=(t,ya,yb,n,cap,top,k)=>row(ya,yb,S.sn,cap,n,G.X0,G.RT,exaSnM(t,null),1,top,k);   // 两坡东西向积雪：雪线 ys 以上只贴一层雪（乘「雪盖在瓦上」的平均色），以下贴瓦，雪线上一排冰溜子
+      for(let y=G.RT;y<ty;y+=4){const yb=Math.min(ty,y+4);if(ys>y)SN(P.L,y,yb,4,S.sw.jb,true,0);else row(y,yb,FR.hb,FR.jb,4,ax,G.RT,sn?exaSnM(P.L,null):P.L,1,true,0)}
+      for(let y=G.RB;y>ty;y-=12){const ya=Math.max(ty,y-12),bt=band(y-1),m=Math.max(ya,Math.min(y,ys));
+        if(m>ya)SN(bt[0],ya,m,12,S.sw.jf,false,1);if(y>m)row(m,y,FR.hf,FR.jf,12,ax,bt[1],sn&&gh?exaSnM(bt[0],null):bt[0],1,false,1)}
+      if(ys>ty){const x=bd(ys+3);if(E)exaTex(S.sne,x,ys,Xb-x,6,G.X0,ys,null,0.94,false);else exaTex(S.sne,Xb,ys,x-Xb,6,G.X0,ys,null,0.94,false)}
+      for(const V of vy)if(V[1]>V[0])exaLn(S,val(V[0]),V[0],val(V[1]),V[1],1)}
+    const su=(ty-G.RT)/Math.abs(Xb-tx),rx=gh?(G.c&4?G.X0:G.X0+G.e-2):G.X0,rid=(Fr,t,am)=>{const R2=Fr.rh,y=G.yr-(R2.h>>1),d=Math.min(Math.abs(Xb-tx)>>1,Math.round(R2.h/2/Math.max(0.25,su)));   // 客块屋脊伸到尖
+      if(E)exaTex(R2,tx+d,y,Xb-tx-d,R2.h,rx,y,t,am,false);else exaTex(R2,Xb,y,tx-d-Xb,R2.h,rx,y,t,am,false)};
+    if(sn)rid(S.sw,null,1);else rid(F0,P.L,1);
+    if(tx===H.cx){const sk=Math.max(su,(G.RB-ty)/Math.abs(Xb-tx)),pr=(Fr,t)=>{const R2=Fr.rv,rw=R2.w,k=rw>>1,x=H.cx-k,o=H.hip?H.RT+(H.hf>>1)-2:H.RT-H.rise+k,h=Math.ceil(rw/2*sk)+1;if(E)exaTex(R2,x+k,ty-h,rw-k,2*h,x,o,t,1,false);else exaTex(R2,x,ty-h,k,2*h,x,o,t,1,false)};if(hb.snow)pr(S.sw,null);else pr(FH,PH.L)}}}   // 主块屋脊在尖上补一小段（只补三角盖住的那半边、那一截）
 // 烟囱：两坡 / 四坡 / 茅草，按 seed 放在屋脊上（6 成有；独特建筑不放）
 function exaChim(S,b,a,X0,X1,RT,RB){const W=X1-X0,hh=RB-RT;if(b.k==='uniq'||W<60||hh<40||exaH(b.seed,1,0)>=0.6)return;const m=EXT_WM[b.y1*MAP_W+b.x0]||3,r=S.ch[m===4||m===5||m===1||m===2?0:1],u=exaH(b.seed,2,0);
   if(b.dir==='v'&&b.roof!=='hip'){const hf=W>>1,rise=hf>>1;sprW(r,X0+hf+3,Math.round(RT-rise+10+u*(hh-36))-r.h+8,false,0,a)}
@@ -78659,15 +78770,15 @@ function svECardDo(){const S=G.sv,mode=DIFF.enemyCards;S.eq=0;if(!mode)return nu
 /* ---------- 0.13.0e 搜打撤的地图生成（机制 game/ext.js）----------
    0.13.0f（用户 11-04 晚定）的顺序：先河、湖（熔岩地区是熔岩河、熔岩湖）→ 地标 → 主路（过水搭桥，熔岩上是石桥）→ 主路分出支路接普通建筑 → 野外零散的建筑
    地形：0 草地、1 路、2 树（挡路）、3 岩石、4 墓碑、5 树丛 / 庄稼、7 墙（挡路）、8 地板（屋里；桥也是 8，EXT_BR 记着是桥）、9 碎石（废墟的墙）、11 浅水（能走）、13 深水（挡路，借齿轮的格子值）
-   建筑（EXT_GEN.bld）：0.13.0g 起一座建筑由几块长方形拼成，每块一条 {x0,y0,x1,y1 含墙, k 种类, z 档, roof 屋顶样式（null = 没顶）, dir 屋脊 'h' 东西 / 'v' 南北, pal 配色, snow 积雪, seed, main 主屋,
+   建筑（EXT_GEN.bld）：0.13.0g 起一座建筑由几块长方形拼成，每块一条 {x0,y0,x1,y1 含墙, k 种类, z 档, roof 屋顶样式（null = 没顶）, dir 屋脊 'h' 东西 / 'v' 南北, pal 配色, snow 积雪, seed, main 主屋, par 接在哪块上（bld 下标，-1 没有）, att 接在那块的哪面（0 北 1 南 2 西 3 东）, kids 接在这块上的几块,
      lm 属于哪个地标, ok 走得到, door {side 1 南 2 西 3 东（极少 0 北）, p 从哪格开始, w 几格宽}（朝外的门在这块的墙上才有）, grp 哪座建筑}；墙一格一格（EXT_WM 材质、EXT_DG 门洞），2.5D 的墙和屋顶在 ui/ext.extDpush 排序、art/ext_art 画
    地标（EXT_GEN.lms）：{k, x, y 中心, gx, gy 路接到哪, r}；ufort 亡灵要塞、utower 亡灵哨塔的城墙 / 塔在开局 extPlace 用亡灵建筑（structs/estruct.esPlace）摆；
    主路（EXT_GEN.roads）：每条一串格子下标（巡逻队沿着走） */
 let EXT_GEN=null;   // 生成地图时记下的建筑、地标、撤离点、路（开局 extPlace 用；只在这一局有效）
-const EXT_BR=new Uint8Array(NT_MAX),EXT_WM=new Uint8Array(NT_MAX),EXT_DG=new Uint8Array(NT_MAX);let EXT_LAVA=false;   // EXT_BR：这格是桥；EXT_WM：这格墙的材质（art/ext_art 的 EXT_MATS 下标）；EXT_DG：横墙上的门洞（画门框）；EXT_LAVA：这张图的水是熔岩
+const EXT_BR=new Uint8Array(NT_MAX),EXT_WM=new Uint8Array(NT_MAX),EXT_DG=new Uint8Array(NT_MAX),EXT_BG=new Int16Array(NT_MAX);let EXT_LAVA=false;   // EXT_BG：这格在哪座房子里（建筑编号 + 1；负数 = 门口 / 没顶的废墟 / 摊位，看得见；用户 11-04 定：没进去的房子里面看不见，game/ext.extVisE）；EXT_BR：这格是桥；EXT_WM：这格墙的材质（art/ext_art 的 EXT_MATS 下标）；EXT_DG：横墙上的门洞（画门框）；EXT_LAVA：这张图的水是熔岩
 const extZone=(x,y)=>{const d=Math.hypot(x/16-TERR_CX,y/16-TERR_CY),R=CFG.ext.zone.r;return d<R[0]?0:d<R[1]?1:2};   // 位置（像素）在哪一档
 const extWPick=w=>{let tw=0;for(const k in w)tw+=w[k];let v=rng()*tw;for(const k in w){v-=w[k];if(v<=0)return k}return Object.keys(w)[0]};
-function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_CY,nf=valueNoise(G.seed+101),nf2=valueNoise(G.seed+202),nf3=valueNoise(G.seed+303);T.fill(0);EXT_BR.fill(0);EXT_WM.fill(0);EXT_DG.fill(0);
+function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_CY,nf=valueNoise(G.seed+101),nf2=valueNoise(G.seed+202),nf3=valueNoise(G.seed+303);T.fill(0);EXT_BR.fill(0);EXT_WM.fill(0);EXT_DG.fill(0);EXT_BG.fill(0);
   EXT_LAVA=C.lava.includes(G.terr);
   const In=(x,y)=>x>=0&&y>=0&&x<W&&y<H,at=(x,y)=>T[y*W+x],set=(x,y,v)=>{if(In(x,y))T[y*W+x]=v},isB=t=>t===7||t===8||t===9,isW=t=>t===11||t===13;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x,f=nf(x/9,y/9)*0.65+nf2(x/3,y/3)*0.35;if(f>GN.forest)T[i]=2;else if(rng()<GN.scatter)T[i]=2;else if(rng()<0.008)T[i]=3}
@@ -78692,14 +78803,14 @@ function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_C
     const fit=c=>{for(const q of P){const ix=Math.min(c.x1,q.x1)-Math.max(c.x0,q.x0),iy=Math.min(c.y1,q.y1)-Math.max(c.y0,q.y0);if(ix>=0&&iy>=0){if(ix>0&&iy>0)return false;continue}if(Math.max(-ix,-iy)<3)return false}return true};   // 两块只能共用一条墙线；不挨着的至少隔两格（不留一格宽的窄缝）
     const att=(pi,s,l,d,al)=>{const p=P[pi],Lp=len(p,s);l=Math.min(l,Lp);if(l<4||d<4)return -1;const o=al==='s'?0:al==='e'?Lp-l:al==='c'?(Lp-l)>>1:randi(0,Lp-l);let c;   // 在第 pi 块的 s 面（0 北 1 南 2 西 3 东）接一块：沿墙 l 格、往外 d 格（都含墙）；al 对齐：s 起头、e 末尾、c 居中、别的随机
       if(s<2){const x0=p.x0+o;c=s?{x0,x1:x0+l-1,y0:p.y1,y1:p.y1+d-1}:{x0,x1:x0+l-1,y0:p.y0-d+1,y1:p.y0}}else{const y0=p.y0+o;c=s===3?{x0:p.x1,x1:p.x1+d-1,y0,y1:y0+l-1}:{x0:p.x0-d+1,x1:p.x0,y0,y1:y0+l-1}}
-      if(!fit(c))return -1;c.par=pi;P.push(c);return P.length-1};
+      if(!fit(c))return -1;c.par=pi;c.s=s;P.push(c);return P.length-1};
     const sh=U?U.shape||'one':extWPick(LK.shape||{one:1});
     if(sh==='annex')att(0,s4(),randi(4,6),randi(4,5),'r');   // 主屋 + 一间偏房
     else if(sh==='L'){const s=s4();att(0,s,randi(4,Math.max(4,len(P[0],s)-3)),randi(5,8),rng()<0.5?'s':'e')}   // 贴着一角接一块大的
     else if(sh==='T'){const s=s4();att(0,s,randi(4,Math.max(4,len(P[0],s)-4)),randi(4,7),'c')}
     else if(sh==='U'){const s=s4(),l=randi(4,Math.max(4,(len(P[0],s)>>1)-1)),d=randi(4,7);att(0,s,l,d,'s');att(0,s,l,d,'e')}   // 同一面两头各一块（中间围出个小院）
     else if(sh==='grid'){const a=att(0,3,randi(Math.max(4,h-3),h),randi(5,8),'s'),b=att(0,1,randi(Math.max(4,w-3),w),randi(4,7),'s');   // 四块拼：东边一块、南边一块，两块都贴满时角上再补一块
-      if(a>0&&b>0&&P[a].y1===h-1&&P[b].x1===w-1){const c={x0:P[a].x0,x1:P[a].x1,y0:P[b].y0,y1:P[b].y1,par:a};if(fit(c))P.push(c)}}
+      if(a>0&&b>0&&P[a].y1===h-1&&P[b].x1===w-1){const c={x0:P[a].x0,x1:P[a].x1,y0:P[b].y0,y1:P[b].y1,par:a,s:1};if(fit(c))P.push(c)}}
     else if(sh==='church'){att(0,0,5,4,'c');const t=att(0,2,5,5,'e');if(t>0)P[t].rs='spire'}   // 教堂：正厅 + 北边后殿 + 西南角钟塔
     let mx=1e9,my=1e9,MX=-1e9,MY=-1e9;for(const p of P){mx=Math.min(mx,p.x0);my=Math.min(my,p.y0);MX=Math.max(MX,p.x1);MY=Math.max(MY,p.y1)}
     for(const p of P){p.x0-=mx;p.x1-=mx;p.y0-=my;p.y1-=my}return{k,P,W:MX-mx+1,H:MY-my+1}};
@@ -78727,10 +78838,12 @@ function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_C
     for(let q=0;q<dw;q++){const x=X0+dx+(s<2?q:0),y=Y0+dy+(s<2?0:q);for(let t=1;t<=2;t++){const xx=x+ox*t,yy=y+oy*t;if(In(xx,yy)&&!isB(at(xx,yy))&&at(xx,yy)!==1&&!isW(at(xx,yy)))T[yy*W+xx]=0}}   // 门外两格清出来
     const rl=U?[U.roof]:(!LK.fix&&LR.roof)||LK.roof,pl=(!LK.fix&&LR.pal)||LK.pal||['brown'],rs0=rl?pick(rl):null,pal=U?U.pal:pick(pl),snow=LR.snow?1:0;
     if(!rl)for(let y=0;y<BH;y++)for(let x=0;x<BW;x++){const i=(Y0+y)*W+X0+x;if(T[i]===7&&rng()<0.35)T[i]=9}   // 废墟：墙塌一部分
-    const DX=X0+dx,DY=Y0+dy;let dn=false;
-    P.forEach((p,pi)=>{const b={x0:X0+p.x0,y0:Y0+p.y0,x1:X0+p.x1,y1:Y0+p.y1,k,z,lm:lm==null?-1:lm,ok:1,grp:gid,door:null,main:pi?0:1,
+    {const bg=rl?gid+1:-(gid+1);for(let y=0;y<BH;y++)for(let x=0;x<BW;x++)if(g[y*BW+x]===8)EXT_BG[(Y0+y)*W+X0+x]=bg;for(let q=0;q<dw;q++)EXT_BG[(Y0+dy+(s<2?0:q))*W+X0+dx+(s<2?q:0)]=-(gid+1)}   // 屋里（有顶的）看不见，门口看得见
+    const DX=X0+dx,DY=Y0+dy,b0=B.length;let dn=false;
+    P.forEach((p,pi)=>{const b={x0:X0+p.x0,y0:Y0+p.y0,x1:X0+p.x1,y1:Y0+p.y1,k,z,lm:lm==null?-1:lm,ok:1,grp:gid,door:null,main:pi?0:1,par:p.par>=0?b0+p.par:-1,att:p.par>=0?p.s:-1,kids:[],
         roof:rs0?p.rs||(pi===0||rl.length<2||rng()<0.6?rs0:pick(rl)):null,dir:p.x1-p.x0>=p.y1-p.y0?'h':'v',pal,snow,seed:randi(0,999999)};   // 别的几块 6 成跟主屋一样的屋顶
       if(!dn&&DX>=b.x0&&DX<=b.x1&&DY>=b.y0&&DY<=b.y1){b.door={side:s,p:s<2?DX:DY,w:dw};dn=true}B.push(b)});
+    for(let q=b0;q<B.length;q++)if(B[q].par>=0)B[B[q].par].kids.push(q);
     const cx=DX+(s<2?dw>>1:0),cy=DY+(s<2?0:dw>>1);return{x0:X0,y0:Y0,x1:X0+BW-1,y1:Y0+BH-1,k,ox:cx+ox,oy:cy+oy}};
   const bldAt=(k,x,y,li)=>{const S=plan(k);return put(S,x-(S.W>>1),y-(S.H>>1),1,x,0,li)};   // 以 (x, y) 为中心放，门朝南
   const lane=(ax,ay,bx,by)=>{let x=ax,y=ay;const st=()=>{if(In(x,y)){const t=at(x,y);if(!isB(t)&&!isW(t))T[y*W+x]=1}};st();while(x!==bx){x+=Math.sign(bx-x);st()}while(y!==by){y+=Math.sign(by-y);st()}};   // 一条小路：先横后竖（不压建筑、不过水）
@@ -78752,7 +78865,7 @@ function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_C
       for(let yy=y0+2;yy<y1-1;yy+=2)for(let xx=x0+2;xx<x1-1;xx+=3)if(rng()<0.7&&yy>y0+6)set(xx,yy,4);put(plan('crypt'),x-3,y0+1,1,x,0,li);L.gy=y1+1}
     else if(L.k==='farm'){put(plan('barn'),x-10,y-8,1,x-6,0,li);put(plan('hut'),x+3,y-8,1,x+4,0,li);for(let yy=y+1;yy<=y+9;yy+=2)for(let xx=x-10;xx<=x+10;xx++)if(at(xx,yy)===0)set(xx,yy,5);L.gy=y-1}
     else if(L.k==='market'){for(let yy=y-7;yy<=y+6;yy++)for(let xx=x-7;xx<=x+6;xx++)if(!isB(at(xx,yy)))set(xx,yy,1);
-      const S=[];for(let t=0;t<40&&S.length<5;t++){const sx=randi(x-6,x+3),sy=randi(y-6,y+4);if(S.some(s=>Math.abs(s.x-sx)<5&&Math.abs(s.y-sy)<4))continue;S.push({x:sx,y:sy});B.push({x0:sx,y0:sy,x1:sx+2,y1:sy+1,k:'stall',z:L.z,roof:'awning',lm:li,ok:1,grp:GID++,door:null,main:1,dir:'h',pal:'cloth',snow:LR.snow?1:0,seed:randi(0,999999)})}}
+      const S=[];for(let t=0;t<40&&S.length<5;t++){const sx=randi(x-6,x+3),sy=randi(y-6,y+4);if(S.some(s=>Math.abs(s.x-sx)<5&&Math.abs(s.y-sy)<4))continue;S.push({x:sx,y:sy});const sg=GID++;for(let yy=sy;yy<=sy+1;yy++)for(let xx=sx;xx<=sx+2;xx++)EXT_BG[yy*W+xx]=-(sg+1);B.push({x0:sx,y0:sy,x1:sx+2,y1:sy+1,k:'stall',z:L.z,roof:'awning',lm:li,ok:1,grp:sg,door:null,main:1,dir:'h',pal:'cloth',snow:LR.snow?1:0,seed:randi(0,999999)})}}
     else if(L.k==='tower'){const o=bldAt('tower',x,y,li);if(o){L.gx=o.ox;L.gy=o.oy+1}for(let q=0;q<10;q++){const a=rng()*Math.PI*2,d=4+rng()*3,xx=Math.round(x+Math.cos(a)*d),yy=Math.round(y+Math.sin(a)*d);if(at(xx,yy)===0)set(xx,yy,9)}if(!o)L.gy=y+4}});
   for(const e of exits){for(let y=e.y-6;y<=e.y+6;y++)for(let x=e.x-6;x<=e.x+6;x++)if(In(x,y)&&isW(at(x,y)))T[y*W+x]=0;clear(e.x,e.y,5)}
   for(let y=ey-11;y<=ey+11;y++)for(let x=ex-11;x<=ex+11;x++)if(In(x,y)&&isW(at(x,y)))T[y*W+x]=0;clear(ex,ey,10);
@@ -78818,7 +78931,7 @@ MAP_FX.ext={gen:extGen,pix:(P,px,py,t,lx,ly,tx,ty,h)=>t>=T_TWALL?extPix(P,px,py,
    巡逻队（P.rt ≥ 0）：沿一条主路（EXT_GEN.roads）来回走，不放出来的时候也在走；队员的「家」= 队伍当前位置 + 自己的站位（EX_HX / HY 存站位）
    寻路：只算英雄周围一块（extField，field.r 格）；块外醒着的亡灵直线朝英雄走（extDir，stepEnemy 经 svDir 调）
    局内不存档（粗糙版；saveRun 跳过） */
-let EXT_ON=false;
+let EXT_ON=false,EXT_HB=-1;   // EXT_HB：队长在哪座房子里（建筑编号，-1 不在）：那座房子的屋顶都不画、里面看得见（ui/ext、extVisE）
 const EX_P=new Int32Array(ECAP).fill(-1),EX_S=new Uint8Array(ECAP),EX_HX=new Float32Array(ECAP),EX_HY=new Float32Array(ECAP),EX_TX=new Float32Array(ECAP),EX_TY=new Float32Array(ECAP),EX_WT=new Float32Array(ECAP);   // 每只亡灵：属于第几群（−1 = 不属于）、状态（0 没惊动 1 醒 2 回家）、家（巡逻队 = 站位）、走动的目标、多久换目标
 const extC=()=>CFG.ext;
 const extDirName=(dx,dy)=>{const a=Math.atan2(dy,dx)/Math.PI*4,k=(Math.round(a)+8)%8;return['东','东南','南','西南','西','西北','北','东北'][k]};
@@ -78939,7 +79052,10 @@ function extDir(i,x,y){const h=svHero();if(!h||h.dead)return false;const ti=tidx
 const extAgg=(i,h)=>EX_S[i]===1&&Math.hypot(h.x-E.x[i],h.y-E.y[i])<=extC().sense.loseR*16;
 // —— 每帧 ——
 function extNear(L,h,r){let b=-1,bd=r*r;for(let k=0;k<L.length;k++){const o=L[k];if(o.done)continue;const dx=o.x-h.x,dy=o.y-h.y,d=dx*dx+dy*dy;if(d<bd){bd=d;b=k}}return b}
-function extTick(dt,h){const S=G.sv,X=S.ext,C=extC();if(!X)return;S.t+=dt;G.base.cd=1e9;S.ws='fight';
+// 没进去的房子里面看不见（用户 11-04 定）：engine/enemy.eVis 的 eVisF 钩子——亡灵站在有顶的屋里，队长不在这座房子、正在行动的我方单位（DS_CUR）也不在，就看不见（不画、没有血条 / 小地图点 / 边上的箭头，也不能被选成目标）；画面期间 DS_CUR 是空的，只看队长
+const extHB=h=>{if(!h)return -1;const t=tidx(h.x,h.y);if(!(t>=0&&t<NT))return -1;const b=EXT_BG[t];return(b<0?-b:b)-1};
+function extVisE(i){const t=tidx(E.x[i],E.y[i]);if(!(t>=0&&t<NT))return;const b=EXT_BG[t];if(b<=0||b-1===EXT_HB)return;const u=DS_CUR;if(u&&u.x!=null&&extHB(u)===b-1)return;return false}
+function extTick(dt,h){const S=G.sv,X=S.ext,C=extC();if(!X)return;S.t+=dt;G.base.cd=1e9;S.ws='fight';EXT_HB=extHB(svHero());
   X.fT-=dt;if(X.fT<=0){const ti=tidx(h.x,h.y);if(!SVB.ok||ti!==SVB.ht){extField(h);X.fT=C.field.every}}
   {const tl=Math.min(C.time.max,Math.floor(S.t/C.time.every));if(tl>X.tl){X.tl=tl;banner(`危险等级 ${tl}`,'亡灵变强了');sfx('elite')}}   // 时间越久越危险（之后放出来的群按新的强度）
   extInteract(dt,h);extDropTick(h);extExitTick(dt,h);
@@ -79012,6 +79128,7 @@ function extCardDo(o){const c=o.c,X=G.sv.ext,v=c.qv&&c.qv.v?cardEff(o,'v'):0;
 function extOver(ok,quit){const S=G.sv;if(!S||S.end)return;S.end=true;G.phase='over';S.got=extAward(ok,quit);sfx(ok?'fanfare':quit?'click':'crash');musicMode('menu');
   const g0=G;setTimeout(()=>{if(G===g0&&G.phase==='over')extResult(S.got)},ok||quit?300:900)}
 feat('ext',{on:()=>{const v=!!(G&&G.mode==='survivor'&&G.map==='ext');EXT_ON=v;return v},hooks:{
+  eVisF:extVisE,
   eSpawn:i=>{EX_P[i]=-1;EX_S[i]=1},   // 不是群里放出来的（召唤、亡灵潮……）一直醒着；群里的 extPkOn 随后改
   eDie:(i,c)=>{const S=G.sv,X=S&&S.ext;if(!X||S.end||E.smn[i]||ESTRU[E.t[i]])return;
     if(c.tier>=4&&(c.tier>=5||rng()<extC().vault.keyElite)){X.vk++;sayT(`${c.name}掉落：库房钥匙`)}
@@ -80158,7 +80275,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.0g',GAME_TAG='测试版',GAME_CODE=211,GAME_BUILD="a36055a",GAME_BUILT=1793782274125,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.0g',GAME_TAG='测试版',GAME_CODE=211,GAME_BUILD="9d4335e",GAME_BUILT=1793787820127,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -85773,9 +85890,10 @@ function extBagOpen(){const S=G.sv,X=S&&S.ext;if(!X||S.end)return;const h=svHero
     <h4 class="sh">保险口袋</h4><div class="exbag">${ks(X.poc).map(k=>row(k,X.poc[k],`<button class="px sm" type="button" data-act="svxExtBagQ" data-v="${k}">拿出来</button>`)).join('')||'<p class="meta">空的(背包里的东西点「进口袋」放进来)</p>'}</div>
     ${Object.keys(ground).length?`<h4 class="sh">附近地上 <button class="px sm on" type="button" data-act="svxExtPick">捡起来(装得下的)</button></h4><div class="exbag">${ks(ground).map(k=>row(k,ground[k],'')).join('')}</div>`:''}`;
   openModal('exbag',`<h2 class="hd">背包</h2>${body}<div class="actions"><button class="px big on" type="button" data-act="svxExtBagX">关闭</button></div>`,'[data-act=svxExtBagX]')}
-// 地上：箱子、库房、空投、撤离点、地上的东西
+// 地上：箱子、库房、空投、撤离点、地上的东西（没进去的房子里的不画）
+const extSeen=(x,y)=>{const t=tidx(x,y);if(!(t>=0&&t<NT))return true;const b=EXT_BG[t];return b<=0||b-1===EXT_HB};
 const EXD={};const exCol=h=>EXD[h]||(EXD[h]=C(h));
-function extDraw(cx0,cy0,cx1,cy1){const S=G.sv,X=S&&S.ext;if(!X)return;extSteps(cx0,cy0,cx1,cy1);const C=CFG.ext,K=C.box.kinds,inV=(x,y,m)=>x>cx0-m&&x<cx1+m&&y>cy0-m&&y<cy1+m,sh=exCol('#000000');
+function extDraw(cx0,cy0,cx1,cy1){const S=G.sv,X=S&&S.ext;if(!X)return;extSteps(cx0,cy0,cx1,cy1);const C=CFG.ext,K=C.box.kinds,inV=(x,y,m)=>x>cx0-m&&x<cx1+m&&y>cy0-m&&y<cy1+m&&extSeen(x,y),sh=exCol('#000000');
   for(const e of X.ex){if(!inV(e.x,e.y,60))continue;const r=C.exit.r*16,col=e.open?exCol('#6af06a'):exCol('#8a8a8a');dotRing(e.x,e.y,r,col,e.open?0.8:0.5);if(e.open)dotRing(e.x,e.y,r*(0.55+0.35*((G.time*0.8)%1)),col,0.35);
     rectW(e.x-1,e.y-22,2,22,exCol('#3a2a1a'));rectW(e.x+1,e.y-22,9,6,e.open?exCol('#3ac83a'):exCol('#6a6a6a'));if(e.p>0){const f=Math.min(1,e.p/C.exit.stay);rectW(e.x-12,e.y+r+4,24,3,exCol('#0c0910'));rectW(e.x-12,e.y+r+4,Math.round(24*f),3,exCol('#6af06a'))}}
   for(let k=0;k<X.bx.length;k++){const b=X.bx[k];if(!inV(b.x,b.y,16))continue;const D=K[b.k],x=Math.round(b.x),y=Math.round(b.y);rectW(x-7,y+4,15,2,sh,0.3);
@@ -85792,13 +85910,13 @@ function extDraw(cx0,cy0,cx1,cy1){const S=G.sv,X=S&&S.ext;if(!X)return;extSteps(
     else{rectW(x-9,y+5,19,2,sh,0.35);rectW(x-8,y-6,17,12,exCol('#5a6a3a'));rectW(x-7,y-5,15,10,exCol('#8aa05a'));rectW(x-8,y-1,17,1,exCol('#3a4a2a'));rectW(x-1,y-6,3,12,exCol('#3a4a2a'));
       rectW(x-1,y-30,2,24,exCol('#ff5a3a'),0.3+0.2*Math.sin(G.time*5));if(X.obK==='ad'){rectW(x-10,y-12,20,3,exCol('#0c0910'));rectW(x-10,y-12,Math.round(20*X.obP),3,exCol('#ffe08a'))}}}}
 // 2.5D 的建筑（0.13.0g 用户定：部件画法，画法在 art/ext_art）：墙一格一格、屋顶一块一块，跟单位一起按 y 排序（ui/draw 的排序表 kind 6：下标 32768～49151 是这一帧看得见的墙格 EXT_VW[下标 - 32768]，49152 起是第几块屋顶）
-//   队长站在哪块里（含墙）：那块不画屋顶；墙挡住队长：那格墙半透明；屋顶挡住队长：只在队长那一小块透明（不整片变透明，免得看见屋里）
-const EXT_VW=new Int32Array(16384);let EXT_HP0=-1,EXT_HP1=-1;   // 这一帧看得见的墙格；队长在哪一两块里（站在两块之间的门上是两块）
-function extDpush(cx0,cy0,cx1,cy1){const Gn=EXT_GEN;if(!Gn)return;const B=Gn.bld,T=G.terrain,W=MAP_W,WH=EXT_WH,h=svHero(),hx=h?h.x>>4:-99,hy=h?h.y>>4:-99;EXT_HP0=EXT_HP1=-1;
-  for(let q=0;q<B.length;q++){const b=B[q];if(hx>=b.x0&&hx<=b.x1&&hy>=b.y0&&hy<=b.y1){if(EXT_HP0<0)EXT_HP0=q;else{EXT_HP1=q;break}}}
+//   队长进了哪座房子（站进门口就算）：整座房子的屋顶都不画；没进去的房子里面的亡灵、箱子都不画（game/ext.extVisE）；墙挡住队长：那格墙半透明；屋顶挡住队长：只在队长那一小块透明（不整片变透明，免得看见屋里）
+const EXT_VW=new Int32Array(16384);   // 这一帧看得见的墙格
+function extDpush(cx0,cy0,cx1,cy1){const Gn=EXT_GEN;if(!Gn)return;const B=Gn.bld,T=G.terrain,W=MAP_W,WH=EXT_WH;EXT_HB=extHB(svHero());
   const tx0=Math.max(0,(cx0>>4)-1),tx1=Math.min(W-1,(cx1>>4)+1),ty0=Math.max(0,(cy0>>4)-1),ty1=Math.min(MAP_H-1,((cy1+WH)>>4)+1);let n=0;
   for(let ty=ty0;ty<=ty1&&n<16384;ty++){const r=ty*W,y=(ty+1)*16;for(let tx=tx0;tx<=tx1;tx++){const i=r+tx;if((T[i]===T_TWALL||EXT_DG[i])&&n<16384){EXT_VW[n]=i;dpush(y,6,32768+n);n++}}}
-  for(let q=0;q<B.length&&q<16384;q++){const b=B[q];if(!b.roof||q===EXT_HP0||q===EXT_HP1)continue;const Y1=(b.y1+1)*16;if((b.x1+1)*16+6<cx0||b.x0*16-6>cx1||Y1<cy0||b.y0*16-WH-60>cy1)continue;dpush(Y1,6,49152+q)}}
+  for(let q=0;q<B.length&&q<16384;q++){const b=B[q];if(!b.roof||b.grp===EXT_HB)continue;   // 队长在哪座房子里：整座的屋顶都不画（用户 11-04 定）
+    const Y1=(b.y1+1)*16;if((b.x1+1)*16+6<cx0||b.x0*16-6>cx1||Y1<cy0||b.y0*16-WH-60>cy1)continue;dpush(Y1,6,49152+q)}}
 function extDrawE(i){if(i>=49152){extDrawR(i-49152);return}const t=EXT_VW[i-32768],T=G.terrain,W=MAP_W,tx=t%W,ty=(t/W)|0,h=svHero(),WH=EXT_WH;
   const a=h&&h.y<(ty+1)*16&&Math.abs(h.x-tx*16-8)<16&&h.y+2>ty*16-WH&&h.y-26<ty*16+16?0.4:1;   // 挡住队长：半透明
   const mask=(ty>0&&T[t-W]===T_TWALL?1:0)|(tx<W-1&&T[t+1]===T_TWALL?2:0)|(ty<MAP_H-1&&T[t+W]===T_TWALL?4:0)|(tx>0&&T[t-1]===T_TWALL?8:0);
