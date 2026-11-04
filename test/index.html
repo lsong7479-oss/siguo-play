@@ -784,7 +784,7 @@ details.box>summary{cursor:pointer;list-style:none}details.box>summary h4{displa
 .ttree{display:grid;gap:10px;overflow-x:auto;padding:4px 2px 8px;touch-action:pan-x pan-y}
 .tc{display:flex;align-items:flex-start;gap:6px}
 .ttree2{position:relative;display:grid;grid-auto-columns:max-content;column-gap:30px;row-gap:5px;align-items:center;overflow-x:auto;padding:4px 2px 8px;touch-action:pan-x pan-y}   /* v0.11.3 科技树：分列 + SVG 连线 */
-.ttree2 .tlines{position:absolute;left:0;top:0;pointer-events:none;z-index:0}.ttree2 .tn{position:relative;z-index:1}
+.ttree2 .tlines{position:absolute;left:0;top:0;pointer-events:none;z-index:0}.ttree2 .tgrp{position:relative;z-index:1;display:flex;align-items:center;gap:8px;margin-top:8px;color:#c9a24a;font-size:.92em}.ttree2 .tgrp::after{content:'';flex:1;border-top:1px solid #5a5266}.ttree2 .tgrp:first-of-type{margin-top:0}.ttree2 .tn{position:relative;z-index:1}
 .tkids{display:grid;gap:8px}
 .tarrow{align-self:center;color:var(--ash);font-family:var(--f-num);font-size:.9rem}
 .tn{flex:0 0 auto;width:calc(204px * var(--fk,1));display:grid;gap:3px;padding:8px;background:var(--plate-solid);box-shadow:0 0 0 2px var(--rivet),inset 0 0 0 1px var(--iron);font-size:.76rem}
@@ -2615,6 +2615,15 @@ Object.assign(CFG,{
   // 科技可停用（不带进局内）；部分关卡可禁用科技（newGame 的 noTech 接口）
   // v0.10.3（用户定）科技卡描述写当前等级的效果：desc = 通用说明（数值表也用它）；dl(v, L, s, t) = 第 L 级的整句描述（v 这一级的数值、s 附带效果的数值），没写 dl 的显示「desc +数值」（game/meta.techDesc）
   techCats:[['train','训练'],['build','建筑'],['trap','陷阱'],['hero','英雄'],['general','通用'],['field','野战']],
+  // 0.13（玩家提议，用户转）科技页按类型分块：每块一个名字、上面一条分界线（ui/hub.techLayout）；写的是每棵树的根科技（子科技跟着根走），没写到的根放进最后的「其他」；没写这一页 = 不分块。分法、名字 Claude 定
+  techGroups:{
+    train:[['兵营',['train1','campT']], ['通用',['runT','hpT','armT','ccResT']], ['物理近战',['powerT','weaponT']], ['物理远程',['reloadT','aimT','rgDmgT','rgSpdT']], ['法术',['spellTrainT']], ['骑兵',['horseT']], ['药剂',['potHealT','potIronT','potPowT']]],
+    elite:[['训练所',['elSchoolT','elClassT','elDiligT','elFocusT','elTeachT','elTrainT']], ['编制',['elDeployT','elDispT','elRescueT']], ['属性',['es2HpT','es2DefT','es2AtkT','es2SpdT','es2ExpT']]],
+    build:[['通用',['magT','breloadT','brateT','baccT','bdmgT']], ['火药',['gunT']], ['弓弩',['boltT','boltRateT','stringT']], ['投石',['stoneT']], ['魔法',['arcT','arcRelT']], ['主堡',['keepHpT']], ['城防',['wallT','gateT','regenT','repairT']], ['矿山',['mineT']]],
+    hero:[['上阵',['heroRespT']], ['攻击',['heroDmgT','heroCdT','heroAtkT']], ['生存',['heroHpT','steelT','physDRT','magDRT','hRegenT']]],
+    general:[['铜币',['waveBountyT','killBountyT','salvageT','startT']], ['建造',['cheapT','qualityT','memoryT','terrT']], ['卡牌',['luckT','rerollT']]],
+    prod:[['物资',['stGrainT','stMeatT','stMatT','stTaxT']], ['研发',['stSciT','stDesT']], ['材料',['stWoodT','stOreT','stClothT','stHideT']], ['繁荣',['stCultT','stFunT']]],
+  },
   techs:{
     // 训练
     train1:  {cat:'train', name:'民兵训练', max:5, cost:[10,50],  key:'train1',  per:0.05, first:0.05, fmt:'%', desc:'一阶兵营(民兵训练营)的训练速度', dl:v=>`一阶兵营(${techCampNames(1)})的训练速度 +${pc_(v)}`},   // v0.10.3 描述写清是按兵营的阶（CFG.camps 的 tier）
@@ -79348,7 +79357,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.0d',GAME_TAG='测试版',GAME_CODE=208,GAME_BUILD="dee6e6a",GAME_BUILT=1793749772135,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.0d',GAME_TAG='测试版',GAME_CODE=208,GAME_BUILD="2edf2f7",GAME_BUILT=1793750519789,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -80290,17 +80299,21 @@ function techNode(id){const t=CFG.techs[id],L=techLv(id),on=techOn(id),req=techR
     ${L?`<button class="px${on?'':' on'}" type="button" data-act="ttog" data-v="${id}">${on?'停用':'已停用'}</button>`:''}</div></div>`}
 // v0.11.3（用户定）科技树美化：按前置关系分列（列 = 前置链的深度），同一分支的子科技上下排开、父科技在子科技中间（自动居中）；
 //   两个前置（req + req2）的科技画两条线汇进来（二连一）；连线在页面画好以后用 SVG 补（techLines，按格子的实际位置）
-function techLayout(ids){const T=CFG.techs,has=new Set(ids),par=id=>[T[id].req,T[id].req2].filter(r=>r&&has.has(r[0])).map(r=>r[0]),D={};
+function techLayout(ids,cat){const T=CFG.techs,has=new Set(ids),par=id=>[T[id].req,T[id].req2].filter(r=>r&&has.has(r[0])).map(r=>r[0]),D={};
   const dep=id=>D[id]!==undefined?D[id]:(D[id]=0,D[id]=par(id).reduce((m,p)=>Math.max(m,dep(p)+1),0));ids.forEach(dep);
   const prim=id=>{const P=par(id);return P.length?P.reduce((a,b)=>D[b]>D[a]?b:a):null};   // 树上挂在最深的那个前置下面
   const kids={};for(const id of ids){const p=prim(id);if(p)(kids[p]=kids[p]||[]).push(id)}
-  const Y={};let n=0;const place=id=>{const K=kids[id]||[];if(!K.length){Y[id]=n++;return}K.forEach(place);Y[id]=(Y[K[0]]+Y[K[K.length-1]])/2};
-  ids.filter(id=>!prim(id)).forEach(place);
-  // 二连一：两个前置、自己没有子科技的，放到两个前置的正中间（那一列那个位置空着才挪）
+  // 0.13（玩家提议）按类型分块（CFG.techGroups）：一块一块往下排，块和块之间一行写名字（H）；子科技跟着它那棵树的根走
+  const root=id=>{let r=id,p;while((p=prim(r)))r=p;return r},GR=(CFG.techGroups||{})[cat]||[],gOf={};GR.forEach(([,L],gi)=>{for(const r of L)gOf[r]=gi});
+  const roots=ids.filter(id=>!prim(id)),G=[];if(GR.length){GR.forEach(([nm],gi)=>{const R=roots.filter(r=>gOf[r]===gi);if(R.length)G.push({nm,R})});const rest=roots.filter(r=>gOf[r]===undefined);if(rest.length)G.push({nm:'其他',R:rest})}else G.push({nm:'',R:roots});
+  const Y={},H=[];let n=0;const place=id=>{const K=kids[id]||[];if(!K.length){Y[id]=n++;return}K.forEach(place);Y[id]=(Y[K[0]]+Y[K[K.length-1]])/2};
+  for(const g of G){if(G.length>1){H.push({nm:g.nm,y:n});n+=0.5}g.R.forEach(place)}
+  const gi=id=>gOf[root(id)];
+  // 二连一：两个前置、自己没有子科技的，放到两个前置的正中间（那一列那个位置空着、两个前置在同一块里才挪）
   const busy=(c,y,me)=>ids.some(k=>k!==me&&D[k]===c&&Math.abs(Y[k]-y)<1);
-  for(const id of ids){const P=par(id);if(P.length<2||kids[id])continue;const y=Math.round(P.reduce((s,p)=>s+Y[p],0)/P.length*2)/2;if(!busy(D[id],y,id))Y[id]=y}
+  for(const id of ids){const P=par(id);if(P.length<2||kids[id]||P.some(p=>gi(p)!==gi(id)))continue;const y=Math.round(P.reduce((s,p)=>s+Y[p],0)/P.length*2)/2;if(!busy(D[id],y,id))Y[id]=y}
   for(const id of ids)Y[id]=Math.round(Y[id]*2)/2;
-  return{D,Y,par}}
+  return{D,Y,par,H}}
 function techLines(){const box=document.querySelector('.ttree2');if(!box)return;const sv=box.querySelector('svg.tlines');if(!sv)return;
   const R=box.getBoundingClientRect(),at=el=>{const r=el.getBoundingClientRect();return{l:r.left-R.left+box.scrollLeft,r:r.right-R.left+box.scrollLeft,m:(r.top+r.bottom)/2-R.top+box.scrollTop}};
   const el={};box.querySelectorAll('.tn[data-id]').forEach(e=>el[e.dataset.id]=e);let d='',g='';
@@ -80311,8 +80324,9 @@ function techLines(){const box=document.querySelector('.ttree2');if(!box)return;
 function hubTech(){
   const all=Object.keys(CFG.techs).filter(k=>CFG.techs[k].cat===techCat),kidsA=id=>all.filter(k=>{const t=CFG.techs[k];return(t.req&&t.req[0]===id)||(t.req2&&t.req2[0]===id)});
   const vis=id=>hvShowTech(id)||kidsA(id).some(vis),ids=all.filter(vis);   // v0.10.11 还没法解锁的高阶科技先不显示（ui/hv）；下面有显示的子科技时父科技照样显示
-  const L=techLayout(ids);requestAnimationFrame(techLines);
-  const cells=ids.map(id=>techNode(id).replace('<div class="tn',`<div data-id="${id}" data-p="${L.par(id).join(',')}" style="grid-column:${L.D[id]+1};grid-row:${L.Y[id]*2+1} / span 2" class="tn`)).join('');
+  const L=techLayout(ids,techCat);requestAnimationFrame(techLines);
+  const cells=ids.map(id=>techNode(id).replace('<div class="tn',`<div data-id="${id}" data-p="${L.par(id).join(',')}" style="grid-column:${L.D[id]+1};grid-row:${L.Y[id]*2+1} / span 2" class="tn`)).join('')
+    +L.H.map(h=>`<div class="tgrp" style="grid-column:1 / span ${Math.max(1,...ids.map(id=>L.D[id]+1))};grid-row:${h.y*2+1}"><b>${h.nm}</b></div>`).join('');   // 0.13 分块的名字 + 分界线
   return`<div class="tabs sub">${CFG.techCats.map(([k,n])=>`<button class="px${k===techCat?' on':''}" type="button" data-act="tcat" data-v="${k}">${n}</button>`).join('')}</div>
     <p class="meta">最高通关：<b>${clearTierName()}</b>${helpBtn('tech')}</p>
     <div class="ttree2" data-sk="tt-${techCat}"><svg class="tlines" aria-hidden="true"></svg>${cells}</div>${hvMore(all.length-ids.length,'项科技')}`}
@@ -80435,9 +80449,11 @@ const hvMapT=m=>CFG.maps[m]?mapTierOf(m)+1:hvNone();
 // 建筑：自己的 map（通关这张图）/ tier（通关任意这一阶）和前置建筑 req 链取最大
 function hvDesignT(id){if(HV_T.d[id]!==undefined)return HV_T.d[id];HV_T.d[id]=1;const d=CFG.designTree.find(x=>x.id===id);if(!d)return 1;
   let t=1;if(d.map)t=Math.max(t,hvMapT(d.map));if(d.tier)t=Math.max(t,d.tier);for(const r of d.req||[])t=Math.max(t,hvDesignT(r));return HV_T.d[id]=t}
-// 科技：tier（通关这一阶）、map（通关这张图）、req / req2 前置取最大；reqOr 几个满足一个就行，取最小
+// 0.13 前置要到 lv 级、而那项科技的上限要通关第几阶才到得了（maxT2…maxT9）：要通关的阶（够了 = 0）。比如无神论要科研中心 Ⅴ，科研中心通关三阶才开到 Ⅴ
+const hvCapT=(id,lv)=>{const T=CFG.techs[id];if(!T||T.max>=lv)return 0;for(const k of TECH_MXT.slice().reverse())if(T['maxT'+k]&&T['maxT'+k]>=lv)return k;return hvNone()};
+// 科技：tier（通关这一阶）（还有前置的等级上限，hvCapT）、map（通关这张图）、req / req2 前置取最大；reqOr 几个满足一个就行，取最小
 function hvTechT(id){if(HV_T.t[id]!==undefined)return HV_T.t[id];HV_T.t[id]=1;const T=CFG.techs[id];if(!T)return 1;
-  let t=1;if(T.tier)t=Math.max(t,T.tier);if(T.map)t=Math.max(t,hvMapT(T.map));for(const r of[T.req,T.req2])if(r&&CFG.techs[r[0]])t=Math.max(t,hvTechT(r[0]));
+  let t=1;if(T.tier)t=Math.max(t,T.tier);if(T.map)t=Math.max(t,hvMapT(T.map));for(const r of[T.req,T.req2])if(r&&CFG.techs[r[0]])t=Math.max(t,hvTechT(r[0]),hvCapT(r[0],r[1]));
   if(T.reqOr&&T.reqOr.length)t=Math.max(t,Math.min(...T.reqOr.map(r=>CFG.techs[r[0]]?hvTechT(r[0]):1)));return HV_T.t[id]=t}
 // 英雄：英雄之魄来源地图（soulDrop + also）里阶最低的那张；和抽奖池的规则一样（game/shop.gachaOkHero：通关来源地图那一阶才进奖池）。没有来源（或来源地图还没做）= 一阶
 function hvHeroT(id){if(HV_T.h[id]!==undefined)return HV_T.h[id];const d=CFG.heroes[id]||{};if(d.soulTier)return HV_T.h[id]=d.soulTier;   // soulTier：0.12.6 数据里写明的阶（二次进阶 / 新进阶英雄）
