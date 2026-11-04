@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.0d",
- "code": 208,
- "size": 17856788,
- "sha256": "108f331f101eec0b58ef9073e5175d68226a456dd4d762e1eb1ff487884089a3",
+ "ver": "0.13.0e",
+ "code": 209,
+ "size": 17880167,
+ "sha256": "647f05b3809a66fee14bac6547f4ae484f23fea618f995033a3cb53036b278d2",
  "minLoader": 1,
- "sig": "AtmrZyTR1MgHhDg5zaUIapFlhOmqUKMxsGoE+4g8qjzBiyfIP4cURjZ5TilIsnpy0mSbG7GSSLhHF9osLQ7/nw==",
- "note": "0.13.0d 测试版：新娱乐模式「搜打撤」粗糙版；幸存者 / 搜打撤倍速提示",
- "at": "2026-11-03 23:45 UTC"
+ "sig": "uMIrvfQRFTjfwuysBdRmPU+un5P33ldRB0k52xpFxNZPgRPdSc+raLiZaQ/I3Z5W9pRxWMhbV7pA13EYB8CeKw==",
+ "note": "0.13.0e 测试版：搜打撤第二版；科技页分块",
+ "at": "2026-11-04 00:44 UTC"
 }
