@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.0h",
- "code": 212,
- "size": 17951132,
- "sha256": "75e22f8e9de7a0f944d3664e2f6af5096afd35c7e1f9a3f552e9137065c8606c",
+ "ver": "0.13.0i",
+ "code": 213,
+ "size": 17962480,
+ "sha256": "67a158159f6e401df8435c5fb5a396f8f48ccfd273eb75e5612db91854130be9",
  "minLoader": 1,
- "sig": "cuDtxyiR0Fmr1Kw7owBE4Ve9FzWms5iV7vZM//um6ndJryK9ZklP6v/dEv3H/QxLuiK7khi/iSeLDyO9fLIsAg==",
- "note": "修搜打撤打下 B.A.D 卡死；屋顶交接（十字脊）；没进去的房子里面看不见、进去整座屋顶不画",
- "at": "2026-11-04 13:31 UTC"
+ "sig": "VynrKnDbJN/H7sghlD+rYuqzx3lmUra/3tTZJBKp/VxtnsjQ3KZ2IVQBW2Rea13abmVox1IqtiqNNoOuJ1js+A==",
+ "note": "搜打撤：快速 / 长撤离点 + 热气球、亡灵搜捕队、背包估值、房子危险度、小地图迷雾；队员指令；报错不卡死",
+ "at": "2026-11-04 14:17 UTC"
 }
