@@ -78941,7 +78941,7 @@ function extNewRun(diff,reg){const lid=svLeadId(),sp=lid?currentHeroSpec(lid):nu
   {let x=false;for(let k=G.heroes.length-1;k>=0;k--)if(G.heroes[k].elite){G.heroes.splice(k,1);x=true}if(x){if(G.elites)G.elites.length=0;hkBuild()}}
   return true}
 function extBegin(){if(!G||!G.sv||G.map!=='ext')return;const S=G.sv,C=extC(),reg=G.terr||'wild';
-  S.ws='fight';S.dq=0;S.df=false;S.chq=0;S.lv=1;S.xp=0;S.need=0;if(!S.bx)svBoxInit(S);S.bfT=1e9;S.hkT=1e9;S.slots=0;SV_ECAP=C.ecap;EXT_PT=null;   // ecap：场上亡灵的硬上限（亡灵建筑也算）
+  S.ws='fight';S.dq=0;S.df=false;S.chq=0;S.lv=1;S.xp=0;S.need=0;if(!S.bx)svBoxInit(S);S.bfT=1e9;S.hkT=1e9;S.slots=0;SV_ECAP=C.ecap;EXT_PT=null;G.swQ=[];G.afQ=[];   // ecap：场上亡灵的硬上限（亡灵建筑也算）；swQ / afQ 见 extQs
   S.ext={reg,tl:0,pk:[],bx:[],vt:[],ex:[],gd:[],ad:null,adT:C.drop.first,tdT:0,fT:0,cT:0,aT2:0,cb:0,ob:-1,obK:'',obP:0,vk:0,mqQ:[],opened:0,msgT:0,
     bag:{},poc:{},cap:C.bag.cap,pcap:C.bag.pocket,openK:0,quiet:0,lootK:0,tdN:0,late:0};
   G.queue.length=0;G.hivePend=null;G.phase='wave';
@@ -79055,10 +79055,15 @@ function extNear(L,h,r){let b=-1,bd=r*r;for(let k=0;k<L.length;k++){const o=L[k]
 // 没进去的房子里面看不见（用户 11-04 定）：engine/enemy.eVis 的 eVisF 钩子——亡灵站在有顶的屋里，队长不在这座房子、正在行动的我方单位（DS_CUR）也不在，就看不见（不画、没有血条 / 小地图点 / 边上的箭头，也不能被选成目标）；画面期间 DS_CUR 是空的，只看队长
 const extHB=h=>{if(!h)return -1;const t=tidx(h.x,h.y);if(!(t>=0&&t<NT))return -1;const b=EXT_BG[t];return(b<0?-b:b)-1};
 function extVisE(i){const t=tidx(E.x[i],E.y[i]);if(!(t>=0&&t<NT))return;const b=EXT_BG[t];if(b<=0||b-1===EXT_HB)return;const u=DS_CUR;if(u&&u.x!=null&&extHB(u)===b-1)return;return false}
+// 别的地图的「死了以后要做的事」队列：蒸汽工厂的 B.A.D 被击落放出 MOAB、重工芯片停掉巨像（G.swQ），秘法工厂的飞船解体（G.afQ）。原来只在那张图开局时建、那张图每帧处理，
+//   搜打撤里没有 → 打下 B.A.D 时报错，每帧都在同一处报错，画面停住（用户 11-04 报：屋里打 B.A.D 时卡死后黑屏）；这里开局建好、每帧照那两张图的做法处理
+function extQs(){for(const k of['swQ','afQ']){const Q=G[k];if(!Q||!Q.length)continue;for(const q of Q.splice(0)){
+  if(q.list)for(const t of q.list)for(let n=0;n<q.each;n++){const a=n/q.each*6.283+0.4;eSpawn(EIDX[t],clamp(q.x+Math.cos(a)*30,8,MW-8),clamp(q.y+Math.sin(a)*20,8,MH-8))}
+  if(q.kill)for(const[j,id]of q.kill)if(eOk(j,id)){E.hp[j]=0;killEnemy(j)}if(q.say)sayB(q.say[0],q.say[1])}}}
 function extTick(dt,h){const S=G.sv,X=S.ext,C=extC();if(!X)return;S.t+=dt;G.base.cd=1e9;S.ws='fight';EXT_HB=extHB(svHero());
   X.fT-=dt;if(X.fT<=0){const ti=tidx(h.x,h.y);if(!SVB.ok||ti!==SVB.ht){extField(h);X.fT=C.field.every}}
   {const tl=Math.min(C.time.max,Math.floor(S.t/C.time.every));if(tl>X.tl){X.tl=tl;banner(`危险等级 ${tl}`,'亡灵变强了');sfx('elite')}}   // 时间越久越危险（之后放出来的群按新的强度）
-  extInteract(dt,h);extDropTick(h);extExitTick(dt,h);
+  extInteract(dt,h);extDropTick(h);extExitTick(dt,h);extQs();
   X.cT-=dt;if(X.cT<=0){X.cT=0.25;extSense(h)}
   X.aT2-=dt;if(X.aT2<=0){X.aT2=C.act.check;extActTick(h,C.act.check)}
   if(S.t>=C.time.tide){X.tdT-=dt;if(X.tdT<=0){X.tdT=C.time.tideEvery;extTide(h)}}
@@ -80275,7 +80280,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.0g',GAME_TAG='测试版',GAME_CODE=211,GAME_BUILD="9d4335e",GAME_BUILT=1793787820127,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.0h',GAME_TAG='测试版',GAME_CODE=212,GAME_BUILD="a5601a5",GAME_BUILT=1793799322558,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');

@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.0g",
- "code": 211,
- "size": 17939575,
- "sha256": "f8e4ee2b261e972108c2b10b9b693e17c798c6c073237b2a820e199c0ddbd57f",
+ "ver": "0.13.0h",
+ "code": 212,
+ "size": 17951132,
+ "sha256": "75e22f8e9de7a0f944d3664e2f6af5096afd35c7e1f9a3f552e9137065c8606c",
  "minLoader": 1,
- "sig": "P32grKH63ZnZ4CkwNIfGQ9Mwkp7ON0jB374YyWJ8DiO1iLGCjGZJbGsuHcj4KGOVnCgpQNqQ+2qF6at3nonLWA==",
- "note": "搜打撤第四版：建筑改成几块拼起来、每块一个屋顶的 2.5D 画法（10 种屋顶、8 种墙），门口台阶，亡灵建筑五种，各地区独特建筑",
- "at": "2026-11-04 08:47 UTC"
+ "sig": "cuDtxyiR0Fmr1Kw7owBE4Ve9FzWms5iV7vZM//um6ndJryK9ZklP6v/dEv3H/QxLuiK7khi/iSeLDyO9fLIsAg==",
+ "note": "修搜打撤打下 B.A.D 卡死；屋顶交接（十字脊）；没进去的房子里面看不见、进去整座屋顶不画",
+ "at": "2026-11-04 13:31 UTC"
 }
