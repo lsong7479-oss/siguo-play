@@ -23304,19 +23304,23 @@ CFG.survivor.evo={
    Claude 定（用户没定的）：撤离点开局开一部分、后面再开；以下数全是 Claude 定的起步值（粗糙版，进去玩了再调）
    0.13.0e（用户 11-04 定）：地形更复杂（先地标、连主路，再从主路分支路接普通建筑，再放水域）；建筑有屋顶，进去才看到里面；箱子周围有守卫，箱子越好守卫越强；
      有沿路巡逻的亡灵，普通亡灵在自己的地盘里走动（太远的才待机）；宝箱里的东西直接进背包（按重量），能看背包、丢东西；不靠杀怪升级；卡牌另做一套（没有装置）；
-     每天的上限只管金币（常规模式的 50%）和英雄之魄（10 个），别的不限 */
+     每天的上限只管金币（常规模式的 50%）和英雄之魄（10 个），别的不限
+   0.13.0f（用户 11-04 晚定）：先生成河、湖（熔岩地区是熔岩河、熔岩湖），再放建筑和路，路过水搭桥（熔岩上是石桥）；连锁建筑（几个房间）；房子要有门；2.5D（墙面 + 屋顶）；
+     亡灵建筑（亡灵城墙、塔楼，里面有精英、首领）；开到六阶地区；银币、建材、设计点、科研点在局内是银币袋、建材袋、设计图、科研图（份数），带出来再 × 地图倍率 */
 CFG.funModes.push({id:'ext', name:'搜打撤模式', act:'svxExtOpen', desc:'一位英雄带四名精英进一张超大的废土：搜房子开补给箱抽强化卡、找宝箱，亡灵越来越强，最后去撤离点撤出去才算带出来。'});
 // 搜打撤的地图：外形照「荒野」（其他字段同荒野，免得别处按地图读字段时缺东西）；实际的地形、配色、亡灵按玩家选的地区（G.terr）；不进地图列表（fun）、常规模式打不开（req 永远达不到）
 CFG.maps.ext=Object.assign({},CFG.maps.wild,{name:'搜打撤', size:256, center:[14,128], req:'__fun', fun:true, desc:'搜打撤模式的大地图（随机生成）', day:{start:0, every:99}});
 CFG.ext={
-  regs:2,   // 能选的地区：前 2 页（一、二阶：荒野、腐化之地、冻土、丛林、沙漠）；三阶起的地图有水面、地道这类特殊亡灵，以后再开
+  regs:6, noRegs:['sandCoast','despairIsle'],   // 能选的地区：前 6 页（一～六阶，0.13.0f 用户定）；noRegs：亡灵大多是船、要在水面上的地图先不开（黄沙海岸、绝望之岛）
+  noE:['swTrain','atIceCart','atHvyCart','atSteelCart','gmTideMother','jbMiner','jbBungee','efIra'],   // 搜打撤里不出的亡灵（要靠地图机制才能动的：铁轨上的列车、北极苔原的冰车、峭壁的矿工 / 蹦极、灰褐沼泽和元素森林的首领；0.13.0f 每种放出来跑过一遍查出来的）
   // 地图（格）：入口在西边正中（CFG.maps.ext.center）；离入口越远越危险：zone 档的分界（格）
   zone:{r:[70,150], name:['外圈','中圈','核心'], wave:[3,9,16]},   // wave：这一档的亡灵按无尽第几波的强度（生命、伤害成长、解锁哪些亡灵）
   time:{every:150, wave:2, max:8, tide:900, tideEvery:20, tideN:[3,6], tideMax:14},   // 每 150 秒危险 +1 级（亡灵按 +2 波算，最多 8 级）；15 分钟起「亡灵潮」：每 20 秒在英雄附近冒一群醒着的（3～6 只，越往后越多，最多 14）
   // 生成（0.13.0e 用户定的顺序：地标 → 主路 → 主路分出支路接普通建筑 → 水域）
   //   lm：地标 [种类, 几个, 放在哪档（-1 不限）]；branch：主路上每隔几格分一条支路；side：支路长几格；wild：野外零散的小屋 / 废墟（小路接到最近的路）；lakes：湖几个；extra：主路多连几条（成环）
-  gen:{forest:0.62, scatter:0.02, road:2, branch:[5,9], side:[2,6], wild:14, lakes:[4,6], extra:5,
-    lm:[['fort',3,2], ['church',1,1], ['grave',2,1], ['farm',2,0], ['market',2,0], ['tower',3,-1]]},
+  gen:{forest:0.62, scatter:0.02, road:2, branch:[5,9], side:[2,6], bigGap:[14,22], wild:14, lakes:[4,6], rivers:[1,2], extra:5, fh:18,
+    lm:[['ufort',2,2], ['fort',2,2], ['utower',3,1], ['church',1,1], ['grave',2,1], ['farm',2,0], ['market',2,0], ['tower',3,-1]]},   // ufort 亡灵要塞、utower 亡灵哨塔（0.13.0f）；fh：2.5D 墙面高几像素
+  lava:['lavaLand','lavaAbyss'],   // 这些地区的河、湖是熔岩（桥是石头的）
   // 建筑：w / h 大小（含墙）、roof 屋顶样式（null = 没顶，废墟）、box 里面几个箱子、up 箱子品质往上抬一档的概率；mix：每档普通建筑的种类权重
   bld:{
     hut:   {name:'小屋', w:[4,5],  h:[4,4],  roof:'thatch', box:[0,1]},
@@ -23329,14 +23333,21 @@ CFG.ext={
     crypt: {name:'墓穴', w:[6,6],  h:[5,5],  roof:'stone',  box:[0,0]},
     barn:  {name:'谷仓', w:[9,10], h:[6,6],  roof:'wood',   box:[1,2]},
     stall: {name:'摊位', w:[3,3],  h:[2,2],  roof:'cloth',  box:[1,1], open:true},   // open：没有墙，只有棚顶
+    manor: {name:'宅院', w:[13,16],h:[9,12], roof:'tile',   box:[1,1], rooms:[3,4]},   // rooms：连锁建筑（0.13.0f 用户定），分几个房间（每间一个屋顶，进哪间看哪间；box 是每间几个箱子）
+    barrack:{name:'营房', w:[14,17],h:[8,10], roof:'slate', box:[1,1], rooms:[2,3], up:0.3},
+    keep:  {name:'亡灵堡', w:[9,9],  h:[7,7],  roof:'stone',  box:[2,2], up:1},   // 亡灵要塞正中间（首领在里面）
   },
   mix:[{hut:30, house:40, long:10, ruin:20}, {hut:15, house:35, long:15, ware:10, tower:5, ruin:20}, {house:25, long:15, ware:20, tower:15, ruin:25}],
+  big:[{manor:50, long:35, ware:15}, {manor:40, barrack:30, long:15, ware:15}, {manor:25, barrack:45, ware:30}],   // 先沿主路放的大建筑（每隔 bigGap 格试一次），连锁建筑（宅院、营房）多在这里
+  // 亡灵建筑（0.13.0f 用户定；用 structs/estruct 的亡灵城墙、城门、塔楼）：lv 每档的等级；towers 塔的种类（随机挑）；要塞 r 半径（格）、角上和门边几座塔；哨塔一座塔 + 一圈守卫
+  es:{lv:[2,3,4], towers:['arrowTower','fireTower','cannon','mageTower'], fortR:10, fortTowers:6, hp:1, dmg:1},
   // 亡灵群：野外按网格撒（间隔 gap 格，有 p 的概率放一群；在自己周围 r 格里走动）；n 每档几只；elite 带精英的概率；入口 safe 格内没有；城寨里 boss 个首领各带 guard 只
   pack:{gap:13, p:0.55, r:6, n:[[3,5],[4,7],[5,8]], elite:[0,0.15,0.35], safe:18, boss:2, guard:6},
   // 箱子的守卫（0.13.0e 用户定：箱子越好守卫越强）：[有守卫的概率, 最少, 最多, 强度 +几波, 带精英的概率]；在箱子周围 r 格里走动
   guard:{wood:[0.35,1,2,0,0], iron:[1,2,3,2,0.1], silver:[1,3,5,4,0.4], gold:[1,5,7,7,1], vault:[1,6,8,8,1], r:2.5},
   // 巡逻队：沿路来回走（不放出来的时候也在走）；n 队、每队几只、速度（格 / 秒）
   patrol:{n:10, sz:[4,7], spd:0.9},
+  ecap:1500,   // 场上亡灵的硬上限（幸存者是 400；这里亡灵建筑的城墙一格一个，也算）
   act:{spawn:34, despawn:46, check:0.5},   // 群离英雄 34 格以内才放出来，46 格以外、都没惊动就收回去（剩几只记着）
   sense:{see:7, bush:4, fight:11, open:9, loseR:24, chase:40, fightT:3, walk:0.4},   // 惊醒范围（格）：平时 7、躲在树丛里 4、打起来 11、开箱 9；离英雄 24 格 / 离家 40 格就放弃追；walk：没惊动时走动的速度（× 移速）
   field:{r:30, every:0.2},   // 寻路表只算英雄周围 61 × 61 格（每 0.2 秒、英雄换格子时重算）；范围外醒着的亡灵直线朝英雄走
@@ -23354,17 +23365,20 @@ CFG.ext={
   },
   // 开出来的东西（同幸存者宝箱的算法：资源 = 常规每波的 × 地区倍率 × 难度倍率 × 第 15 波系数 × waves；从 pool 里挑 pick 样）
   //   core 地区特产几个、weapon 同阶商店武器的概率、rep 本地家族声望、book 打造书的概率、gold 金币、soul 英雄之魄的概率（1 个）
+  //   0.13.0f（用户定）银币、建材、设计点、科研点开出来是「份」：res 每样几份（× 难度的结算倍率，小数按概率），一份多少见 unit；wares 地区材料按 waves 算（同幸存者宝箱）
   loot:{
-    wood:  {waves:0.4, pick:1, pool:['银币','建材','科研点','设计点','wares']},
-    iron:  {waves:0.8, pick:2, pool:['银币','建材','科研点','设计点','wares','core','weapon'], core:[1,1], weapon:0.25},
-    silver:{waves:1.6, pick:2, pool:['银币','建材','科研点','设计点','wares','core','weapon','rep','book'], core:[1,2], weapon:0.5, rep:[10,25], book:0.4},
-    gold:  {waves:3,   pick:3, pool:['银币','建材','科研点','设计点','wares','core','weapon','rep','book','gold','soul'], core:[2,3], weapon:1, rep:[25,50], book:0.7, gold:[3,8], soul:0.5},
-    vault: {waves:6,   pick:4, pool:['银币','建材','科研点','设计点','wares','core','weapon','book','gold','soul'], core:[3,4], weapon:1, book:1, gold:[10,20], soul:1},
-    elite: {waves:1,   pick:2, pool:['银币','科研点','wares','core','weapon'], core:[1,2], weapon:0.4},
-    boss:  {waves:4,   pick:4, pool:['银币','建材','科研点','设计点','core','weapon','book','gold','soul'], core:[2,4], weapon:1, book:1, gold:[5,12], soul:1},
+    wood:  {res:[1,1], waves:0.4, pick:1, pool:['银币','建材','科研点','设计点','wares']},
+    iron:  {res:[1,2], waves:0.8, pick:2, pool:['银币','建材','科研点','设计点','wares','core','weapon'], core:[1,1], weapon:0.25},
+    silver:{res:[2,3], waves:1.6, pick:2, pool:['银币','建材','科研点','设计点','wares','core','weapon','rep','book'], core:[1,2], weapon:0.5, rep:[10,25], book:0.4},
+    gold:  {res:[3,4], waves:3,   pick:3, pool:['银币','建材','科研点','设计点','wares','core','weapon','rep','book','gold','soul'], core:[2,3], weapon:1, rep:[25,50], book:0.7, gold:[3,8], soul:0.5},
+    vault: {res:[5,7], waves:6,   pick:4, pool:['银币','建材','科研点','设计点','wares','core','weapon','book','gold','soul'], core:[3,4], weapon:1, book:1, gold:[10,20], soul:1},
+    elite: {res:[1,2], waves:1,   pick:2, pool:['银币','科研点','wares','core','weapon'], core:[1,2], weapon:0.4},
+    boss:  {res:[4,6], waves:4,   pick:4, pool:['银币','建材','科研点','设计点','core','weapon','book','gold','soul'], core:[2,4], weapon:1, book:1, gold:[5,12], soul:1},
   },
+  // 一份是什么、多少（带出来时 × 这个地区的地图倍率，同常规每波结算的资源倍率）
+  unit:{银币:{name:'银币袋', v:50}, 建材:{name:'建材袋', v:15}, 设计点:{name:'设计图', v:15}, 科研点:{name:'科研图', v:5}},
   // 背包（0.13.0e 用户定：东西按重量算，能看、能丢）：cap 负重上限、pocket 保险口袋（倒下 / 放弃时口袋里的照样带出来）；w 每一个的重量
-  bag:{cap:40, pocket:4, w:{银币:0.002, 建材:0.02, 科研点:0.01, 设计点:0.01, ware:0.3, core:0.6, weapon:4, book:0.5, 金币:0.05, soul:0.3, rep:0}},
+  bag:{cap:40, pocket:4, w:{银币:0.5, 建材:1, 科研点:0.25, 设计点:0.25, ware:0.3, core:0.6, weapon:4, book:0.5, 金币:0.05, soul:0.3, rep:0}},   // 0.13.0f 银币 / 建材 / 设计点 / 科研点是一份的重量
   // 库房（钥匙房）：钥匙从箱子、精英身上来（keyElite 精英掉的概率、首领必掉）；开库房读条 open 秒：一张传说保底的卡 + loot.vault
   vault:{n:3, open:4, mq:'legend', keyElite:0.35},
   // 空投：first 秒第一次，之后每 every 秒；落在离英雄 r 格的地方，fall 秒后落地（落地有噪音 noise 格、带一群醒着的亡灵 guard 只）；开空投箱读条 open 秒：一张史诗保底的卡 + loot.gold
@@ -78104,93 +78118,118 @@ function svECardDo(){const S=G.sv,mode=DIFF.enemyCards;S.eq=0;if(!mode)return nu
     for(const o of opts){if(o!==main){o.mul*=CFG.cardRules.abyssSub;o.sub=true}applyEnemyCard(o)}sayB('亡灵抽卡（三张都生效）',opts.map(o=>cardName(o.c,o.q)).join('、'));return null}
   const top=Math.max(...opts.map(o=>QRANK(o.q))),o=pick(opts.filter(x=>QRANK(x.q)===top));applyEnemyCard(o);sayB('亡灵抽卡',cardName(o.c,o.q));return null}
 
-/* ---------- 0.13.0e 搜打撤的地图生成（用户 11-04 定的顺序：先地标 → 连主路 → 主路分出支路接普通建筑 → 水域；机制 game/ext.js）----------
-   地形：0 草地、1 路、2 树（挡路）、3 岩石、4 墓碑、5 树丛 / 庄稼、7 墙（挡路）、8 地板（屋里、桥）、9 碎石（废墟的墙）、11 浅水（能走）、13 深水（挡路，借齿轮的格子值）
-   建筑（EXT_GEN.bld）：{x0,y0,x1,y1 含墙, k 种类, z 档, roof 屋顶样式（null = 没顶）, lm 属于哪个地标, ok 走得到}；屋顶在 ui/ext.extRoofs 画，英雄进屋那间不画
-   地标（EXT_GEN.lms）：{k, x, y 中心, gx, gy 路接到哪, r}；主路（EXT_GEN.roads）：每条一串格子下标（巡逻队沿着走） */
+/* ---------- 0.13.0e 搜打撤的地图生成（机制 game/ext.js）----------
+   0.13.0f（用户 11-04 晚定）的顺序：先河、湖（熔岩地区是熔岩河、熔岩湖）→ 地标 → 主路（过水搭桥，熔岩上是石桥）→ 主路分出支路接普通建筑 → 野外零散的建筑
+   地形：0 草地、1 路、2 树（挡路）、3 岩石、4 墓碑、5 树丛 / 庄稼、7 墙（挡路）、8 地板（屋里；桥也是 8，EXT_BR 记着是桥）、9 碎石（废墟的墙）、11 浅水（能走）、13 深水（挡路，借齿轮的格子值）
+   建筑（EXT_GEN.bld）：每个房间一条 {x0,y0,x1,y1 含墙, k 种类, z 档, roof 屋顶样式（null = 没顶）, lm 属于哪个地标, ok 走得到, door {side 0 北 1 南 2 西 3 东, p 从哪格开始, w 几格宽}（这间有朝外的门才有）, grp 连锁建筑的编号}；
+     2.5D 的墙面和屋顶在 ui/ext.extDrawB 画，进屋那间不画
+   地标（EXT_GEN.lms）：{k, x, y 中心, gx, gy 路接到哪, r}；ufort 亡灵要塞、utower 亡灵哨塔的城墙 / 塔在开局 extPlace 用亡灵建筑（structs/estruct.esPlace）摆；
+   主路（EXT_GEN.roads）：每条一串格子下标（巡逻队沿着走） */
 let EXT_GEN=null;   // 生成地图时记下的建筑、地标、撤离点、路（开局 extPlace 用；只在这一局有效）
+const EXT_BR=new Uint8Array(NT_MAX);let EXT_LAVA=false;   // EXT_BR：这格是桥；EXT_LAVA：这张图的水是熔岩
 const extZone=(x,y)=>{const d=Math.hypot(x/16-TERR_CX,y/16-TERR_CY),R=CFG.ext.zone.r;return d<R[0]?0:d<R[1]?1:2};   // 位置（像素）在哪一档
 const extWPick=w=>{let tw=0;for(const k in w)tw+=w[k];let v=rng()*tw;for(const k in w){v-=w[k];if(v<=0)return k}return Object.keys(w)[0]};
-function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_CY,nf=valueNoise(G.seed+101),nf2=valueNoise(G.seed+202),nf3=valueNoise(G.seed+303);T.fill(0);
-  const In=(x,y)=>x>=0&&y>=0&&x<W&&y<H,at=(x,y)=>T[y*W+x],set=(x,y,v)=>{if(In(x,y))T[y*W+x]=v},isB=t=>t===7||t===8||t===9;
+function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_CY,nf=valueNoise(G.seed+101),nf2=valueNoise(G.seed+202),nf3=valueNoise(G.seed+303);T.fill(0);EXT_BR.fill(0);
+  EXT_LAVA=C.lava.includes(G.terr);
+  const In=(x,y)=>x>=0&&y>=0&&x<W&&y<H,at=(x,y)=>T[y*W+x],set=(x,y,v)=>{if(In(x,y))T[y*W+x]=v},isB=t=>t===7||t===8||t===9,isW=t=>t===11||t===13;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x,f=nf(x/9,y/9)*0.65+nf2(x/3,y/3)*0.35;if(f>GN.forest)T[i]=2;else if(rng()<GN.scatter)T[i]=2;else if(rng()<0.008)T[i]=3}
-  const clear=(cx,cy,r,v)=>{for(let y=Math.floor(cy-r);y<=cy+r;y++)for(let x=Math.floor(cx-r);x<=cx+r;x++)if(In(x,y)&&Math.hypot(x-cx,y-cy)<=r&&!isB(at(x,y))&&at(x,y)!==1)T[y*W+x]=v||0};
-  const B=[],LM=[],roads=[];
-  const free=(x0,y0,x1,y1)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(!In(x,y)||x<2||y<2||x>W-3||y>H-3)return false;const t=at(x,y);if(isB(t)||t===1)return false}return true};
-  // 一座建筑：k 种类、左上角、宽高、门在哪面（0 北 1 南 2 西 3 东）、门从哪格开始（北南面 = x，东西面 = y）
-  const bld=(k,x0,y0,w,h,side,dp,lm)=>{const D=C.bld[k],x1=x0+w-1,y1=y0+h-1;if(!free(x0-1,y0-1,x1+1,y1+1))return null;
-    const dw=k==='church'?3:k==='hut'||k==='crypt'||k==='tower'?1:2;if(side<2){dp=clamp(dp,x0+1,x1-dw)}else dp=clamp(dp,y0+1,y1-dw);
-    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)T[y*W+x]=x===x0||x===x1||y===y0||y===y1?7:8;
-    if(w>=9&&k!=='church'){const px=x0+(w>>1),gy=randi(y0+1,y1-1);for(let y=y0+1;y<y1;y++)if(y!==gy)T[y*W+px]=7}   // 大房子中间一道隔墙（留一格门）
-    for(let q=0;q<dw;q++){const x=side<2?dp+q:side===2?x0:x1,y=side<2?(side?y1:y0):dp+q;T[y*W+x]=8;const ox=side===2?-1:side===3?1:0,oy=side===0?-1:side===1?1:0;
-      for(let s=1;s<=2;s++){const xx=x+ox*s,yy=y+oy*s;if(In(xx,yy)&&!isB(at(xx,yy))&&at(xx,yy)!==1)T[yy*W+xx]=0}}
-    if(!D.roof)for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(T[y*W+x]===7&&rng()<0.35)T[y*W+x]=9;   // 废墟：墙塌一部分
-    const o={x0,y0,x1,y1,k,z:extZone((x0+x1)*8+8,(y0+y1)*8+8),roof:D.roof,lm:lm==null?-1:lm,ok:1,side};B.push(o);return o};
-  const rk=(R)=>randi(R[0],R[1]);
-  // —— 1. 地标 ——
-  const LMR={fort:16,church:10,grave:12,farm:12,market:9,tower:5},zoneOk=(x,y,z)=>{const d=Math.hypot(x-ex,y-ey),R=C.zone.r;if(d<26)return false;return z<0||(z===0?d<R[0]:z===1?d>=R[0]&&d<R[1]:d>=R[1])};
   const exits=[[randi(70,W-30),4],[randi(70,W-30),H-5],[W-5,randi(20,(H>>1)-10)],[W-5,randi((H>>1)+10,H-20)]].map(([x,y])=>({x,y}));
-  for(const[k,n,z]of GN.lm)for(let c=0,t=0;c<n&&t<600;t++){const r=LMR[k],x=randi(r+6,W-r-7),y=randi(r+6,H-r-7);if(!zoneOk(x,y,z))continue;
-    if(LM.some(o=>Math.hypot(o.x-x,o.y-y)<o.r+r+10)||exits.some(e=>Math.hypot(e.x-x,e.y-y)<r+12))continue;const L={k,x,y,r,gx:x,gy:y,z:extZone(x*16,y*16)};LM.push(L);c++}
+  const nearSafe=(x,y)=>exits.some(e=>Math.hypot(e.x-x,e.y-y)<7)||Math.hypot(x-ex,y-ey)<16;
+  // —— 1. 水：河（从地图一边流到另一边，隔一段有浅滩）、湖 ——
+  const wet=(x,y,deep)=>{if(!In(x,y)||nearSafe(x,y))return;if(at(x,y)===13)return;T[y*W+x]=deep?13:11};
+  for(let r=0,n=randi(GN.rivers[0],GN.rivers[1]);r<n;r++){const ns=r===0||rng()<0.5;let c=ns?randi(90,W-40):randi(40,H-40),dr=0;   // 第一条南北向（不挡入口），之后的随机
+    for(let s=ns?0:30;s<(ns?H:W);s++){dr=clamp(dr+(rng()-0.5)*0.5,-0.8,0.8);c=clamp(c+dr,ns?40:20,(ns?W:H)-20);const w=2+Math.round(nf3(s/20,3+r*7)*2),ford=s%40<3;
+      for(let q=-w-1;q<=w+1;q++){const a=Math.round(c+q);if(ns)wet(a,s,!ford&&Math.abs(q)<=w-1);else wet(s,a,!ford&&Math.abs(q)<=w-1)}}}
+  for(let c=0,t=0,n=randi(GN.lakes[0],GN.lakes[1]);c<n&&t<200;t++){const cx=randi(20,W-20),cy=randi(20,H-20),R=randi(5,11);if(Math.hypot(cx-ex,cy-ey)<30)continue;c++;
+    for(let y=cy-R-3;y<=cy+R+3;y++)for(let x=cx-R-3;x<=cx+R+3;x++){const d=Math.hypot(x-cx,y-cy),rr=R*(0.75+0.5*nf3(x/4,y/4));if(d<rr*0.72)wet(x,y,true);else if(d<rr)wet(x,y,false)}}
+  const clear=(cx,cy,r,v)=>{for(let y=Math.floor(cy-r);y<=cy+r;y++)for(let x=Math.floor(cx-r);x<=cx+r;x++)if(In(x,y)&&Math.hypot(x-cx,y-cy)<=r&&!isB(at(x,y))&&at(x,y)!==1&&!isW(at(x,y)))T[y*W+x]=v||0};
+  const dry=(cx,cy,r)=>{for(let y=cy-r;y<=cy+r;y++)for(let x=cx-r;x<=cx+r;x++)if(In(x,y)&&isW(at(x,y)))return false;return true};
+  const B=[],LM=[],roads=[];let GID=0;
+  const free=(x0,y0,x1,y1)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(!In(x,y)||x<2||y<2||x>W-3||y>H-3)return false;const t=at(x,y);if(isB(t)||t===1||isW(t))return false}return true};
+  const rk=R=>randi(R[0],R[1]);
+  // 一座建筑：k 种类、左上角、宽高、门在哪面（0 北 1 南 2 西 3 东）、门从哪格开始（北南面 = x，东西面 = y）；连锁建筑（rooms）分成几间，每间一条
+  const bld=(k,x0,y0,w,h,side,dp,lm)=>{const D=C.bld[k],x1=x0+w-1,y1=y0+h-1;if(!free(x0-1,y0-1,x1+1,y1+1))return null;
+    const dw=k==='church'||k==='keep'?3:k==='hut'||k==='crypt'||k==='tower'?1:2;if(side<2){dp=clamp(dp,x0+1,x1-dw)}else dp=clamp(dp,y0+1,y1-dw);
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)T[y*W+x]=x===x0||x===x1||y===y0||y===y1?7:8;
+    for(let q=0;q<dw;q++){const x=side<2?dp+q:side===2?x0:x1,y=side<2?(side?y1:y0):dp+q;T[y*W+x]=8;const ox=side===2?-1:side===3?1:0,oy=side===0?-1:side===1?1:0;
+      for(let s=1;s<=2;s++){const xx=x+ox*s,yy=y+oy*s;if(In(xx,yy)&&!isB(at(xx,yy))&&at(xx,yy)!==1&&!isW(at(xx,yy)))T[yy*W+xx]=0}}
+    const z=extZone((x0+x1)*8+8,(y0+y1)*8+8),dx0=side<2?dp:side===2?x0:x1,dy0=side<2?(side?y1:y0):dp;
+    let R=[{x0,y0,x1,y1}];
+    if(D.rooms){const n=rk(D.rooms),bad=(v,vert)=>vert?side<2&&v>=dp-1&&v<=dp+dw:side>=2&&v>=dp-1&&v<=dp+dw;   // 隔墙别堵在门里面
+      for(let t=0;t<12&&R.length<n;t++){R.sort((a,b)=>(b.x1-b.x0)*(b.y1-b.y0)-(a.x1-a.x0)*(a.y1-a.y0));const r=R[0],rw=r.x1-r.x0,rh=r.y1-r.y0,vert=rw>=rh;
+        if(vert?rw<8:rh<7)break;const s=vert?randi(r.x0+4,r.x1-4):randi(r.y0+3,r.y1-3);if(bad(s,vert))continue;const g=vert?randi(r.y0+1,r.y1-1):randi(r.x0+1,r.x1-1);
+        if(vert)for(let y=r.y0+1;y<r.y1;y++){if(y!==g)T[y*W+s]=7}else for(let x=r.x0+1;x<r.x1;x++){if(x!==g)T[s*W+x]=7}
+        R.splice(0,1,vert?{x0:r.x0,y0:r.y0,x1:s,y1:r.y1}:{x0:r.x0,y0:r.y0,x1:r.x1,y1:s},vert?{x0:s,y0:r.y0,x1:r.x1,y1:r.y1}:{x0:r.x0,y0:s,x1:r.x1,y1:r.y1})}}
+    else if(w>=9&&k!=='church'&&k!=='keep'){const px=x0+(w>>1),gy=randi(y0+1,y1-1);if(!(side<2&&px>=dp-1&&px<=dp+dw))for(let y=y0+1;y<y1;y++)if(y!==gy)T[y*W+px]=7}   // 大房子中间一道隔墙（留一格门）
+    if(!D.roof)for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(T[y*W+x]===7&&rng()<0.35)T[y*W+x]=9;   // 废墟：墙塌一部分
+    const gid=GID++;for(const r of R){const o={x0:r.x0,y0:r.y0,x1:r.x1,y1:r.y1,k,z,roof:D.roof,lm:lm==null?-1:lm,ok:1,grp:gid,door:null};
+      if(dx0>=r.x0&&dx0<=r.x1&&dy0>=r.y0&&dy0<=r.y1)o.door={side,p:dp,w:dw};B.push(o)}
+    return{x0,y0,x1,y1,k,side}};
+  // —— 2. 地标（不压水）——
+  const LMR={ufort:14,fort:16,utower:4,church:10,grave:12,farm:12,market:9,tower:5},zoneOk=(x,y,z)=>{const d=Math.hypot(x-ex,y-ey),R=C.zone.r;if(d<26)return false;return z<0||(z===0?d<R[0]:z===1?d>=R[0]&&d<R[1]:d>=R[1])};
+  for(const[k,n,z]of GN.lm)for(let c=0,t=0;c<n&&t<800;t++){const r=LMR[k],x=randi(r+6,W-r-7),y=randi(r+6,H-r-7);if(!zoneOk(x,y,z)||!dry(x,y,r+2))continue;
+    if(LM.some(o=>Math.hypot(o.x-x,o.y-y)<o.r+r+10)||exits.some(e=>Math.hypot(e.x-x,e.y-y)<r+12))continue;LM.push({k,x,y,r,gx:x,gy:y,z:extZone(x*16,y*16)});c++}
   LM.forEach((L,li)=>{const{x,y,r}=L;clear(x,y,r+2);
     if(L.k==='fort'){const R=15;for(let q=-R;q<=R;q++){set(x+q,y-R,7);set(x+q,y+R,7);set(x-R,y+q,7);set(x+R,y+q,7)}for(const d of[-1,0,1]){set(x+d,y-R,1);set(x+d,y+R,1);set(x-R,y+d,1);set(x+R,y+d,1)}
-      const ks=['house','long','ware','tower'];for(let c=0,t=0;c<4&&t<80;t++){const k=pick(ks),D=C.bld[k],w=rk(D.w),h=rk(D.h),x0=randi(x-R+2,x+R-1-w),y0=randi(y-R+2,y+R-1-h);
-        if(x0<x+4&&x0+w>x-4&&y0<y+4&&y0+h>y-4)continue;const sd=randi(0,3);if(bld(k,x0,y0,w,h,sd,sd<2?x0+(w>>1):y0+(h>>1),li))c++}}
+      const ks=['house','long','ware','tower','barrack'];for(let c=0,t=0;c<4&&t<80;t++){const k=pick(ks),D=C.bld[k],w=rk(D.w),h=rk(D.h),x0=randi(x-R+2,x+R-1-w),y0=randi(y-R+2,y+R-1-h);
+        if(x0<x+4&&x0+w>x-4&&y0<y+4&&y0+h>y-4)continue;if(bld(k,x0,y0,w,h,1,x0+(w>>1),li))c++}}
+    else if(L.k==='ufort'){const R=C.es.fortR;bld('keep',x-4,y-3,9,7,1,x-1,li);L.gy=y+R+2;for(let q=-R;q<=R;q++)for(const[a,b]of[[x+q,y-R],[x+q,y+R],[x-R,y+q],[x+R,y+q]])if(at(a,b)===2||at(a,b)===5||at(a,b)===3)set(a,b,0)}   // 城墙、塔开局用亡灵建筑摆（game/ext.extPlace）
+    else if(L.k==='utower'){L.gy=y+3}
     else if(L.k==='church'){bld('church',x-7,y-5,15,11,1,x-1,li);L.gy=y+8}
     else if(L.k==='grave'){const x0=x-11,x1=x+10,y0=y-6,y1=y+8;for(let q=x0;q<=x1;q++){set(q,y0,9);set(q,y1,9)}for(let q=y0;q<=y1;q++){set(x0,q,9);set(x1,q,9)}for(const d of[-1,0,1])set(x+d,y1,1);
       for(let yy=y0+2;yy<y1-1;yy+=2)for(let xx=x0+2;xx<x1-1;xx+=3)if(rng()<0.7&&yy>y0+6)set(xx,yy,4);bld('crypt',x-3,y0+1,6,5,1,x-1,li);L.gy=y1+1}
     else if(L.k==='farm'){bld('barn',x-10,y-7,9,6,1,x-6,li);bld('hut',x+3,y-7,4,4,1,x+4,li);for(let yy=y+1;yy<=y+9;yy+=2)for(let xx=x-10;xx<=x+10;xx++)if(at(xx,yy)===0)set(xx,yy,5);L.gy=y-1}
     else if(L.k==='market'){for(let yy=y-7;yy<=y+6;yy++)for(let xx=x-7;xx<=x+6;xx++)if(!isB(at(xx,yy)))set(xx,yy,1);
-      const S=[];for(let t=0;t<40&&S.length<5;t++){const sx=randi(x-6,x+3),sy=randi(y-6,y+4);if(S.some(s=>Math.abs(s.x-sx)<5&&Math.abs(s.y-sy)<4))continue;S.push({x:sx,y:sy});B.push({x0:sx,y0:sy,x1:sx+2,y1:sy+1,k:'stall',z:L.z,roof:'cloth',lm:li,ok:1,side:1})}}
-    else if(L.k==='tower'){const sd=randi(0,3);bld('tower',x-2,y-2,5,5,sd,sd<2?x:y,li);for(let q=0;q<10;q++){const a=rng()*Math.PI*2,d=4+rng()*3;if(at(Math.round(x+Math.cos(a)*d),Math.round(y+Math.sin(a)*d))===0)set(Math.round(x+Math.cos(a)*d),Math.round(y+Math.sin(a)*d),9)}
-      L.gx=x+(sd===2?-4:sd===3?4:0);L.gy=y+(sd===0?-4:sd===1?4:0)}});
-  for(const e of exits)clear(e.x,e.y,5);clear(ex,ey,10);
-  // —— 2. 主路：入口、地标、撤离点连成一棵树，再多连几条成环 ——
-  const road=(x,y,w,P)=>{for(let dy=0;dy<w;dy++)for(let dx=0;dx<w;dx++){const xx=x+dx,yy=y+dy;if(In(xx,yy)&&!isB(at(xx,yy)))T[yy*W+xx]=1}if(P)P.push(y*W+x)};
-  const walk=(ax,ay,bx,by,w,P)=>{let x=ax,y=ay,g=0;while((Math.abs(x-bx)>1||Math.abs(y-by)>1)&&g++<1200){road(x,y,w,P);const dx=bx-x,dy=by-y;
-    if(rng()<0.22){if(Math.abs(dx)>Math.abs(dy))y+=rng()<0.5?-1:1;else x+=rng()<0.5?-1:1}else if(Math.abs(dx)>Math.abs(dy))x+=Math.sign(dx);else y+=Math.sign(dy);x=clamp(x,1,W-3);y=clamp(y,1,H-3)}road(x,y,w,P)};
+      const S=[];for(let t=0;t<40&&S.length<5;t++){const sx=randi(x-6,x+3),sy=randi(y-6,y+4);if(S.some(s=>Math.abs(s.x-sx)<5&&Math.abs(s.y-sy)<4))continue;S.push({x:sx,y:sy});B.push({x0:sx,y0:sy,x1:sx+2,y1:sy+1,k:'stall',z:L.z,roof:'cloth',lm:li,ok:1,grp:GID++,door:null})}}
+    else if(L.k==='tower'){bld('tower',x-2,y-2,5,5,1,x,li);for(let q=0;q<10;q++){const a=rng()*Math.PI*2,d=4+rng()*3,xx=Math.round(x+Math.cos(a)*d),yy=Math.round(y+Math.sin(a)*d);if(at(xx,yy)===0)set(xx,yy,9)}L.gy=y+4}});
+  for(const e of exits){for(let y=e.y-6;y<=e.y+6;y++)for(let x=e.x-6;x<=e.x+6;x++)if(In(x,y)&&isW(at(x,y)))T[y*W+x]=0;clear(e.x,e.y,5)}
+  for(let y=ey-11;y<=ey+11;y++)for(let x=ex-11;x<=ex+11;x++)if(In(x,y)&&isW(at(x,y)))T[y*W+x]=0;clear(ex,ey,10);
+  // —— 3. 主路：入口、地标、撤离点连成一棵树，再多连几条成环；过水搭桥（地板 + EXT_BR）——
+  const road=(x,y,w,P)=>{for(let dy=0;dy<w;dy++)for(let dx=0;dx<w;dx++){const xx=x+dx,yy=y+dy;if(!In(xx,yy))continue;const t=at(xx,yy);if(isW(t)){T[yy*W+xx]=8;EXT_BR[yy*W+xx]=1}else if(!isB(t))T[yy*W+xx]=1}if(P)P.push(y*W+x)};
+  const walk=(ax,ay,bx,by,w,P)=>{let x=ax,y=ay,g=0,lx=0,ly=0;while((Math.abs(x-bx)>1||Math.abs(y-by)>1)&&g++<1200){const wet=isW(at(x,y))||EXT_BR[y*W+x];road(x,y,w,P);const dx=bx-x,dy=by-y;let sx=0,sy=0;
+    if(wet&&(lx&&Math.sign(dx)===lx||ly&&Math.sign(dy)===ly)){sx=lx;sy=ly}   // 在水上不拐弯（桥是直的）
+    else if(!wet&&rng()<0.22){if(Math.abs(dx)>Math.abs(dy))sy=rng()<0.5?-1:1;else sx=rng()<0.5?-1:1}else if(Math.abs(dx)>Math.abs(dy))sx=Math.sign(dx);else sy=Math.sign(dy);
+    x=clamp(x+sx,1,W-3);y=clamp(y+sy,1,H-3);if(!wet||!(lx||ly)){lx=sx;ly=sy}}road(x,y,w,P)};
   {const N=[{x:ex,y:ey}].concat(LM.map(L=>({x:L.gx,y:L.gy})),exits),inT=[0],out=N.map((_,k)=>k).slice(1),ed=new Set();
     while(out.length){let bi=0,bj=0,bd=1e9;for(let i=0;i<out.length;i++)for(const a of inT){const d=Math.hypot(N[out[i]].x-N[a].x,N[out[i]].y-N[a].y);if(d<bd){bd=d;bi=i;bj=a}}const b=out.splice(bi,1)[0];inT.push(b);ed.add(Math.min(b,bj)+'_'+Math.max(b,bj));const P=[];walk(N[bj].x,N[bj].y,N[b].x,N[b].y,GN.road,P);roads.push(P)}
     for(let q=0,t=0;q<GN.extra&&t<60;t++){const a=randi(0,N.length-1),S=N.map((_,k)=>k).filter(k=>k!==a).sort((u,v)=>Math.hypot(N[u].x-N[a].x,N[u].y-N[a].y)-Math.hypot(N[v].x-N[a].x,N[v].y-N[a].y)),b=S[1];
       const kk=Math.min(a,b)+'_'+Math.max(a,b);if(b==null||ed.has(kk))continue;ed.add(kk);const P=[];walk(N[a].x,N[a].y,N[b].x,N[b].y,GN.road,P);roads.push(P);q++}}
-  // —— 3. 普通建筑：主路上每隔几格分出一条支路，支路尽头一座建筑（门朝路）——
-  for(const P of roads.slice()){for(let k=4;k<P.length-4;k+=randi(GN.branch[0],GN.branch[1])){const i=P[k],x=i%W,y=(i/W)|0,a=P[k-3],b=P[k+3],dx=(b%W)-(a%W),dy=((b/W)|0)-((a/W)|0);
-      for(const s of rng()<0.5?[1,-1]:[-1,1])for(let tr=0;tr<2;tr++){   // 两边都试，大的放不下再试一间小屋
-        const px=Math.abs(dx)>=Math.abs(dy)?0:s,py=Math.abs(dx)>=Math.abs(dy)?s:0,L=randi(GN.side[0],GN.side[1]);
-        const sx=x+(px>0?GN.road:px<0?-1:0),sy=y+(py>0?GN.road:py<0?-1:0),exx=sx+px*(L-1),eyy=sy+py*(L-1);if(!In(exx,eyy))continue;
-        const z=extZone(exx*16,eyy*16),k2=tr?'hut':extWPick(C.mix[z]),D=C.bld[k2],w=rk(D.w),h=rk(D.h);let o=null;
-        if(py>0)o=bld(k2,exx-(w>>1),eyy+1,w,h,0,exx);else if(py<0)o=bld(k2,exx-(w>>1),eyy-h,w,h,1,exx);else if(px>0)o=bld(k2,exx+1,eyy-(h>>1),w,h,2,eyy);else o=bld(k2,exx-w,eyy-(h>>1),w,h,3,eyy);
-        if(o){for(let q=0;q<L;q++){const xx=sx+px*q,yy=sy+py*q;if(In(xx,yy)&&!isB(at(xx,yy)))T[yy*W+xx]=1}break}}}}
+  // —— 4. 普通建筑：主路上每隔几格分出一条支路，支路尽头一座建筑（门朝路）。先放大的（宅院、营房、长屋、仓库：连锁建筑多在这里），再放一般的 ——
+  const branch=(P,k,kinds,Ls)=>{const i=P[k],x=i%W,y=(i/W)|0,a=P[k-3],b=P[k+3],dx=(b%W)-(a%W),dy=((b/W)|0)-((a/W)|0);if(EXT_BR[i])return false;
+    for(const s of rng()<0.5?[1,-1]:[-1,1])for(const k2 of kinds){
+      const px=Math.abs(dx)>=Math.abs(dy)?0:s,py=Math.abs(dx)>=Math.abs(dy)?s:0,L=randi(Ls[0],Ls[1]);
+      const sx=x+(px>0?GN.road:px<0?-1:0),sy=y+(py>0?GN.road:py<0?-1:0),exx=sx+px*(L-1),eyy=sy+py*(L-1);if(!In(exx,eyy))continue;
+      const D=C.bld[k2],w=rk(D.w),h=rk(D.h);let o=null;
+      if(py>0)o=bld(k2,exx-(w>>1),eyy+1,w,h,0,exx);else if(py<0)o=bld(k2,exx-(w>>1),eyy-h,w,h,1,exx);else if(px>0)o=bld(k2,exx+1,eyy-(h>>1),w,h,2,eyy);else o=bld(k2,exx-w,eyy-(h>>1),w,h,3,eyy);
+      if(o){for(let q=0;q<L;q++){const xx=sx+px*q,yy=sy+py*q;if(In(xx,yy)&&!isB(at(xx,yy))&&!isW(at(xx,yy)))T[yy*W+xx]=1}return true}}return false};
+  for(const P of roads.slice())for(let k=6;k<P.length-6;k+=randi(GN.bigGap[0],GN.bigGap[1])){const i=P[k],z=extZone((i%W)*16,((i/W)|0)*16);branch(P,k,[extWPick(C.big[z]),extWPick(C.big[z])],[3,8])}
+  for(const P of roads.slice())for(let k=4;k<P.length-4;k+=randi(GN.branch[0],GN.branch[1])){const i=P[k],z=extZone((i%W)*16,((i/W)|0)*16),k1=extWPick(C.mix[z]);branch(P,k,[...new Set([k1,'house','hut'])],GN.side)}
   // 野外零散的小屋 / 塔楼 / 废墟：一条小路接到最近的路上
   {const RD=[];for(const P of roads)for(let k=0;k<P.length;k+=3)RD.push(P[k]);
     for(let c=0,t=0;c<GN.wild&&t<300;t++){const x=randi(12,W-14),y=randi(12,H-14);if(Math.hypot(x-ex,y-ey)<24||LM.some(L=>Math.hypot(L.x-x,L.y-y)<L.r+6))continue;
-      const z=extZone(x*16,y*16),k2=pick(z?['ruin','tower','hut','ruin']:['hut','ruin','hut']),D=C.bld[k2],w=rk(D.w),h=rk(D.h),sd=randi(0,3),o=bld(k2,x,y,w,h,sd,sd<2?x+(w>>1):y+(h>>1));if(!o)continue;c++;
-      let bi=-1,bd=1e9;for(const i of RD){const d=Math.hypot((i%W)-x,((i/W)|0)-y);if(d<bd){bd=d;bi=i}}if(bi<0||bd>40)continue;
-      const dx=sd===2?o.x0-1:sd===3?o.x1+1:x+(w>>1),dy=sd===0?o.y0-1:sd===1?o.y1+1:y+(h>>1);walk(dx,dy,bi%W,(bi/W)|0,1,null)}}
-  // —— 4. 水域：一条河（每隔一段有浅滩）、几个湖；碰到路架桥（地板），不淹建筑、地标 ——
-  const nearLM=(x,y)=>LM.some(L=>Math.hypot(L.x-x,L.y-y)<L.r+3)||exits.some(e=>Math.hypot(e.x-x,e.y-y)<6)||Math.hypot(x-ex,y-ey)<16;
-  const wet=(x,y,deep)=>{if(!In(x,y)||nearLM(x,y))return;const t=at(x,y);if(isB(t))return;if(t===1){T[y*W+x]=8;return}if(t===13)return;T[y*W+x]=deep?13:11};
-  if(rng()<0.85){let x=randi(90,W-40),dr=0;for(let y=0;y<H;y++){dr=clamp(dr+(rng()-0.5)*0.5,-0.8,0.8);x=clamp(x+dr,40,W-20);const w=2+Math.round(nf3(y/20,3)*2),ford=y%40<3;
-      for(let q=-w-1;q<=w+1;q++)wet(Math.round(x+q),y,!ford&&Math.abs(q)<=w-1)}}
-  for(let c=0,t=0,n=randi(GN.lakes[0],GN.lakes[1]);c<n&&t<200;t++){const cx=randi(20,W-20),cy=randi(20,H-20),R=randi(5,10);if(Math.hypot(cx-ex,cy-ey)<30||LM.some(L=>Math.hypot(L.x-cx,L.y-cy)<L.r+R+6))continue;c++;
-    for(let y=cy-R-3;y<=cy+R+3;y++)for(let x=cx-R-3;x<=cx+R+3;x++){const d=Math.hypot(x-cx,y-cy),rr=R*(0.75+0.5*nf3(x/4,y/4));if(d<rr*0.72)wet(x,y,true);else if(d<rr)wet(x,y,false)}}
+      const z=extZone(x*16,y*16),k2=pick(z?['ruin','tower','hut','ruin']:['hut','ruin','hut']),D=C.bld[k2],w=rk(D.w),h=rk(D.h),o=bld(k2,x,y,w,h,1,x+(w>>1));if(!o)continue;c++;
+      let bi=-1,bd=1e9;for(const i of RD){const d=Math.hypot((i%W)-x,((i/W)|0)-y);if(d<bd){bd=d;bi=i}}if(bi<0||bd>40)continue;walk(x+(w>>1),o.y1+1,bi%W,(bi/W)|0,1,null)}}
   // 树林边缘变树丛（同默认的 genMap）
   {const isF=(x,y)=>In(x,y)&&(at(x,y)===2||at(x,y)===5),bush=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(T[i]!==2)continue;const n=(isF(x-1,y)?1:0)+(isF(x+1,y)?1:0)+(isF(x,y-1)?1:0)+(isF(x,y+1)?1:0);if(n===0?rng()<0.5:n<4&&rng()<0.6)bush.push(i)}for(const i of bush)T[i]=5}
   // 连通：从入口 4 邻走一遍，走不到的空地填成树；走不到的建筑不放东西（ok = 0）
   {const N=W*H,seen=new Uint8Array(N),Q=new Int32Array(N),blk=t=>t===2||t===7||t===13;let qh=0,qt=0;const s0=ey*W+ex;seen[s0]=1;Q[qt++]=s0;
     while(qh<qt){const i=Q[qh++],x=i%W;for(const j of[x<W-1?i+1:-1,x>0?i-1:-1,i+W<N?i+W:-1,i>=W?i-W:-1])if(j>=0&&!seen[j]&&!blk(T[j])){seen[j]=1;Q[qt++]=j}}
-    for(let i=0;i<N;i++)if(!seen[i]&&!blk(T[i]))T[i]=2;for(const o of B){let ok=0;for(let y=o.y0;y<=o.y1&&!ok;y++)for(let x=o.x0;x<=o.x1;x++)if(seen[y*W+x]){ok=1;break}o.ok=ok}}
+    for(let i=0;i<N;i++)if(!seen[i]&&!blk(T[i]))T[i]=T[i]===11?13:2;for(const o of B){let ok=0;for(let y=o.y0;y<=o.y1&&!ok;y++)for(let x=o.x0;x<=o.x1;x++)if(seen[y*W+x]){ok=1;break}o.ok=ok}}   // 走不到的浅水变深水（别在孤岛上长树）
   for(const e of exits)T[e.y*W+e.x]=1;
   G.spawns=exits.map((e,k)=>({x:e.x,y:e.y,name:'撤离'+(k+1)}));genTrees(T);
   EXT_GEN={bld:B,lms:LM,exits,roads:roads.filter(P=>P.length>=20)}}
-// 墙、地板、碎石、水的像素（同 maps/temple 的写法，颜色自己的）
+// 墙、地板、碎石、水 / 熔岩、桥的像素（同 maps/temple 的写法，颜色自己的）
 const EXT_PAL={wa:[[118,112,104],[92,86,80],[64,60,56],[150,144,134]],fl:[[132,98,64],[120,88,56],[144,108,72],[92,68,44]],rb:[[120,114,106],[96,90,84],[146,140,130]],
-  dw:[[38,74,112],[44,84,124],[52,96,138],[150,190,214]],sw:[[74,124,150],[86,138,162],[98,150,172],[180,214,226]]};
+  dw:[[38,74,112],[44,84,124],[52,96,138],[150,190,214]],sw:[[74,124,150],[86,138,162],[98,150,172],[180,214,226]],
+  dl:[[150,36,16],[196,62,18],[226,104,28],[255,206,96]],sl:[[58,40,36],[78,50,40],[104,60,40],[214,96,40]],   // 熔岩（深）、冷却的熔岩壳（浅）
+  bw:[[150,112,70],[128,94,58],[96,70,44],[70,50,32]],bs:[[128,124,118],[108,104,98],[88,84,80],[64,60,56]]};   // 木桥、石桥
 function extPix(P,px,py,t,lx,ly,tx,ty,h){const Q=EXT_PAL;
-  if(t===T_TFLOOR){if(ly%5===0)return Q.fl[3];const v=hash2(tx,(py/5)|0,P.seed+5),b=Q.fl[v<0.34?0:v<0.67?1:2];return h<0.04?[b[0]-14,b[1]-12,b[2]-8]:b}
+  if(t===T_TFLOOR){if(EXT_BR[ty*MAP_W+tx]){const wt=i=>i>=0&&i<NT&&!EXT_BR[i]&&(G.terrain[i]===T_GEAR||G.terrain[i]===T_PIPE),i=ty*MAP_W+tx,eL=wt(i-1)&&lx<2,eR=wt(i+1)&&lx>13,eU=wt(i-MAP_W)&&ly<2,eD=wt(i+MAP_W)&&ly>13,Bq=EXT_LAVA?Q.bs:Q.bw;
+      if(eL||eR||eU||eD)return Bq[3];if(EXT_LAVA){const b=((px>>3)+(py>>2))&1;return(ly&3)===3||((lx+(b?4:0))&7)===7?Q.bs[2]:Q.bs[h<0.5?0:1]}return(py&3)===3?Q.bw[2]:Q.bw[h<0.3?1:0]}   // 桥：边上一圈深色栏杆；石桥一块块，木桥一条条
+    if(ly%5===0)return Q.fl[3];const v=hash2(tx,(py/5)|0,P.seed+5),b=Q.fl[v<0.34?0:v<0.67?1:2];return h<0.04?[b[0]-14,b[1]-12,b[2]-8]:b}
   if(t===T_RUBBLE){const q=hash2(px>>2,py>>2,P.seed+77);if(q<0.45)return Q.rb[q<0.12?1:q<0.32?0:2];const n=P.bn[(py>>2)*P.BW+(px>>2)];return P.GR[n<0.4?0:1]}
   if(t===T_TWALL){if(ly<9){const r=(ly>>2)&1;if(lx===((tx+r)%2?4:11)||ly%4===3)return Q.wa[1];return Q.wa[0]}return ly===9?Q.wa[3]:Q.wa[2]}
-  if(t===T_GEAR||t===T_PIPE){const D=t===T_GEAR?Q.dw:Q.sw,n=P.bn[(py>>2)*P.BW+(px>>2)],w=hash2(px>>3,py>>1,P.seed+31);return w>0.97?D[3]:D[n<0.35?0:n<0.65?1:2]}   // 深水 / 浅水：几层蓝 + 零星的白浪
+  if(t===T_GEAR||t===T_PIPE){const D=t===T_GEAR?(EXT_LAVA?Q.dl:Q.dw):(EXT_LAVA?Q.sl:Q.sw),n=P.bn[(py>>2)*P.BW+(px>>2)],w=hash2(px>>3,py>>1,P.seed+31);return w>0.97?D[3]:D[n<0.35?0:n<0.65?1:2]}   // 深水 / 浅水：几层蓝 + 零星的白浪（熔岩：红橙 + 亮黄）
   return undefined}
 MAP_FX.ext={gen:extGen,pix:(P,px,py,t,lx,ly,tx,ty,h)=>t>=T_TWALL?extPix(P,px,py,t,lx,ly,tx,ty,h):undefined};
 
@@ -78213,7 +78252,7 @@ function extNewRun(diff,reg){const lid=svLeadId(),sp=lid?currentHeroSpec(lid):nu
   {let x=false;for(let k=G.heroes.length-1;k>=0;k--)if(G.heroes[k].elite){G.heroes.splice(k,1);x=true}if(x){if(G.elites)G.elites.length=0;hkBuild()}}
   return true}
 function extBegin(){if(!G||!G.sv||G.map!=='ext')return;const S=G.sv,C=extC(),reg=G.terr||'wild';
-  S.ws='fight';S.dq=0;S.df=false;S.chq=0;S.lv=1;S.xp=0;S.need=0;if(!S.bx)svBoxInit(S);S.bfT=1e9;S.hkT=1e9;S.slots=0;
+  S.ws='fight';S.dq=0;S.df=false;S.chq=0;S.lv=1;S.xp=0;S.need=0;if(!S.bx)svBoxInit(S);S.bfT=1e9;S.hkT=1e9;S.slots=0;SV_ECAP=C.ecap;EXT_PT=null;   // ecap：场上亡灵的硬上限（亡灵建筑也算）
   S.ext={reg,tl:0,pk:[],bx:[],vt:[],ex:[],gd:[],ad:null,adT:C.drop.first,tdT:0,fT:0,cT:0,aT2:0,cb:0,ob:-1,obK:'',obP:0,vk:0,mqQ:[],opened:0,msgT:0,
     bag:{},poc:{},cap:C.bag.cap,pcap:C.bag.pocket,openK:0,quiet:0,lootK:0,tdN:0,late:0};
   G.queue.length=0;G.hivePend=null;G.phase='wave';
@@ -78239,18 +78278,28 @@ function extPlace(){const S=G.sv,X=S.ext,C=extC(),BX=C.box,Gn=EXT_GEN||{bld:[],l
   for(let gy=PK.gap>>1;gy<MAP_H;gy+=PK.gap)for(let gx=PK.gap>>1;gx<W;gx+=PK.gap){if(rng()>PK.p)continue;const tx=clamp(gx+randi(-3,3),2,W-3),ty=clamp(gy+randi(-3,3),2,MAP_H-3),i=ty*W+tx;
     if(!ok(i)||G.terrain[i]===T_TFLOOR||Math.hypot(tx-TERR_CX,ty-TERR_CY)<PK.safe)continue;const p=P(i);add(p.x,p.y,extZone(p.x,p.y))}
   // 地标：每个一两群；城寨里放首领
-  const MD=CFG.maps[X.reg]||CFG.maps.wild,bl=[].concat(MD.boss||[]).filter(b=>EIDX[b]!==undefined);let nb=0;
+  const MD=CFG.maps[X.reg]||CFG.maps.wild,bl=[].concat(MD.boss||[]).filter(b=>EIDX[b]!==undefined&&!extNoE(b));let nb=0;
   for(const L of Gn.lms){const i=L.y*W+L.x,p=ok(i)?P(i):{x:L.gx*16+8,y:L.gy*16+8},z=Math.max(L.z,extZone(p.x,p.y));
+    if(L.k==='ufort'||L.k==='utower'){extEsLm(L,z);if(L.k==='ufort'){add(p.x,p.y,2,{n:PK.guard,el:true,bo:nb<PK.boss&&bl.length?pick(bl):'',r:3,wb:3});nb++;add(p.x+vr(-80,80),p.y+vr(-80,80),2,{el:true,r:6,wb:3})}else add(p.x,p.y,z,{r:4,wb:3,el:rng()<0.5});continue}
     if(L.k==='fort'){add(p.x,p.y,2,{n:PK.guard,el:true,bo:nb<PK.boss&&bl.length?pick(bl):'',r:5});nb++}else if(L.k!=='tower')add(p.x,p.y,z,{r:5});
     if(L.k==='fort'||L.k==='church'||L.k==='grave')add(p.x+vr(-48,48),p.y+vr(-48,48),z,{r:7})}
   // 巡逻队：沿主路来回走（开局不在入口附近）
   const RS=Gn.roads.filter(R=>R.length>=30);for(let q=0,t=0;q<C.patrol.n&&RS.length&&t<200;t++){const R=randi(0,RS.length-1),ri=randi(0,RS[R].length-1),p=P(RS[R][ri]);if(!far(p.x,p.y,PK.safe+12))continue;q++;
     add(p.x,p.y,extZone(p.x,p.y),{n:randi(C.patrol.sz[0],C.patrol.sz[1]),el:rng()<0.25,rt:Gn.roads.indexOf(RS[R]),ri,rd:rng()<0.5?1:-1,r:0})}}
+// 亡灵建筑（0.13.0f 用户定，structs/estruct.esPlace）：亡灵要塞 = 一圈亡灵城墙、南北两道城门（要打破城门或城墙才进得去）、角上和门边的塔；亡灵哨塔 = 一座塔。强度按这一档的「第几波」、等级按 es.lv
+function extEsLm(L,z){const C=extC().es,R=C.fortR,lv=C.lv[z],w0=G.wave,TW=C.towers.filter(k=>CFG.eStruct.types[k]);if(!TW.length)return;G.wave=extWave(z)+2;
+  const o={hpK:C.hp,keep:true};
+  try{if(L.k==='utower'){esPlace(pick(TW),L.x-1,L.y-1,lv,o);return}
+    const x=L.x,y=L.y,gate=(a,b)=>Math.abs(a-x)<=1&&(b===y-R||b===y+R);
+    for(let q=-R;q<=R;q++)for(const[a,b]of[[x+q,y-R],[x+q,y+R],[x-R,y+q],[x+R,y+q]]){if(gate(a,b)){esPlace('gate',a,b,lv,o);continue}esPlace('wall',a,b,lv,o)}   // 城门 3 格（x−1 ～ x+1）
+    const T=[[x-R+2,y-R+2],[x+R-3,y-R+2],[x-R+2,y+R-3],[x+R-3,y+R-3],[x-4,y+R-3],[x+3,y+R-3],[x-4,y-R+2],[x+3,y-R+2]].slice(0,C.fortTowers);for(const[a,b]of T)esPlace(pick(TW),a,b,lv,o)}
+  finally{G.wave=w0}}
 // —— 亡灵群：放出来、收回去、惊醒、走动 ——
 let EXT_PT=null,EXT_PW=-1;   // 出怪表的缓存（按「第几波」）
 function extPickT(wv){if(EXT_PW!==wv||!EXT_PT){const MD=CFG.maps[G.sv.ext.reg]||CFG.maps.wild,BU=MD.endless||CFG.endless,pt=[],pc=[];let tw=0;
-    for(const k in BU.unlock){if(BU.unlock[k]>wv||EIDX[k]===undefined)continue;const c=ETC[EIDX[k]];if(c.tier>=4)continue;tw+=BU.weight[k]||1;pt.push(EIDX[k]);pc.push(tw)}EXT_PT={pt,pc};EXT_PW=wv}
+    for(const k in BU.unlock){if(BU.unlock[k]>wv||EIDX[k]===undefined||extNoE(k))continue;const c=ETC[EIDX[k]];if(c.tier>=4)continue;tw+=BU.weight[k]||1;pt.push(EIDX[k]);pc.push(tw)}EXT_PT={pt,pc};EXT_PW=wv}
   const{pt,pc}=EXT_PT,n=pt.length;if(!n)return-1;const r=rng()*pc[n-1];for(let k=0;k<n;k++)if(r<pc[k])return pt[k];return pt[n-1]}
+const extNoE=k=>{const c=CFG.enemies[k];return!c||extC().noE.includes(k)||!!(c.sea||c.ship||c.traps||c.emp||c.atSled)};   // 搜打撤里不出的：要水面的船、要地图机制的（秘法工厂埋雷 / 电磁的工程亡灵、北极苔原的雪橇）、data/ext 的 noE
 const extWave=z=>extC().zone.wave[z]+G.sv.ext.tl*extC().time.wave;
 const extPass=(x,y)=>{const t=tidx(x,y);return t>=0&&t<NT&&!treeAt(t)&&!G.structAt[t]&&G.dist[t]<1e8};
 const extLineOk=(x0,y0,x1,y1)=>{const d=Math.hypot(x1-x0,y1-y0),n=Math.ceil(d/8);for(let k=1;k<=n;k++)if(!extPass(x0+(x1-x0)*k/n,y0+(y1-y0)*k/n))return false;return true};
@@ -78261,7 +78310,7 @@ function extSpawn1(ti,x,y,r,hm){for(let k=0;k<8;k++){const a=rng()*Math.PI*2,d=r
     EX_HX[j]=px;EX_HY[j]=py;EX_TX[j]=px;EX_TY[j]=py;EX_WT[j]=rng()*3;return j}return-2}
 function extPkOn(pid){const S=G.sv,X=S.ext,P=X.pk[pid],SC=CFG.survivor,MD=CFG.maps[X.reg]||CFG.maps.wild,w0=G.wave;G.wave=extWave(P.z)+(P.wb||0);P.u.length=0;P.id.length=0;
   try{const put=(ti,hm)=>{if(!(ti>=0))return;const j=extSpawn1(ti,P.x,P.y,P.rt>=0?1.2:Math.min(2,P.r||2),hm);if(j>=0){EX_P[j]=pid;EX_S[j]=0;if(P.rt>=0){EX_HX[j]-=P.x;EX_HY[j]-=P.y}P.u.push(j);P.id.push(E.id[j])}};
-    let n=P.n;if(P.bo){put(EIDX[P.bo],SC.boss.hm);P.bo='';n--}else if(P.el&&MD.elites&&MD.elites.length){put(EIDX[pick(MD.elites)],SC.elite.hm);P.el=false;n--}   // 首领、精英只出一次（收回去再放出来就没有了，打死了也不再有）
+    const EL=(MD.elites||[]).filter(k=>!extNoE(k)&&EIDX[k]!==undefined);let n=P.n;if(P.bo){put(EIDX[P.bo],SC.boss.hm);P.bo='';n--}else if(P.el&&EL.length){put(EIDX[pick(EL)],SC.elite.hm);P.el=false;n--}   // 首领、精英只出一次（收回去再放出来就没有了，打死了也不再有）
     for(let k=0;k<n;k++)put(extPickT(G.wave),0)}finally{G.wave=w0}
   P.on=1}
 const extAlive=(P,k)=>{const j=P.u[k];return E.alive[j]&&E.id[j]===P.id[k]&&EX_P[j]>=0};
@@ -78325,7 +78374,7 @@ function extSense(h){const S=G.sv,X=S.ext,C=extC().sense,T=16,qk=Math.max(0.5,1-
       if(EX_S[j]===0){if(d2<R2)wake=true;else for(const u of sq){const ex=E.x[j]-u.x,ey=E.y[j]-u.y;if(ex*ex+ey*ey<S2){wake=true;break}}}
       else if(EX_S[j]===1){if(d2<F2)fight=true;extHome(j);const hx=E.x[j]-EXH_X,hy=E.y[j]-EXH_Y;if(d2>L2||hx*hx+hy*hy>H2){EX_S[j]=2;E.ft[j]=null;E.st[j]=null}}}
     if(wake)extWake(pid)}
-  for(let j=0;j<E.n;j++){if(!E.alive[j]||EX_P[j]>=0)continue;const dx=E.x[j]-h.x,dy=E.y[j]-h.y,d2=dx*dx+dy*dy;if(d2<F2)fight=true;else if(d2>(70*T)**2&&!(ETC[E.t[j]].tier>=5))eKill(j)}   // 不属于哪群的（亡灵潮、召唤）：太远就消失
+  for(let j=0;j<E.n;j++){if(!E.alive[j]||EX_P[j]>=0||ESTRU[E.t[j]])continue;const dx=E.x[j]-h.x,dy=E.y[j]-h.y,d2=dx*dx+dy*dy;if(d2<F2)fight=true;else if(d2>(70*T)**2&&!(ETC[E.t[j]].tier>=5))eKill(j)}   // 不属于哪群的（亡灵潮、召唤）：太远就消失
   if(fight)X.cb=C.fightT}
 // 放出来 / 收回去、巡逻队往前走（每 act.check 秒）
 function extActTick(h,dt){const X=G.sv.ext,A=extC().act,S2=(A.spawn*16)**2,D2=(A.despawn*16)**2,RD=EXT_GEN?EXT_GEN.roads:[],spd=extC().patrol.spd;
@@ -78379,23 +78428,23 @@ function extOver(ok,quit){const S=G.sv;if(!S||S.end)return;S.end=true;G.phase='o
   const g0=G;setTimeout(()=>{if(G===g0&&G.phase==='over')extResult(S.got)},ok||quit?300:900)}
 feat('ext',{on:()=>{const v=!!(G&&G.mode==='survivor'&&G.map==='ext');EXT_ON=v;return v},hooks:{
   eSpawn:i=>{EX_P[i]=-1;EX_S[i]=1},   // 不是群里放出来的（召唤、亡灵潮……）一直醒着；群里的 extPkOn 随后改
-  eDie:(i,c)=>{const S=G.sv,X=S&&S.ext;if(!X||S.end||E.smn[i])return;
+  eDie:(i,c)=>{const S=G.sv,X=S&&S.ext;if(!X||S.end||E.smn[i]||ESTRU[E.t[i]])return;
     if(c.tier>=4&&(c.tier>=5||rng()<extC().vault.keyElite)){X.vk++;sayT(`${c.name}掉落：库房钥匙`)}
     if(c.tier>=4)extDropPile(extLoot(c.tier>=5||c.mini?'boss':'elite'),E.x[i],E.y[i],true)},   // 精英、首领掉一堆东西（走过去自动捡）
-  drawUnder:(a,b,c,d)=>extDraw(a,b,c,d),drawWorld:(a,b,c,d)=>extRoofs(a,b,c,d)}});
+  drawUnder:(a,b,c,d)=>extDraw(a,b,c,d)}});   // 墙面、屋顶跟单位一起按 y 排序画（ui/draw 调 extDpush / extDrawB）
 
 /* ---------- 0.13.0e 搜打撤的背包（用户 11-04 定：箱子里的东西直接进背包，按重量算，能看、能丢；数据 data/ext.js 的 loot / bag / day，界面 ui/ext.js 的 extBagOpen）----------
-   东西的键：'r:银币'（资源）、'w:<物资 id>'（地区材料 / 特产）、'e:<装备 id>'（武器，一把一个）、'b:<装备 id>'（打造书）、'p:<家族>'（家族声望）、'g'（金币）、's:<英雄 id>'（英雄之魄）
+   东西的键：'r:银币'（资源：0.13.0f 起是「份」——银币袋、建材袋、设计图、科研图，带出来 × 一份的量 × 地图倍率，data/ext 的 unit）、'w:<物资 id>'（地区材料 / 特产）、'e:<装备 id>'（武器，一把一个）、'b:<装备 id>'（打造书）、'p:<家族>'（家族声望）、'g'（金币）、's:<英雄 id>'（英雄之魄）
    X.bag 背包、X.poc 保险口袋（{键: 数量}）；X.cap / X.pcap 负重上限；X.gd 地上的几堆 [{x,y,it:{键:数量},auto}]（装不下留下的、精英掉的；auto = 走过去自动捡）
    撤离成功：背包 + 口袋全部入库；倒下 / 放弃：只有口袋。每天的上限只管金币、英雄之魄（按地区 + 难度：META.sv.xd） */
 function extIW(k){const W=extC().bag.w,t=k[0],v=k.slice(2);if(t==='r')return W[v]??0.01;if(t==='w')return v===wareCoreOf(G.sv.ext.reg)?W.core:W.ware;if(t==='e')return W.weapon;if(t==='b')return W.book;if(t==='g')return W.金币;if(t==='s')return W.soul;return W.rep||0}
 const extBagW=o=>{let w=0;for(const k in o)w+=extIW(k)*o[k];return Math.round(w*100)/100};
-function extItemNm(k){const t=k[0],v=k.slice(2);if(t==='r')return v;if(t==='w')return(CFG.wares.items[v]||{}).name||v;if(t==='e')return itemDef({base:v}).name;if(t==='b')return`《${(bookDef(v)||{}).name||v}》`;
+function extItemNm(k){const t=k[0],v=k.slice(2);if(t==='r')return(extC().unit[v]||{}).name||v;if(t==='w')return(CFG.wares.items[v]||{}).name||v;if(t==='e')return itemDef({base:v}).name;if(t==='b')return`《${(bookDef(v)||{}).name||v}》`;
   if(t==='g')return'金币';if(t==='s')return(CFG.heroes[v]||{}).name+'之魄';if(t==='p')return((elBlood()[v]||{}).name||v)+'声望';return k}
 // 开出来的东西（同 game/sv_box.svBoxOne 的算法，但不入库，返回 {键: 数量}）；X.lootK：卡牌「寻宝」
-function extLoot(kind){const L=extC().loot[kind],X=G.sv.ext,m=X.reg,o={},dk=DIFF.reward||1,wk=waveRewK(svBoxC().refWave),K=1+X.lootK,rn=()=>0.8+rng()*0.4,ri=(a,b)=>a+Math.floor(rng()*(b-a+1)),add=(k,n)=>{if(n>0)o[k]=(o[k]||0)+n};
+function extLoot(kind){const L=extC().loot[kind],X=G.sv.ext,m=X.reg,o={},dk=DIFF.reward||1,wk=waveRewK(svBoxC().refWave),K=1+X.lootK,ri=(a,b)=>a+Math.floor(rng()*(b-a+1)),add=(k,n)=>{if(n>0)o[k]=(o[k]||0)+n};
   if(!L)return o;const P=L.pool.slice(),on={};for(let q=0;q<L.pick&&P.length;q++)on[P.splice(Math.floor(rng()*P.length),1)[0]]=1;
-  for(const r in CFG.rewardPerWave)if(on[r])add('r:'+r,Math.round(CFG.rewardPerWave[r]*(r==='建材'?1:mapRewardK(m))*dk*wk*L.waves*rn()*K));
+  if(L.res)for(const r in extC().unit)if(on[r])add('r:'+r,Math.max(1,coreDropN(ri(L.res[0],L.res[1])*dk*K)));   // 0.13.0f 几份（× 难度倍率、「寻宝」）
   const T=CFG.wares&&CFG.wares.tiers[mapTierOf(m)],M=T&&T.maps&&T.maps[m],WV=CFG.forgeMat.wave;
   if(M&&on.wares)for(const kind in T.basic){const w=T.basic[kind];add('w:'+w,coreDropN(WV.base*(M.basic.includes(w)?1:WV.far)*dk*wk*L.waves*K))}
   if(L.core&&on.core){const c=wareCoreOf(m);if(c)add('w:'+c,Math.round(ri(L.core[0],L.core[1])*dk*K))}
@@ -78404,6 +78453,7 @@ function extLoot(kind){const L=extC().loot[kind],X=G.sv.ext,m=X.reg,o={},dk=DIFF
   if(on.book&&rng()<(L.book||0)){const b=svBoxBook(m);if(b)add('b:'+b,1)}
   if(L.gold&&on.gold)add('g',ri(L.gold[0],L.gold[1]));
   if(on.soul&&rng()<(L.soul||0)){const h=svBoxSoul(m);if(h)add('s:'+h,1)}
+  if(!Object.keys(o).length)add('r:'+pick(Object.keys(extC().unit)),L.res?L.res[0]:1);   // 挑中的几样都没开出东西（没有精英家族、打造书没中……）：至少给一份资源
   return o}
 // 放进背包：装得下的放进去，装不下的留在 (x, y) 一堆；返回一句提示（「：银币 +120、橡木 +2…」）
 function extPut(it,into,cap){const got={},rest={};let w=extBagW(into);
@@ -78432,20 +78482,20 @@ function extBank(o,reg,d){const N=extDay(reg,d),give={},cut={},gc=extGoldCap(reg
   for(const k in o){let n=o[k];if(!(n>0))continue;const t=k[0],v=k.slice(2);
     if(t==='g'){const g=Math.max(0,Math.min(n,gc-N.gold));N.gold+=g;if(n>g)cut[k]=n-g;n=g;if(n>0){META.wallet.金币=(META.wallet.金币||0)+n;gold+=n}}
     else if(t==='s'){const g=Math.max(0,Math.min(n,sc-N.soul));N.soul+=g;if(n>g)cut[k]=n-g;n=g;if(n>0)META.souls[v]=(META.souls[v]||0)+n}
-    else if(t==='r'){META.wallet[v]=(META.wallet[v]||0)+n;res[v]=n}
+    else if(t==='r'){const U=extC().unit[v],a=Math.round(n*(U?U.v:1)*mapRewardK(reg));META.wallet[v]=(META.wallet[v]||0)+a;res[v]=(res[v]||0)+a}   // 0.13.0f 份 × 一份的量 × 地图倍率
     else if(t==='w'){if(!META.wares)META.wares={};META.wares[v]=(META.wares[v]||0)+n;wares[v]=n}
     else if(t==='e'){for(let q=0;q<n;q++)addGear(pgStd(v))}
     else if(t==='b'){for(let q=0;q<n;q++)addGear(makeGear(v,{book:true,mp:reg}))}
     else if(t==='p'){try{elRepAdd(v,n)}catch(e){console.warn('extBank rep',e)}}
     if(n>0)give[k]=n}
-  v5fEarnGot(Object.assign({wares,金币:gold},res));return{give,cut}}
+  v5fEarnGot(Object.assign({wares,金币:gold},res));return{give,cut,res}}
 function extAward(ok,quit){const S=G.sv,X=S.ext,R=extC().reward,h=svHero(),reg=X.reg,all={};
   for(const o of[X.bag,X.poc])for(const k in o)all[k]=(all[k]||0)+o[k];
   const take=ok?all:Object.assign({},X.poc),lost={};for(const k in all){const d=all[k]-(take[k]||0);if(d>0)lost[k]=d}
   const B=extBank(take,reg,DIFF.id);let exp=0;
   if(ok){const mins=Math.min(R.cap,Math.floor(S.t/60*R.perMin)),dk=(DIFF.reward||1)*CFG.survivor.reward.k;exp=mins>0?Math.round(waveRewSum(mins)*olvMapExp(reg)*dk):0;if(exp>0&&h){try{olvPend(exp,[],[h.id],reg);olvCommit(null)}catch(e){console.warn('extAward olv',e)}}}
   const F=extFix(META),key=reg+'.'+DIFF.id,old=F.xb[key];F.xn++;let nb=false;if(ok){F.xok++;if(!old||!(old.t>0)||S.t<old.t){F.xb[key]={t:Math.round(S.t),o:X.opened,k:G.kills};nb=true}}
-  saveMeta();return{ok:!!ok,quit:!!quit,t:S.t,k:G.kills,o:X.opened,give:B.give,cut:B.cut,lost,exp,nb,hero:h?h.d.name:'',map:reg,diff:DIFF.id}}
+  saveMeta();return{ok:!!ok,quit:!!quit,t:S.t,k:G.kills,o:X.opened,give:B.give,cut:B.cut,res:B.res,rk:mapRewardK(reg),lost,exp,nb,hero:h?h.d.name:'',map:reg,diff:DIFF.id}}
 
 // ---------- 绘制 ----------
 let VW=0,VH=0,DPR=1,zoom=4,zoomBase=4,zoomDelta=0,zoomMin=1,zoomMax=8,CX=0,CY=0,OX=0,OY=0;
@@ -79192,13 +79242,14 @@ function drawWorld(dt,vk){
     for(let m=0;m<L.n&&lmn<16384;m++){legionSlot(L,m,SLOT);const x=SLOT[0],y=SLOT[1];if(x<cx0||x>cx1||y<cy0||y>cy1)continue;
       LMx[lmn]=x;LMy[lmn]=y;LMt[lmn]=L.ts?L.ts[m]:L.t;LMf[lmn]=(Math.floor(L.an+m*0.37)&1);LMd[lmn]=fl;LMh[lmn]=m<(L.hv||0)?1:0;dpush(y,5,lmn);lmn++}
     dpush(L.y-L.rows*4.5-2,6,li)}
+  if(EXT_ON)extDpush(cx0,cy0,cx1,cy1);   // 0.13.0f 搜打撤的 2.5D 建筑（kind 6、下标 32768 起，ui/ext）
   const ks=DK.subarray(0,dn);ks.sort();
   for(let k=0;k<dn;k++){const v=ks[k],kind=(v>>>16)&7,i=v&65535;
     switch(kind){
       case 0:drawTree(tr[i]);break;case 1:drawStruct(st[i]);break;case 7:drawResident(rs[i]);break;
       case 2:case 3:case 4:{const sk=G.csOn&&csSinkSet(kind,i);if(kind===2)drawEnemy(i);else if(kind===3)drawSoldier(so[i]);else drawHero(G.heroes[i]);if(sk){SNK_DY=0;SNK_WL=1e9}break}   // csSinkSet：v0.8.3 黄沙海岸，水里的单位往下沉
       case 5:{const t=LMt[i],x=LMx[i],y=LMy[i],r=SPR.enemies[t][LMf[i]],hv=ETC[t].hover,lf=hv?hv.h:0,sk=G.csOn&&csSinkSet(5,i);if(hv){if(SHDW)rectW(Math.round(x)-6,Math.round(y)-1,12,1,SHC,0.3)}else shadow(x,y,ETC[t].cavalry?16:9);sprW(r,Math.round(x)-(r.w>>1),Math.round(y-lf)-r.h,LMd[i]===1,false);if(LMh[i])drawCarriedHive(x,y,LMd[i]===1?-1:1,0);if(sk){SNK_DY=0;SNK_WL=1e9}break}
-      case 6:{const L=G.legions[i];if(!L)break;const x=Math.round(L.x),y=Math.round(L.y-L.rows*4.5-16);rectW(x,y,1,14,K.pole);rectW(x+1,y,6,4,K.purple);rectW(x+1,y+4,4,1,K.purple);rectW(x+1,y+1,6,1,K.ink,0.5);break}
+      case 6:{if(i>=32768){extDrawB(i-32768);break}const L=G.legions[i];if(!L)break;const x=Math.round(L.x),y=Math.round(L.y-L.rows*4.5-16);rectW(x,y,1,14,K.pole);rectW(x+1,y,6,4,K.purple);rectW(x+1,y+4,4,1,K.purple);rectW(x+1,y+1,6,1,K.ink,0.5);break}
     }}
   for(let i_7=0,a_7=G.proj;i_7<a_7.length;i_7++){const p=a_7[i_7];if(p.skd){FX_DT=p.skd;drawProj(p);FX_DT=null}else drawProj(p);}
   if(settleOn())drawDuMarks(cx0,cy0,cx1,cy1);   // v0.10.1 耐久低于 50% 的建筑头上一个小扳手
@@ -79522,7 +79573,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.0e',GAME_TAG='测试版',GAME_CODE=209,GAME_BUILD="4637c41",GAME_BUILT=1793753260073,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.0f',GAME_TAG='测试版',GAME_CODE=210,GAME_BUILD="64e2617",GAME_BUILT=1793758864884,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -85073,14 +85124,14 @@ function svSt2HTML(){const R=svSt2Rows();if(!R.length)return'';svSt2Css();let T=
 
 /* ---------- 0.13 搜打撤的界面（机制 game/ext.js、ext_gen.js、ext_bag.js，数据 data/ext.js）----------
    营地「娱乐模式」页多一个页签（SV_MENU.mode 'ext'，hubFun 一开头转到 hubExt）；局内左上角借幸存者的 #svHud（svHudSync 里按 G.sv.ext 换内容，多一个「背包」按钮）；
-   地上画箱子、库房、空投、撤离点、地上的东西（feat ext 的 drawUnder → extDraw）；屋顶（drawWorld → extRoofs，英雄在屋里那间不画）；
+   地上画箱子、库房、空投、撤离点、地上的东西（feat ext 的 drawUnder → extDraw）；2.5D 的建筑（墙面 + 屋顶，ui/draw 的排序表 → extDpush / extDrawB，英雄在屋里那间不画屋顶）；
    小地图标撤离点 / 空投 / 库房（ui/draw.drawMini 调 extMini）；背包弹窗（extBagOpen）、暂停页、结算页
    按钮 data-act 都以 svxExt 开头（ui/survivor.svAct 一开头转到 extAct） */
 {const st=document.createElement('style');st.textContent=`.spdbox[data-hint]:not([data-hint=""])::after{content:attr(data-hint);position:absolute;right:100%;top:50%;transform:translateY(-50%);margin-right:6px;font-size:10px;line-height:1.2;white-space:nowrap;color:#ffe08a;text-shadow:0 1px 0 #000;pointer-events:none}.spdbox{position:relative}
 .exres .lost{color:#ff9a7a}#svHud .exbagb{margin:4px 4px 0 0;font:inherit;font-size:.8em;padding:1px 6px;background:rgba(0,0,0,.45);color:#ffe08a;border:1px solid rgba(255,224,138,.4);cursor:pointer;pointer-events:auto}.exbag{display:flex;flex-direction:column;gap:4px;margin:6px 0}.exit2{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;padding:3px 8px;background:#1a1622;box-shadow:inset 0 0 0 1px var(--iron)}
 .exit2 img,.exit2 .wic{width:28px;height:28px;image-rendering:pixelated;margin:0}.exit2 .row2{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}.exwbar{height:8px;background:rgba(0,0,0,.45);margin:4px 0}.exwbar i{display:block;height:100%;background:linear-gradient(90deg,#8fbf5a,#e0c050)}.exwbar.full i{background:#e0533f}
 .exgot{display:flex;flex-wrap:wrap;gap:6px}.exgot span{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;background:#1a1622;box-shadow:inset 0 0 0 1px var(--iron)}.exgot img,.exgot .wic{width:24px;height:24px;image-rendering:pixelated;margin:0}`;document.head.appendChild(st)}
-const extRegs=()=>CFG.mapPages.slice(0,CFG.ext.regs).flatMap(p=>p.maps).filter(k=>CFG.maps[k]);
+const extRegs=()=>CFG.mapPages.slice(0,CFG.ext.regs).flatMap(p=>p.maps).filter(k=>CFG.maps[k]&&!CFG.ext.noRegs.includes(k));
 function extBestOf(reg){const B=extFix(META).xb;let best=null;for(const d of CFG.difficulties){const r=B[reg+'.'+d.id];if(r&&(!best||CFG.difficulties.indexOf(d)>CFG.difficulties.indexOf(best.d)))best={d,r}}return best}
 // 东西的图标（键见 game/ext_bag）
 function extItemIco(k){const t=k[0],v=k.slice(2),img=u=>`<img alt="" src="${u}">`;
@@ -85089,12 +85140,12 @@ function extItemIco(k){const t=k[0],v=k.slice(2),img=u=>`<img alt="" src="${u}">
 const extChips=o=>Object.keys(o).map(k=>`<span title="${extItemNm(k)}">${extItemIco(k)}${extItemNm(k)} <b>${o[k]}</b></span>`).join('');
 // 营地页（同 ui/sv_hub.hubFun 的排法：地区、难度 · 队长、小队 · 今天还能带出的）
 function hubExt(){const C=CFG.ext,ds=CFG.difficulties.filter(d=>diffOpen(d)),R=svSt();
-  const pages=CFG.mapPages.slice(0,C.regs).map(P=>({name:P.name,maps:P.maps.filter(k=>CFG.maps[k])})).filter(P=>P.maps.length),open=extRegs().filter(k=>mapOpen(k));
+  const pages=CFG.mapPages.slice(0,C.regs).map(P=>({name:P.name,maps:P.maps.filter(k=>CFG.maps[k]&&!C.noRegs.includes(k))})).filter(P=>P.maps.length),open=extRegs().filter(k=>mapOpen(k));
   if(!open.includes(SV_MENU.map))SV_MENU.map=open[0]||'wild';if(!ds.some(d=>d.id===SV_MENU.diff))SV_MENU.diff=(ds[0]||CFG.difficulties[0]).id;
   const pg=Math.max(0,pages.findIndex(P=>P.maps.includes(SV_MENU.map)));SVH_PG=pg;
   const lid=svLeadId(),sp=lid?currentHeroSpec(lid):null,H=sp&&CFG.heroes[sp.id],L=svSqList(),Q=svSqC(),X=extFix(META),auto=R.auto;
-  const help=ui2Q('搜打撤模式',()=>hpL([`一位英雄当队长，带精英小队(开局全员都在)进一张 256 × 256 的大地图：先有地标(城寨、大教堂、墓园、农庄、集市、塔楼)，主路把它们连起来，路边分出小路接着各种房子；还有河、湖(深水过不去，浅滩、桥能过)。离入口越远越危险(${C.zone.name.join(' / ')})`,
-    '房子有屋顶，看不到里面；走进去才看得见。箱子(木 / 铁 / 银 / 金)站在旁边读条打开，开出来的东西直接进背包，还可能开出一张三选一强化卡、库房钥匙、急救包；好箱子旁边守着更多、更强的亡灵',
+  const help=ui2Q('搜打撤模式',()=>hpL([`一位英雄当队长，带精英小队(开局全员都在)进一张 256 × 256 的大地图：先有河、湖(熔岩地区是熔岩河、熔岩湖；深的过不去，浅滩能走，路过水有桥)，再放地标(亡灵要塞、亡灵哨塔、城寨、大教堂、墓园、农庄、集市、塔楼)，主路把它们连起来，路边分出小路接着各种房子(宅院、营房是好几个房间连在一起的)。离入口越远越危险(${C.zone.name.join(' / ')})`,
+    '房子有屋顶，看不到里面；从门走进去才看得见(连锁建筑一间一间地看)。亡灵要塞有一圈亡灵城墙、城门和塔楼，要打破城门或城墙才进得去，里面有精英、首领；亡灵哨塔会朝你开火。箱子(木 / 铁 / 银 / 金)站在旁边读条打开，开出来的东西直接进背包(银币、建材、设计点、科研点是银币袋、建材袋、设计图、科研图，带出去再按份数 × 地图倍率换成资源)，还可能开出一张三选一强化卡、库房钥匙、急救包；好箱子旁边守着更多、更强的亡灵',
     `背包按重量算(开局负重 ${C.bag.cap})：点左上角「背包」看拿到了什么，可以丢掉不要的；装不下的会留在地上。保险口袋(负重 ${C.bag.pocket})里的东西，队长倒下、放弃也能带出来`,
     '库房：墓穴、仓库里有几间锁着的库房，用一把库房钥匙(箱子里、精英身上掉)打开，东西最多；精英、首领倒下会掉一堆东西，走过去自动捡',
     `亡灵：在自己的地盘里走来走去，还有沿路巡逻的队伍；你走近(打起来、开箱子时动静更大，躲在树丛里更小)就整群追过来；追远了会放弃回去。每 ${C.time.every / 60} 分半钟危险等级 +1，${C.time.tide / 60} 分钟起亡灵潮不停涌来`,
@@ -85155,18 +85206,32 @@ function extDraw(cx0,cy0,cx1,cy1){const S=G.sv,X=S&&S.ext;if(!X)return;const C=C
     if(A.st===0){const f=Math.max(0,Math.min(1,(A.land-S.t)/C.drop.fall));dotRing(x,y,10+f*30,exCol('#ff5a3a'),0.7);rectW(x-1,y-60,2,60,exCol('#ff5a3a'),0.25+0.2*Math.sin(G.time*6))}
     else{rectW(x-9,y+5,19,2,sh,0.35);rectW(x-8,y-6,17,12,exCol('#5a6a3a'));rectW(x-7,y-5,15,10,exCol('#8aa05a'));rectW(x-8,y-1,17,1,exCol('#3a4a2a'));rectW(x-1,y-6,3,12,exCol('#3a4a2a'));
       rectW(x-1,y-30,2,24,exCol('#ff5a3a'),0.3+0.2*Math.sin(G.time*5));if(X.obK==='ad'){rectW(x-10,y-12,20,3,exCol('#0c0910'));rectW(x-10,y-12,Math.round(20*X.obP),3,exCol('#ffe08a'))}}}}
-// 屋顶（用户定：建筑里面用屋顶盖着，进去之后再显示）：画在单位上面；队长站在哪间屋里（含墙）那间不画
-const EXT_ROOF={thatch:['#b8954a','#8a6a2e','#d6b66a'],tile:['#a84a3a','#7a2e24','#c86a52'],wood:['#7a5a3a','#5a3e24','#9a7a52'],slate:['#4e5866','#363e4a','#6e7a8a'],stone:['#7a766e','#5a564f','#9a958a'],cloth:['#c84a4a','#8a2a2a','#e8d8b0']};
-function extRoofs(cx0,cy0,cx1,cy1){const B=EXT_GEN&&EXT_GEN.bld,S=G.sv;if(!B||!S||!S.ext)return;const h=svHero(),hx=h?h.x>>4:-99,hy=h?h.y>>4:-99;
-  for(let q=0;q<B.length;q++){const b=B[q];if(!b.roof)continue;const X0=b.x0*16-2,Y0=b.y0*16-8,X1=(b.x1+1)*16+2,Y1=(b.y1+1)*16-3;if(X1<cx0||X0>cx1||Y1<cy0||Y0>cy1)continue;
-    if(hx>=b.x0&&hx<=b.x1&&hy>=b.y0&&hy<=b.y1)continue;const P=EXT_ROOF[b.roof],c=exCol(P[0]),d=exCol(P[1]),l=exCol(P[2]),w=X1-X0,hh=Y1-Y0;
-    rectW(X0,Y0,w,hh,c);
-    if(b.roof==='cloth'){for(let x=X0;x<X1;x+=8)rectW(x,Y0,4,hh,l)}else for(let y=Y0+3;y<Y1-3;y+=5)rectW(X0,y,w,1,d,0.55);   // 瓦片 / 茅草一道道横纹；棚子红白条
-    if(w>=hh)rectW(X0,Y0+(hh>>1)-1,w,3,l);else rectW(X0+(w>>1)-1,Y0,3,hh,l);   // 屋脊
-    rectW(X0,Y1-3,w,3,d);rectW(X0,Y0,1,hh,d);rectW(X1-1,Y0,1,hh,d);rectW(X0,Y0,w,1,d);
-    if(b.k==='church'){const x=(X0+X1)>>1;rectW(x-1,Y0+2,3,14,exCol('#e8d8a0'));rectW(x-4,Y0+6,9,3,exCol('#e8d8a0'))}   // 大教堂的十字架
-    else if(b.k==='tower'){const x=(X0+X1)>>1,y=(Y0+Y1)>>1;rectW(x-5,y-5,10,10,d);rectW(x-3,y-3,6,6,l)}
-    else if(b.k==='crypt'){const x=(X0+X1)>>1;rectW(x-1,Y0+3,2,8,exCol('#2a2630'));rectW(x-3,Y0+5,6,2,exCol('#2a2630'))}}}
+// 2.5D 的建筑（0.13.0e 用户定：屋顶盖着里面，进去才看到；0.13.0f：房子要有门，做成 2.5D）：屋顶往上抬 fh 像素，下面露出朝南的墙面（门、窗）；
+//   跟单位一起按 y 排序（ui/draw 在排序表里放 kind 6、下标 32768 + 第几间，画的时候调 extDrawB）：站在房子北边的被屋顶挡住，南边的在墙面前面
+//   队长站在哪间屋里（含墙）：那间不画屋顶，墙面画成半透明；连锁建筑一间一个屋顶
+const EXT_ROOF={thatch:['#b8954a','#8a6a2e','#d6b66a'],tile:['#a84a3a','#7a2e24','#c86a52'],wood:['#7a5a3a','#5a3e24','#9a7a52'],slate:['#4e5866','#363e4a','#6e7a8a'],stone:['#6e6a64','#4e4a45','#8e8a82'],cloth:['#c84a4a','#8a2a2a','#e8d8b0']};
+const EXT_WALL={thatch:['#8a6a44','#5e4428'],tile:['#cbb894','#8e7c5e'],wood:['#7a5a3a','#4e3622'],slate:['#8a8a86','#5e5e5a'],stone:['#76726a','#4e4a44'],cloth:['#6a4a2a','#3a2616']};
+let EXT_HG=-1;   // 队长站在哪组连锁建筑里（同一组别的房间的屋顶不往上抬，免得盖住队长这间）
+function extDpush(cx0,cy0,cx1,cy1){const B=EXT_GEN&&EXT_GEN.bld;if(!B)return;const FH=CFG.ext.gen.fh,h=svHero(),hx=h?h.x>>4:-99,hy=h?h.y>>4:-99;EXT_HG=-1;
+  for(let q=0;q<B.length;q++){const b=B[q];if(hx>=b.x0&&hx<=b.x1&&hy>=b.y0&&hy<=b.y1){EXT_HG=b.grp;break}}
+  for(let q=0;q<B.length;q++){const b=B[q];if(!b.roof)continue;const X0=b.x0*16-2,X1=(b.x1+1)*16+2,Y0=b.y0*16-FH-4,Y1=(b.y1+1)*16;if(X1<cx0||X0>cx1||Y1<cy0||Y0>cy1)continue;dpush(Y1,6,32768+q)}}
+function extDrawB(q){const b=EXT_GEN&&EXT_GEN.bld[q];if(!b||!EXT_ROOF[b.roof])return;const FH=CFG.ext.gen.fh,h=svHero(),hx=h?h.x>>4:-99,hy=h?h.y>>4:-99,inn=hx>=b.x0&&hx<=b.x1&&hy>=b.y0&&hy<=b.y1;
+  const P=EXT_ROOF[b.roof],WL=EXT_WALL[b.roof],X0=b.x0*16-1,X1=(b.x1+1)*16+1,w=X1-X0,RT=b.y0*16-(b.grp===EXT_HG&&!inn?0:FH),RB=(b.y1+1)*16-FH,BOT=(b.y1+1)*16,c=exCol(P[0]),d=exCol(P[1]),l=exCol(P[2]),dk=exCol('#1a1410');
+  if(b.k==='stall'){if(inn)return;rectW(X0+1,RB,2,FH,exCol('#5a3e24'));rectW(X1-3,RB,2,FH,exCol('#5a3e24'));rectW(X0,RT,w,RB-RT,c);for(let x=X0;x<X1;x+=6)rectW(x,RT,3,RB-RT,l);rectW(X0,RB-2,w,2,d);return}   // 摊位：布棚 + 两根柱子
+  const wa=inn?0.3:1,wc=exCol(WL[0]),wd=exCol(WL[1]);
+  rectW(X0,RB,w,FH,wc,wa);for(let y=RB+4;y<BOT;y+=5)rectW(X0,y,w,1,wd,0.35*wa);rectW(X0,RB,2,FH,wd,wa);rectW(X1-2,RB,2,FH,wd,wa);rectW(X0,BOT-1,w,1,dk,0.5*wa);   // 墙面：横纹、两头的柱子
+  const D=b.door,dx0=D&&D.side===1?D.p*16:-1,dx1=D&&D.side===1?(D.p+D.w)*16:-1;
+  for(let x=X0+8;x+6<X1-4;x+=22){if(x+6>dx0-2&&x<dx1+2)continue;rectW(x,RB+5,6,7,exCol('#24283a'),wa);rectW(x,RB+5,6,1,exCol('#8a8a8a'),wa);rectW(x+2,RB+5,1,7,wd,wa)}   // 窗
+  if(D&&D.side===1){rectW(dx0+1,RB+3,dx1-dx0-2,FH-3,exCol('#3a2414'),wa);rectW(dx0+1,RB+3,dx1-dx0-2,1,exCol('#8a6a3a'),wa);rectW(dx0+1,RB+3,1,FH-3,exCol('#8a6a3a'),wa);rectW(dx1-2,RB+3,1,FH-3,exCol('#8a6a3a'),wa);rectW(dx1-5,RB+10,1,1,exCol('#e0c050'),wa)}   // 南门：门框、门把手
+  if(inn)return;
+  const hh=RB-RT;if(w>=hh){const m=RT+(hh>>1);rectW(X0,RT,w,m-RT,l);rectW(X0,m,w,RB-m,c);for(let y=RT+3;y<RB-1;y+=4)rectW(X0,y,w,1,d,0.4);rectW(X0,m-1,w,2,d)}   // 屋顶：朝北那半亮、朝南那半暗，屋脊一道
+  else{const m=X0+(w>>1);rectW(X0,RT,m-X0,hh,l);rectW(m,RT,X1-m,hh,c);for(let y=RT+3;y<RB-1;y+=4)rectW(X0,y,w,1,d,0.4);rectW(m-1,RT,2,hh,d)}
+  rectW(X0,RT,w,1,d);rectW(X0,RT,1,hh,d);rectW(X1-1,RT,1,hh,d);rectW(X0,RB-2,w,2,d);   // 屋檐
+  if(D&&D.side!==1){const dc=exCol('#3a2414');if(D.side===0)rectW(D.p*16+1,RT-1,D.w*16-2,3,dc);else rectW(D.side===2?X0-1:X1-2,D.p*16-FH+2,3,D.w*16-2,dc)}   // 别的方向的门：屋檐边上一道门影
+  if(b.k==='church'){const x=(X0+X1)>>1;rectW(x-1,RT-10,3,16,exCol('#e8d8a0'));rectW(x-4,RT-6,9,3,exCol('#e8d8a0'))}   // 大教堂的十字架
+  else if(b.k==='tower'||b.k==='keep'){for(let x=X0;x<X1-3;x+=6)rectW(x,RT-4,4,4,d);if(b.k==='keep'){const x=(X0+X1)>>1;rectW(x,RT-16,1,16,dk);rectW(x+1,RT-16,7,5,exCol('#7a3ab0'))}}   // 塔楼的垛口；亡灵堡插一面紫旗
+  else if(b.k==='crypt'){const x=(X0+X1)>>1;rectW(x-1,RT+3,2,8,exCol('#2a2630'));rectW(x-3,RT+5,6,2,exCol('#2a2630'))}
+  else if((b.x0*7+b.y0*3)%4===0&&b.k!=='ware'&&b.k!=='barn'){const x=X0+((b.x0*13)%Math.max(1,w-10))+4;rectW(x,RT-6,5,8,exCol('#4a3a32'));rectW(x,RT-6,5,1,dk)}}   // 有的房子有烟囱
 // 小地图：撤离点（开的绿、没开的灰）、库房（紫）、空投（红，闪）
 function extMini(X_,Y_,u){const X=G.sv&&G.sv.ext;if(!X)return;const sq=(x,y,c,s)=>{mctx.fillStyle=c;mctx.fillRect(Math.round(X_(x)-s/2),Math.round(Y_(y)-s/2),s,s)};
   for(const e of X.ex)sq(e.x,e.y,e.open?'#6af06a':'#8a8a8a',u*4);
@@ -85183,7 +85248,7 @@ function extPauseOpen(){const S=G.sv,X=S.ext,auto=S.auto,C=CFG.ext;
 function extResult(g){if(!g)return;const D=DIFFS[g.diff],cut=Object.keys(g.cut).map(k=>`${extItemNm(k)} ${g.cut[k]}`);
   openModal('svres',`<div class="svres exres"><h2 class="hd${g.ok?'':' lose'}">${g.ok?'撤离成功！':g.quit?'放弃了这一局':'队长倒下了'}</h2>
     <div class="stats"><div><b>${svTime(g.t)}${g.nb?' <span class="svnew">最快</span>':''}</b><span>用时</span></div><div><b>${g.o}</b><span>开箱</span></div><div><b>${g.k}</b><span>击杀</span></div><div><b>${D?D.name:''}</b><span>${CFG.maps[g.map]?CFG.maps[g.map].name:''}</span></div></div>
-    <h4 class="sh">${g.ok?'带出来的':'保险口袋带出来的'}</h4><div class="exgot">${extChips(g.give)||'<span class="meta">没有</span>'}</div>${g.exp?`<p class="meta">${g.hero}经验 +${g.exp}</p>`:''}
+    <h4 class="sh">${g.ok?'带出来的':'保险口袋带出来的'}</h4><div class="exgot">${extChips(g.give)||'<span class="meta">没有</span>'}</div>${Object.keys(g.res||{}).length?`<p class="meta">折合：${Object.keys(g.res).map(k=>`${k} <b>+${g.res[k]}</b>`).join(' · ')}(× 地图倍率 ${Math.round((g.rk||1)*100)/100})</p>`:''}${g.exp?`<p class="meta">${g.hero}经验 +${g.exp}</p>`:''}
     ${cut.length?`<p class="meta warn">今天的上限满了，没拿到：${cut.join('、')}</p>`:''}${Object.keys(g.lost).length?`<h4 class="sh lost">丢在里面的</h4><div class="exgot">${extChips(g.lost)}</div>`:''}
     <div class="actions"><button class="px big on" type="button" data-act="svxExtAgain">再来一局</button><button class="px" type="button" data-act="svxExtBack">返回娱乐模式</button><button class="px" type="button" data-act="tomenu">返回主界面</button></div></div>`,'[data-act=svxExtAgain]')}
 function extAct(a,v,b){

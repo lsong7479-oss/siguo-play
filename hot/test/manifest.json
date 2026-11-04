@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.0e",
- "code": 209,
- "size": 17880167,
- "sha256": "647f05b3809a66fee14bac6547f4ae484f23fea618f995033a3cb53036b278d2",
+ "ver": "0.13.0f",
+ "code": 210,
+ "size": 17887289,
+ "sha256": "0a29d704ff0a9c7f7815af0c3f2321c5aefe5266bb2b5160015b06c764b30e68",
  "minLoader": 1,
- "sig": "uMIrvfQRFTjfwuysBdRmPU+un5P33ldRB0k52xpFxNZPgRPdSc+raLiZaQ/I3Z5W9pRxWMhbV7pA13EYB8CeKw==",
- "note": "0.13.0e 测试版：搜打撤第二版；科技页分块",
- "at": "2026-11-04 00:44 UTC"
+ "sig": "hC0KNaC0bND7xmyg9FFyjxabHDTB5IHAHCfWiETqeBP1C7gC9McILbc/39X8D8Kzt+9cTgCfigpgNHt9CCaxdQ==",
+ "note": "0.13.0f 测试版：搜打撤第三版",
+ "at": "2026-11-04 02:16 UTC"
 }
