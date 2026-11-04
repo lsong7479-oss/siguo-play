@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.0j",
- "code": 214,
- "size": 17971942,
- "sha256": "7721b6925a4cf0dec8eff871d4f362420b6fbeffb230f8a71a7cf38df97f5897",
+ "ver": "0.13.1",
+ "code": 215,
+ "size": 17988740,
+ "sha256": "5f18a9ead0a4047521f43588a8bb7f82faa126d3b2e1db9def3419b7405f784b",
  "minLoader": 1,
- "sig": "pUiO6jYpZNYigBqUAdhZPJWndPZGzAmtYOd5Ad7Urc8p87kJBdnqNjfJj/pIh+GdQL0cdFh125xVtnA7ytd5Rg==",
- "note": "强化石合成、装备强化上限 +30、同类强化只同级；搜打撤屋顶打磨、热气球换图",
- "at": "2026-11-04 15:58 UTC"
+ "sig": "DM3loI8Cyj1hRoE3rIBlhdm2TmssbL0aBEGuIixiaZc/iMXyYhit2zLikLTH77Q0mjes7R6xYaPM5NPloaEsjA==",
+ "note": "0.13.1：英雄图鉴、英灵碑、「我都记得」按英灵碑人数、塔楼皮肤六款、存档 ID 带日期",
+ "at": "2026-11-04 17:25 UTC"
 }
