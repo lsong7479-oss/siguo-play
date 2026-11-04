@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.0f",
- "code": 210,
- "size": 17887289,
- "sha256": "0a29d704ff0a9c7f7815af0c3f2321c5aefe5266bb2b5160015b06c764b30e68",
+ "ver": "0.13.0g",
+ "code": 211,
+ "size": 17939575,
+ "sha256": "f8e4ee2b261e972108c2b10b9b693e17c798c6c073237b2a820e199c0ddbd57f",
  "minLoader": 1,
- "sig": "hC0KNaC0bND7xmyg9FFyjxabHDTB5IHAHCfWiETqeBP1C7gC9McILbc/39X8D8Kzt+9cTgCfigpgNHt9CCaxdQ==",
- "note": "0.13.0f 测试版：搜打撤第三版",
- "at": "2026-11-04 02:16 UTC"
+ "sig": "P32grKH63ZnZ4CkwNIfGQ9Mwkp7ON0jB374YyWJ8DiO1iLGCjGZJbGsuHcj4KGOVnCgpQNqQ+2qF6at3nonLWA==",
+ "note": "搜打撤第四版：建筑改成几块拼起来、每块一个屋顶的 2.5D 画法（10 种屋顶、8 种墙），门口台阶，亡灵建筑五种，各地区独特建筑",
+ "at": "2026-11-04 08:47 UTC"
 }

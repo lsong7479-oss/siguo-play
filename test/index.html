@@ -23319,25 +23319,67 @@ CFG.ext={
   time:{every:150, wave:2, max:8, tide:900, tideEvery:20, tideN:[3,6], tideMax:14},   // 每 150 秒危险 +1 级（亡灵按 +2 波算，最多 8 级）；15 分钟起「亡灵潮」：每 20 秒在英雄附近冒一群醒着的（3～6 只，越往后越多，最多 14）
   // 生成（0.13.0e 用户定的顺序：地标 → 主路 → 主路分出支路接普通建筑 → 水域）
   //   lm：地标 [种类, 几个, 放在哪档（-1 不限）]；branch：主路上每隔几格分一条支路；side：支路长几格；wild：野外零散的小屋 / 废墟（小路接到最近的路）；lakes：湖几个；extra：主路多连几条（成环）
-  gen:{forest:0.62, scatter:0.02, road:2, branch:[5,9], side:[2,6], bigGap:[14,22], wild:14, lakes:[4,6], rivers:[1,2], extra:5, fh:18,
-    lm:[['ufort',2,2], ['uniq',2,1], ['ubat',2,1], ['ucamp',2,1], ['uwork',1,2], ['fort',2,2], ['utower',3,1], ['church',1,1], ['grave',2,1], ['farm',2,0], ['market',2,0], ['tower',3,-1]]},   // ufort 亡灵要塞、utower 亡灵哨塔（0.13.0f）；uniq 这个地区独特的建筑、ubat 亡灵炮台、ucamp 亡灵营寨、uwork 亡灵工坊（0.13.0g）；fh：2.5D 墙面高几像素
+  gen:{forest:0.62, scatter:0.02, road:2, branch:[5,9], side:[2,6], bigGap:[14,22], wild:14, lakes:[4,6], rivers:[1,2], extra:5,
+    lm:[['ufort',2,2], ['uniq',2,1], ['ubat',2,1], ['ucamp',2,1], ['uwork',1,2], ['fort',2,2], ['utower',3,1], ['church',1,1], ['grave',2,1], ['farm',2,0], ['market',2,0], ['tower',3,-1]]},   // ufort 亡灵要塞、utower 亡灵哨塔（0.13.0f）；uniq 这个地区独特的建筑、ubat 亡灵炮台、ucamp 亡灵营寨、uwork 亡灵工坊（0.13.0g）
   lava:['lavaLand','lavaAbyss'],   // 这些地区的河、湖是熔岩（桥是石头的）
-  // 建筑：w / h 大小（含墙）、roof 屋顶样式（null = 没顶，废墟）、box 里面几个箱子、up 箱子品质往上抬一档的概率；mix：每档普通建筑的种类权重
+  // 建筑：w / h 主屋大小（含墙）、box 主屋里几个箱子、boxA 别的几块里各几个（没写 = 0～1）、up 箱子品质往上抬一档的概率；mix：每档普通建筑的种类权重
   bld:{
-    hut:   {name:'小屋', w:[4,5],  h:[4,4],  roof:'thatch', box:[0,1]},
-    house: {name:'民居', w:[6,8],  h:[5,6],  roof:'tile',   box:[1,2]},
-    long:  {name:'长屋', w:[10,12],h:[5,6],  roof:'wood',   box:[1,3]},
-    ware:  {name:'仓库', w:[8,9],  h:[7,8],  roof:'slate',  box:[2,3], up:0.4},
-    tower: {name:'塔楼', w:[5,5],  h:[5,5],  roof:'stone',  box:[1,1], up:0.5},
-    ruin:  {name:'废墟', w:[5,9],  h:[4,7],  roof:null,     box:[0,2]},
-    church:{name:'大教堂', w:[15,15],h:[11,11],roof:'slate', box:[3,4], up:0.6},
-    crypt: {name:'墓穴', w:[6,6],  h:[5,5],  roof:'stone',  box:[0,0]},
-    barn:  {name:'谷仓', w:[9,10], h:[6,6],  roof:'wood',   box:[1,2]},
-    stall: {name:'摊位', w:[3,3],  h:[2,2],  roof:'cloth',  box:[1,1], open:true},   // open：没有墙，只有棚顶
-    manor: {name:'宅院', w:[13,16],h:[9,12], roof:'tile',   box:[1,1], rooms:[3,4]},   // rooms：连锁建筑（0.13.0f 用户定），分几个房间（每间一个屋顶，进哪间看哪间；box 是每间几个箱子）
-    barrack:{name:'营房', w:[14,17],h:[8,10], roof:'slate', box:[1,1], rooms:[2,3], up:0.3},
-    keep:  {name:'亡灵堡', w:[9,9],  h:[7,7],  roof:'stone',  box:[2,2], up:1},   // 亡灵要塞正中间（首领在里面）
-    uniq:  {name:'独特建筑', w:[10,10],h:[8,8], roof:'uniq',   box:[2,3], up:0.8},   // 大小、名字、样子按地区（下面的 uniq）
+    hut:   {name:'小屋', w:[4,5],  h:[4,4],  box:[0,1]},
+    house: {name:'民居', w:[6,8],  h:[5,6],  box:[1,2]},
+    long:  {name:'长屋', w:[10,12],h:[5,6],  box:[1,3]},
+    ware:  {name:'仓库', w:[8,9],  h:[7,8],  box:[2,3], up:0.4},
+    tower: {name:'塔楼', w:[5,5],  h:[5,5],  box:[1,1], up:0.5},
+    ruin:  {name:'废墟', w:[5,9],  h:[4,7],  box:[0,2]},
+    church:{name:'大教堂', w:[9,9], h:[12,12], box:[2,3], up:0.6},
+    crypt: {name:'墓穴', w:[6,6],  h:[5,5],  box:[0,0]},
+    barn:  {name:'谷仓', w:[9,10], h:[6,6],  box:[1,2]},
+    stall: {name:'摊位', w:[3,3],  h:[2,2],  box:[1,1], open:true},   // open：没有墙，只有棚顶
+    manor: {name:'宅院', w:[9,11], h:[7,8],  box:[1,1], boxA:[1,1]},   // 宅院、营房：几块拼起来的连锁建筑（每块一个屋顶，进哪块看哪块）
+    barrack:{name:'营房', w:[10,13],h:[6,7], box:[1,1], boxA:[1,1], up:0.3},
+    keep:  {name:'亡灵堡', w:[9,9],  h:[7,7],  box:[2,2], up:1},   // 亡灵要塞正中间（首领在里面）
+    uniq:  {name:'独特建筑', w:[10,10],h:[8,8], box:[2,3], up:0.8},   // 大小、名字、样子按地区（下面的 uniq）
+  },
+  // 建筑的样子（0.13.0g 用户定：部件画法——一座房子由几块长方形拼起来（L 形、T 形、带偏房、四块拼），每块一个屋顶、屋脊顺着长边；墙、屋顶的画法在 art/ext_art.js）
+  //   wall 外墙材质（几选一）、inner 两块之间的隔墙（没写 = 同外墙）、roof 屋顶样式（几选一；没写 = 没顶，废墟）、pal 屋顶配色（几选一）、shape 形状 {样子: 权重}（one 一块、annex 主屋 + 偏房、L、T、U 一边两块、grid 四块拼、church 正厅 + 后殿 + 钟塔）、fix 不跟地区换样子
+  //   材质：wood 木、woodDark 深色木、stone 石、brick 砖、plaster 白墙、sandstone 砂岩、ice 冰、darkStone 黑石；屋顶：gable 两坡、hip 四坡、flat 平顶、dome 圆顶、thatch 茅草、tent 帐篷、crenel 垛口平台、spire 尖塔、awning 布棚、eave 飞檐
+  //   配色：red 红瓦、brown 褐、slate 青灰石板、straw 稻草、green 绿、blue 蓝、purple 紫、sand 沙色、snow 白、dark 黑、stone 石色、cloth 条纹布
+  look:{
+    hut:    {wall:['wood','woodDark'], roof:['thatch','gable'], pal:['straw','brown'], shape:{one:3, annex:1}},
+    house:  {wall:['plaster','brick','wood'], inner:'plaster', roof:['gable','hip'], pal:['red','brown','slate'], shape:{one:2, annex:3, L:3, T:1}},
+    long:   {wall:['wood','woodDark'], inner:'wood', roof:['gable'], pal:['brown','straw','red'], shape:{one:2, annex:2, L:1}},
+    ware:   {wall:['stone','brick'], inner:'stone', roof:['hip','flat','gable'], pal:['slate','brown'], shape:{one:2, annex:2, L:1}},
+    tower:  {wall:['stone'], roof:['crenel','spire'], pal:['slate','stone'], shape:{one:1}, fix:1},
+    ruin:   {wall:['stone','darkStone','brick'], shape:{one:2, L:1, annex:1}},
+    church: {wall:['stone'], inner:'plaster', roof:['gable'], pal:['slate'], shape:{church:1}, fix:1},
+    crypt:  {wall:['darkStone'], roof:['dome','flat'], pal:['stone'], shape:{one:1}, fix:1},
+    barn:   {wall:['woodDark','wood'], roof:['gable'], pal:['red','brown'], shape:{one:3, annex:1}},
+    stall:  {roof:['awning'], pal:['cloth'], fix:1},
+    manor:  {wall:['brick','plaster','stone'], inner:'plaster', roof:['hip','gable'], pal:['red','slate','green'], shape:{grid:2, U:2, L:1, T:1}},
+    barrack:{wall:['stone','woodDark'], inner:'wood', roof:['gable','flat'], pal:['slate','brown'], shape:{L:1, T:1, U:1, grid:1}},
+    keep:   {wall:['darkStone'], roof:['crenel'], pal:['dark'], shape:{one:1}, fix:1},
+  },
+  // 地区换样子（不是 fix 的建筑）：wall 外墙、roof 屋顶样式、pal 配色换成这里的；snow 屋顶积雪（fix 的也积）
+  lookReg:{
+    corrupt:      {wall:['darkStone','woodDark'], pal:['purple','dark']},
+    tundra:       {wall:['woodDark','stone'], snow:1},
+    jungle:       {wall:['wood'], roof:['thatch'], pal:['straw','green']},
+    desert:       {wall:['sandstone','plaster'], roof:['flat','dome'], pal:['sand']},
+    sanctum:      {wall:['stone','plaster'], pal:['slate','blue']},
+    polar:        {wall:['ice','stone'], roof:['dome','gable'], pal:['snow'], snow:1},
+    factory:      {wall:['brick','stone'], roof:['flat','gable'], pal:['slate','dark']},
+    shadowDesert: {wall:['sandstone'], roof:['tent','flat'], pal:['sand','purple']},
+    elemForest:   {wall:['wood','stone'], pal:['green','blue']},
+    ironFort:     {wall:['stone','brick'], roof:['flat','hip'], pal:['slate','dark']},
+    shadowHigh:   {wall:['darkStone'], pal:['purple','dark']},
+    arcaneFactory:{wall:['stone','plaster'], roof:['dome','hip'], pal:['blue','purple']},
+    lavaLand:     {wall:['darkStone','stone'], roof:['flat'], pal:['dark','red']},
+    taoRuins:     {wall:['plaster','wood'], roof:['eave'], pal:['blue','green','dark']},
+    steamWorks:   {wall:['brick'], roof:['flat','gable'], pal:['brown','slate']},
+    bloodPass:    {wall:['stone'], pal:['red','dark']},
+    endlessDesert:{wall:['sandstone'], roof:['flat','dome'], pal:['sand']},
+    arcticTundra: {wall:['woodDark','wood'], snow:1},
+    greyMarsh:    {wall:['woodDark'], roof:['thatch'], pal:['green','straw']},
+    cliffEdge:    {wall:['stone','woodDark'], pal:['brown','slate']},
   },
   mix:[{hut:30, house:40, long:10, ruin:20}, {hut:15, house:35, long:15, ware:10, tower:5, ruin:20}, {house:25, long:15, ware:20, tower:15, ruin:25}],
   big:[{manor:50, long:35, ware:15}, {manor:40, barrack:30, long:15, ware:15}, {manor:25, barrack:45, ware:30}],   // 先沿主路放的大建筑（每隔 bigGap 格试一次），连锁建筑（宅院、营房）多在这里
@@ -23367,29 +23409,29 @@ CFG.ext={
     greyMarsh:{wall:'thornWall', gate:'thornGate', tw:['toxTower','nailTower','iceTower']},
     cliffEdge:{wall:'gwWall', gate:'gwGate', tw:['ballista','catapult','rapidArrow']},
   },
-  // 每个地区独特的建筑（0.13.0g 用户定：每种地区尽量一种；名字、样子 Claude 定）：w / h 大小；roof 屋顶三色（亮面、暗面、屋脊线）、wall 墙面两色；deco 屋顶上的装饰（ui/ext.extDeco）
+  // 每个地区独特的建筑（0.13.0g 用户定：每种地区尽量一种；名字、样子 Claude 定）：w / h 大小；pal 屋顶三色（亮、中、暗）、mat 墙的材质、roof 屋顶样式（同上面的 look）；deco 屋顶上的装饰（art/ext_art.extArtDeco）
   uniq:{
-    wild:         {name:'风车磨坊', w:9,  h:8, roof:['#c9a35a','#a07a38','#7a5a28'], wall:['#d8c8a0','#9a8a6a'], deco:'mill'},
-    corrupt:      {name:'腐化祭坛', w:10, h:8, roof:['#5a4a6a','#3e3250','#2a2236'], wall:['#6a6050','#4a4238'], deco:'altar'},
-    tundra:       {name:'猎人木屋', w:9,  h:7, roof:['#eef4fa','#c8d6e4','#9aa8b8'], wall:['#7a5a3a','#4e3622'], deco:'lodge'},
-    jungle:       {name:'树屋',     w:9,  h:8, roof:['#6a8a3a','#4a6a2a','#2e4a1a'], wall:['#7a5a3a','#4e3622'], deco:'tree'},
-    desert:       {name:'沙丘陵墓', w:11, h:9, roof:['#e0c088','#c0a068','#9a7a48'], wall:['#c8a870','#9a7a48'], deco:'pyramid'},
-    sanctum:      {name:'钟楼',     w:8,  h:8, roof:['#5a6070','#3e4450','#2a2e38'], wall:['#a8a49a','#7a766e'], deco:'bell'},
-    polar:        {name:'冰晶堡',   w:10, h:8, roof:['#d0ecff','#a0cce8','#70a0c8'], wall:['#b8d8ec','#88aac4'], deco:'ice'},
-    factory:      {name:'锅炉房',   w:11, h:8, roof:['#6a6a6e','#4a4a4e','#2e2e32'], wall:['#8a5a44','#5e3c2c'], deco:'chimney'},
-    shadowDesert: {name:'游牧大帐', w:10, h:8, roof:['#8a4a6a','#e0c8a0','#5a2e44'], wall:['#a07a58','#6a4e38'], deco:'tent'},
-    elemForest:   {name:'元素树殿', w:10, h:9, roof:['#4a7a5a','#2e5a3e','#1e3a28'], wall:['#8aa098','#5e7068'], deco:'crystal'},
-    ironFort:     {name:'铁血兵营', w:12, h:8, roof:['#4a4e56','#32363e','#22262c'], wall:['#7a6a5a','#4e443a'], deco:'banner'},
-    shadowHigh:   {name:'幽影神龛', w:9,  h:8, roof:['#3a3448','#26222e','#16141c'], wall:['#4e4a5a','#34303e'], deco:'obelisk'},
-    arcaneFactory:{name:'秘法实验室', w:10, h:8, roof:['#4a5a8a','#323e66','#222a48'], wall:['#7a7a9a','#52526e'], deco:'arcane'},
-    lavaLand:     {name:'熔炉',     w:10, h:8, roof:['#4a3a36','#32262a','#1e1618'], wall:['#5a4a44','#3a2e2a'], deco:'forge'},
-    taoRuins:     {name:'道观',     w:11, h:8, roof:['#3a4a5a','#26323e','#1a222a'], wall:['#c8b898','#9a8a6a'], deco:'pagoda'},
-    steamWorks:   {name:'蒸汽机房', w:11, h:8, roof:['#7a6a5a','#5a4a3e','#3a2e26'], wall:['#8a7a6a','#5e5246'], deco:'steam'},
-    bloodPass:    {name:'赤血箭楼', w:8,  h:8, roof:['#7a2a2a','#5a1a1a','#3a1010'], wall:['#8a7a6a','#5e5246'], deco:'redbanner'},
-    endlessDesert:{name:'元素碑亭', w:9,  h:9, roof:['#d8b878','#b8985a','#8a6a3a'], wall:['#c8a870','#9a7a48'], deco:'stele'},
-    arcticTundra: {name:'雪橇驿站', w:11, h:7, roof:['#eef4fa','#c8d6e4','#9aa8b8'], wall:['#6a4a32','#422e1e'], deco:'sled'},
-    greyMarsh:    {name:'沼泽巫屋', w:8,  h:7, roof:['#5a6a3a','#3e4a28','#2a321a'], wall:['#5e5440','#3e382a'], deco:'witch'},
-    cliffEdge:    {name:'矿井井架', w:9,  h:8, roof:['#6a5a4a','#4a3e32','#2e2620'], wall:['#7a6a5a','#4e443a'], deco:'mine'},
+    wild:         {name:'风车磨坊', w:9,  h:8, pal:['#c9a35a','#a07a38','#7a5a28'], mat:'plaster', roof:'gable', deco:'mill'},
+    corrupt:      {name:'腐化祭坛', w:10, h:8, pal:['#5a4a6a','#3e3250','#2a2236'], mat:'darkStone', roof:'flat', deco:'altar'},
+    tundra:       {name:'猎人木屋', w:9,  h:7, pal:['#eef4fa','#c8d6e4','#9aa8b8'], mat:'woodDark', roof:'gable', deco:'lodge'},
+    jungle:       {name:'树屋',     w:9,  h:8, pal:['#6a8a3a','#4a6a2a','#2e4a1a'], mat:'wood', roof:'thatch', deco:'tree'},
+    desert:       {name:'沙丘陵墓', w:11, h:9, pal:['#e0c088','#c0a068','#9a7a48'], mat:'sandstone', roof:'flat', deco:'pyramid'},
+    sanctum:      {name:'钟楼',     w:8,  h:8, pal:['#5a6070','#3e4450','#2a2e38'], mat:'stone', roof:'hip', deco:'bell'},
+    polar:        {name:'冰晶堡',   w:10, h:8, pal:['#d0ecff','#a0cce8','#70a0c8'], mat:'ice', roof:'dome', deco:'ice'},
+    factory:      {name:'锅炉房',   w:11, h:8, pal:['#6a6a6e','#4a4a4e','#2e2e32'], mat:'brick', roof:'flat', deco:'chimney'},
+    shadowDesert: {name:'游牧大帐', w:10, h:8, pal:['#8a4a6a','#e0c8a0','#5a2e44'], mat:'wood', roof:'tent', deco:'tent'},
+    elemForest:   {name:'元素树殿', w:10, h:9, pal:['#4a7a5a','#2e5a3e','#1e3a28'], mat:'stone', roof:'dome', deco:'crystal'},
+    ironFort:     {name:'铁血兵营', w:12, h:8, pal:['#4a4e56','#32363e','#22262c'], mat:'stone', roof:'crenel', deco:'banner'},
+    shadowHigh:   {name:'幽影神龛', w:9,  h:8, pal:['#3a3448','#26222e','#16141c'], mat:'darkStone', roof:'flat', deco:'obelisk'},
+    arcaneFactory:{name:'秘法实验室', w:10, h:8, pal:['#4a5a8a','#323e66','#222a48'], mat:'stone', roof:'dome', deco:'arcane'},
+    lavaLand:     {name:'熔炉',     w:10, h:8, pal:['#4a3a36','#32262a','#1e1618'], mat:'darkStone', roof:'flat', deco:'forge'},
+    taoRuins:     {name:'道观',     w:11, h:8, pal:['#3a4a5a','#26323e','#1a222a'], mat:'plaster', roof:'eave', deco:'pagoda'},
+    steamWorks:   {name:'蒸汽机房', w:11, h:8, pal:['#7a6a5a','#5a4a3e','#3a2e26'], mat:'brick', roof:'flat', deco:'steam'},
+    bloodPass:    {name:'赤血箭楼', w:8,  h:8, pal:['#7a2a2a','#5a1a1a','#3a1010'], mat:'stone', roof:'crenel', deco:'redbanner'},
+    endlessDesert:{name:'元素碑亭', w:9,  h:9, pal:['#d8b878','#b8985a','#8a6a3a'], mat:'sandstone', roof:'flat', deco:'stele'},
+    arcticTundra: {name:'雪橇驿站', w:11, h:7, pal:['#eef4fa','#c8d6e4','#9aa8b8'], mat:'woodDark', roof:'gable', deco:'sled'},
+    greyMarsh:    {name:'沼泽巫屋', w:8,  h:7, pal:['#5a6a3a','#3e4a28','#2a321a'], mat:'woodDark', roof:'thatch', deco:'witch'},
+    cliffEdge:    {name:'矿井井架', w:9,  h:8, pal:['#6a5a4a','#4a3e32','#2e2620'], mat:'wood', roof:'gable', deco:'mine'},
   },
   // 亡灵群：野外按网格撒（间隔 gap 格，有 p 的概率放一群；在自己周围 r 格里走动）；n 每档几只；elite 带精英的概率；入口 safe 格内没有；城寨里 boss 个首领各带 guard 只
   pack:{gap:13, p:0.55, r:6, n:[[3,5],[4,7],[5,8]], elite:[0,0.15,0.35], safe:18, boss:2, guard:6},
@@ -31112,6 +31154,452 @@ function hdMerlinPrime(fr){return hdFig(32,32,S=>{
   S.ln(15,17,14,28,[gold,3]);S.ln(18,17,19.5,28,[gold,3]);
 })}
 Object.assign(HD_HEROES,{merlinPrime:hdMerlinPrime});
+
+/* ---------- 0.13.0g 搜打撤建筑的部件画法（用户 11-04 定：墙 + 屋顶生成 + 缓存；一座房子几块长方形拼起来，每块一个屋顶，屋脊顺着长边）----------
+   这个文件只管「画」：地图生成 game/ext_gen（每格墙的材质 EXT_WM、门洞 EXT_DG、每块屋顶 EXT_GEN.bld），排序、调用 ui/ext（extDpush / extDrawE），都不在这里。
+   下面这几个函数、常量的名字和参数是约定好的（ui/ext、game/ext_gen 在用），不要改；函数里面怎么画随意。
+   EXT_WH 墙高（像素）：墙块的顶面比地面抬高这么多，屋顶也抬这么多
+   EXT_MATS 墙的材质（EXT_WM[格] 存这里的下标；0 不用）；EXT_ROOFS 屋顶样式；EXT_PALS 屋顶配色（键 → [亮, 中, 暗]；b.pal 也可能直接是 [亮, 中, 暗] 三个颜色，独特建筑用）
+   extArtWall(tx,ty,m,mask,a)：一格墙。m 材质下标；mask 四邻是不是墙（1 北 2 东 4 南 8 西）；a 透明度（队长被挡住时 0.4）。
+     顶面在 (tx*16, ty*16-EXT_WH) 16 × 16；南边不是墙（!(mask&4)）时顶面下面接一块墙面 16 × EXT_WH（到 ty*16+16 为止）
+   extArtGap(tx,ty,m,mask,a)：横墙（东西向）上的门洞那一格：门框、门楣画在这格墙面的位置，中间留空（人从这里进出）；mask 2 / 8：东 / 西边是墙（门框画在那边）
+   extArtRoof(b,a)：一块屋顶。b 是 EXT_GEN.bld 的一条：x0 y0 x1 y1 这块的格子（含墙）、roof 样式、dir 'h' 屋脊东西向 / 'v' 南北向、pal 配色、seed 随机种子（烟囱放哪之类）、snow 积雪、k 建筑种类；
+     盖住 [x0*16, (x1+1)*16) × [y0*16-EXT_WH, (y1+1)*16-EXT_WH)，可以往上多出一截（屋脊、圆顶、尖塔），四边可以多出一两像素屋檐
+   extArtSteps(b)：门口的台阶（地面层，画在人下面）；b.door = {side 1 南 / 2 西 / 3 东（极少数 0 北）, p 从哪格开始（南北门是 x，东西门是 y）, w 几格宽}
+   extArtDeco(k,X0,X1,RT,RB,b)：屋顶上的装饰（cross 十字架、flag 旗子、独特建筑的 21 种：data/ext.uniq 的 deco）；X0 / X1 / RT / RB 是屋顶左右上下（世界坐标）
+   要求：每帧只贴预先画好的小图（sprW）或者少量色块（rectW），别每帧逐像素画
+   —— 0.13.0g 美术代理的画法（下面「预先画好的图」「画」两段）——
+   图：2 倍分辨率（同游戏里的高清建筑、城墙；只有风车叶子是 1 倍）；分 6 份 sprLazy 登记（exaGen 的 w / r1 / r2 / r3 / f / d），标题画面空闲时一份一份画，开一局时 spriteFinish 一定画完、排进静态图集；
+     一共约 55 万真实像素（t_extart 打印）。exaSpr() 第一次用时把 6 份拼成一张表。
+     屋顶、木墙、石墙（含砂岩、黑石）、装饰的大部分画成灰度图，画的时候 sprW 的 tint 乘颜色（灰度 208 = 原色，更亮的是高光）：屋顶按 b.pal（exaPT：亮 / 中 / 暗 + 三个中间色），墙按材质（EXA_MC）；
+     砖墙、白墙、冰墙、门框、台阶、烟囱、积雪那套是彩色图。Canvas2D 退路没有乘色，灰度图就画成灰的（不报错）
+   墙：5 种画法（木、石、砖、白墙木构架、冰）× 16 种四邻的顶面（露在外面的边描墨线、亮边）+ 墙面（两头 4 种 + 带窗 1 种：北边是屋里、南边是外面、左右都是墙的格子按哈希开窗）；
+     墙面上沿一道屋檐下的影子、下沿压暗；门洞：木构架那几种是横梁 + 两边立柱，石 / 砖 / 冰是拱券（只有一边是墙 = 宽门的半个拱），中间透明
+   屋顶的几何（全是世界坐标；X0 / X1 屋顶左右（墙外各多 2 像素屋檐，平顶 1 像素），RT / RB 屋顶上下，hh = RB - RT）：
+     两坡，屋脊东西向（h）：后坡 RT～RT+hh/4（亮色）、屋脊、前坡到 RB（分三段：靠屋脊亮、靠屋檐暗），前檐一条封檐板、左右两条山墙封檐板 —— 全是横竖的长条，按块平铺；块大时前坡开老虎窗
+     屋脊南北向（v，两坡 / 茅草 / 飞檐 / 帐篷）：左坡（亮）右坡（暗），1 : 2 的斜边；屋脊在正中，北头往上翘出 宽/4（人字形的顶），南头露出三角山墙（按这座房子的墙材质上色，EXA_GC）；
+       按 32 像素宽一列一列拼：每列 = 顶上的斜边块 g1 + 中间平铺 sv + 下面的斜边块 g2 + 山墙斜边 gg + 山墙平铺 gf；右坡 = 左坡左右翻转
+     四坡（hip；茅草 / 飞檐 / 帐篷屋脊东西向时也用）：后坡 1 : 2、前坡 2 : 3 的斜脊，按列拼（h3 侧坡下沿、h1 后坡斜边、h2 侧坡上沿、h4 前坡斜边）；东西向是梯形 + 两边三角，南北向是两个三角 + 两边梯形，方块是四棱锥
+     纹理：鳞片瓦（sh）、筒瓦（cl：红、沙色配色）、茅草（th）、东方筒瓦（ea：飞檐，加翘角、鸱吻）、帐篷条纹（te）；积雪 = 白色那套（sw）照同样的块再盖一遍，两坡东西向只盖后坡和前坡上半截（下沿一排冰溜子）
+     平顶 / 垛口 / 圆顶 / 尖塔：一圈女儿墙（北边那段的内侧面、南边那段的外侧面看得见，东西两段只看到顶），中间铺地砖；垛口 = 女儿墙上一排 4 像素宽的垛子；平顶上按 seed 放通风箱、天窗、检修口、水桶；
+       圆顶 = 平顶上按块的长短放 1～3 个圆顶（4 种大小，图里带鼓座）；尖塔 = 平顶正中一座方尖顶（56 像素见方）+ 四角小尖塔
+     布棚（awning）：没有墙，前面两根柱子落地；布 = 底色（亮）+ 条纹（中），下沿一排花边
+     烟囱（两坡 / 四坡 / 茅草）、老虎窗都按 b.seed 放（每次一样）；独特建筑不放，它有自己的装饰（extArtDeco：风车四帧转、旗三帧飘、烟一团团往上飘、光一明一暗）
+   每帧的贴图：墙一格 1～2 张（顶面 + 墙面）；屋顶一块大约 10～80 张（越大越多，积雪再加一倍；队长在屋顶下时 ui/ext 分五块裁着画，那一块 ×5） */
+const EXT_WH=18;
+const EXT_MATS=['','wood','woodDark','stone','brick','plaster','sandstone','ice','darkStone'];
+const EXT_ROOFS=['gable','hip','flat','dome','thatch','tent','crenel','spire','awning','eave'];
+const EXT_PALS={red:['#c8604a','#a84a3a','#7a2e24'],brown:['#9a7a52','#7a5a3a','#5a3e24'],slate:['#6e7a8a','#4e5866','#363e4a'],straw:['#d6b66a','#b8954a','#8a6a2e'],
+  green:['#6a9a5a','#4a7a3e','#2e5a28'],blue:['#5a7aa8','#3e5a88','#2a3e66'],purple:['#8a6aa8','#6a4a88','#4a2e66'],sand:['#e0c890','#c8a870','#9a7a48'],snow:['#f4f8fc','#d8e4ee','#a8b8c8'],
+  dark:['#4a4650','#34303a','#201e26'],stone:['#8e8a82','#6e6a64','#4e4a45'],cloth:['#e8d8b0','#c84a4a','#8a2a2a']};
+// ================= 预先画好的图 =================
+const EXA_MF=[1,0,0,1,2,3,1,4,1];   // 墙材质 → 画法：0 木（木、深色木）、1 石（石、砂岩、黑石）、2 砖、3 白墙（木构架）、4 冰
+const EXA_MC=[null,'#a47c4e','#6e4e36','#aaa69e',null,null,'#dcc28e',null,'#5e5868'];   // 灰度图乘的材质色（null = 那种墙的图本身是彩色的）
+const EXA_GC=['#9a8a72','#a47c4e','#6e4e36','#9a9284','#a0604a','#e6dcc6','#d4b884','#c4e6f8','#5e5668'];   // 两坡屋顶南北向时朝南的三角山墙，按这座房子的墙材质上色
+const exaH=(x,y,s)=>{let h=(Math.imul(x|0,374761393)+Math.imul(y|0,668265263)+Math.imul(s|0,1442695041))|0;h=Math.imul(h^(h>>>13),1274126177);return((h^(h>>>16))>>>0)/4294967296};   // 0～1 的哈希（画图、放烟囱用，每次一样）
+// 一张图：逻辑宽高 w × h（世界像素；图是 kw × kh 真实像素，k 默认 2），f(x, y) 给每个真实像素的值：< 0 透明；层 × 256 + 档（0～255）；R 是按层的色表（没有 = 灰度）；
+//   层 15 = 黑色、不透明度 = 档（影子）；层 14 = 白色、不透明度 = 档（光晕、烟，画的时候乘色）
+function exaPc(w,h,f,R,k){k=k||2;const W=w*k,H=h*k,d=new Uint8ClampedArray(W*H*4);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const v=f(x,y);if(v<0)continue;const i=(y*W+x)*4,L=v>>8,g=v&255;
+    if(L===15){d[i+3]=g;continue}if(L===14){d[i]=255;d[i+1]=255;d[i+2]=255;d[i+3]=g;continue}const c=R&&R[L];if(c){const q=c[g];d[i]=q[0];d[i+1]=q[1];d[i+2]=q[2]}else{d[i]=g;d[i+1]=g;d[i+2]=g}d[i+3]=255}
+  const c=canvasOf(W,H);c.getContext('2d').putImageData(new ImageData(d,W,H),0,0);EXA_PX+=W*H;return reg(c,k)}
+let EXA_PX=0;   // 一共画了多少真实像素（报告图集用量）
+function exaRamp(st){const o=[];for(let g=0;g<256;g++){let k=0;while(k<st.length-2&&g>st[k+1][0])k++;const a=st[k],b=st[k+1],t=Math.max(0,Math.min(1,(g-a[0])/((b[0]-a[0])||1))),A=hdRGB(a[1]),B=hdRGB(b[1]);
+  o.push([Math.round(A[0]+(B[0]-A[0])*t),Math.round(A[1]+(B[1]-A[1])*t),Math.round(A[2]+(B[2]-A[2])*t)])}return o}   // 灰度 → 颜色（按几个点插值）
+// 描边：透明、挨着不透明像素的点涂成墨色（圆顶、尖塔、小物件用；在 exaPc 前对值表做）
+function exaOut(W,H,v,ink){const o=v.slice();for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(v[i]>=0&&(v[i]>>8)<14)continue;
+  if(x>0&&v[i-1]>=0&&(v[i-1]>>8)<14||x<W-1&&v[i+1]>=0&&(v[i+1]>>8)<14||y>0&&v[i-W]>=0&&(v[i-W]>>8)<14||y<H-1&&v[i+W]>=0&&(v[i+W]>>8)<14)o[i]=ink===undefined?40:ink}return o}
+function exaPcV(w,h,f,R,ink,k){k=k||2;const W=w*k,H=h*k,v=new Int32Array(W*H);for(let y=0;y<H;y++)for(let x=0;x<W;x++)v[y*W+x]=f(x,y);const o=exaOut(W,H,v,ink);return exaPc(w,h,(x,y)=>o[y*W+x],R,k)}   // 先算好再描一圈外框
+// —— 墙 ——
+const EXA_GL=[[0,'#0c0e16'],[90,'#1c2636'],[170,'#3e566e'],[230,'#86a6c0'],[255,'#d0e6f4']],EXA_WD=[[0,'#1e140c'],[100,'#3a2618'],[170,'#5a3e28'],[208,'#76543a'],[250,'#a07a54']],
+  EXA_ST=[[0,'#2e2a26'],[100,'#625c52'],[170,'#968e80'],[208,'#b8b0a0'],[250,'#e6e0d2']];
+function exaWRamps(f){const g=exaRamp(EXA_GL),w=exaRamp(EXA_WD),s=exaRamp(EXA_ST);   // 墙的色表（按层）：0 主材 1 灰缝 / 木构架 2 石料 3 玻璃 4 木框
+  if(f===2)return[exaRamp([[0,'#24100c'],[100,'#5a261a'],[160,'#7a3626'],[208,'#9c4a34'],[236,'#b8644a'],[255,'#d08060']]),exaRamp([[0,'#2a2420'],[150,'#7a6c5e'],[255,'#c8bca8']]),s,g,w];
+  if(f===3)return[exaRamp([[0,'#3a3228'],[100,'#8a7e6a'],[170,'#c8ba9c'],[214,'#e8dfc8'],[240,'#f4eedd'],[255,'#fffaf0']]),w,s,g,w];
+  if(f===4)return[exaRamp([[0,'#1a3250'],[100,'#4a7aa8'],[170,'#78b2da'],[208,'#a6d6f2'],[240,'#d8f2ff'],[255,'#ffffff']]),exaRamp([[0,'#1a3250'],[150,'#5a8ab8'],[255,'#c8e8ff']]),s,g,w];
+  return null}
+// 墙顶的纹理（X 顺着墙、Y 横着墙；32 × 32 一个周期）：返回 层 × 256 + 灰度
+function exaWTop(f,X,Y){
+  if(f===1||f===4){const r=Y>>4,o=(r&1)*8,bx=(X+o)>>4,u=(X+o)&15,q=Y&15,n=(exaH(bx,r,41+f)-0.5)*(f===4?10:18);   // 石块（冰块）错缝
+    if(u===0||q===0)return f===4?(1<<8)|150:118;if(q===1||u===1)return 230;if(q===15)return 170;if(u===15)return 180;
+    if(f===4&&((X-Y+bx*5)&15)===6&&exaH(bx,r,47)<0.6)return 250;return Math.round(206+n+(exaH(X,Y,42)<0.07?-16:0))}
+  if(f===2){const r=Y>>3,o=(r&1)*8,u=(X+o)&15,q=Y&7,n=(exaH((X+o)>>4,r,44)-0.5)*16;if(u===0||q===7)return(1<<8)|150;if(q===0)return 236;if(q===6)return 168;if(u===1)return 224;return Math.round(204+n)}
+  const L=f===3?256:0,p=Y>>3,q=Y&7,jx=Math.floor(exaH(p,0,31)*32),u=(X-jx)&31,n=(exaH(p,X>>4,33)-0.5)*10;   // 木板（白墙的墙顶是木构架的顶梁）
+  if(u===0)return L|108;if(u===1)return L|228;if(q===0)return L|232;if(q===7)return L|102;if(q===6)return L|166;if(u===3&&(q===2||q===5))return L|118;
+  return L|Math.round(204+n+(exaH(X>>2,Y,32)<0.14?-22:0))}
+// 墙面的纹理（x 0～31，y 0～HH-1，HH = 2 × EXT_WH）；e / w：东 / 西边还有墙
+function exaWFace(f,x,y,HH,e,w){
+  if(f===1){if(y<2)return y?214:238;const k=(y-2)>>3,q=(y-2)&7,J=[[4,20],[12,28],[0,16],[8,24]][k&3];   // 条石，一层 4 像素
+    for(const j of J){if(x===j)return 118;if(x===j+1)return 226;if(x===((j+31)&31))return 168}
+    if(q===7)return 118;if(q===0)return 228;if(q===6)return 172;return Math.round(196+(exaH((x+(k&1)*8)>>4,k,51)-0.5)*16+(exaH(x,y,52)<0.06?-14:0))}
+  if(f===0){if(y<2)return y?208:236;   // 横的木板墙，两头角柱
+    if(!w&&x<5)return[40,236,188,186,118][x];if(!e&&x>26)return[216,184,180,146,40][x-27];
+    const k=((y-2)/6)|0,q=(y-2)%6;if(q===0)return 230;if(q===5)return 100;if(q===4)return 160;return Math.round(196+(exaH(x>>3,k,53)-0.5)*12+(exaH(x>>1,y,54)<0.12?-20:0))}
+  if(f===2){if(y<2)return 512|(y?200:240);if(y>=HH-8){if(y===HH-8)return 512|236;return 512|((x&15)===0?140:188)}   // 砖墙：顶上一道压顶石、底下一圈石砌勒脚
+    const k=((y-2)/6)|0,q=(y-2)%6,o=(k&1)*8,u=(x+o)&15;if(q===5||u===0)return 256|150;if(q===0)return 232;if(q===4)return 166;if(u===1)return 222;return Math.round(198+(exaH((x+o)>>4,k,55)-0.5)*18)}
+  if(f===3){if(y<6)return 256|[214,170,168,166,150,100][y];if(y>=HH-8&&y<HH-4)return 256|[206,166,164,98][y-HH+8];if(y>=HH-4)return 512|(y===HH-4?226:184);   // 白墙 + 木构架：顶梁、地梁、每格左边一根立柱
+    if(x<4)return 256|[96,206,166,104][x];if(!e&&x>27)return 256|[200,166,164,96][x-28];
+    let g=214+Math.round((exaH(x,y,56)-0.5)*8);if(y===6)g=186;if(x===4)g=192;return g}
+  if(y<2)return y?226:250;const k=((y-2)/12)|0,q=(y-2)%12,o=(k&1)*8,u=(x+o)&15;   // 冰砖
+  if(q===11||u===0)return 256|150;if(q===0)return 246;if(u===1)return 240;if(((x+y*2+k*5)%23)===0)return 252;return Math.round(206-q*2+(exaH((x+o)>>4,k,57)-0.5)*12)}
+// 窗（墙面上，北边是屋里、南边是外面、左右都是墙的格子才开）：返回值或 -1（不在窗上）
+function exaWin(f,x,y,y0,y1){
+  if(f===1){const cy=y0+5,dx=x+0.5-16,dy=y+0.5-cy,r=Math.hypot(dx,dy);   // 石墙：拱形窗，下面一道窗台
+    if(y>=y1&&y<y1+2&&x>=8&&x<24)return y===y1?236:150;
+    const inO=x>=11&&x<21&&y>=cy&&y<y1||y<cy&&r<5;if(inO)return 768|(y>=y1-1?40:((x-y)%9+9)%9<2&&y<y1-3?150:64);
+    const inF=x>=9&&x<23&&y>=cy&&y<y1||y<cy&&r<7.5;if(inF){if(y<cy){const s=Math.floor((Math.atan2(dy,dx)+Math.PI)/0.45);return r>6.8?110:(s&1?228:196)}return(y-cy)%6===5?140:x<11?224:200}return -1}
+  if(f===0){if(x>=12&&x<20&&y>=y0+1&&y<y1-1)return 768|(y>=y1-2?40:((x-y)%9+9)%9<2?150:66);   // 木墙：方窗 + 两扇百叶
+    if(x>=11&&x<21&&y>=y0&&y<y1)return 118;if((x>=6&&x<11||x>=21&&x<26)&&y>=y0&&y<y1){if(x===6||x===25||y===y0||y===y1-1)return 104;if(y===((y0+y1)>>1))return 150;return x&1?196:176}
+    if(x>=10&&x<22&&y>=y1&&y<y1+2)return y===y1?220:140;return -1}
+  if(f===2){if(x>=9&&x<23&&y>=y0&&y<y0+3)return 512|(y===y0?238:x===9||x===22?150:196);if(x>=9&&x<23&&y>=y1&&y<y1+2)return 512|(y===y1?236:160);   // 砖墙：石过梁 + 石窗台
+    if(x>=11&&x<21&&y>=y0+3&&y<y1){if(x===11||x===20||x===16||y===y0+3)return 1024|150;return 768|(y>=y1-1?40:((x-y)%9+9)%9<2?150:64)}return -1}
+  if(f===3){if(x>=8&&x<24&&y>=y0+1&&y<y1-1){if(x<10||x>=22||y<y0+3||y>=y1-3||x===15||x===16||y===((y0+y1)>>1))return 256|(x===8||y===y0+1?206:166);return 768|(((x-y)%9+9)%9<2?150:66)}return -1}   // 白墙：木框十字窗
+  const cy=(y0+y1)>>1,r=Math.hypot(x+0.5-16,y+0.5-cy);if(r<5.5)return 768|(r<2&&x<16?210:((x+y)&3)===0?150:118);if(r<7.3)return r<6.4?246:196;return -1}   // 冰墙：圆窗（结霜）
+function exaWallTopPc(f,m,R){const vr=(m&5)&&!(m&10);   // 竖着的一段墙（只有南北邻居）：木纹、砖缝竖着走
+  return exaPc(16,16,(x,y)=>{if(!(m&1)&&y===0||!(m&8)&&x===0||!(m&2)&&x===31)return 40;   // 露在外面的边：墨线、亮边
+    const v=vr?exaWTop(f,y,x):exaWTop(f,x,y),L=v&~255;if(!(m&1)&&y===1||!(m&8)&&x===1)return L|244;if(!(m&2)&&x===30)return L|150;if(!(m&4)&&y===31)return L|Math.round((v&255)*0.86);return v},R)}
+function exaWallFacePc(f,e,w,win,R){const HH=EXT_WH*2,y0=Math.round(HH*0.22),y1=Math.round(HH*0.7);
+  return exaPc(16,EXT_WH,(x,y)=>{if(!w&&x===0||!e&&x===31||y===HH-1)return 40;let v=exaWFace(f,x,y,HH,e,w);if(win){const g=exaWin(f,x,y,y0,y1);if(g>=0)v=g}
+    const L=v&~255;let g=v&255;if(!w&&x===1)g=226;if(!e&&x===30)g=146;
+    if(y>=HH-6)g*=0.84+(HH-1-y)*0.03;else if(y>=2&&y<8&&L!==768)g*=[0.6,0.68,0.77,0.85,0.92,0.97][y-2];   // 墙根压暗；屋檐下的影子
+    return L|Math.round(g)},R)}
+// 门洞：上面一截门楣（顶面 4 像素 + 墙面里的横梁 / 拱），两边门框，中间透明；Lp / Rp：西 / 东边是墙
+function exaGapPc(f,Lp,Rp,R){const HH=EXT_WH*2,arch=f===1||f===2||f===4,TL=f===3?256:0,SL=f===2?512:0;
+  let cx=16,cy=22,rx=10,ry=10;if(Lp&&!Rp){cx=32;cy=23;rx=26;ry=11}else if(Rp&&!Lp){cx=0;cy=23;rx=26;ry=11}   // 只有一边有墙 = 宽门的一半：一个大拱的四分之一
+  return exaPc(16,EXT_WH+4,(x,y)=>{
+    if(y<8){if(y===0)return(arch?SL:TL)|40;if(y===1)return(arch?SL:TL)|240;if(y===7)return(arch?SL:TL)|222;return arch?(f===2?SL|(196+((x&15)===0?-40:0)):exaWTop(f,x,y+4)):TL|(198+((x*3+y)%7===0?-16:0))}   // 门楣的顶面
+    const fy=y-8;
+    if(!arch){if(fy<8)return TL|[212,176,170,172,168,174,104,48][fy];   // 木门框：一根横梁 + 两边立柱
+      if(Lp&&x<6)return TL|[70,226,186,182,120,46][x];if(Rp&&x>25)return TL|[46,206,182,180,150,70][x-26];return -1}
+    if(!Lp&&!Rp){if(fy<6)return SL|[232,196,196,196,150,60][fy];return -1}   // 两边都不是墙（三格宽的门正中）：平的石过梁
+    const ax=(x+0.5-cx)/rx,ay=(fy+0.5-cy)/ry,s=Math.hypot(ax,ay),below=fy+0.5>=cy;
+    if(below?Math.abs(x+0.5-cx)<rx:s<1)return -1;   // 门洞
+    const ox=(x+0.5-cx)/(rx+3.5),oy=(fy+0.5-cy)/(ry+3.5),so=Math.hypot(ox,oy);
+    if(!below&&so<1){if(s<1.07)return SL|92;if(so>0.94)return SL|110;return SL|((Math.floor((Math.atan2(ay,ax)+Math.PI)/0.32)&1)?234:198)}   // 拱券：一块深一块浅
+    if(below&&(Math.abs(x+0.5-cx)<rx+1))return SL|(x+0.5<cx?150:96);   // 门洞边上的阴影
+    return exaWFace(f,x,fy,HH,1,1)},R)}
+// 台阶：朝南的门（w 格宽）三级，越往下越宽；朝东的门三级往东（朝西的翻过来画）
+const EXA_STR=[[0,'#2a2622'],[100,'#6a645a'],[160,'#948c7e'],[208,'#c4bcac'],[236,'#e2dccc'],[255,'#f6f2e8']];
+function exaStepPc(w){const W=(16*w+10)*2,R=[exaRamp(EXA_STR),exaRamp([[0,'#3a1612'],[120,'#7a2a22'],[208,'#a8443a'],[255,'#d87a62']])];
+  return exaPc(16*w+10,9,(x,y)=>{const t=(y/6)|0,q=y%6,ins=(2-t)*4;if(x<ins||x>=W-ins)return -1;if(x===ins||x===W-1-ins)return q<4?160:100;
+    if(t===0&&x>=12&&x<W-12&&q>0&&q<4)return 256|(q===1?236:x===12||x===W-13?120:200);   // 最上一级铺一块红毯（让门好认）
+    if(q===0)return 248;if(q<4)return Math.round(204+(exaH(x>>3,t,61)-0.5)*14);if(q===4)return 140;return 70},R)}
+function exaStepEPc(w){const H=(16*w+6)*2,R=[exaRamp(EXA_STR)];
+  return exaPc(9,16*w+6,(x,y)=>{const t=(x/6)|0,u=x%6,yF=H-8+2*t;if(y<2*t||y>=yF+4)return -1;   // 越往外一级越低（整级往下挪），南边露出一截侧面
+    if(y>=yF)return y===yF+3?60:120;if(u===5)return 130;if(y===2*t)return 236;if(u===0)return 244;return Math.round(204+(exaH(t,y>>4,62)-0.5)*14)},R)}
+// —— 坡屋顶的纹理（灰度）：f 前坡 (x, 离屋檐往上的距离)、b 后坡 (x, 离北檐往下的距离)、s 侧坡（斜的：东西两面坡 / 四坡的两头，接缝跟着坡往上升）——
+function exaShF(x,v){const c=Math.floor(v/12),q=v%12,xo=x+(c&1)*8,u=xo&15,n=(exaH(xo>>4,c&1,11)-0.5)*14+(exaH(xo>>4,c,111)-0.5)*8;   // 鳞片瓦：一排 6 像素，错缝；下沿一道亮边，上半截压在上一排的影子里，两角圆一点
+  if(q<=1&&(u===0||u===15))return 128;if(q===0)return 80;if(q===1)return 240;if(q>=10)return q===11?132:166;if(u===0)return 146;if(u===1)return 230;return Math.round(224+n-(q-2)*3)}
+function exaShB(x,w){const c=w>>3,q=w&7,xo=x+(c&1)*8,u=xo&15,n=(exaH(xo>>4,c,12)-0.5)*14;   // 后坡压扁：一排 4 像素
+  if(q>=6&&(u===0||u===15))return 132;if(q===7)return 84;if(q===6)return 240;if(q===0)return 140;if(q===1)return 176;if(u===0)return 150;if(u===1)return 228;return Math.round(218+n-(5-q)*2)}
+function exaShS(x,y){const c=x>>3,u=x&7,w=y+(x>>1)+(c&1)*8,q=w&15,n=(exaH(c,w>>4,13)-0.5)*14;   // 侧坡：竖的一排排（左边是下沿），接缝斜着往右上升
+  if(u<=1&&(q===0||q===15))return 130;if(u===0)return 80;if(u===1)return 238;if(u===7)return 140;if(u===6)return 172;if(q===0)return 148;if(q===1)return 228;return Math.round(224+n-(u-2)*4)}
+function exaSwF(x,v){const q=v%12,n=(exaH(x>>3,v>>2,97)-0.5)*10;if(q===0)return 206;if(q===1)return 226;return Math.round(240+n)}   // 积雪：白里透一点瓦的起伏
+function exaSwB(x,w){const q=w&7,n=(exaH(x>>3,w>>2,98)-0.5)*10;return q===7?212:Math.round(242+n)}
+function exaSwS(x,y){const u=x&7,n=(exaH(x>>2,(y+(x>>1))>>2,99)-0.5)*10;return u===0?210:u===1?250:Math.round(238+n-u)}
+function exaThF(x,v){const c=Math.floor(v/12),q=v%12,xs=x+(c&1)*5,j=1+Math.floor(exaH(xs>>1,c,21)*3.2),n=exaH(xs,v>>1,22);   // 茅草：一层层，下沿参差
+  if(q>=12-j)return Math.round(100+(11-q)*22+n*10);if(q===0)return Math.round(140+n*24);let g=200+n*40;if(exaH(xs,c,23)<0.22)g-=30;if(q<=2)g+=14;return Math.min(252,Math.round(g))}
+function exaThB(x,w){const c=w>>3,q=7-(w&7),xs=x+(c&1)*5,j=1+Math.floor(exaH(xs>>1,c,25)*2.4),n=exaH(xs,w,26);
+  if(q>=8-j)return Math.round(128+(7-q)*14+n*10);if(q===0)return Math.round(150+n*24);let g=196+n*40;if(exaH(xs,c,27)<0.22)g-=28;return Math.min(252,Math.round(g))}
+function exaThS(x,y){const c=x>>3,u=x&7,w=y+(x>>1),ws=w+(c&1)*3,j=1+Math.floor(exaH(c,ws>>2,28)*2.6),n=exaH(c*7+u,ws>>1,29);
+  if(u>=8-j)return Math.round(150-(u-8+j)*14+n*10);if(u===0)return Math.round(150+n*24);let g=196+n*38;if(exaH(c,ws>>1,30)<0.2)g-=26;return Math.min(252,Math.round(g))}
+function exaEaF(x,v){const u=x&7,q=v%12;   // 东方的筒瓦：凸的筒瓦和凹的板瓦一条条往下
+  if((x>>3)&1){if(u===0||u===7)return 70;const g=[0,150,200,238,226,206,176,0][u];if(q===0)return 96;if(q===1)return Math.min(252,g+16);if(q===11)return g-26;return g}
+  const g=[150,166,174,178,176,170,160,146][u];return q<2?g-30:g}
+function exaEaB(x,w){const u=x&7,q=w&7;if((x>>3)&1){if(u===0||u===7)return 72;const g=[0,152,204,240,228,208,178,0][u];if(q===7)return 98;if(q===0)return g-24;return g}const g=[152,168,176,180,178,172,162,148][u];return q>5?g-30:g}
+function exaEaS(x,y){const w=y+(x>>1),u=w&7;if((w>>3)&1){if(u===0||u===7)return 70;const g=[0,150,200,238,226,206,176,0][u];if((x&7)===0)return 96;if((x&7)===1)return Math.min(252,g+14);return g}const g=[150,166,174,178,176,170,160,146][u];return(x&7)<2?g-30:g}
+function exaTeF(x,v){const s=(x>>4)&1,u=x&15,n=(exaH(x>>2,v>>3,71)-0.5)*8;if(u===0)return 132;let g=s?226:178;g-=Math.round(10*Math.sin((v%48)/48*Math.PI*2));if(u===1)g+=10;return Math.round(g+n)}   // 帐篷：一条条宽条纹，鼓起来的地方亮
+function exaTeB(x,w){const s=(x>>4)&1,u=x&15;if(u===0)return 136;return(s?228:182)+(w&8?-6:0)}
+function exaTeS(x,y){const w=y+(x>>1),s=(w>>4)&1,u=w&15;if(u===0)return 132;return(s?222:174)+Math.round((exaH(x>>2,w>>3,72)-0.5)*8)}
+// 一套坡屋顶的图：tf / tb / ts 纹理；o 边：g1 / g2（人字顶的斜边：t = 离斜边的距离）、rh 屋脊（rhH 高）、fa 前檐（faH 高）、ve 山墙封檐板（veW 宽）
+function exaFam(tf,tb,ts,o,hip,R){const F={},P=(w,h,f)=>exaPc(w,h,f,R),L=o.hl||[46,240,204,92];   // R：色表（积雪那套是彩色的）；hl：斜脊 [墨线, 亮, 中, 暗]
+  F.hf=P(64,24,(x,y)=>tf(x,47-y));F.hb=P(64,16,tb);F.sv=P(32,32,ts);
+  F.g1=P(32,16,(x,y)=>{const t=y+0.5-(32-(x+0.5)/2);if(t<0)return -1;const e=o.g1(t,x,y);return e>=0?e:ts(x,y)});
+  F.g2=P(32,16,(x,y)=>{const t=(32-(x+0.5)/2)-(y+0.5);if(t<0)return -1;const e=o.g2(t,x,y);return e>=0?e:ts(x,y)});
+  F.rh=P(64,o.rhH,o.rh);F.rv=P(o.rhH,32,(x,y)=>o.rh(y,x));
+  F.rc=P(o.rhH,o.rhH,(x,y)=>{const t=y+0.5-Math.abs(x+0.5-o.rhH)*0.5;if(t<0)return -1;if(t<1.5)return L[0];return o.rh(5,x)});   // 竖屋脊北头的尖（同人字顶 1 : 2）
+  if(o.faH)F.fa=P(64,o.faH,o.fa);if(o.veW)F.ve=P(o.veW,32,o.ve);F.te=P(64,2,(x,y)=>[40,236,196,128][y]);
+  if(hip){F.h1=P(32,16,(x,y)=>{const t=(x+0.5)/2-(y+0.5);if(t<0)return -1;const v=tb(x,y);return t<1.5?Math.round(v*0.72):v});
+    F.h2=P(32,16,(x,y)=>{const t=(y+0.5)-(x+0.5)/2;if(t<0)return -1;if(t<1)return L[0];if(t<3)return L[1];if(t<4)return L[2];if(t<5)return L[3];return ts(x,y)});
+    F.h3=P(32,48,(x,y)=>{const p=(96-1.5*(x+0.5)-(y+0.5))/1.803;if(p<0)return -1;if(p<0.8)return L[0];if(p<2.3)return L[1];if(p<3.1)return L[2];if(p<3.9)return L[3];return ts(x,y)});
+    F.h4=P(32,48,(x,y)=>{const p=((y+0.5)-(96-1.5*(x+0.5)))/1.803;if(p<0)return -1;const v=tf(x,95-y);return p<1.6?Math.round(v*0.7):v})}
+  return F}
+function exaGen(p){const S={},t0=performance.now(),px0=EXA_PX;   // 分 6 份延后画（一份几十毫秒，标题画面空闲时一份一份画）
+  if(p==='w'){   // —— 墙：5 种画法 × 16 种四邻（顶面）、× 4 种两头 + 4 种带窗（墙面）、× 4 种门洞 ——
+  S.wt=[];S.wf=[];S.gp=[];
+  for(let f=0;f<5;f++){const R=exaWRamps(f);S.wt.push([...Array(16)].map((_,m)=>exaWallTopPc(f,m,R)));
+    S.wf.push([0,1,2,3].map(k=>exaWallFacePc(f,k&1,k&2,false,R)).concat([exaWallFacePc(f,1,2,true,R)]));
+    S.gp.push([0,1,2,3].map(k=>exaGapPc(f,k&1,k&2,R)))}
+  S.st=[1,2,3].map(exaStepPc);S.se=[1,2,3].map(exaStepEPc)}
+  if(p==='r1'){   // —— 坡屋顶 ——
+  const sh={g1:t=>t<1.5?42:t<3.5?236:t<5.5?182:t<6.5?92:-1,g2:t=>t<1.2?40:t<3.4?168:t<4.6?232:t<5.6?70:-1,
+    rhH:7,rh:(x,y)=>{if(y>=11)return 3840|[110,70,36][y-11];if(y===0)return 48;if(y===10)return 62;if((x&15)===0&&y<9)return 140;return[0,248,238,216,214,212,206,190,162,150][y]},
+    faH:5,fa:(x,y)=>(x&63)===0&&y>1&&y<7?118:[70,238,184,182,180,176,170,150,64,40][y],
+    veW:4,ve:(x,y)=>x===7?3840|80:(y&63)===0&&x>0&&x<6?118:[40,238,206,184,180,150,92][x]};
+  S.sh=exaFam(exaShF,exaShB,exaShS,sh,true);S.cl=exaFam(exaEaF,exaEaB,exaEaS,sh,true);   // cl：红瓦、沙色用筒瓦（陶瓦）
+  }if(p==='r2'){
+  const th={g1:(t,x,y)=>t<1.5?44:t<5.5?Math.round(214+(exaH(x,y>>1,51)-0.5)*40):t<7?110:-1,
+    g2:(t,x,y)=>t<1.4?40:t<3?Math.round(150+exaH(x,y,52)*20):t<7?Math.round(206+exaH(x,(y+x)>>1,52)*36-((x*3)%5===0?22:0)):t<8?96:-1,
+    rhH:9,rh:(x,y)=>{if(y>=14)return 3840|[110,76,46,22][y-14];if(y===0)return 46;if(y===13)return 60;if(x%24<3&&y>1&&y<12)return y<5?176:120;const g=[0,232,240,236,226,216,206,196,186,172,160,146][y]||150;return Math.round(g+(exaH(x>>1,y>>1,53)-0.5)*24-((x*5)%7===0?20:0))},
+    faH:7,fa:(x,y)=>{if(y===13)return 40;if(y===12)return 66;if(y===0)return 92;const g=[0,214,232,228,218,208,198,186,172,156,140,124][y];return Math.round(g+(exaH(x,y>>2,54)-0.5)*26-((x+Math.floor(exaH(x>>1,3,55)*3))%4===0?22:0))},
+    veW:6,ve:(x,y)=>{if(x>=10)return 3840|(x===10?86:40);if(x===0)return 40;if(x===9)return 70;const g=[0,170,226,236,228,214,198,180,156][x];return Math.round(g+(exaH(x,y>>1,56)-0.5)*24-((y*3)%5===0?20:0))}};
+  th.hl=[64,228,204,112];S.th=exaFam(exaThF,exaThB,exaThS,th,true);
+  const ea={g1:t=>t<1.5?44:t<4?226:t<5?120:-1,g2:t=>t<1.2?40:t<3.4?150:t<5?220:t<6?70:-1,
+    rhH:8,rh:(x,y)=>{if(y>=14)return 3840|(y===14?100:56);if(y===0)return 44;if(y===13)return 60;return[0,246,226,226,120,0,0,0,0,120,210,210,150][y]||(((x%8)<4)!==(y&1)?204:160)},
+    faH:5,fa:(x,y)=>{if(y>=7)return[150,70,40][y-7];const d=Math.hypot((x&7)-3.5,y-3.2);return d<2.4?(d<1.2?250:226):d<3.3?96:132},veW:4,ve:(x,y)=>x===0?40:x===7?60:x===6?150:x===1?236:(y&7)===0?120:196};
+  ea.hl=[44,238,198,80];S.ea=exaFam(exaEaF,exaEaB,exaEaS,ea,true);
+  }if(p==='r3'){
+  const te={g1:t=>t<1.4?44:t<2.8?214:t<3.6?110:-1,g2:t=>t<1.2?40:t<3.5?200:t<4.3?96:-1,
+    rhH:4,rh:(x,y)=>y>=6?3840|(y===6?90:46):[46,230,170,170,170,60][y],
+    faH:5,fa:(x,y)=>{const d=6+3*Math.sin(Math.PI*((x&15)+0.5)/16);if(y>d+0.5)return 70;if(y>d-0.5)return 44;if(y===0)return 120;return((x>>4)&1?226:182)+(y===1?12:0)},veW:2,ve:(x,y)=>[40,214,160,70][x]};
+  te.hl=[48,222,182,96];S.te=exaFam(exaTeF,exaTeB,exaTeS,te,true);
+  const SWR=[exaRamp([[0,'#4a5a6e'],[150,'#a8bccc'],[208,'#dfe9f2'],[236,'#f2f7fb'],[255,'#ffffff']])];   // 积雪那套（彩色）：南北屋脊、四坡下雪时整个盖一遍
+  S.sw=exaFam(exaSwF,exaSwB,exaSwS,{g1:t=>t<1.5?168:t<4?252:-1,g2:t=>t<1.2?150:t<3.5?230:t<4.5?252:-1,rhH:7,rh:(x,y)=>y>=11?3840|[70,40,20][y-11]:[160,252,250,246,242,236,228,216,200,180,150][y],hl:[176,252,244,214]},true,SWR);
+  // 三角山墙（竖的木板，乘这座房子的墙色）：gg 斜边下面那一块（1 : 2）、gf 平铺
+  const gt=(x,y)=>{const u=x&7;if(u===0)return 104;if(u===1)return 232;if(u===7)return 168;if((y&31)===4&&u===4)return 120;return Math.round(206+(exaH(x>>3,y>>5,63)-0.5)*12)};
+  S.gg=exaPc(32,16,(x,y)=>{const t=y+0.5-(32-(x+0.5)/2);if(t<0)return -1;const v=gt(x,y);return t<3?Math.round(v*0.6):v});S.gf=exaPc(32,32,gt);
+  S.gv=exaPcV(8,7,(x,y)=>{const d=Math.abs(x+0.5-8);if(y+0.5<d*1.7||y>=13)return -1;if(y+0.5<d*1.7+1.6||y===12)return 226;return y%3===0?120:58},[exaRamp([[0,'#1a1410'],[120,'#4a3a2a'],[226,'#c8b89a'],[255,'#f0e8d8']])]);   // 山墙尖上的百叶通风口
+  // 老虎窗（大屋顶的前坡上）：dmB 窗墙（彩色）、dmR 小人字顶（灰度乘配色）
+  S.dmB=exaPcV(14,12,(x,y)=>{if(x>=26)return x<28&&y>4&&y<22?3840|70:-1;const d=Math.abs(x+0.5-13);if(y<9&&y+0.5<9-(13-d)*0.62)return -1;if(x<1||x>24)return -1;
+    if(x>=7&&x<19&&y>=10&&y<20){if(x===7||x===18||y===10||y===19||x===12||x===13||y===14)return 230;return 256|(((x-y)%9+9)%9<2?150:62)}if(y>=22)return 60;return(x&3)===0?120:(x<3?214:188)},[exaRamp(EXA_WD),exaRamp(EXA_GL)]);
+  S.dmR=exaPcV(16,10,(x,y)=>{const d=Math.abs(x+0.5-16),yt=d*0.55;if(y+0.5<yt||y+0.5>yt+7)return -1;if(y+0.5<yt+1.4)return 236;if(y+0.5>yt+5.8)return 70;return x<16?(d<1.2?250:214):(d<1.2?170:156)});
+  // 东方飞檐：翘起来的檐角（左；右边翻过来）、屋脊两头的鸱吻
+  S.ec=exaPcV(12,12,(x,y)=>{const yc=19-14*Math.pow((23.5-x)/23.5,2.2),t=y+0.5-yc;if(x<3&&t<-2.5&&t>-6.5)return 214;if(t<-3||t>3)return -1;return t<-2?242:t<0?206:t<1?150:t<2?100:62});
+  S.eo=exaPcV(7,12,(x,y)=>{const px=x+0.5,py=y+0.5;const inB=px>=2&&px<=12&&py>=13;const tail=py<13&&py>1&&px>=2+Math.max(0,(9-py))*0.45&&px<=6+py*0.6&&!(px>5&&px<9&&py>4&&py<10);if(!inB&&!tail)return -1;return px<5?232:px<9?196:150});
+  }if(p==='f'){   // —— 平顶、垛口 ——
+  const slab=(x,y,s)=>{const u=x&15,q=y&15,n=(exaH(x>>4,y>>4,s)-0.5)*14;if(u===0||q===0)return 150;if(u===1||q===1)return 226;if(u===15||q===15)return 184;return Math.round(206+n+(exaH(x>>2,y>>2,s+1)<0.05?-14:0))};
+  const flag=(x,y)=>{const r=(y/16)|0,o=(r&1)*12,u=(x+o)%24,q=y&15,n=(exaH(((x+o)/24)|0,r,81)-0.5)*16;if(u===0||q===0)return 132;if(u===1||q===1)return 228;if(u===23||q===15)return 176;return Math.round(204+n)};
+  S.fl={dk:exaPc(64,32,(x,y)=>slab(x,y,75)),   // 平顶：女儿墙厚 4、高 6
+    n:exaPc(64,13,(x,y)=>{if(y>=20)return 3840|[120,96,72,50,30,14][y-20];if(y===0)return 44;if(y===1)return 246;if(y<7)return 216;if(y===7)return 236;if(y===19)return 70;if(x%24===0&&y>8)return 124;if(y===8)return 196;return y===18?120:162}),
+    s:exaPc(64,10,(x,y)=>{if(y===0)return 80;if(y===1)return 240;if(y<7)return 214;if(y===7)return 238;if(y===19)return 40;if(x%24===0&&y>8)return 130;if(y===8)return 200;return y===18?124:170}),
+    w:exaPc(6,32,(x,y)=>x>=8?3840|[96,64,34,14][x-8]:x===0?40:x===1?242:x===7?140:(y%24===0?150:214)),e:exaPc(4,32,(x,y)=>x===7?40:x===0?118:x===6?176:(y%24===0?150:208)),
+    c:exaPc(4,4,(x,y)=>y===0||x===0?40:y===1||x===1?246:216),sc:exaPc(2,10,(x,y)=>x===0||y===19?40:y===0?80:y<7?(x===1?240:214):y===7?238:(x===1?222:170))};
+  const crN=(x,y)=>{const u=x&15;if(u<8){if(y<16){if(u===0)return 44;if(u===7)return 110;if(y===0)return 44;if(y===1)return 242;if(y<6)return 214;return y===6?200:y===15?120:170}}else if(y<10)return -1;else if(y<16)return y===10?44:214;
+    if(y>=26)return 3840|[100,74,50,26][y-26];if(y===25)return 70;if(x%24===0)return 128;return y===16?190:168};
+  const crS=(x,y)=>{const u=x&15;if(y===25)return 40;if(u<8){if(u===0)return 44;if(u===7&&y<6)return 120;if(y===0)return 44;if(y===1)return 242;if(y<6)return 214;if(y===6)return 196;return y===24?128:(x%24===0?132:172)}
+    if(y<10)return -1;if(y===10)return 70;if(y===11)return 238;if(y<15)return 212;if(y===15)return 236;return y===24?128:(x%24===0?132:172)};
+  const crW=(x,y)=>{if(x>=6)return 3840|[90,68,46,24][x-6];if(x===0)return 40;const q=y&15;if(q<8){if(q===0)return 44;if(q===1)return 244;return x===5?150:214}return q===15?110:(x===5?120:168)};
+  S.cr={dk:exaPc(64,32,flag),n:exaPc(64,15,crN),s:exaPc(64,13,crS),w:exaPc(5,32,crW),e:exaPc(3,32,(x,y)=>{const q=y&15;if(x===5)return 40;if(q<8){if(q===0)return 44;if(q===1)return 238;return x===0?150:208}return q===15?100:(x===0?110:150)}),
+    cn:exaPc(4,15,(x,y)=>crN(x,y)===-1?-1:(x===0?44:crN(x,y))),cs:exaPc(4,13,(x,y)=>crS(x,y)===-1?-1:(x===0?44:crS(x,y)))};
+  // —— 圆顶（4 种大小，带鼓座；灰度乘配色）——
+  S.dm=[];S.dmY=[];S.dmD=[24,36,52,72];
+  for(const d of S.dmD){const Rr=d-1,ry=Math.round(d*0.36),dh=Math.round(d*0.3),hd=Math.round(d*0.95),W=(d+6)*2,cx=d+2,ct=2+hd,cb=ct+dh,H=Math.ceil((cb+ry+4)/2)*2,L=[-0.5,-0.62,0.6],ln=Math.hypot(...L);
+    const f=(x,y)=>{const px=x+0.5,py=y+0.5,dx=(px-cx)/Rr;
+      if(Math.abs(dx)<=1){const sq=Math.sqrt(1-dx*dx),yb=ct+ry*sq;
+        if(py>=ct-hd*sq&&py<=yb){if(py>yb-1.6)return 236;let ny=py<ct?(py-ct)/hd:0.25*(py-ct)/ry;const nz=Math.sqrt(Math.max(0,1-dx*dx-ny*ny)),I=(dx*L[0]+ny*L[1]+nz*L[2])/ln;
+          let g=I<0.05?128:I<0.3?160:I<0.55?196:I<0.78?222:I<0.92?240:252;if(py<ct){const ph=Math.atan2(dx,nz)/(Math.PI/5);const fr=ph-Math.round(ph);if(Math.abs(fr)<0.045*(1+Math.abs(dx)))g-=34;else if(fr>0&&fr<0.11*(1+Math.abs(dx)))g=Math.min(252,g+8)}return g}
+        if(py>yb&&py<=cb+ry*sq){if(py>cb+ry*sq-1.4)return 104;if(py<yb+1.4)return 120;for(const k of[-0.62,0,0.62])if(Math.abs(dx-k)<0.09&&py>yb+dh*0.22&&py<cb+ry*sq-dh*0.22)return 64;return dx<-0.55?214:dx<-0.1?200:dx<0.35?182:dx<0.7?160:132}}
+      const sx=(px-cx-Rr*0.3)/(Rr*1.05),sy=(py-cb-1)/(ry*1.1);if(sx*sx+sy*sy<1)return 3840|72;return -1};
+    const v=new Int32Array(W*H);for(let y=0;y<H;y++)for(let x=0;x<W;x++)v[y*W+x]=f(x,y);const o=exaOut(W,H,v);S.dm.push(exaPc(W/2,H/2,(x,y)=>o[y*W+x]));S.dmY.push(cb/2)}
+  // —— 尖塔：方尖顶（56 像素见方，高 98）+ 四角小尖塔 ——
+  {const B=112,x0=2,x1=x0+B,cx=x0+B/2,yA=4,yB=yA+B/2+196,yT=yB-B,W=B+4,H=yB+4,v=new Int32Array(W*H);
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){const px=x+0.5,py=y+0.5,k=(py-yA)/(yB-yA),hw=B/2*k;let g=-1;
+      if(py<=yB&&k>0&&Math.abs(px-cx)<=hw){const e=hw-Math.abs(px-cx);g=198;if((Math.round(yB-py)&7)===0)g-=30;else if(((Math.round(px)+((Math.round(yB-py)>>3)&1)*5)%10)===0)g-=20;if(e<1.6)g=px<cx?248:96;if(py>yB-7)g=py>yB-1.5?44:py>yB-3?150:214}
+      else if(px>=x0&&px<=x1&&py<=yB){const lx=Math.abs(px-cx),yl=yA+(yT-yA)*(lx/(B/2));if(py>=yl){g=px<cx?232:150;if((Math.round(yB-py)&7)===0)g-=26;if(lx>B/2-3)g=px<cx?212:124;if(py<yl+1.5)g=px<cx?250:110}}
+      v[y*W+x]=g}
+    const lw=8,ly=Math.round(yA+(yB-yA)*0.62);for(let y=ly;y<ly+12;y++)for(let x=cx-lw/2;x<cx+lw/2;x++)v[y*W+x]=y<ly+2||x<cx-lw/2+1||x>=cx+lw/2-1?226:(y>ly+9?150:52);   // 前面一扇小老虎窗
+    const o=exaOut(W,H,v);S.sp=exaPc(W/2,H/2,(x,y)=>o[y*W+x]);S.spB=yB/2;
+    S.pn=exaPcV(6,16,(x,y)=>{const px=x+0.5,cxx=6;if(y>=22){if(y<24)return 240;if(y<26)return 210;return y===31?60:(px<cxx?190:150)}const hw=6*(y+0.5)/22;if(Math.abs(px-cxx)>hw)return -1;return px<cxx?226:148})}
+  // —— 布棚：布（亮）+ 条纹（中）+ 花边、柱子 ——
+  const cv=(x,y)=>{const u=x&31;if(u===0||u===16)return 176;return Math.round(222-y*1.6+(exaH(x>>3,y>>2,91)-0.5)*6)};
+  const va=(x,y)=>{const yb=7+4*Math.sin(Math.PI*((x&15)+0.5)/16);if(y>yb+0.5)return -1;if(y>yb-0.6)return 50;if(y===0)return 120;if(y===1)return 236;return 204};
+  S.aw={cv:exaPc(64,16,cv),cs:exaPc(64,16,(x,y)=>(x&31)<16?cv(x,y):-1),va:exaPc(64,6,va),vs:exaPc(64,6,(x,y)=>(x&31)<16?va(x,y):-1),
+    po:exaPc(2,EXT_WH,(x,y)=>x===0?236:x===3||y===EXT_WH*2-1?40:150,[exaRamp(EXA_WD)])};
+  }if(p==='d'){   // —— 小物件（彩色）：烟囱（砖 / 石）、通风箱、天窗、木箱盖（检修口）、水桶、金顶 ——
+  const CH=(br)=>exaPcV(8,15,(x,y)=>{if(y>=28)return y<30?3840|70:-1;if(x>=14)return x<16&&y>5?3840|60:-1;if(y<6){if(y===0)return 236;if(x>=3&&x<11&&y>=2&&y<5)return 30;return y===5?120:206}
+    if(br){const o=(((y-6)/4|0)&1)*4,u=(x+o)&7;if((y-6)%4===3||u===0)return 256|150;return x<2?236:x>11?160:200}return x<2?232:x>11?150:(((y-6)%6===5)||((x+((y-6)/6|0)*3)%7===0)?130:196)},
+    br?[exaRamp([[0,'#24100c'],[100,'#5a261a'],[160,'#7a3626'],[208,'#9c4a34'],[240,'#c06c50']]),exaRamp([[0,'#2a2420'],[150,'#7a6c5e'],[255,'#c8bca8']])]:[exaRamp(EXA_ST)]);
+  S.ch=[CH(true),CH(false)];
+  const MT=[exaRamp([[0,'#16181e'],[100,'#3a3e48'],[170,'#6a707c'],[208,'#8a909c'],[250,'#d0d6e0']])];
+  S.vt=exaPcV(8,8,(x,y)=>{if(y<6)return y===0?236:200;if(y===15)return 60;if(x===0)return 230;if(x===15)return 110;return(y&1)?90:170},MT);
+  S.sk=exaPcV(12,9,(x,y)=>{if(y>=14)return y===17?60:120;if(x<2||x>21||y<2||x===11||x===12||y===7)return 196;return 768|(((x-y)%9+9)%9<2?160:70)},[MT[0],0,0,exaRamp(EXA_GL)]);
+  S.hc=exaPcV(10,8,(x,y)=>{if(y>=13)return y===15?60:120;if(y===4||y===10)return 256|120;return x%5===0?104:(x<2?226:190)},[exaRamp(EXA_WD),MT[0]]);
+  S.br=exaPcV(6,8,(x,y)=>{const dx=(x+0.5-6)/6;if(Math.abs(dx)>1)return -1;const top=3*Math.sqrt(1-dx*dx);if(y+0.5<3-top)return -1;if(y+0.5<3+top)return y<2?236:150;if(y>=15)return 60;if(y===6||y===11)return 256|120;return dx<-0.4?232:dx<0.3?196:150},[exaRamp(EXA_WD),MT[0]]);
+  S.fin=exaPcV(4,8,(x,y)=>{if(y<4)return x===3||x===4?(y<1?250:226):-1;const d=Math.hypot(x+0.5-4,y-7);if(y<11&&d<3.3)return d<1.2&&x<4?255:x<4?236:176;return x===3||x===4?(x===3?220:150):-1},[exaRamp([[0,'#2a1a08'],[120,'#8a5a10'],[200,'#d6a23a'],[240,'#f3d47c'],[255,'#fff6d0']])]);
+  S.cross=exaPcV(9,17,(x,y)=>{const v=(x>=7&&x<11)||(y>=8&&y<12&&x>=1&&x<17);if(!v)return -1;return(x===7||y===8)?246:(x===10||y===11)?150:214},[exaRamp([[0,'#2a1a08'],[120,'#8a5a10'],[200,'#d6a23a'],[240,'#f3d47c'],[255,'#fff6d0']])]);
+  S.dc=exaDecoGen();
+  // 雪：平铺一块白、一条往下垂的边（冰溜子）
+  const SW=[exaRamp([[0,'#4a5a6e'],[150,'#a8bccc'],[208,'#dfe9f2'],[236,'#f2f7fb'],[255,'#ffffff']])];
+  S.sn=exaPc(64,16,(x,y)=>Math.round(222+(exaH(x>>3,y>>2,95)-0.5)*16+(exaH(x,y,96)<0.03?30:0)),SW);
+  S.sne=exaPc(64,6,(x,y)=>{const yb=4+2*Math.sin(x/9)+Math.sin(x/3.7);if(y+0.5<yb-0.8)return 230;if(y+0.5<yb+0.6)return 170;const ic=(x*7)%23;if(ic<2&&y+0.5<yb+3+(x%5))return ic?200:236;return -1},SW);
+  }S.ms=Math.round(performance.now()-t0);S.px=EXA_PX-px0;return S}
+// —— 装饰的小图（教堂十字架以外：亡灵堡的旗、21 个地区独特建筑）——
+function exaDecoGen(){const D={},WR=exaRamp(EXA_WD),GD=exaRamp([[0,'#2a1a08'],[120,'#8a5a10'],[200,'#d6a23a'],[240,'#f3d47c'],[255,'#fff6d0']]),IR=exaRamp([[0,'#16181e'],[100,'#3a3e48'],[170,'#6a707c'],[208,'#8a909c'],[250,'#d0d6e0']]),
+    CU=exaRamp([[0,'#2a140a'],[110,'#6a3a1a'],[180,'#a8642a'],[220,'#d8904a'],[255,'#ffd0a0']]),ST=exaRamp(EXA_ST),LF=exaRamp([[0,'#0e1a0a'],[90,'#1e3a16'],[150,'#2e5a22'],[200,'#4a7a32'],[235,'#6aa040'],[255,'#a8d070']]),
+    CV=exaRamp([[0,'#3a3020'],[140,'#a89870'],[214,'#e8dcc0'],[255,'#fffaf0']]);
+  D.glw=exaPc(12,12,(x,y)=>{const d=Math.hypot(x+0.5-12,y+0.5-12)/12;return d<1?3584|Math.round(255*(1-d)*(1-d)):-1});   // 光晕（白、半透明，画的时候乘色）
+  D.pf=exaPc(7,7,(x,y)=>{const d=Math.hypot(x+0.5-7,y+0.5-7)/7;return d<1?3584|Math.round(220*(1-d*d)):-1});   // 一团烟 / 蒸汽
+  const cry=(w,h)=>exaPcV(w,h,(x,y)=>{const W=w*2,px=x+0.5,py=y+0.5,cx=W/2,top=W*0.6,hw=W/2-1,k=py<top?py/top:1,u=(px-cx)/(hw*k||1);if(Math.abs(u)>1||y>=h*2-1)return -1;
+    if(py<top)return u<-0.25?246:u<0.3?214:150;return u<-0.45?230:u<0.2?196:136});   // 水晶（乘色）
+  D.cry=cry(7,14);D.crB=cry(12,26);
+  D.spk=exaPcV(6,18,(x,y)=>{const px=x+0.5,hw=6*(y+0.5)/36;if(Math.abs(px-6)>hw)return -1;return px<6?204:118});   // 尖刺（乘色）
+  D.stk=exaPcV(9,30,(x,y)=>{if(y<6){const d=Math.hypot((x+0.5-9)/8,(y+0.5-3)/2.6);if(d>1)return -1;return d<0.62?40:(x<9?236:180)}if(x<1||x>16)return -1;if(y===59)return 70;if(y%14===10||y%14===11)return x<5?150:110;return x<4?226:x<9?200:x<13?170:138});   // 高烟囱（乘色）
+  D.pole=exaPcV(2,34,(x,y)=>y<4?256|(x<2?250:200):[236,180,170,110][x],[WR,GD]);
+  D.pen=[0,1,2].map(k=>exaPcV(12,9,(x,y)=>{const u=x/24,ph=u*Math.PI*1.5+k*2.1,yc=9+Math.sin(ph)*3*u,hw=8*(1-u)+0.5;if(Math.abs(y+0.5-yc)>hw)return -1;const c=Math.cos(ph);return y+0.5<yc-hw+1.5?240:c>0.3?214:c<-0.3?160:188}));   // 三角小旗（乘色，三帧飘）
+  D.ban=[0,1,2].map(k=>exaPcV(10,16,(x,y)=>{const ph=y/32*Math.PI+k*2.1,o=Math.round(Math.sin(ph)*1.5*(y/32)),xx=x-o;if(xx<1||xx>18)return -1;if(y>26&&Math.abs(xx+0.5-10)<(y-26)*1.6)return -1;if(y<3)return y===0?236:120;
+    const d=Math.abs(xx+0.5-10)+Math.abs(y+0.5-15);if(d<4)return 248;if(d<5)return 150;return xx<3||xx>16?150:(Math.sin(ph)>0?214:190)}));   // 挂着的长旗（乘色，三帧飘）
+  D.rot=[0,1,2,3].map(f=>exaPcV(64,64,(x,y)=>{const dx=x+0.5-32,dy=y+0.5-32,r=Math.hypot(dx,dy);if(r<4.5)return r<2?236:120;   // 风车的四片叶子（1 倍图，四帧 = 转 90 度）
+    for(let q=0;q<4;q++){const a=f*Math.PI/8+q*Math.PI/2,ca=Math.cos(a),sa=Math.sin(a),u=dx*ca+dy*sa,v=-dx*sa+dy*ca;if(u<3||u>31)continue;
+      if(Math.abs(v)<1.3)return v<0?236:150;if(v>=1.3&&v<8&&u>8&&u<30){if(((u-8)%5.5)<1||v>7)return 140;return 512|(v<3?240:214)}}
+    return -1},[WR,IR,CV],undefined,1));
+  D.bel=exaPcV(14,26,(x,y)=>{const px=x+0.5,py=y+0.5,cx=14;if(py<14){const hw=13*(py/14);if(Math.abs(px-cx)>hw)return -1;return px<cx?(Math.abs(px-cx)>hw-1.5?250:228):170}   // 钟楼的钟亭（乘色）
+    if(py<16)return 236;if(px<2||px>26)return -1;if(py>50)return py>51?80:200;if(px>7&&px<21&&py>19&&py<46&&(py>25||Math.hypot(px-cx,py-26)<7))return 44;return px<7?224:px>21?150:196});
+  D.bell=exaPcV(6,7,(x,y)=>{const px=x+0.5,py=y+0.5,hw=py<3?2+py*0.6:Math.min(5.6,3.8+(py-3)*0.35);if(Math.abs(px-6)>hw||py>13)return -1;return px<5?250:px<8?214:160},[GD]);
+  D.obl=exaPcV(8,40,(x,y)=>{const px=x+0.5,py=y+0.5,cx=8,hw=py<10?6*(py/10):6-(py-10)*0.04;if(Math.abs(px-cx)>hw||py>79)return -1;if(py<10)return px<cx?226:120;return px<cx?170:96});   // 方尖碑（乘色）
+  D.pag=exaPcV(16,22,(x,y)=>{const px=x+0.5,py=y+0.5,dx=Math.abs(px-16);   // 三层小塔（乘色）
+    if(py<8)return dx<1.2?(px<16?236:170):-1;
+    for(const[y0,hw,bw,bh]of[[7,10,6,4],[17,13,8,5],[28,16,10,12]]){if(py>=y0&&py<y0+6){const e=hw-(y0+6-py)*0.9,tip=dx>hw-2.5&&dx<hw+0.8&&py<y0+3.2;if(dx<e||tip)return py>y0+4.5?110:(px<16?228:168);}
+      if(py>=y0+6&&py<y0+6+bh&&dx<bw)return(dx<bw-2&&py>y0+7&&py<y0+5+bh&&(Math.round(px)&3)<2)?52:(px<16?200:150)}
+    return -1});
+  const can=(w,h,s)=>exaPcV(w,h,(x,y)=>{const W=w*2,H=h*2;let best=-1;for(let q=0;q<7;q++){const bx=W*(0.2+0.6*exaH(q,s,1)),by=H*(0.35+0.4*exaH(q,s,2)),rx=W*(0.17+0.1*exaH(q,s,3)),ry=rx*0.75,d=((x+0.5-bx)/rx)**2+((y+0.5-by)/ry)**2;
+    if(d<1){const lit=(x+0.5-bx)/rx+(y+0.5-by)/ry;best=Math.max(best,(lit<-0.7?245:lit<0?210:lit<0.7?165:120)+(exaH(x,y,s)<0.08?16:0))}}return Math.min(255,best)},[LF]);
+  D.can=[can(36,26,1),can(24,18,2)];   // 树冠（树屋）
+  D.min=exaPcV(16,26,(x,y)=>{const px=x+0.5,py=y+0.5,sg=(x0,y0,x1,y1)=>{const t=Math.max(0,Math.min(1,((px-x0)*(x1-x0)+(py-y0)*(y1-y0))/((x1-x0)**2+(y1-y0)**2)));return Math.hypot(px-x0-(x1-x0)*t,py-y0-(y1-y0)*t)};   // 矿井井架
+    if(sg(4,52,13,10)<1.6||sg(28,52,19,10)<1.6)return px<16?226:160;if((Math.abs(py-26)<1||Math.abs(py-40)<1)&&px>6&&px<26)return 180;if(sg(8,40,24,26)<1||sg(24,40,8,26)<1)return 150;if(py>=6&&py<11&&px>9&&px<23)return py<8?236:170;return -1},[WR]);
+  D.whl=[0,1].map(f=>exaPcV(9,9,(x,y)=>{const dx=x+0.5-9,dy=y+0.5-9,r=Math.hypot(dx,dy);if(r>8.6)return -1;if(r>6.8)return r>7.8?110:200;if(r<1.6)return 236;const a=Math.atan2(dy,dx)+f*Math.PI/6;return Math.abs(Math.sin(a*3))<0.2?170:-1},[IR]));   // 天轮（两帧转）
+  D.sld=exaPcV(14,7,(x,y)=>{if(y>=11){if((y===11||y===12)&&x>1&&x<27)return 256|(y===11?226:150);if(x<3&&y<13)return 256|196;return -1}if(y>=2&&y<10&&x>=4&&x<25)return y===2?236:(x%6===0?120:196);if(y<2&&(x===5||x===23))return 170;return -1},[WR,IR]);   // 雪橇
+  D.pip=exaPcV(16,10,(x,y)=>{const h1=y>=4&&y<9,v1=x>=4&&x<9&&y>=4,v2=x>=22&&x<27&&y<12;if(!(h1||v1||v2))return -1;if(h1&&!v1)return y===4?236:y===8?120:(x%10===0?150:196);return x%5===0?236:x%5===4?120:190},[CU]);   // 蒸汽管道
+  D.gr=[0,1].map(f=>exaPcV(8,8,(x,y)=>{const dx=x+0.5-8,dy=y+0.5-8,r=Math.hypot(dx,dy),a=Math.atan2(dy,dx)+f*Math.PI/8;if(r>(Math.cos(a*8)>0?7.6:6.2))return -1;if(r<2)return 60;if(r<3)return 214;return dx+dy<0?226:170},[IR]));   // 齿轮（两帧转）
+  D.alt=exaPcV(12,9,(x,y)=>{if(y<5)return y===0?236:200;if(y>=17)return 70;if(x%8===3&&y>6&&y<14)return 256|200;return x<3?190:150},[ST,exaRamp([[0,'#0a2a0a'],[200,'#6aff6a'],[255,'#e0ffe0']])]);   // 祭坛石（绿色符文）
+  D.stl=exaPcV(5,14,(x,y)=>{const px=x+0.5;if(y<5&&Math.hypot(px-5,y+0.5-5)>5)return -1;if(y>=26)return 80;if(y>8&&y<22&&y%4===0&&x>2&&x<8)return 130;return px<4?226:px<7?196:150});   // 小碑（乘色）
+  return D}
+const EXA_L={},EXA_PARTS=['w','r1','r2','r3','f','d'];let EXA_S=null;
+SPR_GEN.exa=p=>exaGen(p);for(const p of EXA_PARTS)sprLazy(EXA_L,p,'exa',p);   // 延后画（同士兵的图）：标题画面空闲时一份一份画，开一局时 spriteFinish 一定画完
+function exaSpr(){if(EXA_S)return EXA_S;const S={ms:0,px:0};for(const p of EXA_PARTS){const o=EXA_L[p];for(const k in o){if(k==='ms'||k==='px')S[k]+=o[k];else S[k]=o[k]}}EXA_S=S;return S}   // 第一次用时拼成一张表（没画完的当场画）
+// ================= 画 =================
+// 子图：图集里一张图的一块（逻辑坐标），按 (图, 起点, 大小) 缓存；每次用的时候按母图现在的位置重算（图集重排过也对）
+const EXA_SUB=new Map();
+function exaSub(r,sx,sy,sw,sh){let M=EXA_SUB.get(r);if(!M){M=new Map();EXA_SUB.set(r,M)}const key=((sx*256+sy)*256+sw)*256+sh;let s=M.get(key);
+  if(!s){s={c:r.c,k:r.k,w:sw,h:sh,pw:sw*r.k,ph:sh*r.k,x:0,y:0,u0:0,v0:0,u1:0,v1:0};M.set(key,s)}
+  const fu=(r.u1-r.u0)/r.w,fv=(r.v1-r.v0)/r.h;s.u0=r.u0+fu*sx;s.u1=s.u0+fu*sw;s.v0=r.v0+fv*sy;s.v1=s.v0+fv*sh;s.x=r.x+sx*r.k;s.y=r.y+sy*r.k;return s}
+// 用一张能无缝重复的图铺满 (x, y, w, h)：从左上角铺（fl 左右翻转 = 从右边铺；up = 纹理对齐下边、从下往上铺），最后一块裁掉
+function exaFill(r,x,y,w,h,t,a,fl,up){if(w<=0||h<=0)return;const rw=r.w,rh=r.h;
+  for(let yy=0;yy<h;yy+=rh){const ph=Math.min(rh,h-yy),sy=up?rh-ph:0,py=up?y+h-yy-ph:y+yy;
+    for(let xx=0;xx<w;xx+=rw){const pw=Math.min(rw,w-xx);sprW(pw===rw&&ph===rh?r:exaSub(r,0,sy,pw,ph),fl?x+w-xx-pw:x+xx,py,!!fl,0,a,t)}}}
+// 乘色：颜色 → tint（灰度 208 画出来正好是这个颜色）
+const EXA_TC=new Map();
+function exaT(hex){let t=EXA_TC.get(hex);if(!t){const c=hdRGB(hex),k=255/208/255;t={r:Math.min(1,c[0]*k),g:Math.min(1,c[1]*k),b:Math.min(1,c[2]*k),css:hex};EXA_TC.set(hex,t)}return t}
+const EXA_PTC=new Map(),exaMix=(a,b,k)=>{const A=hdRGB(a),B=hdRGB(b);return'#'+A.map((v,i)=>Math.round(v+(B[i]-v)*k).toString(16).padStart(2,'0')).join('')};
+function exaPT(pal){const P=Array.isArray(pal)?pal:EXT_PALS[pal]||EXT_PALS.brown;let o=EXA_PTC.get(P);
+  if(!o){o={L:exaT(P[0]),M:exaT(P[1]),D:exaT(P[2]),MD:exaT(exaMix(P[1],P[2],0.45)),LM:exaT(exaMix(P[0],P[1],0.35)),M2:exaT(exaMix(P[1],P[2],0.4))};EXA_PTC.set(P,o)}return o}   // 亮 / 中 / 暗 / 中暗 / 亮中 / 中偏暗
+const EXA_SNT={L:null,M:null,D:null,MD:{r:0.86,g:0.9,b:0.96,css:'#dbe6f5'},LM:null,M2:null};   // 积雪那套图本身是白的：只把背光那面压暗一点
+const EXA_CLAY={red:1,sand:1};   // 用筒瓦（陶瓦）的配色
+const EXA_W1={r:1,g:1,b:1,css:'#fff'},EXA_SNB={r:0.86,g:0.9,b:0.97,css:'#dbe6f7'};   // 平顶上的雪压暗一点，女儿墙顶的白才分得出来
+const exaMT=m=>EXA_MC[m]?exaT(EXA_MC[m]):null;
+// —— 墙 ——
+function extArtWall(tx,ty,m,mask,a){const S=exaSpr(),f=EXA_MF[m]===undefined?1:EXA_MF[m],t=exaMT(m),x=tx*16,y=ty*16-EXT_WH;sprW(S.wt[f][mask],x,y,false,0,a,t);
+  if(!(mask&4)){let v=((mask&2)?1:0)|((mask&8)?2:0);const T=G.terrain,W=MAP_W,i=ty*W+tx;
+    if(v===3&&ty>0&&ty<MAP_H-1&&T[i-W]===T_TFLOOR&&T[i+W]!==T_TFLOOR&&exaH(tx,ty,5)<0.42&&!(exaH(tx-1,ty,5)<0.42))v=4;   // 窗：北边是屋里、南边是外面、两边都是墙、左边那格没开窗
+    sprW(S.wf[f][v],x,y+16,false,0,a,t)}}
+function extArtGap(tx,ty,m,mask,a){const S=exaSpr(),i=ty*MAP_W+tx,mm=EXT_WM[i-1]||EXT_WM[i+1]||m,f=EXA_MF[mm]===undefined?1:EXA_MF[mm];   // 门洞那格没存材质：用左右墙的
+  sprW(S.gp[f][((mask&8)?1:0)|((mask&2)?2:0)],tx*16,ty*16+12-EXT_WH,false,0,a,exaMT(mm))}
+function extArtSteps(b){const D=b.door;if(!D)return;const S=exaSpr(),w=Math.max(1,Math.min(3,D.w))-1;
+  if(D.side===1)sprW(S.st[w],D.p*16-5,(b.y1+1)*16);else if(D.side===0)sprW(S.st[w],D.p*16-5,b.y0*16-9);
+  else{const r=S.se[w],y=D.p*16-3;if(D.side===3)sprW(r,(b.x1+1)*16,y);else sprW(r,b.x0*16-r.w,y,true)}}
+// —— 屋顶 ——
+function extArtRoof(b,a){const S=exaSpr(),r=b.roof,T=exaPT(b.pal),X0=b.x0*16-2,X1=(b.x1+1)*16+2,RT=b.y0*16-EXT_WH,RB=(b.y1+1)*16-EXT_WH,sn=b.snow;
+  if(r==='awning'){exaAwn(S,b,a,T,X0,X1,RT,RB);if(sn)exaFill(S.sn,X0,RT,X1-X0,RB-RT-6,null,0.75*a);return}
+  if(r==='flat'||r==='crenel'||r==='dome'||r==='spire'){exaFlat(S,b,a,T,X0+1,X1-1,RT,RB,r);return}
+  const F=r==='thatch'?S.th:r==='eave'?S.ea:r==='tent'?S.te:EXA_CLAY[b.pal]?S.cl:S.sh;
+  if(r==='hip'||b.dir!=='v'&&(r==='thatch'||r==='eave'||r==='tent')){exaHip(F,a,T,X0,X1,RT,RB,false,r==='thatch');if(r==='hip')exaDorm(S,b,a,T,X0,X1,RT,RB,true);if(sn)exaHip(S.sw,a*0.94,EXA_SNT,X0,X1,RT,RB,true)}   // 茅草、飞檐、帐篷东西屋脊时也画成四坡（歇山 / 庑殿、圆角草顶、方帐）
+  else if(b.dir==='v'){exaGabV(F,S,b,a,T,X0,X1,RT,RB,false);if(sn)exaGabV(S.sw,S,b,a*0.94,EXA_SNT,X0,X1,RT,RB,true)}
+  else{const yr=exaGabH(F,a,T,X0,X1,RT,RB);if(r==='gable')exaDorm(S,b,a,T,X0,X1,RT,RB,false);
+    if(sn){const W=X1-X0,hs=Math.round((RB-yr)*0.42);exaFill(S.sn,X0,RT,W,yr-RT+hs,null,0.94*a);exaFill(S.sne,X0,yr+hs,W,6,null,0.94*a);exaFill(S.sw.rh,X0,yr-(S.sw.rh.h>>1),W,S.sw.rh.h,null,a)}}
+  if(r==='eave')exaEaveX(S,b,a,T,X0,X1,RT,RB);
+  if(r!=='tent'&&r!=='eave')exaChim(S,b,a,X0,X1,RT,RB)}
+// 两坡（东西屋脊）：后坡、前坡（分三段：靠屋脊亮、靠屋檐暗）、北檐、前檐、两边封檐板、屋脊；返回屋脊的 y
+function exaGabH(F,a,T,X0,X1,RT,RB){const W=X1-X0,hh=RB-RT,yr=RT+Math.max(6,Math.round(hh/4)),hf=RB-yr,b3=Math.min(hf,12*Math.max(1,Math.round(hf*0.3/12))),b2=Math.min(hf-b3,12*Math.max(1,Math.round(hf*0.36/12)));   // 段高都是 12 的倍数（纹理一个周期，接缝对得上）
+  exaFill(F.hb,X0,RT,W,yr-RT,T.L,a);exaFill(F.hf,X0,RB-b3,W,b3,T.M2,a,false,true);exaFill(F.hf,X0,RB-b3-b2,W,b2,T.M,a,false,true);exaFill(F.hf,X0,yr,W,hf-b3-b2,T.LM,a,false,true);
+  exaFill(F.te,X0,RT,W,F.te.h,T.D,a);exaFill(F.fa,X0,RB-F.fa.h,W,F.fa.h,T.D,a);
+  exaFill(F.ve,X0,RT,F.ve.w,hh,T.D,a);exaFill(F.ve,X1-F.ve.w,RT,F.ve.w,hh,T.D,a,true);
+  exaFill(F.rh,X0,yr-(F.rh.h>>1),W,F.rh.h,T.L,a);return yr}
+// 老虎窗：东西屋脊的两坡 / 四坡，块够大时按 seed 在前坡开 1～2 个（四坡的避开两边的斜脊；独特建筑不开，它有自己的装饰）
+function exaDorm(S,b,a,T,X0,X1,RT,RB,hip){const W=X1-X0,hh=RB-RT;if(b.dir==='v'||b.k==='uniq'||W<100||hh<60||exaH(b.seed,7,0)>=0.75)return;const yr=RT+(hh>>2),yb=Math.round(yr+(RB-yr)*0.8),B=S.dmB,R=S.dmR;
+  const ex=hip?Math.ceil((RB-yb+B.h+4)/1.5)+2:6,xl=X0+ex,xr=X1-ex-B.w;if(xr<=xl)return;
+  const n=W>=180&&xr-xl>60?2:1;for(let q=0;q<n;q++){const x=Math.round(n===1?(xl+xr)/2+(exaH(b.seed,8,0)-0.5)*Math.min(30,xr-xl):xl+(xr-xl)*(q?0.85:0.15)),y=yb-B.h;sprW(B,x,y,false,0,a);sprW(R,x-1,y-4,false,0,a,T.L)}}
+// 两坡（南北屋脊）：一列一列拼左右两面坡（右边翻过来），北头人字形往上翘、南头三角山墙
+function exaGabV(F,S,b,a,T,X0,X1,RT,RB,sn){const W=X1-X0,hh=RB-RT,hf=W>>1,cx=X0+hf,rise=hf>>1,GT=sn?null:exaT(EXA_GC[EXT_WM[b.y1*MAP_W+b.x0]||3]||EXA_GC[3]);
+  for(let j=0;32*j<hf;j++){const cw=Math.min(32,hf-32*j);
+    for(let s=0;s<2;s++){const fl=s===1,x=fl?X1-32*j-cw:X0+32*j,t=fl?T.MD:T.L;
+      sprW(exaSub(F.g1,0,0,cw,16),x,RT-16*j-16,fl,0,a,t);exaFill(F.sv,x,RT-16*j,cw,hh-16,t,a,fl);sprW(exaSub(F.g2,0,0,cw,16),x,RB-16*j-16,fl,0,a,t);
+      if(!sn){sprW(exaSub(S.gg,0,0,cw,16),x,RB-16*j-16,fl,0,a,GT);if(j)exaFill(S.gf,x,RB-16*j,cw,16*j,GT,a,fl)}}}
+  if(!sn){exaFill(F.ve,X0,RT,F.ve.w,hh,T.D,a);exaFill(F.ve,X1-F.ve.w,RT,F.ve.w,hh,T.D,a,true);if(rise>=12)sprW(S.gv,cx-4,RB-rise+Math.round(rise*0.32),false,0,a)}
+  const rw=F.rv.w;exaFill(F.rv,cx-(rw>>1),RT-rise+(rw>>1),rw,hh-(rw>>1),T.L,a);sprW(F.rc,cx-(rw>>1),RT-rise-1,false,0,a,T.L)}
+// 四坡：两边按列拼（侧坡三角 + 斜脊），中间一段（东西屋脊时）是后坡 + 前坡；方块 = 四棱锥（尖上一个金顶，nf = 不放：茅草）；sn = 积雪那一遍（不画檐口、封檐板）
+function exaHip(F,a,T,X0,X1,RT,RB,sn,nf){const W=X1-X0,hh=RB-RT,hf=W>>1,e=Math.min(hf,hh>>1),yr=RT+(hh>>2);
+  for(let j=0;32*j<e;j++){const cw=Math.min(32,e-32*j);
+    for(let s=0;s<2;s++){const fl=s===1,x=fl?X1-32*j-cw:X0+32*j,ts=fl?T.MD:T.L;let y3=RB-48*j-48,c3=0;if(y3<RT){c3=RT-y3;y3=RT}
+      if(c3<48)sprW(exaSub(F.h3,0,c3,cw,48-c3),x,y3,fl,0,a,ts);
+      if(j)exaFill(F.hb,x,RT,cw,16*j,T.L,a,fl);sprW(exaSub(F.h1,0,0,cw,16),x,RT+16*j,fl,0,a,T.L);
+      const yb=RT+16*j+16;if(y3>yb)exaFill(F.sv,x,yb,cw,y3-yb,ts,a,fl);sprW(exaSub(F.h2,0,0,cw,16),x,RT+16*j,fl,0,a,ts);
+      if(c3<48)sprW(exaSub(F.h4,0,c3,cw,48-c3),x,y3,fl,0,a,T.M);if(j)exaFill(F.hf,x,RB-48*j,cw,48*j,T.M,a,fl,true)}}
+  const mw=W-2*e;if(mw>0){exaFill(F.hb,X0+e,RT,mw,yr-RT,T.L,a);exaFill(F.hf,X0+e,yr,mw,RB-yr,T.M,a,false,true)}
+  if(!sn){exaFill(F.te,X0,RT,W,F.te.h,T.D,a);exaFill(F.fa,X0,RB-F.fa.h,W,F.fa.h,T.D,a);exaFill(F.ve,X0,RT,F.ve.w,hh,T.D,a);exaFill(F.ve,X1-F.ve.w,RT,F.ve.w,hh,T.D,a,true)}
+  const rh=F.rh.h;if(mw>4)exaFill(F.rh,X0+e-2,yr-(rh>>1),mw+4,rh,T.L,a);
+  else if(hh>W+8){const y0=RT+(hf>>1),y1=RB-Math.round(hf*1.5);exaFill(F.rv,X0+hf-(rh>>1),y0-2,rh,y1-y0+4,T.L,a)}
+  else if(!sn&&!nf)sprW(exaSpr().fin,X0+hf-2,yr-14,false,0,a)}
+// 东方飞檐：前檐两头的翘角（南北屋脊时在山墙两个下角）、东西屋脊两头的鸱吻
+function exaEaveX(S,b,a,T,X0,X1,RT,RB){const ec=S.ec,eo=S.eo;sprW(ec,X0-6,RB-12,false,0,a,T.M);sprW(ec,X1+6-ec.w,RB-12,true,0,a,T.M);
+  if(b.dir!=='v'){const hh=RB-RT,e=Math.min((X1-X0)>>1,hh>>1),yr=RT+(hh>>2);sprW(eo,X0+e-4,yr+3-eo.h,false,0,a,T.D);sprW(eo,X1-e+4-eo.w,yr+3-eo.h,true,0,a,T.D)}}
+// 烟囱：两坡 / 四坡 / 茅草，按 seed 放在屋脊上（6 成有；独特建筑不放）
+function exaChim(S,b,a,X0,X1,RT,RB){const W=X1-X0,hh=RB-RT;if(b.k==='uniq'||W<60||hh<40||exaH(b.seed,1,0)>=0.6)return;const m=EXT_WM[b.y1*MAP_W+b.x0]||3,r=S.ch[m===4||m===5||m===1||m===2?0:1],u=exaH(b.seed,2,0);
+  if(b.dir==='v'&&b.roof!=='hip'){const hf=W>>1,rise=hf>>1;sprW(r,X0+hf+3,Math.round(RT-rise+10+u*(hh-36))-r.h+8,false,0,a)}
+  else{const e=b.roof==='hip'?Math.min(W>>1,hh>>1):0,x0=X0+Math.max(10,e*0.7),x1=X1-Math.max(18,e*0.7);if(x1<=x0)return;sprW(r,Math.round(x0+u*(x1-x0)),RT+Math.round(hh/4)+6-r.h,false,0,a)}}
+// 平顶 / 垛口 / 圆顶 / 尖塔：地砖（中间色）→ 北边女儿墙 → 东西两段 → 南边那段（垛口同理，墙上一排垛子）→ 圆顶 / 尖塔
+function exaFlat(S,b,a,T,X0,X1,RT,RB,r){const W=X1-X0,hh=RB-RT,cr=r==='crenel',P=cr?S.cr:S.fl,sn=b.snow;
+  if(cr){exaFill(P.dk,X0+3,RT+3,W-6,hh-11,T.M,a);if(sn)exaFill(S.sn,X0+3,RT+3,W-6,hh-11,EXA_SNB,0.8*a)}else{exaFill(P.dk,X0+4,RT+4,W-8,hh-14,T.M,a);if(sn)exaFill(S.sn,X0+4,RT+4,W-8,hh-14,EXA_SNB,0.8*a)}
+  if(r==='flat')exaDeck(S,b,a,X0,X1,RT,RB);
+  if(cr){exaFill(P.w,X0,RT-10,5,hh,T.L,a);exaFill(P.e,X1-3,RT-10,3,hh,T.M,a);exaFill(P.n,X0,RT-10,W,15,T.L,a);sprW(P.cn,X1-4,RT-10,true,0,a,T.L);exaFill(P.s,X0,RB-13,W,13,T.M,a);sprW(P.cs,X1-4,RB-13,true,0,a,T.M)}
+  else{exaRing(P,T,a,X0,X1,RT,RB);
+    if(sn){exaFill(S.sn,X0,RT-6,W,3,null,0.9*a);exaFill(S.sn,X0,RT-6,4,hh,null,0.9*a);exaFill(S.sn,X1-4,RT-6,4,hh,null,0.9*a);exaFill(S.sn,X0,RB-10,W,3,null,0.9*a)}}
+  if(r==='dome'){const iw=W-12,ih=hh-16,lg=Math.max(iw,ih),sm=Math.min(iw,ih);let k=S.dm.length-1;while(k>0&&S.dmD[k]>sm-4)k--;const d=S.dmD[k],n=Math.max(1,Math.min(3,Math.floor((lg+8)/(d+10))));
+    for(let q=0;q<n;q++){const f=(q+0.5)/n,cx=Math.round(iw>=ih?X0+6+iw*f:X0+6+iw/2),cy=Math.round(iw>=ih?RT+4+ih*0.55:RT+4+ih*f),y=Math.round(cy-S.dmY[k]);
+      sprW(S.dm[k],cx-d/2-1,y,false,0,a,T.L);if(sn)sprW(S.dm[k],cx-d/2-1,y,false,0,0.6*a,EXA_W1);sprW(S.fin,cx-2,y-6,false,0,a)}}
+  else if(r==='spire'){const cx=(X0+X1)>>1,cy=RT+(hh>>1)+2,pn=S.pn,x0=X0+1,x1=X1-1-pn.w,y0=RT-17,y1=RB-21;
+    sprW(pn,x0,y0,false,0,a,T.L);sprW(pn,x1,y0,false,0,a,T.L);const sx=cx-(S.sp.w>>1),sy=Math.round(cy+28-S.spB);sprW(S.sp,sx,sy,false,0,a,T.M);if(sn)sprW(S.sp,sx,sy,false,0,0.5*a,EXA_W1);
+    sprW(S.fin,cx-2,sy-6,false,0,a);sprW(pn,x0,y1,false,0,a,T.L);sprW(pn,x1,y1,false,0,a,T.L)}}
+// 平顶的一圈女儿墙（北、东西、南）
+function exaRing(P,T,a,X0,X1,RT,RB){const W=X1-X0,hh=RB-RT;exaFill(P.n,X0,RT-6,W,13,T.L,a);exaFill(P.w,X0,RT-6,6,hh,T.L,a);exaFill(P.e,X1-4,RT-6,4,hh,T.M,a);sprW(P.c,X0,RT-6,false,0,a,T.L);sprW(P.c,X1-4,RT-6,true,0,a,T.L);
+  exaFill(P.s,X0,RB-10,W,10,T.M,a);sprW(P.sc,X0,RB-10,false,0,a,T.M);sprW(P.sc,X1-2,RB-10,true,0,a,T.M)}
+// 平顶上的小东西（按 seed）：通风箱、天窗、检修口、水桶
+function exaDeck(S,b,a,X0,X1,RT,RB){const W=X1-X0,hh=RB-RT;if(W<40||hh<36)return;const L=[S.vt,S.sk,S.hc,S.br],n=1+Math.floor(exaH(b.seed,3,0)*(W*hh>9000?3:2));
+  for(let q=0;q<n;q++){const r=L[Math.floor(exaH(b.seed,4,q)*4)],x=Math.round(X0+6+exaH(b.seed,5,q)*(W-12-r.w)),y=Math.round(RT+6+exaH(b.seed,6,q)*(hh-20-r.h));sprW(r,x,y,false,0,a)}}
+// 布棚
+function exaAwn(S,b,a,T,X0,X1,RT,RB){const W=X1-X0,A=S.aw;sprW(A.po,X0+1,RB,false,0,a);sprW(A.po,X1-3,RB,false,0,a);
+  exaFill(A.cv,X0,RT,W,RB-RT-4,T.L,a);exaFill(A.cs,X0,RT,W,RB-RT-4,T.M,a);exaFill(A.va,X0,RB-6,W,6,T.L,a);exaFill(A.vs,X0,RB-6,W,6,T.M,a)}
+// 屋顶上的装饰：k 种类、X0 / X1 屋顶左右、RT / RB 屋顶上下（世界坐标）；b 那块屋顶（几何同 extArtRoof：yr 屋脊 / 平顶地面中心）。动画按 G.time（风车四帧、旗三帧、烟往上飘、光一明一暗）
+const EXA_DT={};const exaDT=h=>EXA_DT[h]||(EXA_DT[h]=exaT(h));   // 装饰乘的颜色
+function exaGlw(D,c,x,y,a){sprW(D.glw,x-12,y-12,false,0,a,exaDT(c))}
+function exaSmk(D,x,y,t,n,sp,c,a){for(let q=0;q<n;q++){const f=(t*sp+q/n)%1;sprW(D.pf,Math.round(x-3.5+f*7+Math.sin(t*1.7+q)*1.5),Math.round(y-4-f*22),false,0,a*(1-f)*(f<0.15?f/0.15:1),exaDT(c))}}   // 冒烟：n 团往上飘，越高越淡
+function exaFlg(D,x,y,t,c){sprW(D.pole,x,y);sprW(D.pen[Math.floor(t*4)%3],x+2,y+1,false,0,1,exaDT(c))}   // 一根旗杆 + 三角旗：(x, y) 旗杆顶
+function extArtDeco(k,X0,X1,RT,RB,b){const S=exaSpr(),D=S.dc,cx=(X0+X1)>>1,cy=(RT+RB)>>1,hh=RB-RT,t=G.time,yr=RT+Math.round(hh/4),T=exaPT(b?b.pal:'brown'),pl=Math.sin(t*2.4);
+  if(k==='cross'){if(b&&b.dir==='v'){const rise=((X1-X0+2)>>1)>>1;sprW(S.cross,cx-4,RB-rise-15)}else sprW(S.cross,cx-4,yr-15);return}   // 教堂的十字架：南北屋脊时立在南头山墙尖上
+  if(k==='flag'){exaFlg(D,X0+12,RT-26,t,'#7a3ab0');return}   // 亡灵堡的紫旗
+  switch(k){
+    case'mill':{const r=D.rot[Math.floor(t*3)&3],hy=Math.round(yr+(RB-yr)*0.4);sprW(r,cx-32,hy-32);break}   // 风车磨坊：前坡上的四片叶子慢慢转
+    case'altar':{for(const dx of[-30,-18,12,24])sprW(D.spk,cx+dx,cy-30+(dx*dx%7),false,0,1,exaDT('#3a2e48'));sprW(D.alt,cx-12,cy-10);exaGlw(D,'#6aff6a',cx,cy-6,0.35+0.2*pl);break}   // 腐化祭坛：一圈尖刺、祭坛、绿光
+    case'lodge':{sprW(D.stk,cx+18,yr-26,false,0,1,exaDT('#8a8580'));exaSmk(D,cx+27,yr-26,t,3,0.5,'#c8c8cc',0.55);break}   // 猎人木屋：石烟囱冒烟
+    case'tree':{sprW(D.can[0],cx-40,RT-16);sprW(D.can[1],cx+10,RT-2);sprW(D.can[1],X0-6,RB-34,true);break}   // 树屋：树冠盖在屋顶上
+    case'pyramid':{for(let q=1;q<=3;q++){const ix=12*q+2,iy=10*q,lf=6*q;exaFill(S.fl.dk,X0+ix+4,RT+iy-lf+4,X1-X0-2*ix-8,RB-RT-2*iy-14,T.M,1);exaRing(S.fl,T,1,X0+ix,X1-ix,RT+iy-lf,RB-iy-lf)}sprW(S.fin,cx-2,cy-38);exaGlw(D,'#ffe08a',cx,cy-30,0.3+0.15*pl);break}   // 沙丘陵墓：一层层往里收的台阶、金顶
+    case'bell':{const y=yr-30;sprW(D.bel,cx-14,y,false,0,1,T.M);sprW(D.bell,cx-6+Math.round(Math.sin(t*2)),y+11);break}   // 钟楼：屋顶尖上一座钟亭、铜钟摆
+    case'ice':{const c=exaDT('#bfe8ff');sprW(D.crB,cx-44,cy-26,false,0,0.95,c);sprW(D.crB,cx+26,cy-30,false,0,0.95,c);sprW(D.cry,cx-20,RT-8,false,0,0.95,c);sprW(D.cry,cx+12,RB-30,false,0,0.95,c);exaGlw(D,'#bfe8ff',cx-32,cy-14,0.25+0.1*pl);break}   // 冰晶堡：几根冰柱
+    case'chimney':{const c=exaDT('#8a4a3a');sprW(D.stk,cx-34,RT-22,false,0,1,c);sprW(D.stk,cx+14,RT-30,false,0,1,c);exaSmk(D,cx-25,RT-22,t,3,0.6,'#8a8a8e',0.6);exaSmk(D,cx+23,RT-30,t+0.4,3,0.6,'#8a8a8e',0.6);break}   // 锅炉房：两根高烟囱冒黑烟
+    case'tent':{exaFlg(D,cx-1,yr-30,t,'#c84a4a');break}   // 游牧大帐：帐顶一根旗杆
+    case'crystal':{const P4=[[X0+8,RT+2,'#7ae0ff'],[X1-22,RT,'#ff9ae0'],[X0+10,RB-42,'#b0ff8a'],[X1-24,RB-40,'#ffd27a']];for(let q=0;q<4;q++){const[x,y,c]=P4[q];sprW(D.cry,x,y,false,0,1,exaDT(c));exaGlw(D,c,x+7,y+6,0.3+0.2*Math.sin(t*2+q))}break}   // 元素树殿：四色水晶
+    case'banner':{for(const x of[X0+14,X1-18]){sprW(D.pole,x,RT-28);sprW(D.ban[Math.floor(t*3+x)%3],x+2,RT-25,false,0,1,exaDT('#9a2020'))}break}   // 铁血兵营：两面军旗
+    case'obelisk':{sprW(D.obl,cx-8,cy-48,false,0,1,exaDT('#2a2436'));exaGlw(D,'#a060ff',cx,cy-44,0.45+0.25*pl);break}   // 幽影神龛：黑色方尖碑、紫光
+    case'arcane':{const y=Math.round(RT-46+Math.sin(t*2)*3);exaGlw(D,'#6ac8ff',cx,y+14,0.35+0.15*pl);sprW(D.crB,cx-12,y,false,0,1,exaDT('#8ae0ff'));break}   // 秘法实验室：圆顶上悬浮的水晶
+    case'forge':{sprW(D.stk,cx+14,RT-26,false,0,1,exaDT('#4a3a36'));exaGlw(D,'#ff8a2a',cx+23,RT-24,0.6+0.25*Math.sin(t*7));exaSmk(D,cx+23,RT-30,t,3,0.7,'#5a5050',0.5);exaGlw(D,'#ff6a1a',cx-24,cy,0.4+0.15*pl);
+      for(let q=0;q<4;q++){const f=(t*1.4+q/4)%1;rectW(cx+21+Math.round(Math.sin(q*3+t)*5),Math.round(RT-28-f*26),1,1,exaC('#ffd060'),1-f)}break}   // 熔炉：烟囱口的火、火星，地上一池熔岩光
+    case'pagoda':{sprW(D.pag,cx-16,yr-42,false,0,1,T.M);sprW(S.fin,cx-2,yr-48);break}   // 道观：屋脊正中一座三层小塔
+    case'steam':{sprW(D.pip,X0+10,cy-14);sprW(D.gr[Math.floor(t*4)&1],cx+14,cy-10);exaSmk(D,X0+30,cy-16,t,4,0.9,'#f0f0f0',0.6);break}   // 蒸汽机房：管道、齿轮转、冒白汽
+    case'redbanner':{exaFlg(D,cx-1,RT-30,t,'#c82a2a');break}   // 赤血箭楼：红旗
+    case'stele':{const C4=['#7ae0c8','#c8b090','#6ab0ff','#ff8a4a'],P4=[[X0+14,RT+6],[X1-24,RT+6],[X0+14,RB-46],[X1-24,RB-46]];for(let q=0;q<4;q++){const[x,y]=P4[q];sprW(D.stl,x,y,false,0,1,exaDT('#c8b090'));exaGlw(D,C4[q],x+5,y+2,0.35+0.2*Math.sin(t*2+q))}break}   // 元素碑亭：四座小碑、四色光
+    case'sled':{sprW(D.stk,cx+22,yr-24,false,0,1,exaDT('#7a7470'));exaSmk(D,cx+31,yr-24,t,3,0.5,'#c8c8cc',0.55);sprW(D.sld,X1-34,RB+EXT_WH+2);break}   // 雪橇驿站：烟囱冒烟、门外一架雪橇
+    case'witch':{sprW(D.stk,cx+6,yr-22,true,0,1,exaDT('#4a4036'));exaSmk(D,cx+15,yr-22,t,3,0.45,'#9ad06a',0.5);exaGlw(D,'#9aff6a',cx-22,RB+EXT_WH-8,0.5+0.25*pl);exaGlw(D,'#9aff6a',cx+22,RB+EXT_WH-8,0.5+0.25*Math.sin(t*2.4+1));break}   // 沼泽巫屋：歪烟囱冒绿烟、门口两盏绿灯
+    case'mine':{sprW(D.min,X1-40,RT-36);sprW(D.whl[Math.floor(t*3)&1],X1-41,RT-41);break}   // 矿井井架：木架子、天轮转
+  }}
+const EXA_C={};const exaC=h=>EXA_C[h]||(EXA_C[h]=C(h));
 
 // ---------- v0.7.0 新英雄的高清小人（按用户给的立绘画；32×32，朝右，脚底 y = 31，同 art/hd_heroes 的画法）----------
 // ===== 莉莲：黑色长直发（拖到腰下）、黑色哥特长裙（多层荷叶边、暗紫衬里）、黑冠红宝石、红眼睛、白皙皮肤 =====
@@ -78171,15 +78659,15 @@ function svECardDo(){const S=G.sv,mode=DIFF.enemyCards;S.eq=0;if(!mode)return nu
 /* ---------- 0.13.0e 搜打撤的地图生成（机制 game/ext.js）----------
    0.13.0f（用户 11-04 晚定）的顺序：先河、湖（熔岩地区是熔岩河、熔岩湖）→ 地标 → 主路（过水搭桥，熔岩上是石桥）→ 主路分出支路接普通建筑 → 野外零散的建筑
    地形：0 草地、1 路、2 树（挡路）、3 岩石、4 墓碑、5 树丛 / 庄稼、7 墙（挡路）、8 地板（屋里；桥也是 8，EXT_BR 记着是桥）、9 碎石（废墟的墙）、11 浅水（能走）、13 深水（挡路，借齿轮的格子值）
-   建筑（EXT_GEN.bld）：每个房间一条 {x0,y0,x1,y1 含墙, k 种类, z 档, roof 屋顶样式（null = 没顶）, lm 属于哪个地标, ok 走得到, door {side 0 北 1 南 2 西 3 东, p 从哪格开始, w 几格宽}（这间有朝外的门才有）, grp 连锁建筑的编号}；
-     2.5D 的墙面和屋顶在 ui/ext.extDrawB 画，进屋那间不画
+   建筑（EXT_GEN.bld）：0.13.0g 起一座建筑由几块长方形拼成，每块一条 {x0,y0,x1,y1 含墙, k 种类, z 档, roof 屋顶样式（null = 没顶）, dir 屋脊 'h' 东西 / 'v' 南北, pal 配色, snow 积雪, seed, main 主屋,
+     lm 属于哪个地标, ok 走得到, door {side 1 南 2 西 3 东（极少 0 北）, p 从哪格开始, w 几格宽}（朝外的门在这块的墙上才有）, grp 哪座建筑}；墙一格一格（EXT_WM 材质、EXT_DG 门洞），2.5D 的墙和屋顶在 ui/ext.extDpush 排序、art/ext_art 画
    地标（EXT_GEN.lms）：{k, x, y 中心, gx, gy 路接到哪, r}；ufort 亡灵要塞、utower 亡灵哨塔的城墙 / 塔在开局 extPlace 用亡灵建筑（structs/estruct.esPlace）摆；
    主路（EXT_GEN.roads）：每条一串格子下标（巡逻队沿着走） */
 let EXT_GEN=null;   // 生成地图时记下的建筑、地标、撤离点、路（开局 extPlace 用；只在这一局有效）
-const EXT_BR=new Uint8Array(NT_MAX);let EXT_LAVA=false;   // EXT_BR：这格是桥；EXT_LAVA：这张图的水是熔岩
+const EXT_BR=new Uint8Array(NT_MAX),EXT_WM=new Uint8Array(NT_MAX),EXT_DG=new Uint8Array(NT_MAX);let EXT_LAVA=false;   // EXT_BR：这格是桥；EXT_WM：这格墙的材质（art/ext_art 的 EXT_MATS 下标）；EXT_DG：横墙上的门洞（画门框）；EXT_LAVA：这张图的水是熔岩
 const extZone=(x,y)=>{const d=Math.hypot(x/16-TERR_CX,y/16-TERR_CY),R=CFG.ext.zone.r;return d<R[0]?0:d<R[1]?1:2};   // 位置（像素）在哪一档
 const extWPick=w=>{let tw=0;for(const k in w)tw+=w[k];let v=rng()*tw;for(const k in w){v-=w[k];if(v<=0)return k}return Object.keys(w)[0]};
-function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_CY,nf=valueNoise(G.seed+101),nf2=valueNoise(G.seed+202),nf3=valueNoise(G.seed+303);T.fill(0);EXT_BR.fill(0);
+function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_CY,nf=valueNoise(G.seed+101),nf2=valueNoise(G.seed+202),nf3=valueNoise(G.seed+303);T.fill(0);EXT_BR.fill(0);EXT_WM.fill(0);EXT_DG.fill(0);
   EXT_LAVA=C.lava.includes(G.terr);
   const In=(x,y)=>x>=0&&y>=0&&x<W&&y<H,at=(x,y)=>T[y*W+x],set=(x,y,v)=>{if(In(x,y))T[y*W+x]=v},isB=t=>t===7||t===8||t===9,isW=t=>t===11||t===13;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x,f=nf(x/9,y/9)*0.65+nf2(x/3,y/3)*0.35;if(f>GN.forest)T[i]=2;else if(rng()<GN.scatter)T[i]=2;else if(rng()<0.008)T[i]=3}
@@ -78197,44 +78685,75 @@ function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_C
   const B=[],LM=[],roads=[];let GID=0;
   const free=(x0,y0,x1,y1)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(!In(x,y)||x<2||y<2||x>W-3||y>H-3)return false;const t=at(x,y);if(isB(t)||t===1||isW(t))return false}return true};
   const rk=R=>randi(R[0],R[1]);
-  // 一座建筑：k 种类、左上角、宽高、门在哪面（0 北 1 南 2 西 3 东）、门从哪格开始（北南面 = x，东西面 = y）；连锁建筑（rooms）分成几间，每间一条
-  const bld=(k,x0,y0,w,h,side,dp,lm)=>{const D=C.bld[k],x1=x0+w-1,y1=y0+h-1;if(!free(x0-1,y0-1,x1+1,y1+1))return null;
-    const dw=k==='church'||k==='keep'?3:k==='hut'||k==='crypt'||k==='tower'?1:2;if(side<2){dp=clamp(dp,x0+1,x1-dw)}else dp=clamp(dp,y0+1,y1-dw);
-    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)T[y*W+x]=x===x0||x===x1||y===y0||y===y1?7:8;
-    for(let q=0;q<dw;q++){const x=side<2?dp+q:side===2?x0:x1,y=side<2?(side?y1:y0):dp+q;T[y*W+x]=8;const ox=side===2?-1:side===3?1:0,oy=side===0?-1:side===1?1:0;
-      for(let s=1;s<=2;s++){const xx=x+ox*s,yy=y+oy*s;if(In(xx,yy)&&!isB(at(xx,yy))&&at(xx,yy)!==1&&!isW(at(xx,yy)))T[yy*W+xx]=0}}
-    const z=extZone((x0+x1)*8+8,(y0+y1)*8+8),dx0=side<2?dp:side===2?x0:x1,dy0=side<2?(side?y1:y0):dp;
-    let R=[{x0,y0,x1,y1}];
-    if(D.rooms){const n=rk(D.rooms),bad=(v,vert)=>vert?side<2&&v>=dp-1&&v<=dp+dw:side>=2&&v>=dp-1&&v<=dp+dw;   // 隔墙别堵在门里面
-      for(let t=0;t<12&&R.length<n;t++){R.sort((a,b)=>(b.x1-b.x0)*(b.y1-b.y0)-(a.x1-a.x0)*(a.y1-a.y0));const r=R[0],rw=r.x1-r.x0,rh=r.y1-r.y0,vert=rw>=rh;
-        if(vert?rw<8:rh<7)break;const s=vert?randi(r.x0+4,r.x1-4):randi(r.y0+3,r.y1-3);if(bad(s,vert))continue;const g=vert?randi(r.y0+1,r.y1-1):randi(r.x0+1,r.x1-1);
-        if(vert)for(let y=r.y0+1;y<r.y1;y++){if(y!==g)T[y*W+s]=7}else for(let x=r.x0+1;x<r.x1;x++){if(x!==g)T[s*W+x]=7}
-        R.splice(0,1,vert?{x0:r.x0,y0:r.y0,x1:s,y1:r.y1}:{x0:r.x0,y0:r.y0,x1:r.x1,y1:s},vert?{x0:s,y0:r.y0,x1:r.x1,y1:r.y1}:{x0:r.x0,y0:s,x1:r.x1,y1:r.y1})}}
-    else if(w>=9&&k!=='church'&&k!=='keep'){const px=x0+(w>>1),gy=randi(y0+1,y1-1);if(!(side<2&&px>=dp-1&&px<=dp+dw))for(let y=y0+1;y<y1;y++)if(y!==gy)T[y*W+px]=7}   // 大房子中间一道隔墙（留一格门）
-    if(!D.roof)for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(T[y*W+x]===7&&rng()<0.35)T[y*W+x]=9;   // 废墟：墙塌一部分
-    const gid=GID++;for(const r of R){const o={x0:r.x0,y0:r.y0,x1:r.x1,y1:r.y1,k,z,roof:D.roof,lm:lm==null?-1:lm,ok:1,grp:gid,door:null};
-      if(dx0>=r.x0&&dx0<=r.x1&&dy0>=r.y0&&dy0<=r.y1)o.door={side,p:dp,w:dw};B.push(o)}
-    return{x0,y0,x1,y1,k,side}};
+  // 一座建筑（0.13.0g 用户定：部件画法）：先在小格子里用几块长方形拼出样子（plan），再放到地图上（put）。块和块共用一道墙（隔墙上开一格门），每块一个屋顶（art/ext_art 画）
+  const LK0=C.look,LR=C.lookReg[G.terr]||{},MI=n=>Math.max(1,EXT_MATS.indexOf(n)),uq=()=>C.uniq[G.terr]||C.uniq.wild;
+  const plan=k=>{const D=C.bld[k],LK=LK0[k]||{},U=k==='uniq'?uq():null,w=U?U.w:rk(D.w),h=U?U.h:rk(D.h),P=[{x0:0,y0:0,x1:w-1,y1:h-1,par:-1}];
+    const len=(p,s)=>s<2?p.x1-p.x0+1:p.y1-p.y0+1,s4=()=>randi(0,3);
+    const fit=c=>{for(const q of P){const ix=Math.min(c.x1,q.x1)-Math.max(c.x0,q.x0),iy=Math.min(c.y1,q.y1)-Math.max(c.y0,q.y0);if(ix>=0&&iy>=0){if(ix>0&&iy>0)return false;continue}if(Math.max(-ix,-iy)<3)return false}return true};   // 两块只能共用一条墙线；不挨着的至少隔两格（不留一格宽的窄缝）
+    const att=(pi,s,l,d,al)=>{const p=P[pi],Lp=len(p,s);l=Math.min(l,Lp);if(l<4||d<4)return -1;const o=al==='s'?0:al==='e'?Lp-l:al==='c'?(Lp-l)>>1:randi(0,Lp-l);let c;   // 在第 pi 块的 s 面（0 北 1 南 2 西 3 东）接一块：沿墙 l 格、往外 d 格（都含墙）；al 对齐：s 起头、e 末尾、c 居中、别的随机
+      if(s<2){const x0=p.x0+o;c=s?{x0,x1:x0+l-1,y0:p.y1,y1:p.y1+d-1}:{x0,x1:x0+l-1,y0:p.y0-d+1,y1:p.y0}}else{const y0=p.y0+o;c=s===3?{x0:p.x1,x1:p.x1+d-1,y0,y1:y0+l-1}:{x0:p.x0-d+1,x1:p.x0,y0,y1:y0+l-1}}
+      if(!fit(c))return -1;c.par=pi;P.push(c);return P.length-1};
+    const sh=U?U.shape||'one':extWPick(LK.shape||{one:1});
+    if(sh==='annex')att(0,s4(),randi(4,6),randi(4,5),'r');   // 主屋 + 一间偏房
+    else if(sh==='L'){const s=s4();att(0,s,randi(4,Math.max(4,len(P[0],s)-3)),randi(5,8),rng()<0.5?'s':'e')}   // 贴着一角接一块大的
+    else if(sh==='T'){const s=s4();att(0,s,randi(4,Math.max(4,len(P[0],s)-4)),randi(4,7),'c')}
+    else if(sh==='U'){const s=s4(),l=randi(4,Math.max(4,(len(P[0],s)>>1)-1)),d=randi(4,7);att(0,s,l,d,'s');att(0,s,l,d,'e')}   // 同一面两头各一块（中间围出个小院）
+    else if(sh==='grid'){const a=att(0,3,randi(Math.max(4,h-3),h),randi(5,8),'s'),b=att(0,1,randi(Math.max(4,w-3),w),randi(4,7),'s');   // 四块拼：东边一块、南边一块，两块都贴满时角上再补一块
+      if(a>0&&b>0&&P[a].y1===h-1&&P[b].x1===w-1){const c={x0:P[a].x0,x1:P[a].x1,y0:P[b].y0,y1:P[b].y1,par:a};if(fit(c))P.push(c)}}
+    else if(sh==='church'){att(0,0,5,4,'c');const t=att(0,2,5,5,'e');if(t>0)P[t].rs='spire'}   // 教堂：正厅 + 北边后殿 + 西南角钟塔
+    let mx=1e9,my=1e9,MX=-1e9,MY=-1e9;for(const p of P){mx=Math.min(mx,p.x0);my=Math.min(my,p.y0);MX=Math.max(MX,p.x1);MY=Math.max(MY,p.y1)}
+    for(const p of P){p.x0-=mx;p.x1-=mx;p.y0-=my;p.y1-=my}return{k,P,W:MX-mx+1,H:MY-my+1}};
+  // 放到地图上：左上角 (X0, Y0)；门想开在 side 面（1 南 2 西 3 东；不开北门，2.5D 看不见），靠近 tx（南北门）/ ty（东西门）；返回 {x0 y0 x1 y1, ox oy 门外那格} 或 null（放不下）
+  const put=(S,X0,Y0,side,tx,ty,lm)=>{const{k,P,W:BW,H:BH}=S;if(!free(X0-1,Y0-1,X0+BW,Y0+BH))return null;
+    const LK=LK0[k]||{},U=k==='uniq'?uq():null,g=new Uint8Array(BW*BH),gi=(x,y)=>x<0||y<0||x>=BW||y>=BH?0:g[y*BW+x];   // g：0 外面、7 墙、8 地板
+    for(const p of P)for(let y=p.y0;y<=p.y1;y++)for(let x=p.x0;x<=p.x1;x++)if(x===p.x0||x===p.x1||y===p.y0||y===p.y1)g[y*BW+x]=7;
+    for(const p of P)for(let y=p.y0+1;y<p.y1;y++)for(let x=p.x0+1;x<p.x1;x++)g[y*BW+x]=8;
+    const gap=[];for(let pi=1;pi<P.length;pi++){const c=P[pi],p=P[c.par],x0=Math.max(c.x0,p.x0),x1=Math.min(c.x1,p.x1),y0=Math.max(c.y0,p.y0),y1=Math.min(c.y1,p.y1),hz=y0===y1,cand=[];   // 和上一块共用的那道墙：开一格门
+      for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(hz?x>x0&&x<x1&&gi(x,y-1)===8&&gi(x,y+1)===8:y>y0&&y<y1&&gi(x-1,y)===8&&gi(x+1,y)===8)cand.push(y*BW+x);
+      if(cand.length){const j=pick(cand);g[j]=8;if(hz)gap.push(j)}}
+    const door=(s,dw)=>{let best=-1,bs=1e9;   // s 面朝外的一段直墙（dw 格）：里面是地板、外面是空地、两头是墙；离想要的位置近、靠外的优先
+      for(let y=0;y<BH;y++)for(let x=0;x<BW;x++){let ok=true;
+        for(let q=0;q<dw&&ok;q++){const xx=s<2?x+q:x,yy=s<2?y:y+q,ix=s===2?xx+1:s===3?xx-1:xx,iy=s===0?yy+1:s===1?yy-1:yy,ox=s===2?xx-1:s===3?xx+1:xx,oy=s===0?yy-1:s===1?yy+1:yy;if(gi(xx,yy)!==7||gi(ix,iy)!==8||gi(ox,oy)!==0)ok=false}
+        if(!ok||(s<2?gi(x-1,y)!==7||gi(x+dw,y)!==7:gi(x,y-1)!==7||gi(x,y+dw)!==7))continue;
+        const sc=s<2?Math.abs(X0+x+dw/2-tx)+(s===1?BH-1-y:y)*3:Math.abs(Y0+y+dw/2-ty)+(s===3?BW-1-x:x)*3;if(sc<bs){bs=sc;best=y*BW+x}}
+      return best};
+    let s=side,d0=-1,dw=k==='church'||k==='keep'?3:k==='hut'||k==='crypt'||k==='tower'?1:2;
+    for(;dw>=1&&d0<0;dw--)for(const s2 of[side,1,2,3,0]){d0=door(s2,dw);if(d0>=0){s=s2;break}}dw++;if(d0<0)return null;
+    const dx=d0%BW,dy=(d0/BW)|0,ox=s===2?-1:s===3?1:0,oy=s===0?-1:s===1?1:0;
+    for(let q=0;q<dw;q++){const j=s<2?d0+q:d0+q*BW;g[j]=8;if(s<2)gap.push(j)}
+    const z=extZone((X0*2+BW)*8,(Y0*2+BH)*8),gid=GID++,wl=U?[U.mat]:(!LK.fix&&LR.wall)||LK.wall||['stone'],om=MI(pick(wl)),im=LK.inner?MI(LK.inner):om;
+    for(let y=0;y<BH;y++)for(let x=0;x<BW;x++){const v=g[y*BW+x],i=(Y0+y)*W+X0+x;EXT_DG[i]=0;EXT_WM[i]=0;if(v){T[i]=v;if(v===7)EXT_WM[i]=(gi(x,y-1)===8&&gi(x,y+1)===8)||(gi(x-1,y)===8&&gi(x+1,y)===8)?im:om}else{const t=T[i];if(t===2||t===3||t===5)T[i]=0}}   // 隔墙用 inner 的材质；拼出来的缺口（L 形的角）清成空地
+    for(const j of gap)EXT_DG[(Y0+((j/BW)|0))*W+X0+(j%BW)]=1;
+    for(let q=0;q<dw;q++){const x=X0+dx+(s<2?q:0),y=Y0+dy+(s<2?0:q);for(let t=1;t<=2;t++){const xx=x+ox*t,yy=y+oy*t;if(In(xx,yy)&&!isB(at(xx,yy))&&at(xx,yy)!==1&&!isW(at(xx,yy)))T[yy*W+xx]=0}}   // 门外两格清出来
+    const rl=U?[U.roof]:(!LK.fix&&LR.roof)||LK.roof,pl=(!LK.fix&&LR.pal)||LK.pal||['brown'],rs0=rl?pick(rl):null,pal=U?U.pal:pick(pl),snow=LR.snow?1:0;
+    if(!rl)for(let y=0;y<BH;y++)for(let x=0;x<BW;x++){const i=(Y0+y)*W+X0+x;if(T[i]===7&&rng()<0.35)T[i]=9}   // 废墟：墙塌一部分
+    const DX=X0+dx,DY=Y0+dy;let dn=false;
+    P.forEach((p,pi)=>{const b={x0:X0+p.x0,y0:Y0+p.y0,x1:X0+p.x1,y1:Y0+p.y1,k,z,lm:lm==null?-1:lm,ok:1,grp:gid,door:null,main:pi?0:1,
+        roof:rs0?p.rs||(pi===0||rl.length<2||rng()<0.6?rs0:pick(rl)):null,dir:p.x1-p.x0>=p.y1-p.y0?'h':'v',pal,snow,seed:randi(0,999999)};   // 别的几块 6 成跟主屋一样的屋顶
+      if(!dn&&DX>=b.x0&&DX<=b.x1&&DY>=b.y0&&DY<=b.y1){b.door={side:s,p:s<2?DX:DY,w:dw};dn=true}B.push(b)});
+    const cx=DX+(s<2?dw>>1:0),cy=DY+(s<2?0:dw>>1);return{x0:X0,y0:Y0,x1:X0+BW-1,y1:Y0+BH-1,k,ox:cx+ox,oy:cy+oy}};
+  const bldAt=(k,x,y,li)=>{const S=plan(k);return put(S,x-(S.W>>1),y-(S.H>>1),1,x,0,li)};   // 以 (x, y) 为中心放，门朝南
+  const lane=(ax,ay,bx,by)=>{let x=ax,y=ay;const st=()=>{if(In(x,y)){const t=at(x,y);if(!isB(t)&&!isW(t))T[y*W+x]=1}};st();while(x!==bx){x+=Math.sign(bx-x);st()}while(y!==by){y+=Math.sign(by-y);st()}};   // 一条小路：先横后竖（不压建筑、不过水）
   // —— 2. 地标（不压水）——
   const LMR={ufort:14,uniq:8,ubat:6,ucamp:9,uwork:8,fort:16,utower:4,church:10,grave:12,farm:12,market:9,tower:5},zoneOk=(x,y,z)=>{const d=Math.hypot(x-ex,y-ey),R=C.zone.r;if(d<26)return false;return z<0||(z===0?d<R[0]:z===1?d>=R[0]&&d<R[1]:d>=R[1])};
   for(const[k,n,z]of GN.lm)for(let c=0,t=0;c<n&&t<800;t++){const r=LMR[k],x=randi(r+6,W-r-7),y=randi(r+6,H-r-7);if(!zoneOk(x,y,z)||!dry(x,y,r+2))continue;
     if(LM.some(o=>Math.hypot(o.x-x,o.y-y)<o.r+r+10)||exits.some(e=>Math.hypot(e.x-x,e.y-y)<r+12))continue;LM.push({k,x,y,r,gx:x,gy:y,z:extZone(x*16,y*16)});c++}
   LM.forEach((L,li)=>{const{x,y,r}=L;clear(x,y,r+2);
     if(L.k==='fort'){const R=15;for(let q=-R;q<=R;q++){set(x+q,y-R,7);set(x+q,y+R,7);set(x-R,y+q,7);set(x+R,y+q,7)}for(const d of[-1,0,1]){set(x+d,y-R,1);set(x+d,y+R,1);set(x-R,y+d,1);set(x+R,y+d,1)}
-      const ks=['house','long','ware','tower','barrack'];for(let c=0,t=0;c<4&&t<80;t++){const k=pick(ks),D=C.bld[k],w=rk(D.w),h=rk(D.h),x0=randi(x-R+2,x+R-1-w),y0=randi(y-R+2,y+R-1-h);
-        if(x0<x+4&&x0+w>x-4&&y0<y+4&&y0+h>y-4)continue;if(bld(k,x0,y0,w,h,1,x0+(w>>1),li))c++}}
-    else if(L.k==='ufort'){const R=C.es.fortR;bld('keep',x-4,y-3,9,7,1,x-1,li);L.gy=y+R+2;for(let q=-R;q<=R;q++)for(const[a,b]of[[x+q,y-R],[x+q,y+R],[x-R,y+q],[x+R,y+q]])if(at(a,b)===2||at(a,b)===5||at(a,b)===3)set(a,b,0)}   // 城墙、塔开局用亡灵建筑摆（game/ext.extPlace）
+      const ks=['house','long','ware','tower','barrack'];for(let c=0,t=0;c<4&&t<80;t++){const k=pick(ks),S=plan(k),w=S.W,h=S.H;if(w>2*R-4||h>2*R-4)continue;const x0=randi(x-R+2,x+R-1-w),y0=randi(y-R+2,y+R-1-h);
+        if(x0<x+4&&x0+w>x-4&&y0<y+4&&y0+h>y-4)continue;if(put(S,x0,y0,1,x0+(w>>1),0,li))c++}}
+    else if(L.k==='ufort'){const R=C.es.fortR;bldAt('keep',x,y,li);L.gy=y+R+2;for(let q=-R;q<=R;q++)for(const[a,b]of[[x+q,y-R],[x+q,y+R],[x-R,y+q],[x+R,y+q]])if(at(a,b)===2||at(a,b)===5||at(a,b)===3)set(a,b,0)}   // 城墙、塔开局用亡灵建筑摆（game/ext.extPlace）
     else if(L.k==='utower'||L.k==='ubat'){L.gy=y+4}
     else if(L.k==='ucamp'){L.gy=y+C.es.campR+2}
     else if(L.k==='uwork'){L.gy=y+C.es.workR+2}
-    else if(L.k==='uniq'){const U=C.uniq[G.terr]||C.uniq.wild;bld('uniq',x-(U.w>>1),y-(U.h>>1),U.w,U.h,1,x-1,li);L.gy=y-(U.h>>1)+U.h+2}   // 这个地区独特的建筑（0.13.0g）
-    else if(L.k==='church'){bld('church',x-7,y-5,15,11,1,x-1,li);L.gy=y+8}
+    else if(L.k==='uniq'){const o=bldAt('uniq',x,y,li);if(o){L.gx=o.ox;L.gy=o.oy+1}else L.gy=y+6}   // 这个地区独特的建筑（0.13.0g）
+    else if(L.k==='church'){const o=bldAt('church',x,y,li);if(o){L.gx=o.ox;L.gy=o.oy+1}else L.gy=y+8}
     else if(L.k==='grave'){const x0=x-11,x1=x+10,y0=y-6,y1=y+8;for(let q=x0;q<=x1;q++){set(q,y0,9);set(q,y1,9)}for(let q=y0;q<=y1;q++){set(x0,q,9);set(x1,q,9)}for(const d of[-1,0,1])set(x+d,y1,1);
-      for(let yy=y0+2;yy<y1-1;yy+=2)for(let xx=x0+2;xx<x1-1;xx+=3)if(rng()<0.7&&yy>y0+6)set(xx,yy,4);bld('crypt',x-3,y0+1,6,5,1,x-1,li);L.gy=y1+1}
-    else if(L.k==='farm'){bld('barn',x-10,y-7,9,6,1,x-6,li);bld('hut',x+3,y-7,4,4,1,x+4,li);for(let yy=y+1;yy<=y+9;yy+=2)for(let xx=x-10;xx<=x+10;xx++)if(at(xx,yy)===0)set(xx,yy,5);L.gy=y-1}
+      for(let yy=y0+2;yy<y1-1;yy+=2)for(let xx=x0+2;xx<x1-1;xx+=3)if(rng()<0.7&&yy>y0+6)set(xx,yy,4);put(plan('crypt'),x-3,y0+1,1,x,0,li);L.gy=y1+1}
+    else if(L.k==='farm'){put(plan('barn'),x-10,y-8,1,x-6,0,li);put(plan('hut'),x+3,y-8,1,x+4,0,li);for(let yy=y+1;yy<=y+9;yy+=2)for(let xx=x-10;xx<=x+10;xx++)if(at(xx,yy)===0)set(xx,yy,5);L.gy=y-1}
     else if(L.k==='market'){for(let yy=y-7;yy<=y+6;yy++)for(let xx=x-7;xx<=x+6;xx++)if(!isB(at(xx,yy)))set(xx,yy,1);
-      const S=[];for(let t=0;t<40&&S.length<5;t++){const sx=randi(x-6,x+3),sy=randi(y-6,y+4);if(S.some(s=>Math.abs(s.x-sx)<5&&Math.abs(s.y-sy)<4))continue;S.push({x:sx,y:sy});B.push({x0:sx,y0:sy,x1:sx+2,y1:sy+1,k:'stall',z:L.z,roof:'cloth',lm:li,ok:1,grp:GID++,door:null})}}
-    else if(L.k==='tower'){bld('tower',x-2,y-2,5,5,1,x,li);for(let q=0;q<10;q++){const a=rng()*Math.PI*2,d=4+rng()*3,xx=Math.round(x+Math.cos(a)*d),yy=Math.round(y+Math.sin(a)*d);if(at(xx,yy)===0)set(xx,yy,9)}L.gy=y+4}});
+      const S=[];for(let t=0;t<40&&S.length<5;t++){const sx=randi(x-6,x+3),sy=randi(y-6,y+4);if(S.some(s=>Math.abs(s.x-sx)<5&&Math.abs(s.y-sy)<4))continue;S.push({x:sx,y:sy});B.push({x0:sx,y0:sy,x1:sx+2,y1:sy+1,k:'stall',z:L.z,roof:'awning',lm:li,ok:1,grp:GID++,door:null,main:1,dir:'h',pal:'cloth',snow:LR.snow?1:0,seed:randi(0,999999)})}}
+    else if(L.k==='tower'){const o=bldAt('tower',x,y,li);if(o){L.gx=o.ox;L.gy=o.oy+1}for(let q=0;q<10;q++){const a=rng()*Math.PI*2,d=4+rng()*3,xx=Math.round(x+Math.cos(a)*d),yy=Math.round(y+Math.sin(a)*d);if(at(xx,yy)===0)set(xx,yy,9)}if(!o)L.gy=y+4}});
   for(const e of exits){for(let y=e.y-6;y<=e.y+6;y++)for(let x=e.x-6;x<=e.x+6;x++)if(In(x,y)&&isW(at(x,y)))T[y*W+x]=0;clear(e.x,e.y,5)}
   for(let y=ey-11;y<=ey+11;y++)for(let x=ex-11;x<=ex+11;x++)if(In(x,y)&&isW(at(x,y)))T[y*W+x]=0;clear(ex,ey,10);
   // —— 3. 主路：入口、地标、撤离点连成一棵树，再多连几条成环；过水搭桥（地板 + EXT_BR）——
@@ -78252,16 +78771,19 @@ function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_C
     for(const s of rng()<0.5?[1,-1]:[-1,1])for(const k2 of kinds){
       const px=Math.abs(dx)>=Math.abs(dy)?0:s,py=Math.abs(dx)>=Math.abs(dy)?s:0,L=randi(Ls[0],Ls[1]);
       const sx=x+(px>0?GN.road:px<0?-1:0),sy=y+(py>0?GN.road:py<0?-1:0),exx=sx+px*(L-1),eyy=sy+py*(L-1);if(!In(exx,eyy))continue;
-      const D=C.bld[k2],w=rk(D.w),h=rk(D.h);let o=null;
-      if(py>0)o=bld(k2,exx-(w>>1),eyy+1,w,h,0,exx);else if(py<0)o=bld(k2,exx-(w>>1),eyy-h,w,h,1,exx);else if(px>0)o=bld(k2,exx+1,eyy-(h>>1),w,h,2,eyy);else o=bld(k2,exx-w,eyy-(h>>1),w,h,3,eyy);
+      const S=plan(k2),w=S.W,h=S.H;let o=null;
+      if(py>0){o=put(S,exx-(w>>1),eyy+1,1,exx,0,null);if(o){const cx=o.ox<exx?o.x0-1:o.x1+1;lane(exx,eyy,cx,eyy);lane(cx,eyy,cx,o.y1+1);lane(cx,o.y1+1,o.ox,o.y1+1);lane(o.ox,o.y1+1,o.ox,o.oy)}}   // 建筑在路南边：门还是开在南面（2.5D 才看得见门），小路绕过去
+      else if(py<0){o=put(S,exx-(w>>1),eyy-h,1,exx,0,null);if(o){lane(exx,eyy,o.ox,eyy);lane(o.ox,eyy,o.ox,o.oy)}}
+      else if(px>0){o=put(S,exx+1,eyy-(h>>1),2,0,eyy,null);if(o){lane(exx,eyy,exx,o.oy);lane(exx,o.oy,o.ox,o.oy)}}
+      else{o=put(S,exx-w,eyy-(h>>1),3,0,eyy,null);if(o){lane(exx,eyy,exx,o.oy);lane(exx,o.oy,o.ox,o.oy)}}
       if(o){for(let q=0;q<L;q++){const xx=sx+px*q,yy=sy+py*q;if(In(xx,yy)&&!isB(at(xx,yy))&&!isW(at(xx,yy)))T[yy*W+xx]=1}return true}}return false};
   for(const P of roads.slice())for(let k=6;k<P.length-6;k+=randi(GN.bigGap[0],GN.bigGap[1])){const i=P[k],z=extZone((i%W)*16,((i/W)|0)*16);branch(P,k,[extWPick(C.big[z]),extWPick(C.big[z])],[3,8])}
   for(const P of roads.slice())for(let k=4;k<P.length-4;k+=randi(GN.branch[0],GN.branch[1])){const i=P[k],z=extZone((i%W)*16,((i/W)|0)*16),k1=extWPick(C.mix[z]);branch(P,k,[...new Set([k1,'house','hut'])],GN.side)}
   // 野外零散的小屋 / 塔楼 / 废墟：一条小路接到最近的路上
   {const RD=[];for(const P of roads)for(let k=0;k<P.length;k+=3)RD.push(P[k]);
     for(let c=0,t=0;c<GN.wild&&t<300;t++){const x=randi(12,W-14),y=randi(12,H-14);if(Math.hypot(x-ex,y-ey)<24||LM.some(L=>Math.hypot(L.x-x,L.y-y)<L.r+6))continue;
-      const z=extZone(x*16,y*16),k2=pick(z?['ruin','tower','hut','ruin']:['hut','ruin','hut']),D=C.bld[k2],w=rk(D.w),h=rk(D.h),o=bld(k2,x,y,w,h,1,x+(w>>1));if(!o)continue;c++;
-      let bi=-1,bd=1e9;for(const i of RD){const d=Math.hypot((i%W)-x,((i/W)|0)-y);if(d<bd){bd=d;bi=i}}if(bi<0||bd>40)continue;walk(x+(w>>1),o.y1+1,bi%W,(bi/W)|0,1,null)}}
+      const z=extZone(x*16,y*16),k2=pick(z?['ruin','tower','hut','ruin']:['hut','ruin','hut']),S=plan(k2),o=put(S,x,y,1,x+(S.W>>1),0,null);if(!o)continue;c++;
+      let bi=-1,bd=1e9;for(const i of RD){const d=Math.hypot((i%W)-x,((i/W)|0)-y);if(d<bd){bd=d;bi=i}}if(bi<0||bd>40)continue;walk(o.ox,o.oy,bi%W,(bi/W)|0,1,null)}}
   // 树林边缘变树丛（同默认的 genMap）
   {const isF=(x,y)=>In(x,y)&&(at(x,y)===2||at(x,y)===5),bush=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(T[i]!==2)continue;const n=(isF(x-1,y)?1:0)+(isF(x+1,y)?1:0)+(isF(x,y-1)?1:0)+(isF(x,y+1)?1:0);if(n===0?rng()<0.5:n<4&&rng()<0.6)bush.push(i)}for(const i of bush)T[i]=5}
   // 连通：从入口 4 邻走一遍，走不到的空地填成树；走不到的建筑不放东西（ok = 0）
@@ -78269,6 +78791,7 @@ function extGen(T){const W=MAP_W,H=MAP_H,C=CFG.ext,GN=C.gen,ex=TERR_CX,ey=TERR_C
     while(qh<qt){const i=Q[qh++],x=i%W;for(const j of[x<W-1?i+1:-1,x>0?i-1:-1,i+W<N?i+W:-1,i>=W?i-W:-1])if(j>=0&&!seen[j]&&!blk(T[j])){seen[j]=1;Q[qt++]=j}}
     for(let i=0;i<N;i++)if(!seen[i]&&!blk(T[i]))T[i]=T[i]===11?13:2;for(const o of B){let ok=0;for(let y=o.y0;y<=o.y1&&!ok;y++)for(let x=o.x0;x<=o.x1;x++)if(seen[y*W+x]){ok=1;break}o.ok=ok}}   // 走不到的浅水变深水（别在孤岛上长树）
   for(const e of exits)T[e.y*W+e.x]=1;
+  {const m=MI('stone');for(let i=0;i<W*H;i++)if(T[i]===7&&!EXT_WM[i])EXT_WM[i]=m}   // 不属于哪座房子的墙（城寨的围墙）：石墙
   G.spawns=exits.map((e,k)=>({x:e.x,y:e.y,name:'撤离'+(k+1)}));genTrees(T);
   EXT_GEN={bld:B,lms:LM,exits,roads:roads.filter(P=>P.length>=20)}}
 // 墙、地板、碎石、水 / 熔岩、桥的像素（同 maps/temple 的写法，颜色自己的）
@@ -78322,7 +78845,7 @@ function extPlace(){const S=G.sv,X=S.ext,C=extC(),BX=C.box,Gn=EXT_GEN||{bld:[],l
   // 库房：墓穴先，再挑中圈、核心的仓库
   const V=Gn.bld.filter(b=>b.ok&&b.k==='crypt').concat(shuffle(Gn.bld.filter(b=>b.ok&&b.k==='ware'&&b.z>=1)));
   for(const b of V){if(X.vt.length>=C.vault.n)break;const i=inner(b);if(i<0)continue;b.vault=1;const p=P(i);X.vt.push({x:p.x,y:p.y,p:0,done:0});guard(p.x,p.y,b.z,'vault')}
-  for(const b of Gn.bld){if(!b.ok||b.vault)continue;const D=C.bld[b.k],n=randi(D.box[0],D.box[1]);
+  for(const b of Gn.bld){if(!b.ok||b.vault)continue;const D=C.bld[b.k],BR=b.main?D.box:D.boxA||[0,1],n=randi(BR[0],BR[1]);   // 0.13.0g 主屋 box 个，别的几块 boxA 个
     if(b.k==='stall'){const i=b.y0*W+b.x0+1;box(i,b.z,D.up);continue}for(let q=0;q<n;q++){const i=inner(b);if(i>=0)box(i,b.z,D.up)}}
   for(let k=0,t=0;k<BX.field&&t<BX.field*30;t++){const i=randi(8,MAP_H-9)*W+randi(8,W-9),p=P(i);if(Math.hypot(p.x/16-TERR_CX,p.y/16-TERR_CY)<14||!ok(i)||G.terrain[i]===T_TFLOOR)continue;box(i,extZone(p.x,p.y),0);k++}
   // 撤离点：开局开 open 个（随机），其余 late 秒后开
@@ -78493,7 +79016,7 @@ feat('ext',{on:()=>{const v=!!(G&&G.mode==='survivor'&&G.map==='ext');EXT_ON=v;r
   eDie:(i,c)=>{const S=G.sv,X=S&&S.ext;if(!X||S.end||E.smn[i]||ESTRU[E.t[i]])return;
     if(c.tier>=4&&(c.tier>=5||rng()<extC().vault.keyElite)){X.vk++;sayT(`${c.name}掉落：库房钥匙`)}
     if(c.tier>=4)extDropPile(extLoot(c.tier>=5||c.mini?'boss':'elite'),E.x[i],E.y[i],true)},   // 精英、首领掉一堆东西（走过去自动捡）
-  drawUnder:(a,b,c,d)=>extDraw(a,b,c,d)}});   // 墙面、屋顶跟单位一起按 y 排序画（ui/draw 调 extDpush / extDrawB）
+  drawUnder:(a,b,c,d)=>extDraw(a,b,c,d)}});   // 墙、屋顶跟单位一起按 y 排序画（ui/draw 调 extDpush / extDrawE）
 
 /* ---------- 0.13.0e 搜打撤的背包（用户 11-04 定：箱子里的东西直接进背包，按重量算，能看、能丢；数据 data/ext.js 的 loot / bag / day，界面 ui/ext.js 的 extBagOpen）----------
    东西的键：'r:银币'（资源：0.13.0f 起是「份」——银币袋、建材袋、设计图、科研图，带出来 × 一份的量 × 地图倍率，data/ext 的 unit）、'w:<物资 id>'（地区材料 / 特产）、'e:<装备 id>'（武器，一把一个）、'b:<装备 id>'（打造书）、'p:<家族>'（家族声望）、'g'（金币）、's:<英雄 id>'（英雄之魄）
@@ -79226,7 +79749,7 @@ function drawP2Hud(V){const h=G.heroes.find(x=>x.ctl==='p2');if(!h)return;
 const DK=new Uint32Array(ECAP+40000);let dn=0;
 const LMx=new Float32Array(16384),LMy=new Float32Array(16384),LMt=new Uint16Array(16384),LMf=new Uint8Array(16384),LMd=new Int8Array(16384),LMh=new Uint8Array(16384);let lmn=0;
 function drawCarriedHive(x,y,f,an){const t=EIDX.hive;if(t===undefined)return;const r=SPR.enemies[t][(Math.floor(an*2)&1)];sprW(r,Math.round(x-f*3)-(r.w>>1),Math.round(y-8)-r.h,f<0,false)}   // v0.4.2 背在猿身上的蜂巢
-const dpush=(y,kind,idx)=>{DK[dn++]=((clamp(Math.round(y*2)+64,0,4095)<<19)|(kind<<16)|idx)>>>0};
+let DKY=-32;const dpush=(y,kind,idx)=>{DK[dn++]=((clamp(Math.round((y-DKY)*2),0,4095)<<19)|(kind<<16)|idx)>>>0};   // DKY：0.13.0g 修，y 按这一帧视图的上沿算（原来按地图绝对坐标，y 超过 2015 像素（126 格）全挤在 4095 上，搜打撤的 256 格大地图南半边前后乱了）
 const PS={fps:60,logic:0,render:0,drop:0,need:0,slow:0};   // drop / need：v0.6.01 逻辑跟不上丢掉的时间 / 应走的时间（性能面板显示「放慢」）
 // v0.6.0 性能面板的「最卡一帧」：打开帧率显示时，逻辑按几块分别计时（PSEG.cur 累加这一帧的；ui/main.frame 每帧比一下，记下 2 秒内最卡的那帧）
 const PSEG={on:false,cur:{},worst:{},wl:0,wr:0,t:0,show:null};
@@ -79292,7 +79815,7 @@ function drawWorld(dt,vk){
   for(let i_6=0,a_6=G.fx;i_6<a_6.length;i_6++){const f=a_6[i_6];if(f.k==='corpse'||f.k==='scorch')drawFx(f);}
   drawUnderFx(cx0,cy0,cx1,cy1);   // v0.7.2 地面层特效：法阵、英雄脚下的光阵、区域效果的地面（engine/vfx）
   drawSpawnMarks();
-  dn=0;lmn=0;ELITE_TAGS=ELITE_TAGV[vk];ELITE_TAGS.length=0;
+  dn=0;lmn=0;DKY=cy0-32;ELITE_TAGS=ELITE_TAGV[vk];ELITE_TAGS.length=0;
   const tr=G.trees;for(let i=0;i<tr.length;i++){const t=tr[i];if(t.x>cx0&&t.x<cx1&&t.y>cy0&&t.y<cy1)dpush(t.y,0,i)}
   const st=G.structs;for(let i=0;i<st.length;i++){const s=st[i];if(s.type==='keep'||(s.x>cx0&&s.x<cx1&&s.y>cy0&&s.y<cy1+16))dpush(s.y,1,i)}
   for(let i=0;i<E.n;i++){if(!E.alive[i])continue;const x=E.x[i],y=E.y[i];if(x>cx0&&x<cx1&&y>cy0&&y<cy1&&eVis(i))dpush(y,2,i)}
@@ -79311,7 +79834,7 @@ function drawWorld(dt,vk){
       case 0:drawTree(tr[i]);break;case 1:drawStruct(st[i]);break;case 7:drawResident(rs[i]);break;
       case 2:case 3:case 4:{const sk=G.csOn&&csSinkSet(kind,i);if(kind===2)drawEnemy(i);else if(kind===3)drawSoldier(so[i]);else drawHero(G.heroes[i]);if(sk){SNK_DY=0;SNK_WL=1e9}break}   // csSinkSet：v0.8.3 黄沙海岸，水里的单位往下沉
       case 5:{const t=LMt[i],x=LMx[i],y=LMy[i],r=SPR.enemies[t][LMf[i]],hv=ETC[t].hover,lf=hv?hv.h:0,sk=G.csOn&&csSinkSet(5,i);if(hv){if(SHDW)rectW(Math.round(x)-6,Math.round(y)-1,12,1,SHC,0.3)}else shadow(x,y,ETC[t].cavalry?16:9);sprW(r,Math.round(x)-(r.w>>1),Math.round(y-lf)-r.h,LMd[i]===1,false);if(LMh[i])drawCarriedHive(x,y,LMd[i]===1?-1:1,0);if(sk){SNK_DY=0;SNK_WL=1e9}break}
-      case 6:{if(i>=32768){extDrawB(i-32768);break}const L=G.legions[i];if(!L)break;const x=Math.round(L.x),y=Math.round(L.y-L.rows*4.5-16);rectW(x,y,1,14,K.pole);rectW(x+1,y,6,4,K.purple);rectW(x+1,y+4,4,1,K.purple);rectW(x+1,y+1,6,1,K.ink,0.5);break}
+      case 6:{if(i>=32768){extDrawE(i);break}const L=G.legions[i];if(!L)break;const x=Math.round(L.x),y=Math.round(L.y-L.rows*4.5-16);rectW(x,y,1,14,K.pole);rectW(x+1,y,6,4,K.purple);rectW(x+1,y+4,4,1,K.purple);rectW(x+1,y+1,6,1,K.ink,0.5);break}
     }}
   for(let i_7=0,a_7=G.proj;i_7<a_7.length;i_7++){const p=a_7[i_7];if(p.skd){FX_DT=p.skd;drawProj(p);FX_DT=null}else drawProj(p);}
   if(settleOn())drawDuMarks(cx0,cy0,cx1,cy1);   // v0.10.1 耐久低于 50% 的建筑头上一个小扳手
@@ -79635,7 +80158,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.0f',GAME_TAG='测试版',GAME_CODE=210,GAME_BUILD="1bb6ee0",GAME_BUILT=1793774812317,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.0g',GAME_TAG='测试版',GAME_CODE=211,GAME_BUILD="a36055a",GAME_BUILT=1793782274125,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -85186,7 +85709,7 @@ function svSt2HTML(){const R=svSt2Rows();if(!R.length)return'';svSt2Css();let T=
 
 /* ---------- 0.13 搜打撤的界面（机制 game/ext.js、ext_gen.js、ext_bag.js，数据 data/ext.js）----------
    营地「娱乐模式」页多一个页签（SV_MENU.mode 'ext'，hubFun 一开头转到 hubExt）；局内左上角借幸存者的 #svHud（svHudSync 里按 G.sv.ext 换内容，多一个「背包」按钮）；
-   地上画箱子、库房、空投、撤离点、地上的东西（feat ext 的 drawUnder → extDraw）；2.5D 的建筑（墙面 + 屋顶，ui/draw 的排序表 → extDpush / extDrawB，英雄在屋里那间不画屋顶）；
+   地上画箱子、库房、空投、撤离点、地上的东西（feat ext 的 drawUnder → extDraw）；2.5D 的建筑（墙一格一格、屋顶一块一块，ui/draw 的排序表 → extDpush / extDrawE，英雄在哪块里那块不画屋顶；画法 art/ext_art）；
    小地图标撤离点 / 空投 / 库房（ui/draw.drawMini 调 extMini）；背包弹窗（extBagOpen）、暂停页、结算页
    按钮 data-act 都以 svxExt 开头（ui/survivor.svAct 一开头转到 extAct） */
 {const st=document.createElement('style');st.textContent=`.spdbox[data-hint]:not([data-hint=""])::after{content:attr(data-hint);position:absolute;right:100%;top:50%;transform:translateY(-50%);margin-right:6px;font-size:10px;line-height:1.2;white-space:nowrap;color:#ffe08a;text-shadow:0 1px 0 #000;pointer-events:none}.spdbox{position:relative}
@@ -85268,62 +85791,26 @@ function extDraw(cx0,cy0,cx1,cy1){const S=G.sv,X=S&&S.ext;if(!X)return;extSteps(
     if(A.st===0){const f=Math.max(0,Math.min(1,(A.land-S.t)/C.drop.fall));dotRing(x,y,10+f*30,exCol('#ff5a3a'),0.7);rectW(x-1,y-60,2,60,exCol('#ff5a3a'),0.25+0.2*Math.sin(G.time*6))}
     else{rectW(x-9,y+5,19,2,sh,0.35);rectW(x-8,y-6,17,12,exCol('#5a6a3a'));rectW(x-7,y-5,15,10,exCol('#8aa05a'));rectW(x-8,y-1,17,1,exCol('#3a4a2a'));rectW(x-1,y-6,3,12,exCol('#3a4a2a'));
       rectW(x-1,y-30,2,24,exCol('#ff5a3a'),0.3+0.2*Math.sin(G.time*5));if(X.obK==='ad'){rectW(x-10,y-12,20,3,exCol('#0c0910'));rectW(x-10,y-12,Math.round(20*X.obP),3,exCol('#ffe08a'))}}}}
-// 2.5D 的建筑（0.13.0e 用户定：屋顶盖着里面，进去才看到；0.13.0f：房子要有门，做成 2.5D）：屋顶往上抬 fh 像素，下面露出朝南的墙面（门、窗）；
-//   跟单位一起按 y 排序（ui/draw 在排序表里放 kind 6、下标 32768 + 第几间，画的时候调 extDrawB）：站在房子北边的被屋顶挡住，南边的在墙面前面
-//   队长站在哪间屋里（含墙）：那间不画屋顶，墙面画成半透明；连锁建筑一间一个屋顶
-const EXT_ROOF={thatch:['#b8954a','#8a6a2e','#d6b66a'],tile:['#a84a3a','#7a2e24','#c86a52'],wood:['#7a5a3a','#5a3e24','#9a7a52'],slate:['#4e5866','#363e4a','#6e7a8a'],stone:['#6e6a64','#4e4a45','#8e8a82'],cloth:['#c84a4a','#8a2a2a','#e8d8b0']};
-const EXT_WALL={thatch:['#8a6a44','#5e4428'],tile:['#cbb894','#8e7c5e'],wood:['#7a5a3a','#4e3622'],slate:['#8a8a86','#5e5e5a'],stone:['#76726a','#4e4a44'],cloth:['#6a4a2a','#3a2616']};
-let EXT_HG=-1;   // 队长站在哪组连锁建筑里（同一组别的房间的屋顶不往上抬，免得盖住队长这间）
-function extDpush(cx0,cy0,cx1,cy1){const B=EXT_GEN&&EXT_GEN.bld;if(!B)return;const FH=CFG.ext.gen.fh,h=svHero(),hx=h?h.x>>4:-99,hy=h?h.y>>4:-99;EXT_HG=-1;
-  for(let q=0;q<B.length;q++){const b=B[q];if(hx>=b.x0&&hx<=b.x1&&hy>=b.y0&&hy<=b.y1){EXT_HG=b.grp;break}}
-  for(let q=0;q<B.length;q++){const b=B[q];if(!b.roof)continue;const X0=b.x0*16-2,X1=(b.x1+1)*16+2,Y0=b.y0*16-FH-4,Y1=(b.y1+1)*16;if(X1<cx0||X0>cx1||Y1<cy0||Y0>cy1)continue;dpush(Y1,6,32768+q)}}
-function extDrawB(q){const b=EXT_GEN&&EXT_GEN.bld[q];if(!b||!(EXT_ROOF[b.roof]||b.roof==='uniq'))return;const U=b.roof==='uniq'?CFG.ext.uniq[G.terr]||CFG.ext.uniq.wild:null;const FH=CFG.ext.gen.fh,h=svHero(),hx=h?h.x>>4:-99,hy=h?h.y>>4:-99,inn=hx>=b.x0&&hx<=b.x1&&hy>=b.y0&&hy<=b.y1;
-  const P=U?U.roof:EXT_ROOF[b.roof],WL=U?U.wall:EXT_WALL[b.roof],X0=b.x0*16-1,X1=(b.x1+1)*16+1,w=X1-X0,RT=b.y0*16-(b.grp===EXT_HG&&!inn?0:FH),RB=(b.y1+1)*16-FH,BOT=(b.y1+1)*16,c=exCol(P[0]),d=exCol(P[1]),l=exCol(P[2]),dk=exCol('#1a1410');
-  if(b.k==='stall'){if(inn)return;rectW(X0+1,RB,2,FH,exCol('#5a3e24'));rectW(X1-3,RB,2,FH,exCol('#5a3e24'));rectW(X0,RT,w,RB-RT,c);for(let x=X0;x<X1;x+=6)rectW(x,RT,3,RB-RT,l);rectW(X0,RB-2,w,2,d);return}   // 摊位：布棚 + 两根柱子
-  const wa=inn?0.3:1,wc=exCol(WL[0]),wd=exCol(WL[1]);
-  rectW(X0,RB,w,FH,wc,wa);for(let y=RB+4;y<BOT;y+=5)rectW(X0,y,w,1,wd,0.35*wa);rectW(X0,RB,2,FH,wd,wa);rectW(X1-2,RB,2,FH,wd,wa);rectW(X0,BOT-1,w,1,dk,0.5*wa);   // 墙面：横纹、两头的柱子
-  const D=b.door,dx0=D&&D.side===1?D.p*16:-1,dx1=D&&D.side===1?(D.p+D.w)*16:-1;
-  for(let x=X0+8;x+6<X1-4;x+=22){if(x+6>dx0-2&&x<dx1+2)continue;rectW(x,RB+5,6,7,exCol('#24283a'),wa);rectW(x,RB+5,6,1,exCol('#8a8a8a'),wa);rectW(x+2,RB+5,1,7,wd,wa)}   // 窗
-  if(D&&D.side===1){rectW(dx0+1,RB+3,dx1-dx0-2,FH-3,exCol('#3a2414'),wa);rectW(dx0+1,RB+3,dx1-dx0-2,1,exCol('#8a6a3a'),wa);rectW(dx0+1,RB+3,1,FH-3,exCol('#8a6a3a'),wa);rectW(dx1-2,RB+3,1,FH-3,exCol('#8a6a3a'),wa);rectW(dx1-5,RB+10,1,1,exCol('#e0c050'),wa)}   // 南门：门框、门把手
-  if(inn)return;
-  const hh=RB-RT;if(w>=hh){const m=RT+(hh>>1);rectW(X0,RT,w,m-RT,l);rectW(X0,m,w,RB-m,c);for(let y=RT+3;y<RB-1;y+=4)rectW(X0,y,w,1,d,0.4);rectW(X0,m-1,w,2,d)}   // 屋顶：朝北那半亮、朝南那半暗，屋脊一道
-  else{const m=X0+(w>>1);rectW(X0,RT,m-X0,hh,l);rectW(m,RT,X1-m,hh,c);for(let y=RT+3;y<RB-1;y+=4)rectW(X0,y,w,1,d,0.4);rectW(m-1,RT,2,hh,d)}
-  rectW(X0,RT,w,1,d);rectW(X0,RT,1,hh,d);rectW(X1-1,RT,1,hh,d);rectW(X0,RB-2,w,2,d);   // 屋檐
-  if(D&&D.side!==1){const dc=exCol('#3a2414');if(D.side===0)rectW(D.p*16+1,RT-1,D.w*16-2,3,dc);else rectW(D.side===2?X0-1:X1-2,D.p*16-FH+2,3,D.w*16-2,dc)}   // 别的方向的门：屋檐边上一道门影
-  if(b.k==='church'){const x=(X0+X1)>>1;rectW(x-1,RT-10,3,16,exCol('#e8d8a0'));rectW(x-4,RT-6,9,3,exCol('#e8d8a0'))}   // 大教堂的十字架
-  else if(b.k==='tower'||b.k==='keep'){for(let x=X0;x<X1-3;x+=6)rectW(x,RT-4,4,4,d);if(b.k==='keep'){const x=(X0+X1)>>1;rectW(x,RT-16,1,16,dk);rectW(x+1,RT-16,7,5,exCol('#7a3ab0'))}}   // 塔楼的垛口；亡灵堡插一面紫旗
-  else if(U)extDeco(U.deco,X0,X1,RT,RB,b);   // 0.13.0g 这个地区独特的建筑：屋顶上的装饰
-  else if(b.k==='crypt'){const x=(X0+X1)>>1;rectW(x-1,RT+3,2,8,exCol('#2a2630'));rectW(x-3,RT+5,6,2,exCol('#2a2630'))}
-  else if((b.x0*7+b.y0*3)%4===0&&b.k!=='ware'&&b.k!=='barn'){const x=X0+((b.x0*13)%Math.max(1,w-10))+4;rectW(x,RT-6,5,8,exCol('#4a3a32'));rectW(x,RT-6,5,1,dk)}}   // 有的房子有烟囱
-// 独特建筑屋顶上的装饰（0.13.0g，Claude 画）：X0 / X1 屋顶左右、RT / RB 屋顶上下（世界坐标）；以屋顶中心为准，按屋顶大小放大（z）
-function extDeco(k,X0,X1,RT,RB,b){const cx=(X0+X1)>>1,cy=(RT+RB)>>1,w=X1-X0,hh=RB-RT,z=Math.max(1,Math.min(w,hh)/70),K=c=>exCol(c),t=G.time,R=v=>Math.round(v*z);
-  if(k==='mill'){const r=R(44),a0=t*1.2;rectW(cx-R(4),cy-R(4),R(9),R(9),K('#5a3e24'));for(let q=0;q<4;q++){const a=a0+q*Math.PI/2;for(let s=R(6);s<r;s+=2){const x=cx+Math.cos(a)*s,y=cy+Math.sin(a)*s,ww=s>R(14)?R(5):2;rectW(Math.round(x-ww/2),Math.round(y-ww/2),ww,ww,K(s>R(14)?'#e8dcc0':'#6a4a2a'))}}}   // 风车：四片叶子慢慢转
-  else if(k==='altar'){for(const dx of[-26,-12,12,26])for(let s=0;s<R(16);s++){const ww=Math.max(1,R(8)-(s>>1));rectW(cx+R(dx)-(ww>>1),cy-R(4)-s,ww,1,K('#2a1e30'))}fillCirc(cx,cy,R(10),K('#6aff6a'),0.3+0.2*Math.sin(t*3));fillCirc(cx,cy,R(5),K('#b8ffb0'))}   // 腐化祭坛：尖刺 + 绿光
-  else if(k==='lodge'){rectW(X0,RT,w,R(6),K('#ffffff'),0.85);for(let x=X0+2;x<X1-2;x+=5)rectW(x,RB-2,2,3+((x*7)%5),K('#e8f6ff'));rectW(cx+R(18),cy-R(14),R(8),R(16),K('#5a4a42'));for(let q=0;q<3;q++){const f=(t*0.5+q/3)%1;fillCirc(cx+R(22)+f*8,cy-R(16)-f*R(20),R(3)+f*R(4),K('#d8d8d8'),0.5*(1-f))}}   // 木屋：屋顶积雪、冰溜子、烟囱冒烟
-  else if(k==='tree'){fillCirc(cx-R(16),cy+R(2),R(16),K('#3e6a2a'));fillCirc(cx+R(15),cy,R(17),K('#4a7a32'));fillCirc(cx,cy-R(10),R(18),K('#5a8a3a'));fillCirc(cx-R(5),cy-R(16),R(6),K('#7aaa4a'))}   // 树屋：树冠盖在屋顶上
-  else if(k==='pyramid'){for(let q=0;q<6;q++){const m=Math.round(q*w/13),v=Math.round(q*hh/13);rectW(X0+m,RT+v,w-2*m,hh-2*v,K(q%2?'#d8b878':'#bfa060'))}fillCirc(cx,cy,R(5),K('#ffe08a'))}   // 陵墓：一层层往里收的台阶，正中一块金
-  else if(k==='bell'){rectW(cx-R(9),cy-R(30),R(18),R(36),K('#5a6070'));rectW(cx-R(12),cy-R(32),R(24),R(4),K('#3e4450'));for(let s=0;s<R(16);s++){const ww=Math.max(1,R(10)-s*R(10)/R(16));rectW(Math.round(cx-ww),cy-R(32)-s,Math.round(ww*2),1,K('#3e4450'))}rectW(cx-R(5),cy-R(22),R(10),R(10),K('#d8b040'));rectW(cx-1,cy-R(12),2,R(3),K('#8a6a20'))}   // 钟楼：尖塔 + 铜钟
-  else if(k==='ice'){for(const[dx,h]of[[-24,30],[0,46],[24,34]])for(let s=0;s<R(h);s++){const ww=Math.max(1,R(7)-(s*R(7)/R(h)|0));rectW(cx+R(dx)-ww,cy+R(10)-s,ww*2,1,K(s%6?'#bfe8ff':'#ffffff'),0.92)}}   // 冰晶堡：三根冰柱
-  else if(k==='chimney'){for(const dx of[-22,16]){rectW(cx+R(dx),cy-R(30),R(10),R(36),K('#7a3a2a'));rectW(cx+R(dx)-1,cy-R(31),R(10)+2,R(4),K('#4a2418'));for(let q=0;q<3;q++){const f=(t*0.6+q/3)%1;fillCirc(cx+R(dx+5)+f*10,cy-R(34)-f*R(26),R(3)+f*R(6),K('#9a9a9a'),0.5*(1-f))}}}   // 锅炉房：两根烟囱冒烟
-  else if(k==='tent'){for(let x=0;x<w;x+=R(10))rectW(X0+x,RT,R(5),hh,K('#e0c8a0'),0.85);rectW(cx-1,cy-R(26),2,R(28),K('#3a2a1a'));rectW(cx+1,cy-R(26),R(12),R(7),K('#c84a4a'))}   // 大帐：条纹 + 小旗
-  else if(k==='crystal'){rectW(cx-R(3),cy-R(10),R(6),R(18),K('#5a4030'));for(const[dx,dy,c]of[[-14,-20,'#7ae0ff'],[12,-26,'#ff9ae0'],[0,-36,'#b0ff8a'],[18,-10,'#ffd27a']])fillCirc(cx+R(dx),cy+R(dy),R(7),K(c),0.6+0.3*Math.sin(t*2+dx))}   // 元素树殿：四色光球
-  else if(k==='banner'){for(const dx of[-30,26]){rectW(cx+R(dx),cy-R(30),2,R(34),K('#2a2a2a'));rectW(cx+R(dx)+2,cy-R(30),R(14),R(18),K('#9a2020'));rectW(cx+R(dx)+R(5),cy-R(25),R(6),R(6),K('#e0c050'))}}   // 铁血兵营：两面军旗
-  else if(k==='obelisk'){for(let s=0;s<R(46);s++){const ww=Math.max(1,R(8)-(s/R(7)|0));rectW(cx-ww,cy+R(10)-s,ww*2,1,K('#1e1a26'))}fillCirc(cx,cy-R(20),R(5),K('#a060ff'),0.5+0.3*Math.sin(t*2))}   // 幽影神龛：黑色方尖碑、紫光
-  else if(k==='arcane'){const yy=cy-R(12)+Math.round(Math.sin(t*2)*3),n=R(14);for(let s=0;s<n;s++)rectW(cx-((n-s)>>1),yy-n+s,n-s,1,K('#8ae0ff'));for(let s=0;s<n;s++)rectW(cx-(s>>1),yy+s,s,1,K('#5aa8ff'));fillCirc(cx,yy,R(14),K('#6ac8ff'),0.15)}   // 秘法实验室：悬浮的水晶
-  else if(k==='forge'){rectW(cx+R(10),cy-R(28),R(14),R(34),K('#3a2e2a'));fillCirc(cx+R(17),cy-R(30),R(6),K('#ff8a2a'),0.6+0.3*Math.sin(t*5));for(let q=0;q<4;q++){const f=(t*1.4+q/4)%1;rectW(cx+R(15)+Math.round(Math.sin(q*3+t)*6),Math.round(cy-R(32)-f*R(30)),2,2,K('#ffd060'),1-f)}rectW(cx-R(26),cy+R(4),R(18),R(8),K('#ff6a1a'),0.7)}   // 熔炉：烟囱口的火、火星
-  else if(k==='pagoda'){for(let q=1;q<=3;q++){const m=Math.round(q*w/8),yy=cy-R(8)-q*R(10);rectW(X0+m,yy,w-2*m,R(10),K('#3a4a5a'));rectW(X0+m-R(6),yy+R(8),w-2*m+R(12),R(4),K('#26323e'));rectW(X0+m-R(7),yy+R(6),R(3),R(3),K('#c8a040'));rectW(X1-m+R(4),yy+R(6),R(3),R(3),K('#c8a040'))}rectW(cx-1,cy-R(48),2,R(10),K('#c8a040'))}   // 道观：三层飞檐、宝顶
-  else if(k==='steam'){rectW(X0+4,cy-R(6),w-8,R(5),K('#8a7a5a'));rectW(X0+R(10),cy-R(6),R(5),hh/2,K('#8a7a5a'));fillCirc(cx+R(14),cy+R(4),R(12),K('#6a5a4a'));fillCirc(cx+R(14),cy+R(4),R(5),K('#3a2e26'));for(let q=0;q<3;q++){const f=(t*0.8+q/3)%1;fillCirc(X0+R(12),cy-R(10)-f*R(24),R(3)+f*R(6),K('#e8e8e8'),0.5*(1-f))}}   // 蒸汽机房：管道、齿轮、白汽
-  else if(k==='redbanner'){for(let x=X0+3;x<X1-6;x+=R(12))rectW(x,RT-R(8),R(7),R(8),K('#5a1a1a'));rectW(cx-1,cy-R(36),2,R(40),K('#2a2a2a'));rectW(cx+1,cy-R(36),R(16),R(11),K('#c82a2a'))}   // 赤血箭楼：垛口、红旗
-  else if(k==='stele'){const C4=['#7ae0c8','#c8b090','#6ab0ff','#ff8a4a'];for(let q=0;q<4;q++){const a=q*Math.PI/2+Math.PI/4,x=cx+Math.cos(a)*R(22),y=cy+Math.sin(a)*R(16);rectW(x-R(3),y-R(22),R(7),R(24),K('#8a7a5a'));fillCirc(x,y-R(24),R(5),K(C4[q]),0.6+0.3*Math.sin(t*2+q))}}   // 元素碑亭：四座小碑、四色光
-  else if(k==='sled'){rectW(X0,RT,w,R(6),K('#ffffff'),0.85);for(let x=X0+2;x<X1-2;x+=5)rectW(x,RB-2,2,3+((x*5)%5),K('#e8f6ff'));rectW(X1+2,RB+R(8),R(22),R(7),K('#8a5a3a'));rectW(X1+1,RB+R(15),R(24),2,K('#3a2a1a'))}   // 雪橇驿站：积雪、冰溜子、门外一架雪橇
-  else if(k==='witch'){fillCirc(cx-R(20),RB+R(6),R(4),K('#9aff6a'),0.6+0.3*Math.sin(t*3));fillCirc(cx+R(20),RB+R(6),R(4),K('#9aff6a'),0.6+0.3*Math.sin(t*3+1));rectW(cx-R(5),cy-R(18),R(10),R(20),K('#3a3228'));fillCirc(cx,cy-R(22),R(4),K('#6a6a5a'),0.5)}   // 沼泽巫屋：门口两盏绿灯、烟囱
-  else if(k==='mine'){rectW(cx-R(20),cy-R(36),R(5),R(42),K('#5a3e24'));rectW(cx+R(16),cy-R(36),R(5),R(42),K('#5a3e24'));rectW(cx-R(20),cy-R(38),R(41),R(5),K('#4a3420'));fillCirc(cx,cy-R(40),R(10),K('#3a2a1a'));fillCirc(cx,cy-R(40),R(5),K('#8a6a4a'))}}   // 矿井井架：木架子、天轮
-// 门口的台阶（0.13.0g 用户定：明显一点的标记，让人知道从哪里进去）：画在地面层；南门在墙面下面，别的方向在门外那格
-function extSteps(cx0,cy0,cx1,cy1){const B=EXT_GEN&&EXT_GEN.bld;if(!B)return;const FH=CFG.ext.gen.fh,a=exCol('#c8c0b0'),m=exCol('#9a958a'),d=exCol('#6e6a62');
-  for(const b of B){const D=b.door;if(!D||!b.ok)continue;const X0=b.x0*16,X1=(b.x1+1)*16,BOT=(b.y1+1)*16;if(X1<cx0-20||X0>cx1+20||BOT<cy0-20||b.y0*16-FH>cy1+20)continue;
-    if(D.side===1){const x=D.p*16-3,w=D.w*16+6;rectW(x,BOT,w,3,a);rectW(x+2,BOT+3,w-4,3,m);rectW(x+4,BOT+6,w-8,2,d)}
-    else if(D.side===0){const x=D.p*16-3,w=D.w*16+6,y=b.y0*16-FH;rectW(x,y-8,w,3,d);rectW(x+2,y-5,w-4,3,m);rectW(x+4,y-2,w-8,2,a)}
-    else{const x=D.side===2?X0-8:X1,y=D.p*16-2,h=D.w*16+4;rectW(x,y,8,h,m);for(let q=0;q<3;q++)rectW(x+q*3,y,1,h,q===(D.side===2?2:0)?a:d)}}}
+// 2.5D 的建筑（0.13.0g 用户定：部件画法，画法在 art/ext_art）：墙一格一格、屋顶一块一块，跟单位一起按 y 排序（ui/draw 的排序表 kind 6：下标 32768～49151 是这一帧看得见的墙格 EXT_VW[下标 - 32768]，49152 起是第几块屋顶）
+//   队长站在哪块里（含墙）：那块不画屋顶；墙挡住队长：那格墙半透明；屋顶挡住队长：只在队长那一小块透明（不整片变透明，免得看见屋里）
+const EXT_VW=new Int32Array(16384);let EXT_HP0=-1,EXT_HP1=-1;   // 这一帧看得见的墙格；队长在哪一两块里（站在两块之间的门上是两块）
+function extDpush(cx0,cy0,cx1,cy1){const Gn=EXT_GEN;if(!Gn)return;const B=Gn.bld,T=G.terrain,W=MAP_W,WH=EXT_WH,h=svHero(),hx=h?h.x>>4:-99,hy=h?h.y>>4:-99;EXT_HP0=EXT_HP1=-1;
+  for(let q=0;q<B.length;q++){const b=B[q];if(hx>=b.x0&&hx<=b.x1&&hy>=b.y0&&hy<=b.y1){if(EXT_HP0<0)EXT_HP0=q;else{EXT_HP1=q;break}}}
+  const tx0=Math.max(0,(cx0>>4)-1),tx1=Math.min(W-1,(cx1>>4)+1),ty0=Math.max(0,(cy0>>4)-1),ty1=Math.min(MAP_H-1,((cy1+WH)>>4)+1);let n=0;
+  for(let ty=ty0;ty<=ty1&&n<16384;ty++){const r=ty*W,y=(ty+1)*16;for(let tx=tx0;tx<=tx1;tx++){const i=r+tx;if((T[i]===T_TWALL||EXT_DG[i])&&n<16384){EXT_VW[n]=i;dpush(y,6,32768+n);n++}}}
+  for(let q=0;q<B.length&&q<16384;q++){const b=B[q];if(!b.roof||q===EXT_HP0||q===EXT_HP1)continue;const Y1=(b.y1+1)*16;if((b.x1+1)*16+6<cx0||b.x0*16-6>cx1||Y1<cy0||b.y0*16-WH-60>cy1)continue;dpush(Y1,6,49152+q)}}
+function extDrawE(i){if(i>=49152){extDrawR(i-49152);return}const t=EXT_VW[i-32768],T=G.terrain,W=MAP_W,tx=t%W,ty=(t/W)|0,h=svHero(),WH=EXT_WH;
+  const a=h&&h.y<(ty+1)*16&&Math.abs(h.x-tx*16-8)<16&&h.y+2>ty*16-WH&&h.y-26<ty*16+16?0.4:1;   // 挡住队长：半透明
+  const mask=(ty>0&&T[t-W]===T_TWALL?1:0)|(tx<W-1&&T[t+1]===T_TWALL?2:0)|(ty<MAP_H-1&&T[t+W]===T_TWALL?4:0)|(tx>0&&T[t-1]===T_TWALL?8:0);
+  if(T[t]===T_TWALL)extArtWall(tx,ty,EXT_WM[t]||3,mask,a);else extArtGap(tx,ty,EXT_WM[t]||3,mask,a)}
+function extDrawR(q){const b=EXT_GEN&&EXT_GEN.bld[q];if(!b)return;const h=svHero(),WH=EXT_WH,X0=b.x0*16-2,X1=(b.x1+1)*16+2,RT=b.y0*16-WH,RB=(b.y1+1)*16-WH,
+    oc=h&&h.y<(b.y1+1)*16&&h.x+10>X0&&h.x-10<X1&&h.y+2>RT-30&&h.y-28<RB+(b.roof==='awning'?WH:0);   // 这块屋顶挡住了队长
+  if(!oc||NVIEW>1){extArtRoof(b,oc?0.5:1);extTop(b);return}
+  const V=VIEWS[0],sx0=Math.round(X(h.x-13)),sx1=Math.round(X(h.x+13)),sy0=Math.round(Y(h.y-30)),sy1=Math.round(Y(h.y+5)),cl=(x,y,w,hh,a)=>{if(w<=0||hh<=0)return;R.clip(x,y,w,hh);extArtRoof(b,a);extTop(b)};   // 队长那块（屏幕上的小方块）透明，四周照常
+  cl(V.x,V.y,V.w,sy0-V.y,1);cl(V.x,sy1,V.w,V.y+V.h-sy1,1);cl(V.x,sy0,sx0-V.x,sy1-sy0,1);cl(sx1,sy0,V.x+V.w-sx1,sy1-sy0,1);cl(sx0,sy0,sx1-sx0,sy1-sy0,0.3);R.clip(null)}
+function extTop(b){if(!b.main||!b.roof)return;const k=b.k==='church'?'cross':b.k==='keep'?'flag':b.k==='uniq'?(CFG.ext.uniq[G.terr]||CFG.ext.uniq.wild).deco:null;if(k)extArtDeco(k,b.x0*16-1,(b.x1+1)*16+1,b.y0*16-EXT_WH,(b.y1+1)*16-EXT_WH,b)}   // 屋顶上的装饰：教堂的十字架、亡灵堡的旗、独特建筑的
+// 门口的台阶（0.13.0g 用户定：明显一点的标记，让人知道从哪里进去；画在地面层）
+function extSteps(cx0,cy0,cx1,cy1){const B=EXT_GEN&&EXT_GEN.bld;if(!B)return;for(const b of B){if(!b.door||!b.ok)continue;if((b.x1+1)*16<cx0-20||b.x0*16>cx1+20||(b.y1+1)*16<cy0-20||b.y0*16-EXT_WH>cy1+20)continue;extArtSteps(b)}}
 // 小地图：撤离点（开的绿、没开的灰）、库房（紫）、空投（红，闪）
 function extMini(X_,Y_,u){const X=G.sv&&G.sv.ext;if(!X)return;const sq=(x,y,c,s)=>{mctx.fillStyle=c;mctx.fillRect(Math.round(X_(x)-s/2),Math.round(Y_(y)-s/2),s,s)};
   for(const e of X.ex)sq(e.x,e.y,e.open?'#6af06a':'#8a8a8a',u*4);
