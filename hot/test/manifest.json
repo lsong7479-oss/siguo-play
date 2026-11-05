@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.1.3",
- "code": 223,
- "size": 18387870,
- "sha256": "e80a2b444bd55a87cc032b25400f7a262f5c09574632f4c74a02b3325fcd989f",
+ "ver": "0.13.1.4",
+ "code": 225,
+ "size": 18391010,
+ "sha256": "b8beece47b521673c36121141eda7630b54f5e327b926807d089a6131402b281",
  "minLoader": 1,
- "sig": "P4OBd/zQIt/VH3+zUl+fcVAndqtdlVeRWRQ+el8UG2K9WPe6pg79wYaJ4zZsUfDhHi4YDUhdDwQVuMMvjxzydw==",
- "note": "0.13.1.3：系统检修一轮，修了玛蒂技能冷却、帕拉塞尔苏斯毒抗、家族第二批、搜打撤等 21 处问题；和正式版同步",
- "at": "2026-11-05 10:20 UTC"
+ "sig": "KS3GsGjrHT9WnHt1AujHhTsXYX08GF/T1gt4iGkRCE+8ttdzgS7HPWjJCpxvZkvrqsGNG+Y4C9+OQ7BhA1AqpA==",
+ "note": "0.13.1.4：毒池连续结算、精英升级学技能新规则、家族特性叠加、搜打撤空投和首领等按反馈调整；和正式版同步",
+ "at": "2026-11-05 16:03 UTC"
 }

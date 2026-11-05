@@ -9289,7 +9289,7 @@ CFG.drops.items=Object.assign(CFG.drops.items||{},{ssSanada:[{w:'ztZhaoCopy', p:
        复活后 3 秒霸体；最多 8 次，第 9 次倒下才真死；它自己的被动（同酒吞），镇压、掘墓挡不住；头顶一排小狐火 = 还能复活几次
    「日本妖怪」：yokai:true */
 CFG.kyKyubi={
-  female:['priest','elemArcher','saintKnight','archDruid','lilian','lola','vanessa','liko','ashna','lethe','caroline','kazamiYuki','tamamo'],   // 女性英雄（Claude 按立绘、说明定，待用户核对）：希尔德加德、艾琳、奥薇尔、艾伦尼塔、莉莲、萝拉、温妮莎、莉可、阿什娜、蕾忒、卡罗琳、风见雪姬、玉藻前
+  female:['priest','elemArcher','saintKnight','archDruid','lilian','lola','vanessa','liko','ashna','lethe','caroline','kazamiYuki','tamamo','mati'],   // 女性英雄（Claude 按立绘、说明定，待用户核对）：希尔德加德、艾琳、奥薇尔、艾伦尼塔、莉莲、萝拉、温妮莎、莉可、阿什娜、蕾忒、卡罗琳、风见雪姬、玉藻前、玛蒂（0.13.1.4 用户定）
   saint:['maidenGuard','saintRider'],   // 圣女骑兵系列：圣女侍从、圣女铁骑
 };
 Object.assign(CFG.enemies,{
@@ -10962,7 +10962,8 @@ Object.assign(CFG,{
     '04b0a522c7f4e618bad45dbb70d0':{once:1, hero:'judgeKnight', star:1},   // 瑟塔洛斯（v0.8.16 用户定：给 1 星，不直接给 3 星）
     '000355e5dfcaee0f1bd1456b8b3b':{once:1, hero:'lilian', rep:1},   // rep：v0.8.7（用户定）可以反复用，不到 3 星就直接升到 3 星
     '0d3ccb8a1b096f1ba4ada4a0dece':{once:1, hero:'leng', rep:1},
-    '1056bfc79ca8c31c79b63368142c':{once:1, hero:'mati', star:1},   // 0.13.1.1 教皇·玛蒂（用户定：给 1 星）
+    '1056bfc79ca8c31c79b63368142c':{once:1, hero:'mati', star:1, off:1},   // 0.13.1.1 教皇·玛蒂（用户定：给 1 星）；off：0.13.1.4 作废（明文进过代码仓库的历史，用户定换新码），已经用过的存档靠它认（game/hero_lock）
+    '070a614911b9171514a2c324e426':{once:1, hero:'mati', star:1},   // 0.13.1.4 教皇·玛蒂的新码（用户定），1 星
     '001283fc6da1df0f90a632175e1f':{once:1, ver:'0.9.0', wallet:{金币:1600}, frag:{red:250}},   // v0.9.0（用户定，只在 0.9.0 有效）：1600 金币 + 250 红色英雄之魄碎片（= 50 个红色英雄之魄）
     '046f94286dd51301c5e614dba9d2':{once:1, ver:'0.9.0', wallet:{金币:600}},   // v0.9.0（用户定，只在 0.9.0 有效）：600 金币
   },
@@ -21785,6 +21786,7 @@ CFG.heroRoles.of.ais='cmd';   // 0.12.5 代理 H 加：议会元老·艾斯（�
 CFG.heroRoles.of.xina='sup';   // 0.12.6 代理 H 加：自然龙神·希娜（辅助：治疗、给士兵加成）
 CFG.heroRoles.of.liyan='sup';   // 0.13.1 傀儡师·李偃（用户定的定位：辅助、召唤、控制）；修——原来没登记，英雄列表里归到了「战士」
 CFG.heroRoles.of.mati='sup';   // 0.13.1.1 教皇·玛蒂（Claude 定：辅助，全军加攻速、移速、护盾、增伤、减伤）；修——原来没登记，归到了「战士」
+CFG.heroRoles.of.sunPrince='warrior';   // 0.13.1.4（用户定）太阳王子：战士（原来没登记，默认也是战士，这里写明）
 
 // ---------- 0.11.4 精英士兵（用户 2026-10-24 策划：根目录《0.11.4策划-精英与家族（用户原文）.md》；实现说明《0.11.4精英系统-实现说明.md》）----------
 // 这里只放数据；逻辑 game/el_core.js（局外：招募、年龄、家族、名册、教官、学习）、game/el_battle.js（局内）、ui/el_ui.js（界面）
@@ -22565,7 +22567,7 @@ CFG.skills.elElemRain=Object.assign({},CFG.skills.elemRain,{name:'元素箭雨',
   el_decoy:'decoyBomb',el_ironwall:'ironWall',el_mbarrier:'magicBarrier',el_night:'nightWalk',el_temper:'haTemper',el_sever:'severance'};for(const k in I)if(S[k])S[k].ico=I[k]})();
 // 技能等级系数延到 10 级（0.12.1 用户定：升级时有概率升技能，至多 等级 / 10 级）
 CFG.elite.skLvK=[1,1.1,1.25,1.45,1.7,2,2.35,2.75,3.2,3.7];
-CFG.elite.lvSkP=[0.1,0.1];   // 0.12.1（用户定）每过 5 级：学会本职业基础技能的概率、升级已有技能的概率
+CFG.elite.lvSkP=[0.1,0.1];   // 0.12.1（用户定）每过 5 级：学会本职业基础技能的概率、升级已有技能的概率；0.13.1.4 起不用了（改成 10X+5 级必学 / 升被动、10X+10 级必学 / 升主动，game/el_core.elLvSk）
 CFG.elite.rollPer=30;   // 0.12.1（用户定 20～50）名册一页几人
 CFG.elite.insHire.skLvT=[[1,3],[1,3],[1,4],[2,4],[2,5],[3,5],[3,6],[4,7],[5,8]];   // 0.12.1（用户定）招来的教官会的技能等级 [下限, 上限]，按地区阶（一～九阶）；超过 4 级的教官能教到自己的等级
 
@@ -22989,7 +22991,7 @@ CFG.elite.eg={enhTo:10, maxTry:500};   // 0.12.7a（用户定）enhTo 只是默�
   bard:      J('吟游诗人',3,'magic',['bard'],'cloth',['tome'],{hp:120, heal:10},{silver:6000, lv:20},['吟游诗歌','可以装配「吟游诗歌」系列技能；普通攻击为治疗'],{atkHeal:1},{ser:'吟游诗歌'}),
   // —— 四阶 ——
   ironCaptain:J('铁血队长',4,'heavy',['warrior','shield'],'plate',['sword','shield'],{hp:400, def:12},C4(10000,'saltpeter',20,'ironMarshal'),['铁血统御','范围 5 格内的非建筑单位减伤 +15%'],{drAura:[5,0.15]},{ser:'霍恩'}),
-  elemBowman:J('元素弓手',4,'ranged',['archer','mage'],'leather',['bow','quiver'],{hp:300, ap:20},C4(10000,'elemEssence',20,'elemArcher'),['元素射击','物理攻击转化为法术攻击：攻击造成 100%AP 的法术伤害，分成火焰、寒冰、旋风三种'],{elemShot:1},{ser:'艾琳'}),
+  elemBowman:J('元素弓手',4,'ranged',['archer','mage'],'leather',['bow','quiver'],{hp:300, ap:20},C4(10000,'elemEssence',20,'elemArcher'),['元素射击','物理攻击转化为法术攻击：攻击造成 100%AP 的法术伤害并转化为 40% 火焰、40% 寒冰、40% 旋风法术伤害'],{elemShot:1.2},{ser:'艾琳'}),
   saintMaid: J('圣女侍从',4,'cav',['cav','shield'],'plate',['spear','shield'],{hp:550, def:12, atk:10},C4(10000,'blightWater',20,'saintKnight'),['圣女号召','伤害的 50% 转化为神圣伤害，防御力 +25%，减伤 +15%'],{holyConv:0.5, def:0.25, mdef:0.25, dr:0.15},{ser:'奥薇尔', mount:true}),
   punisher:  J('惩戒骑士',4,'heavy',['warrior','shield'],'plate',['sword','shield'],{hp:400, atk:18, def:6, mdef:4},C4(10000,'blightWater',20,'judgeKnight'),['惩戒之力','造成伤害的 5% 削减目标生命上限；命中目标时移除目标 10% 减伤(不可叠加)'],{mhpCut:0.05, drStrip:0.1},{ser:'瑟塔洛斯'}),
  };
@@ -23193,7 +23195,7 @@ CFG.elite.eg={enhTo:10, maxTry:500};   // 0.12.7a（用户定）enhTo 只是默�
     [[4,6],[2],1,17],[['冰原之血',0.2,{resFrost:0.15}],['拉格拉斯的勇猛',0.6,{dmgP:0.12}],['拉格拉斯的沉稳',0.8,{defX:0.12}]]),
   F('lott','洛特','jungle',{speed:2,vision:2,def:-1},0.3,{shape:'rectTri',bg:'green',pat:'eagle',fg:'yellow'},'特帕克·洛特',
     '丛林的土著家族，丛林的执掌者。王国从没控制过丛林，双方有往来——王国把这叫「朝贡」，丛林人认为是「贸易」。',
-    [[0],[0],15,11],[['洛特的敏捷',0.2,{speed:0.08}],['洛特的敏锐',0.4,{vision:0.08}],['洛特的力量',0.6,{dmgR:0.15}],['丛林追猎',1,{huntMark:[0.1,3]}]]),
+    [[0],[0],15,11],[['洛特的敏捷',0.2,{speed:0.08}],['洛特的敏锐',0.4,{vision:0.08}],['洛特的力量',0.6,{dmgR:0.15}],['丛林追猎',1,{huntMarkF:[0.1,3]}]]),   // 丛林追猎：0.13.1.4 改键 huntMarkF，和丛林战士的猎杀印记加算叠加（用户定）
   F('hik','希克','desert',{atk:2,vision:1,ap:1,mdef:-1},0.3,{shape:'rectArc',bg:'gold',pat:'sun',fg:'black'},'萨利赫·希克',
     '沙漠地区原本的主家族、沙漠中的王者。臣服王国后遭到分化和打压，逐渐式微；比较厌恶王国，希望独立。',
     [[0],[6],14,12],[['沙漠适应',0.2,{desertOk:1}],['希克的锐眼',0.4,{vision:0.1}],['希克的荣耀',0.6,{desertK:0.1}],['希克的传承',0.8,{atkX:0.1}],['古老之咒',1,{nightMad:0.15}]],{regs:['desert','temple']}),
@@ -23240,7 +23242,7 @@ CFG.elite.eg={enhTo:10, maxTry:500};   // 0.12.7a（用户定）enhTo 只是默�
     [[7],[3],2,14],[['茜尔的魔力',0.2,{apF:12}],['茜尔的秘法',0.4,{dmgS:0.1}],['茜尔的天赋',0.8,{apX:0.15}],['魔法掌控',1,{magicCtl:[0.25,0.5,1]}]],{cul:'elf',repRate:[0.8,'信任',1.05]}),
   F('william','威廉','ironFort',{def:3,hp:1,mdef:1,speed:-1},0.1,{shape:'shield',bg:'red',pat:'swordShield',fg:'silver'},'亨利·威廉',
     '一直坚守铁血要塞的家族，被帝国（赤色帝国）抛弃后仍然坚守北境阵地，忠于帝国。和英雄霍恩没有关系，但家族技能、兵种都和霍恩一样。',
-    [[6],[4],5,15],[['威廉的意志',0.2,{defF:10,mdefF:8}],['威廉的战意',0.4,{dmgP:0.07,drP:0.07}],['威廉的坚忍',0.6,{toughK:0.2,critR:-0.05}],['威廉的不屈',0.8,{defX:0.1,mdefX:0.05}],['铁血统帅',1,{drAura:[4,0.1]}]]),
+    [[6],[4],5,15],[['威廉的意志',0.2,{defF:10,mdefF:8}],['威廉的战意',0.4,{dmgP:0.07,drP:0.07}],['威廉的坚忍',0.6,{critTaken:0.2,critR:-0.05}],['威廉的不屈',0.8,{defX:0.1,mdefX:0.05}],['铁血统帅',1,{drAuraF:[4,0.1]}]]),   // 威廉的坚忍：0.13.1.4 用户定「守护 +20%」= 受到的暴击伤害 −20%（critTaken）；铁血统帅改键 drAuraF，和铁血队长的铁血统御加算叠加
  ];
  E.fam14=L14;E.fam14Regs=['wild','corrupt','tundra','jungle','desert','temple','sanctum','polar','factory','cathedral','shadowDesert','elemForest','ironFort'];
  // 老家族的姓（迁移时改姓用；要在换掉之前记下）
@@ -71606,12 +71608,12 @@ SKFX.as2Dance=h=>{vfx('flare',{x:h.x,y:h.y-10,r:10,c:AS2_PUR,life:0.3})};
 //   来源各自有层数上限（到了上限就顶掉这个来源最早到期的那层）；每 0.5 秒结算一次攒下的伤害（法术、中毒类型、持续伤害，算英雄的输出），被动的层无视 ig 的毒抗（亡灵卡、地图的毒抗：engine/enemy.eResMul 的 o.psnIg；亡灵自己的毒抗 resist.poison：resCut 减掉 ig 那部分，修——原来没减，灰泽腐树 60% 毒抗照吃）；
 //   和原来的毒层（E.psn）互不影响，都算「中毒效果」（绝命毒爆两种都认）。亡灵身上有蚀骨毒时冒毒泡（画面）。
 // 蚀骨之毒（被动）：钩子 afterHitE——出手的单位（dsSrc：英雄、士兵、塔……）在帕拉塞尔苏斯 r 格内（他倒下了不算），这一下不是持续伤害、也不是蚀骨毒自己 → 目标加一层 pct × 这一下实际伤害、t 秒。
-// 蚀骨毒池：区域 pp2Pool，放下就结算第一下，之后每秒一次：池里的亡灵受到 b(+ad×AP)（法术、中毒），并加一层 pct × 那一下的原始伤害（每秒）。
+// 蚀骨毒池：区域 pp2Pool，持续 dur 秒：伤害连续结算（每 0.1 秒结算这段时间的 b(+ad×AP) × 秒数，法术、中毒），合计 dur × 每秒伤害；每秒叠一层 pct × 每秒伤害（0.13.1.4 用户定）。
 // 绝命毒爆：先把 7.5 格内有中毒的亡灵记下来（层数 = 蚀骨毒的层 + 原来的毒层 E.psn；剩下的中毒伤害 = 每层每秒 × 剩余秒数之和）；
 //   每只：层数 × b(+ad×AP) + 剩下的中毒伤害 一次打出（法术、中毒），再把这一下的总伤害平分给它 share 格内的其它亡灵；全部打完再清掉这些亡灵的中毒。
 //   友军（英雄、士兵）回血 hb(+had×AP) + 最大生命 hpct，减伤 dr（统一 buff，drT 秒）。
 // 毒焰喷剂：按住，每 tick 秒对扇形里的亡灵结算每秒伤害 × tick；按住每满 1 秒给扇形里的亡灵加一层 pct × 每秒伤害。
-const PP2_M=new Map(),PP2_HIT={magic:true,noFx:true,dot:true,mix:{poison:1},hk:null,pp2:1},PP2_HITI={magic:true,noFx:true,dot:true,mix:{poison:1},hk:null,pp2:1,psnIg:0,resCut:null},PP2_RC={poison:0},PP2_SK={magic:true,mix:{poison:1},hk:null},PP2_BH={magic:true,mix:{poison:1},hk:null,pp2:1},PP2_WARD={dr:0.25};
+const PP2_PT={magic:true,noFx:true,mix:{poison:1},hk:null,pp2:1},PP2_M=new Map(),PP2_HIT={magic:true,noFx:true,dot:true,mix:{poison:1},hk:null,pp2:1},PP2_HITI={magic:true,noFx:true,dot:true,mix:{poison:1},hk:null,pp2:1,psnIg:0,resCut:null},PP2_RC={poison:0},PP2_SK={magic:true,mix:{poison:1},hk:null},PP2_BH={magic:true,mix:{poison:1},hk:null,pp2:1},PP2_WARD={dr:0.25};
 let PP2_H=null,PP2_T=0,PP2_DT=0;   // PP2_H：场上的进阶帕拉塞尔苏斯（被动的光环用）；PP2_T：结算计时
 // ================= 进阶条件 =================
 const pp2Req=b=>{const a=ADV_ID[b],R=a&&CFG.heroes[a].advReq;return R&&R.vol?R:null};
@@ -71646,11 +71648,13 @@ function pp2Tick(dt){let h=null;const H=G.heroes;for(let k=0;k<H.length;k++)if(H
 function pp2Hit(i,d,o){const h=PP2_H;if(!h||!(d>0)||o.dot||o.pp2||!E.alive[i])return;const s=dsSrc(o);if(!s)return;const P=h.psv,R=P.r*16;
   if(Math.abs(s.x-h.x)>R||Math.abs(s.y-h.y)>R||Math.hypot(s.x-h.x,s.y-h.y)>R)return;pp2Add(i,h,0,d*P.pct,P.t,P.max,P.ig)}
 // ================= 蚀骨毒池 =================
-function pp2PoolTick(z,dt){z.tk-=dt;if(z.tk<=0){z.tk+=1;disbandNear(z.x,z.y,z.r);const h=z.hk&&!z.hk.dead?z.hk:null,L=z.L;L.length=0;eQuery(z.x,z.y,z.r,j=>{L.push(j,E.id[j])});PP2_SK.hk=h;
-    for(let q=0;q<L.length;q+=2){const j=L[q];if(!E.alive[j]||E.id[j]!==L[q+1])continue;dealE(j,z.d,PP2_SK);pp2Add(j,z.h,1,z.d*z.pct,z.pt,z.max,0)}}
-  if(z.t>=z.dur)z.dead=true}
+function pp2PoolTick(z,dt){const a=Math.min(dt,Math.max(0,z.dur-z.dn));z.dn+=a;z.ac+=a;z.lk-=dt;const lay=z.lk<=0&&z.nl<z.dur;   // 0.13.1.4（用户定）伤害连续结算：每 0.1 秒（卡的时候一帧更长就按一帧）结算这段时间的伤害，5 秒合计正好 5 × 每秒伤害；叠毒照旧每秒一层
+  if(z.ac>=0.1||lay||(z.dn>=z.dur&&z.ac>0)){disbandNear(z.x,z.y,z.r);const h=z.hk&&!z.hk.dead?z.hk:null,L=z.L,v=z.d*z.ac,P=PP2_H===h&&h&&h.psv&&h.psv.r>=0?h.psv:null;L.length=0;eQuery(z.x,z.y,z.r,j=>{L.push(j,E.id[j])});PP2_PT.hk=h;z.ac=0;
+    for(let q=0;q<L.length;q+=2){const j=L[q];if(!E.alive[j]||E.id[j]!==L[q+1])continue;if(v>0)dealE(j,v,PP2_PT);if(lay&&E.alive[j]){pp2Add(j,z.h,1,z.d*z.pct,z.pt,z.max,0);if(P)pp2Add(j,h,0,z.d*P.pct,P.t,P.max,P.ig)}}   // 被动「蚀骨之毒」：每秒叠毒那一下按每秒伤害给一层（分段的伤害不触发，免得一秒触发 10 次）
+    if(lay){z.lk+=1;z.nl++}}
+  if(z.dn>=z.dur&&z.ac<=0)z.dead=true}
 zoneDef('pp2Pool',{tick:pp2PoolTick,draw:z=>zoneDraw_acid(z),glow:z=>ZONE_FX.hacid.glow(z)});
-function pp2PoolCast(h,p,a){const c=clampAim(h,a,p.range*16),r=p.r*16*(1+pm.aoe);addZone({k:'pp2Pool',x:c.x,y:c.y,r,dur:p.dur,t:0,tk:0,hk:h,h,d:skD(h,p),pct:p.pct,pt:p.t,max:p.max,L:[]});
+function pp2PoolCast(h,p,a){const c=clampAim(h,a,p.range*16),r=p.r*16*(1+pm.aoe);addZone({k:'pp2Pool',x:c.x,y:c.y,r,dur:p.dur,t:0,ac:0,dn:0,lk:0,nl:0,hk:h,h,d:skD(h,p),pct:p.pct,pt:p.t,max:p.max,L:[]});
   h.facing=c.x>=h.x?1:-1;h.recoil=0.25;if(inViewPt(c.x,c.y))sfx('flame',c.x,c.y);return true}
 const pp2PoolAI=(h,p)=>{const c=densest(h.x,h.y,p.range*16);return aiN(h,p,c,3)?{x:c.x,y:c.y}:null};
 // ================= 绝命毒爆 =================
@@ -71658,8 +71662,8 @@ const PP2_BL=[];
 function pp2BurstCast(h,p){const R=p.radius*16,L=PP2_BL;L.length=0;const per=skV(h,p.b,p.ad,true);
   eQuery(h.x,h.y,R,j=>{const r=PP2_M.get(E.id[j]),n=(r?pp2Left(r):0)+(E.psn[j]>0&&E.psnT[j]>0?E.psn[j]:0);if(!n)return;const left=(r?PP2_DT:0)+(E.psn[j]>0&&E.psnT[j]>0?E.psn[j]*E.psnD[j]*E.psnT[j]:0);L.push(j,E.id[j],n*per+left)},true);
   PP2_BH.hk=h;const S=p.share*16;let hit=0;   // 毒爆本身不再触发被动（不然刚清掉的毒又叠上）
-  for(let q=0;q<L.length;q+=3){const j=L[q],tot=L[q+2];if(!E.alive[j]||E.id[j]!==L[q+1])continue;const x=E.x[j],y=E.y[j];dealE(j,tot,PP2_BH);hit++;
-    const N=[];eQuery(x,y,S,k=>{if(k!==j)N.push(k,E.id[k])},false);const n=N.length/2;if(n>0){const v=tot/n;for(let w=0;w<N.length;w+=2)if(E.alive[N[w]]&&E.id[N[w]]===N[w+1])dealE(N[w],v,PP2_BH)}
+  for(let q=0;q<L.length;q+=3){const j=L[q],tot=L[q+2];if(!E.alive[j]||E.id[j]!==L[q+1])continue;const x=E.x[j],y=E.y[j];const dd=dealE(j,tot,PP2_BH);hit++;   // dd：这一下实际造成的伤害（0.13.1.4 用户定：按造成的伤害 100% 均摊给周围其它亡灵，不含主目标）
+    const N=[];eQuery(x,y,S,k=>{if(k!==j)N.push(k,E.id[k])},false);const n=N.length/2;if(n>0&&dd>0){const v=dd/n;for(let w=0;w<N.length;w+=2)if(E.alive[N[w]]&&E.id[N[w]]===N[w+1])dealE(N[w],v,PP2_BH)}
     if(inViewPt(x,y)){addFx({k:'ring',x:Math.round(x),y:Math.round(y-6),r:S,life:0.4,c:'#86e05a'});fxPoison(x,y,E.r[j]*2+8)}}
   for(let q=0;q<L.length;q+=3){const id=L[q+1],j=L[q];PP2_M.delete(id);if(E.alive[j]&&E.id[j]===id){E.psn[j]=0;E.psnT[j]=0}}
   const hb=skV(h,p.hb,p.had,true);bkEachF(h.x,h.y,R,u=>{if(u.dead)return;healF(u,hb+u.maxHp*p.hpct);bfAdd(u,'pp2Ward',PP2_WARD,p.drT);healFx(u.x,u.y-10,'#86e05a')});
@@ -75635,7 +75639,7 @@ function advanceHero(b){if(!ADV_ID[b]||advDone(b))return'已经进阶过了';if(
   A.owned=true;A.star=1;META.heroForm[b]=1;saveMeta();return null}   // mp2Pay：0.12.7 代理 MP 加，进阶-马可·波罗进阶时扣 1000 万银币、1000 金币（heroes/merchant2）
 function toggleForm(b){if(!ADV_ID[b]||!(advDone(b)||testOn()))return;const f=META.heroForm[b];META.heroForm[b]=ar3FormOk(b)?(f===2?0:f?2:1):(f?0:1);saveMeta()}   // 0.12.6 代理 R 改：能二次进阶的三个形态轮着切（原版 → 进阶 → 共主）
 const QF_NAME={white:'白',green:'绿',blue:'蓝',purple:'紫',gold:'金',red:'红'};
-function redeemCode(raw){const code=rdHash(raw),R=CFG.redeemCodes[code];if(!R)return rdRedeem(raw);   // 代理 5 改：老的哈希码查不到 → 试专属兑换码（game/rd_code.js）
+function redeemCode(raw){const code=rdHash(raw),R=CFG.redeemCodes[code];if(!R)return rdRedeem(raw);if(R.off)return'兑换码无效';   // off：0.13.1.4 作废的码（还留着哈希给兑换码英雄锁定认老存档）   // 代理 5 改：老的哈希码查不到 → 试专属兑换码（game/rd_code.js）
   if(R.ver&&R.ver!==GAME_VER)return'这个兑换码只在 '+R.ver+' 版本有效';   // ver：v0.9.0 限定版本的码
   if(R.once&&!R.hero&&(META.redeemed||[]).includes(code))return'这个兑换码在这份存档里已经用过了';   // 英雄码另算（redeemHero：以前用过的能再用一次）
   const used=()=>{if(R.once)(META.redeemed=META.redeemed||[]).push(code);saveMeta()};
@@ -77031,11 +77035,15 @@ function elTick(){if(!META)return;try{elDispTick()}catch(err){console.error('elD
   for(const e of m.list){for(const k in e.inj){const J=e.inj[k];if(J.lv===1&&now-J.t>=EL().injury.healH*3600000){delete e.inj[k];elEv('heal',{id:e.id,part:k});ch=true}}if(e.learn&&e.learn.end<=now){elLearnDone(e);ch=true}}
   for(const e of m.list)if(elLvSk(e))ch=true;   // 0.12.1 升级时有概率学会 / 升级技能
   if(elFamGc())ch=true;saveMeta();return ch}
-// 升级学技能（0.12.1 用户定）：每过 5 级，lvSk 概率学会一个本职业的基础技能（不要英雄教的），lvUp 概率把一个会的技能升一级（不超过 这时的等级 / 10）；0.13.1 家族兵种（职业 cost.fam）也能学到本家族的特殊技能（fsk + 尊敬，或同英雄的 fneed + 尊敬；代理 B 加）
-function elLvSk(e){const lv=elLv(e);if(e.lvS==null){e.lvS=lv;return false}if(lv<=e.lvS)return false;const a=Math.floor(e.lvS/5),b=Math.floor(lv/5),P=EL().lvSkP;let ch=false;e.lvS=lv;
-  for(let i=a+1;i<=b;i++){const at=i*5;
-    if(Math.random()<P[0]){const fm=((EL().jobs[e.job]||{}).cost||{}).fam,L=Object.keys(EL().skills).filter(k=>{const S=EL().skills[k];return(fm&&((S.fsk===fm&&S.fr==='尊敬')||(S.fneed&&S.fneed[0]===fm&&S.fneed[1]==='尊敬'))||!S.need&&!S.fsk)&&elFamOk(e,S)&&!(e.sk[k]>0)});if(L.length){const k=elPick(L);e.sk[k]=1;elEv('lvsk',{id:e.id,lv:at,sk:k,slv:1});ch=true}}
-    if(Math.random()<P[1]){const cap=Math.min(Math.floor(at/10),EL().skLvK.length),L=Object.keys(e.sk).filter(k=>EL().skills[k]&&e.sk[k]>0&&e.sk[k]<cap&&elSkOk(e,k));if(L.length){const k=elPick(L);e.sk[k]++;elEv('lvsk',{id:e.id,lv:at,sk:k,slv:e.sk[k],up:1});ch=true}}}
+// 升级学技能（0.13.1.4 用户定，《精英策划案 v0.13》）：每到 10X+5 级（5、15、25……）学会或升一级一个随机的被动技能，每到 10X+10 级（10、20……）学会或升一级一个随机的主动技能，一定发生；
+//   候选 = 还没学会、能学的（本职业的基础技能，不要英雄教的；家族兵种另加本家族的特殊技能：fsk + 尊敬，或同英雄的 fneed + 尊敬）+ 已经会、还能升的（不超过 这时的等级 / 10），一起随机抽一个
+//   （原来 0.12.1 是每过 5 级按 lvSkP 概率学 / 升）
+function elLvSk(e){const lv=elLv(e);if(e.lvS==null){e.lvS=lv;return false}if(lv<=e.lvS)return false;const a=Math.floor(e.lvS/5),b=Math.floor(lv/5),SK=EL().skills;let ch=false;e.lvS=lv;
+  const fm=((EL().jobs[e.job]||{}).cost||{}).fam;
+  for(let i=a+1;i<=b;i++){const at=i*5,pas=at%10===5,cap=Math.min(Math.floor(at/10),EL().skLvK.length);
+    const learn=Object.keys(SK).filter(k=>{const S=SK[k];return!!S.pas===pas&&(fm&&((S.fsk===fm&&S.fr==='尊敬')||(S.fneed&&S.fneed[0]===fm&&S.fneed[1]==='尊敬'))||!S.need&&!S.fsk)&&elFamOk(e,S)&&!(e.sk[k]>0)});
+    const up=Object.keys(e.sk).filter(k=>SK[k]&&!!SK[k].pas===pas&&e.sk[k]>0&&e.sk[k]<cap&&elSkOk(e,k)),L=learn.concat(up);if(!L.length)continue;
+    const k=elPick(L);if(e.sk[k]>0){e.sk[k]++;elEv('lvsk',{id:e.id,lv:at,sk:k,slv:e.sk[k],up:1})}else{e.sk[k]=1;elEv('lvsk',{id:e.id,lv:at,sk:k,slv:1})}ch=true}
   if(ch)elAutoSk(e,true);return ch}
 // 生孩子：同姓、同地区；30% 遗传父母的每条普通特性
 function elBirth(e){const m=elSt(),S=elSpouse(e),c=elGen(e.reg,{age:0,par:e.id,gen:(e.gen||1)+1,inherit:e.tr.concat(S&&S.tr||[]),kidOf:e});c.id=m.n++;c.kid=1;c.enr=0;m.kids.push(c);e.kids.push(c.id);if(e.spId&&S&&S.kids&&!S.kids.includes(c.id)){S.kids.push(c.id);c.par2=S.id}   // 队内夫妻：孩子两边都记（par2 = 另一位）
@@ -77914,36 +77922,38 @@ SK.elMines={cast(h,p){const C=SK.hemine,B=CFG.skills.hemine;if(!C||!B)return fal
 //   招架：减去「这把武器每一击的伤害 × 50%」；庇佑：3 格内友军（英雄、士兵）受到的伤害一半转给最近的圣骑士（圣骑士自己受的不转、持续伤害不转）；
 //   猎杀印记：命中后 3 秒内这只亡灵受到的所有伤害 +15%，再命中只刷新时间；惩戒之力：伤害的 5% 直接扣生命上限，命中时移除目标 10% 减伤 3 秒；
 //   炼毒：炼药师每次命中给目标叠 1 层毒（这个职业叠到 3 层为止），每层每秒 10% 法攻，持续同毒师的毒；
-//   元素射击：伤害按法攻算（武器伤害 + 法攻 ×（物攻比例 + 法攻比例）），火焰、寒冰、旋风各三分之一；圣女号召：原来的伤害类型各减半，另一半算神圣；
+//   元素射击：伤害按法攻算（武器伤害 + 法攻 ×（物攻比例 + 法攻比例）），× elemShot（1.2），火焰、寒冰、旋风各占三分之一（= 各 40%）；圣女号召：原来的伤害类型各减半，另一半算神圣；
 //   工程维修：每秒修 5 格内生命比例最低的一座受损建筑，修理量 = 物攻 + 维修量，修的那一秒不攻击；
 //   普攻治疗（吟游诗人）：射程内有受伤的友军就把这一下普攻换成治疗（量 = 法攻 + 治疗量，吃治愈加成），没有就照常攻击
-const EJ_MK=new Map(),EJ_AU=[],EJ_PAL=[];   // EJ_MK：亡灵 id → [到期时间, 易伤]；EJ_AU / EJ_PAL：场上的铁血队长 / 圣骑士（每帧重排）
+const EJ_MK=new Map(),EJ_MKF=new Map(),EJ_AU=[],EJ_AUF=[],EJ_PAL=[];   // EJ_MKF / EJ_AUF：0.13.1.4 家族特性的丛林追猎（huntMarkF）、铁血统帅（drAuraF），和职业的猎杀印记、铁血统御加算叠加（用户定）
+   // EJ_MK：亡灵 id → [到期时间, 易伤]；EJ_AU / EJ_PAL：场上的铁血队长 / 圣骑士（每帧重排）
 const ejElite=o=>{const h=o&&o.hk;return h&&h.elite&&h.d&&h.d.elS?h:null};
 function elJobRecalc(h,S,w,mag){
   if(S.penAll>0&&!mag)w.penP=1-(1-(w.penP||0))*(1-S.penAll);if(S.wbDef>0&&!mag&&w.cls==='melee')w.penP=1-(1-(w.penP||0))*(1-S.wbDef);   // wbDef：0.13 克略「征战之刃」物理近战无视防御
   if(S.blockK)h.block*=1+S.blockK;if(S.shieldK)h.shield*=1+S.shieldK;if(S.deflE)h.deflE=(h.deflE||0)+S.deflE;
   {const e=elById(h.elite),J=e&&elJobD(e);h.elAccT=J&&J.mount?(S.chg?S.chg[1]:2):0}   // elAccT：0.13 骑兵职业边走边加速，elAccT 秒加到移速的 2 倍（用户定：骑兵实际最快 = 移速 × 2）；elCv 当前速度（格 / 秒，惯性冲击用）
   h.elBC=S.backCrit?1:0;h.elMvP=S.movePrec||0;h.elGun=S.gunDmg&&w.type==='gun'?S.gunDmg:0;h.elChg=S.chg||null;h.visFix=S.visFix?1:0;h.elHealF=S.healF||0;h.elHealK=S.healK||0;
-  if(S.elemShot&&!mag){w.magic=true;w.dmg=(w.wdB+heroStatG(h,'ap')*((w.adR||0)+(w.apR||0)))*w.am;w.mix={fire:1/3,frost:1/3,wind:1/3}}
+  if(S.elemShot&&!mag){w.magic=true;w.dmg=(w.wdB+heroStatG(h,'ap')*((w.adR||0)+(w.apR||0)))*w.am*S.elemShot;w.mix={fire:1/3,frost:1/3,wind:1/3}}   // elemShot：总倍率（0.13.1.4 用户定：火焰、寒冰、旋风各 40%，合计 120%）
   if(S.holyConv){const m0=w.mix||{[w.type==='spear'||w.type==='bow'||w.type==='crossbow'||w.type==='gun'?'pierce':'slash']:1},m={};for(const k in m0)m[k]=m0[k]*(1-S.holyConv);m.holy=(m.holy||0)+S.holyConv;w.mix=m}}
 // 生命比例最低的受损建筑 / 受伤的友军（R 像素内）
 function ejWorstS(u,R){let b=null,bv=1;for(let k=0;k<G.structs.length;k++){const s=G.structs[k];if(s.dead||!(s.hp<s.maxHp)||Math.hypot(s.x-u.x,s.y-u.y)>R)continue;const v=s.hp/s.maxHp;if(v<bv){bv=v;b=s}}return b}
 function ejWorstF(u,R){let b=null,bv=1;const F=G.friends;for(let k=0;k<F.length;k++){const f=F[k];if(f.dead||!(f.hp<f.maxHp)||Math.hypot(f.x-u.x,f.y-u.y)>R)continue;const v=f.hp/f.maxHp;if(v<bv){bv=v;b=f}}return b}
 function ejPsn(i,cap,h){if(E.psn[i]>=cap)return;const P=CFG.poison;E.psn[i]=Math.min(cap,E.psn[i]+1);E.psnT[i]=P.dur;E.psnD[i]=Math.max(E.psnD[i]||0,heroStatG(h,'ap')*0.1)}
 feat('elJob',{ord:520,on:()=>!!(G&&G.heroes&&G.heroes.some(h=>h.elite)),hooks:{
-  start:()=>{EJ_MK.clear();EJ_AU.length=0;EJ_PAL.length=0},
-  tick:()=>{EJ_AU.length=0;EJ_PAL.length=0;for(let k=0;k<G.heroes.length;k++){const h=G.heroes[k];if(h.dead||!h.elite||!h.d.elS)continue;if(h.d.elS.drAura)EJ_AU.push(h);if(h.d.elS.guardShare)EJ_PAL.push(h)}},
-  dmgBaseE:(i,d,o)=>{if(EJ_MK.size){const M=EJ_MK.get(E.id[i]);if(M){if(M[0]>G.time)d*=1+M[1];else EJ_MK.delete(E.id[i])}}
-    const h=ejElite(o);if(!h)return d;const S=h.d.elS;
+  start:()=>{EJ_MK.clear();EJ_MKF.clear();EJ_AU.length=0;EJ_AUF.length=0;EJ_PAL.length=0},
+  tick:()=>{EJ_AU.length=0;EJ_AUF.length=0;EJ_PAL.length=0;for(let k=0;k<G.heroes.length;k++){const h=G.heroes[k];if(h.dead||!h.elite||!h.d.elS)continue;if(h.d.elS.drAura)EJ_AU.push(h);if(h.d.elS.drAuraF)EJ_AUF.push(h);if(h.d.elS.guardShare)EJ_PAL.push(h)}},
+  dmgBaseE:(i,d,o)=>{if(EJ_MK.size||EJ_MKF.size){const id=E.id[i];let v=0;const M=EJ_MK.get(id),MF=EJ_MKF.get(id);if(M){if(M[0]>G.time)v+=M[1];else EJ_MK.delete(id)}if(MF){if(MF[0]>G.time)v+=MF[1];else EJ_MKF.delete(id)}if(v)d*=1+v}
+    const h=ejElite(o);if(!h)return d;const S=h.d.elS;if(S.dmgS&&o.magic){const w=h.ws;if(!(w&&(w.cls==='magic'||w.magic)))d*=1+S.dmgS}   // dmgS：0.13.1.4（用户定）「法术伤害 +X%」只要是法术伤害都加；拿法术武器的已经在 elRecalc 加进 gDmg，这里补拿别的武器时打出的法术伤害（艾琳拿弓放元素之箭）
     if(S.lossAmp&&h.maxHp>0){const L=1-h.hp/h.maxHp;if(L>0)d*=1+Math.floor(L/S.lossAmp[0]+1e-9)*S.lossAmp[1]}
     if(h.elGun)d*=1+h.elGun;if(h.elChgOn&&o.melee)d*=h.elChg[0];if(S.boomDmg&&(o.blast||o.boom))d*=1+S.boomDmg;return d},   // boom：0.13.1 代理 B 修——英雄的炮弹、技能的爆炸（engine/combat.explode）只带 boom，原来只认 blast，重炮手的「爆炸伤害 +50%」从来没生效
   afterHitE:(i,dmg,o)=>{const h=ejElite(o);if(!h)return;const S=h.d.elS;
     if(h.elChgOn&&o.melee){h.elChgOn=0;h.elMvT=0}
-    if(o.dot)return;if(S.huntMark)EJ_MK.set(E.id[i],[G.time+S.huntMark[1],S.huntMark[0]]);
+    if(o.dot)return;if(S.huntMark)EJ_MK.set(E.id[i],[G.time+S.huntMark[1],S.huntMark[0]]);if(S.huntMarkF)EJ_MKF.set(E.id[i],[G.time+S.huntMarkF[1],S.huntMarkF[0]]);
     if(!E.alive[i])return;if(S.mhpCut&&dmg>0){E.mhp[i]=Math.max(1,E.mhp[i]-dmg*S.mhpCut);if(E.hp[i]>E.mhp[i])E.hp[i]=E.mhp[i]}
     if(S.drStrip)bkERmDR(i,S.drStrip,3);if(S.psnStack)ejPsn(i,S.psnStack,h)},
   dmgInF:(u,dmg,o)=>{if(u.cfg)return dmg;
     for(let k=0;k<EJ_AU.length;k++){const c=EJ_AU[k];if(!c.dead&&Math.hypot(c.x-u.x,c.y-u.y)<=c.d.elS.drAura[0]*16){UF_DR+=c.d.elS.drAura[1];break}}
+    for(let k=0;k<EJ_AUF.length;k++){const c=EJ_AUF[k];if(!c.dead&&Math.hypot(c.x-u.x,c.y-u.y)<=c.d.elS.drAuraF[0]*16){UF_DR+=c.d.elS.drAuraF[1];break}}
     if(EJ_PAL.length&&!o.shPr&&!o.dot&&dmg>0){let p=null,pd=1e9;for(let k=0;k<EJ_PAL.length;k++){const q=EJ_PAL[k];if(q===u||q.dead)continue;const d=Math.hypot(q.x-u.x,q.y-u.y);if(d<=q.d.elS.guardShare[0]*16&&d<pd){pd=d;p=q}}
       if(p){const sh=dmg*p.d.elS.guardShare[1];hurtF(p,sh,Object.assign({},o,{shPr:1}));dmg-=sh}}
     const S=u.elite&&u.d&&u.d.elS;if(!S)return dmg;
@@ -78464,6 +78474,17 @@ function elFam14Ren(m){const M=m&&m.el;if(!M||M.f14n)return;M.f14n=1;const OF=CF
     if(Array.isArray(o)){for(const x of o)walk(x,d+1)}else for(const k in o){const v=o[k];if(v&&typeof v==='object')walk(v,d+1)}};
   walk(M,0);m._dirty=true}
 META_LATE.push(['elFam14Ren',m=>{try{elFam14Ren(m)}catch(e){console.error(e)}}]);
+// 0.13.1.4（用户定）老存档精英的装备迁移：0.13 职业改名以后，有的人穿着新职业不熟练的武器 / 护甲（老神射手的弩、皮甲……），一直吃不熟练的惩罚；
+//   读档时一次性把这些卸下来（装备还在仓库里），用 META.el.gfx 记只跑一次
+function elGearMig13(m){const M=m&&m.el;if(!M||M.gfx||!Array.isArray(M.list))return;M.gfx=1;let n=0;for(const e of M.list){if(!e.gear)continue;const k0=Object.keys(e.gear).length;elGearFix(e);n+=k0-Object.keys(e.gear).length}if(n)console.log('elGearMig13',n)}
+META_LATE.push(['elGearMig13',m=>{try{elGearMig13(m)}catch(e){console.error(e)}}]);
+// 0.13.1.4（用户定）老家族血脉并进新家族的人补抽新家族的特性：0.13.1 迁移时老家族的特性去掉了、新家族的没给（特性原来只在出生 / 招募时抽）；
+//   现在一次性（META.el.f14t）给身上有 fam14To 里那些新家族血脉、却一条这家特性都没有的人，按招募的规矩（占比到门槛、按概率）抽一次这家的特性
+function elFam14Bt(m){const M=m&&m.el;if(!M||M.f14t)return;M.f14t=1;const TO=CFG.elite.fam14To||{},B=elBlood(),T=elBloodTr(),fams=new Set();for(const k in TO)if(B['f_'+TO[k]])fams.add('f_'+TO[k]);if(!fams.size)return;let n=0;
+  const one=e=>{if(!e||!e.bl||typeof e.bl!=='object')return;if(!Array.isArray(e.bt))e.bt=[];for(const id in e.bl){if(!fams.has(id))continue;const S=B[id];if(!S||S.kind!=='f'||e.bt.some(k=>S.tr.includes(k)))continue;const f=elBlFrac(e,id);
+    for(const k of S.tr){const t=T[k];if(!t||f+1e-9<t.min||e.bt.includes(k)||e.bt.some(q=>T[q]&&T[q].name===t.name))continue;if(Math.random()<t.p||Math.random()<t.x){e.bt.push(k);n++}}}};
+  for(const L of[M.list,M.kids,M.roll,M.fam])if(Array.isArray(L))L.forEach(one);if(n){m._dirty=true;console.log('elFam14Bt',n)}}
+META_LATE.push(['elFam14Bt',m=>{try{elFam14Bt(m)}catch(e){console.error(e)}}]);
 
 // ---------- 0.13.1 家族重置第二批 · 一、二阶十个家族（代理 A）：新特性键、家族技能、特色兵种、沙漠商人（数据 data/el_fam14a.js）----------
 // 新特性键（属性合计 h.d.elS，说明在下面的 EL_STD3）：
@@ -78578,7 +78599,7 @@ Object.assign(EL_STD3,{
   desertKing:(v,pc)=>`自身 ${v[0]} 格内骑乘的沙漠兵种增伤、减伤 +${pc(v[1])}(不可叠加)`,
   healF:v=>`治疗量 +${v}(每次治疗多加 ${v} 点)`,
   critK:(v,pc)=>`暴击值 ${v<0?'−':'+'}${pc(v)}`,
-  huntMark:(v,pc)=>`命中目标后 ${v[1]} 秒内它受到的伤害 +${pc(v[0])}(独立易伤，不可叠加)`,huntMk:(v,pc)=>`命中目标时使它受到的伤害 +${pc(v[0])}，持续 ${v[1]} 秒，不可叠加`,
+  huntMark:(v,pc)=>`命中目标后 ${v[1]} 秒内它受到的伤害 +${pc(v[0])}(独立易伤，不可叠加)`,huntMarkF:(v,pc)=>`命中目标后 ${v[1]} 秒内它受到的伤害 +${pc(v[0])}(和猎杀印记加算叠加，自身不可叠加)`,huntMk:(v,pc)=>`命中目标时使它受到的伤害 +${pc(v[0])}，持续 ${v[1]} 秒，不可叠加`,
   ruinAmp:(v,pc)=>`本波每有一座友方建筑被摧毁，造成的伤害 +${pc(v)}，至多叠加 5 层`,
   herbA:(v,pc)=>`自身 ${v[0]} 格内的友军毒抗 +${pc(v[1])}`,
   frostP:(v,pc)=>`造成伤害时使目标减速 ${pc(v[0])}，持续 ${v[1]} 秒`+(v[2]>0?`；额外附加这一下伤害 ${pc(v[2])} 的冰属性伤害`:''),
@@ -78801,7 +78822,7 @@ Object.assign(EL_STD3,{
   elemAdd:(v,pc)=>`造成伤害时各附带 ${pc(v)} 的风、火、冰属性伤害`,sumK:(v,pc)=>`召唤物属性 +${pc(v)}`,
   castRng:(v,pc)=>`施法距离 +${pc(v)}`,aoeR:(v,pc)=>`施法效果半径 +${pc(v)}`,
   magicCtl:(v,pc)=>`技能伤害 +${pc(v[0])}；每次攻击使技能冷却减少 ${v[1]} 秒(这一效果冷却 ${v[2]} 秒)`,
-  drAura:(v,pc)=>`自身半径 ${v[0]} 格内的非建筑单位减伤 +${pc(v[1])}`,
+  drAura:(v,pc)=>`自身半径 ${v[0]} 格内的非建筑单位减伤 +${pc(v[1])}`,drAuraF:(v,pc)=>`自身半径 ${v[0]} 格内的非建筑单位减伤 +${pc(v[1])}(和铁血统御叠加)`,
   skDmg:(v,pc)=>`技能伤害 +${pc(v)}`,elemFuse:(v,pc)=>`远程物理攻击依次轮换附加 ${pc(v)} 的火属性、风属性、冰属性伤害`,
   healSplash:(v,pc)=>`治疗时目标半径 ${v[0]} 格内波及 ${pc(v[1])} 治疗量`,fearHit:v=>`命中后额外造成 ${v[0]} 秒恐惧(同一目标 ${v[1]} 秒内只吃一次)，冷却 ${v[2]} 秒`,
   elemCyc:(v,pc)=>`攻击依次轮换附带：火属性灼烧(${pc(v[0])} 伤害，${v[4]} 秒)、冰属性减速 ${pc(v[1])}(${v[4]} 秒)、中毒(${pc(v[2])} 伤害，${v[4]} 秒)、风属性击退 ${v[3]} 格`,
@@ -80335,7 +80356,8 @@ function sv3At(ti,hm){if(!(SV3_SEA[ti]&&G.csW))return svSpawnAt(ti,hm);const h=s
 //   首领 / 小首领还活着时（tier ≥ 5 或 mini，召唤的不算）先不跑 waveEnd：常规的波末都是场上清空以后，不少首领特性的 waveEnd 会清掉它在场时的状态；
 //   等它们都倒下再补跑这一波的 waveEnd（战斗中补跑的话接着跑当前这一波的 waveStart），中间的波不跑 waveStart（地图的每波事件跟着暂停）。
 //   名单 = maps/ 里定义、带 waveStart / waveEnd 的 feat（新加地图特性要登记进来，t_sv6 的 wf 会查漏）；estruct / esFoe：亡灵阵营建筑（源能王城）的波末
-const SV3_WF=new Set(['miasma','tombs','sanMarks','bcBoss','vcBoss','foBoss','jtBoss','jtCBoss','obBoss','sdShuten','tgTengu','ztSanada','kyKyubi','xlXiangliu','blBoss','nbBoss','ynBoss','ynAis','lybBoss','estruct','esFoe']);
+const SV3_WF=new Set(['miasma','tombs','sanMarks','bcBoss','vcBoss','foBoss','jtBoss','jtCBoss','obBoss','sdShuten','tgTengu','ztSanada','kyKyubi','xlXiangliu','blBoss','nbBoss','ynBoss','ynAis','lybBoss','estruct','esFoe',
+  'liyan','mati','poisoner2','elFam14a','elFam14aMc','elFam14b']);   // 0.13.1.4（用户定）0.13.1 的新英雄、家族第二批的每波效果在幸存者里也每波跑
 function sv3Fx(k,n){const w0=G.wave;G.wave=n;try{for(let q=0;q<HK_ON.length;q++){const key=HK_ON[q],h=key==='map:'+G.map?MAP_FX[G.map]:SV3_WF.has(key)?FEAT[key].hooks:null,f=h&&h[k];
     if(typeof f==='function')try{f(n)}catch(e){console.warn('sv3Fx',key,k,e)}}}finally{G.wave=w0}}   // 一张图的事件出错不拖垮这一局（记一条警告）
 function sv3Boss(){for(let i=0;i<E.n;i++)if(E.alive[i]&&!E.smn[i]){const c=ETC[E.t[i]];if(c.tier>=5||c.mini)return true}return false}
@@ -81037,7 +81059,7 @@ function extPkOn(pid){const S=G.sv,X=S.ext,P=X.pk[pid],SC=CFG.survivor,MD=CFG.ma
     for(let k=0;k<n;k++)put(extPickT(G.wave),0)}finally{G.wave=w0}
   P.on=1}
 const extAlive=(P,k)=>{const j=P.u[k];return E.alive[j]&&E.id[j]===P.id[k]&&EX_P[j]>=0};
-function extPkOff(P){let n=0;for(let k=0;k<P.u.length;k++)if(extAlive(P,k)){eKill(P.u[k]);n++}P.n=n;P.on=0;P.u.length=0;P.id.length=0}
+function extPkOff(P){let n=0;for(let k=0;k<P.u.length;k++)if(extAlive(P,k)){const j=P.u[k],c=ETC[E.t[j]];if(c.tier>=5)P.bo=ETYPES[E.t[j]];else if(c.tier===4)P.el=true;eKill(j);n++}P.n=n;P.on=0;P.u.length=0;P.id.length=0}   // 0.13.1.4（用户定）收回时首领、精英还活着就留着，下次放出来照样有（普通的只出 tier < 4 的，所以 tier 5 = 首领、4 = 精英）
 function extWake(pid){const P=G.sv.ext.pk[pid];if(!P)return;for(let k=0;k<P.u.length;k++)if(extAlive(P,k)){const j=P.u[k];if(EX_S[j]!==1){EX_S[j]=1;E.th[j]=0}}}
 let EXH_X=0,EXH_Y=0;   // extHome 的结果
 function extHome(i){const P=G.sv.ext.pk[EX_P[i]];if(P&&P.rt>=0){EXH_X=P.x+EX_HX[i];EXH_Y=P.y+EX_HY[i];if(!extPass(EXH_X,EXH_Y)){EXH_X=P.x;EXH_Y=P.y}}else{EXH_X=EX_HX[i];EXH_Y=EX_HY[i]}}
@@ -81158,7 +81180,8 @@ function extBoxDone(o,h){const K=extC().box.kinds[o.k],X=G.sv.ext;if(rng()<K.car
 function extVaultDone(o,h){const C=extC().vault,X=G.sv.ext;X.vk--;extCard(C.mq);sfx('levelup');sayT('打开了库房！'+extGive(extLoot('vault'),o.x,o.y))}
 // 空投
 function extDropTick(h){const S=G.sv,X=S.ext,C=extC().drop;
-  if(S.t>=X.adT&&(!X.ad||X.ad.done)){X.adT=S.t+C.every;for(let q=0;q<12;q++){const a=rng()*Math.PI*2,r=(C.r[0]+rng()*(C.r[1]-C.r[0]))*16,x=h.x+Math.cos(a)*r,y=h.y+Math.sin(a)*r;
+  if(S.t>=X.adT&&X.ad&&!X.ad.done&&h&&!h.dead&&Math.hypot(X.ad.x-h.x,X.ad.y-h.y)<=h.vision*16)X.adT=S.t+C.every;   // 0.13.1.4（用户定）到时间了上一个空投还没开：在视野里就留着（这一轮不来新的），不在视野里就换成新的
+  if(S.t>=X.adT){X.adT=S.t+C.every;for(let q=0;q<12;q++){const a=rng()*Math.PI*2,r=(C.r[0]+rng()*(C.r[1]-C.r[0]))*16,x=h.x+Math.cos(a)*r,y=h.y+Math.sin(a)*r;
       if(x<48||y<48||x>MW-48||y>MH-48||!extPass(x,y))continue;const t=tidx(x,y);X.ad={x:(t%MAP_W)*16+8,y:((t/MAP_W)|0)*16+8,land:S.t+C.fall,st:0,p:0,done:0};
       banner('空投',`${extDirName(x-h.x,y-h.y)}方向约 ${Math.round(r/16)} 格，${C.fall} 秒后落地`);sfx('elite');break}}
   const A=X.ad;if(A&&A.st===0&&S.t>=A.land){A.st=1;sayT('空投落地了(附近的亡灵都被惊动了)');
@@ -82339,7 +82362,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.1.3',GAME_TAG='稳定版',GAME_CODE=222,GAME_BUILD="b026b6b",GAME_BUILT=1793874330791,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.1.4',GAME_TAG='稳定版',GAME_CODE=224,GAME_BUILD="0cf4637",GAME_BUILT=1793894873464,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -82420,7 +82443,7 @@ function buildUI(){hudFitInit();
   UI.ready=true;applyCtlLayout();
 }
 function applyZoomUI(){const b=$('#zoomBox');if(b)b.classList.toggle('btns',!!SET.zoomBtn);applyZoom()}   // v0.9.0 雷达旁的缩放：滑条 / + − 按钮
-function refreshSpeed(){opSpdSync();{const sb=$('#spdBox');if(sb){const hn=SV_ON?'推荐 2 倍速以内':'';if(sb.dataset.hint!==hn)sb.dataset.hint=hn}}   // 0.13（用户定）幸存者、搜打撤模式在倍速条下写「推荐 2 倍速以内」（样式在 ui/ext）
+function refreshSpeed(){opSpdSync();{const sb=$('#spdBox');if(sb){const hn='';if(sb.dataset.hint!==hn)sb.dataset.hint=hn}}   // 0.13（用户定）幸存者、搜打撤模式在倍速条下写「推荐 2 倍速以内」；0.13.1.4（用户定）挪到局外开局页（ui/sv_hub、ui/ext 的开始按钮那一行），局内不写
   btnSpeed.textContent=speedMul+'×';const i=CFG.speeds.indexOf(speedMul);if(i>=0&&+spdR.value!==i)spdR.value=i;$('#spdBox').classList.toggle('on',speedMul!==1);rangeFill(spdR)}   // opSpdSync：代理 OP 加，滑条最高档 = 设置的倍速上限（ui/op_pop）
 // v0.8.15 左上面板：收起（只留铜币）、虚化（设置-声音画面，0～100%，100% = 隐藏）
 let TL_A=1,TL_K='';function applyTlUI(){const st=$('#stats');if(!st)return;st.classList.toggle('mini',!!SET.tlMini);$('#tlMin').textContent=SET.tlMini?'▾':'▴';TL_K='';tlFadeTick()}
@@ -87752,7 +87775,7 @@ function svHudSync(){const S=G&&G.sv,el=svHudEl();if(!S||!el)return;const q=s=>e
   {const xb=el.querySelector('.exbagb');if(xb)xb.hidden=!XH}   // 0.13.0e 搜打撤的「背包」按钮（ui/ext）
   if(XH){const e3=q('.svdv');if(e3.textContent!==XH.bag){e3.textContent=XH.bag;SV_DVK=''}}else if(S.dv){const dk=S.dv.map(d=>d.id+(d.ev?'*':'')).join(',')+'/'+S.slots;if(SV_DVK!==dk){SV_DVK=dk;q('.svdv').innerHTML=S.dv.map(d=>svIcoH('dv:'+d.id)).join('')+'<s></s>'.repeat(Math.max(0,S.slots-S.dv.length))}}   // 0.12.7c（用户定）铜币右边：装好的装置（空槽画空格）
   const h=svHero();if(h){const f=Math.max(0,Math.min(1,h.hp/h.maxHp)),hw=Math.round(f*1000)/10+'%',ht=`${h.d.name} ${Math.ceil(Math.max(0,h.hp))} / ${Math.round(h.maxHp)}`;if(q('.svhp i').style.width!==hw)q('.svhp i').style.width=hw;if(q('.svhp span').textContent!==ht)q('.svhp span').textContent=ht}
-  {const xe=q('.svxp');if(xe.hidden!==!!XH)xe.hidden=!!XH}   // 搜打撤不靠杀怪升级：不显示经验条
+  {const xe=q('.svxp');if(xe.hidden!==!!XH)xe.hidden=!!XH;const ce=q('.svcp'),cd=XH?'none':'';if(ce&&ce.style.display!==cd)ce.style.display=cd}   // svcp：0.13.1.4（用户定）搜打撤里铜币没地方花，左上角不显示   // 搜打撤不靠杀怪升级：不显示经验条
   {const xw=(S.need>0?Math.round(Math.min(1,S.xp/S.need)*1000)/10:0)+'%',xt='Lv'+(S.lv||1);if(q('.svxp i').style.width!==xw)q('.svxp i').style.width=xw;if(q('.svxp span').textContent!==xt)q('.svxp span').textContent=xt}
   const L=q('.svel'),H=G.heroes.filter(u=>u.svSq>0);q('.svelb').hidden=!H.length;{const b=q('.svcmd'),t='指令：'+SQ_CMDN[svSqCmd()];b.hidden=!H.length;if(b.textContent!==t)b.textContent=t}if(L.hidden||!H.length)return;
   if(SV_ELN!==H.length){SV_ELN=H.length;L.innerHTML=H.map(u=>{const e=elById(u.elite);return`<div class="sve"><img alt="" src="${e?elIcon(e):''}"><span><i></i></span></div>`}).join('')}
@@ -87891,7 +87914,7 @@ function hubFun(){if(SV_MENU.mode==='ext')return hubExt();const C=CFG.survivor,d
   const team=`<div class="box"><h4 class="sh">队长</h4>${H?`<div class="svhero"><img alt="" src="${heroIconS(sp.id,3)}"><b>${H.name}</b>${starsHTML(sp.star)}<button class="px" type="button" data-act="svxHero">换英雄</button></div>`:'<p class="meta warn">还没有英雄</p>'}
     <div class="shrow"><h4 class="sh">精英小队 <span class="meta">${L.length} / ${Q.max} · 开局带 ${Q.start} 名，每 ${Q.every} 波来 1 名援军</span></h4>${META.el?`<button class="px sm" type="button" data-act="svxSq">调整小队</button>`:''}</div>
     ${META.el?L.map((e,i)=>`<div class="svsq"><span class="n">${i+1}</span><img alt="" src="${elIcon(e)}"><span><b>${elName(e)}</b> <span class="meta">${elJobD(e).name} · Lv${elLv(e)} · ${i<Q.start?'开局就在':'援军'}</span></span><span class="row2"><button class="px sm" type="button" data-act="elxpop" data-v="at:${e.id}">属性</button>${i?`<button class="px sm" type="button" data-act="svxSqUp" data-v="${e.id}">↑</button>`:''}<button class="px sm" type="button" data-act="svxSqT" data-v="${e.id}">移出</button></span></div>`).join('')||'<p class="meta">还没有队员</p>':'<p class="meta">还没有精英(营地「英雄 → 精英」招募)</p>'}</div>`;
-  const foot=`<div class="gobar svfoot"><div class="shrow"><span></span><span class="row2"><span class="meta">自动放技能</span><button class="px sm${auto?' on':''}" type="button" data-act="svxAuto">${auto?'开':'关'}</button></span></div><button class="px big on" type="button" data-act="svxGo"${H?'':' disabled'}>开始游戏</button></div>`;
+  const foot=`<div class="gobar svfoot"><div class="shrow"><span class="meta">推荐 2 倍速以内(亡灵多，倍速太高会卡)</span><span class="row2"><span class="meta">自动放技能</span><button class="px sm${auto?' on':''}" type="button" data-act="svxAuto">${auto?'开':'关'}</button></span></div><button class="px big on" type="button" data-act="svxGo"${H?'':' disabled'}>开始游戏</button></div>`;
   return`${goSubTabs('fun')}<div class="shrow">${svFunTabs()}${help}</div><div class="svh">${mapBox}${team}${svLootHTML()}</div>${foot}`}
 // 地图分页（左右滑）：重画以后滑回选中的地图那一阶（同 ui/hub.showDiff）
 let SVH_PG=0;
@@ -88000,7 +88023,7 @@ function hubExt(){const C=CFG.ext,ds=CFG.difficulties.filter(d=>diffOpen(d)),R=s
     ${META.el?L.map((e,i)=>`<div class="svsq"><span class="n">${i+1}</span><img alt="" src="${elIcon(e)}"><span><b>${elName(e)}</b> <span class="meta">${elJobD(e).name} · Lv${elLv(e)}</span></span><span class="row2"><button class="px sm" type="button" data-act="elxpop" data-v="at:${e.id}">属性</button><button class="px sm" type="button" data-act="svxSqT" data-v="${e.id}">移出</button></span></div>`).join('')||'<p class="meta">还没有队员</p>':'<p class="meta">还没有精英(营地「英雄 → 精英」招募)</p>'}</div>`;
   const N=extDay(SV_MENU.map,SV_MENU.diff),gc=extGoldCap(SV_MENU.map,SV_MENU.diff);
   const day=`<div class="box"><h4 class="sh">今天还能带出</h4><p class="meta">${CFG.maps[SV_MENU.map].name} · ${DIFFS[SV_MENU.diff]?DIFFS[SV_MENU.diff].name:''}：${rwIco('金币','')} 金币 ${Math.max(0,gc-N.gold)} / ${gc}　英雄之魄 ${Math.max(0,C.day.soul-N.soul)} / ${C.day.soul}</p><p class="meta">别的资源、材料、装备不限</p></div>`;
-  const foot=`<div class="gobar svfoot"><div class="shrow"><span></span><span class="row2"><span class="meta">自动放技能</span><button class="px sm${auto?' on':''}" type="button" data-act="svxAuto">${auto?'开':'关'}</button></span></div><button class="px big on" type="button" data-act="svxExtGo"${H?'':' disabled'}>开始搜打撤</button></div>`;
+  const foot=`<div class="gobar svfoot"><div class="shrow"><span class="meta">推荐 2 倍速以内(亡灵多，倍速太高会卡)</span><span class="row2"><span class="meta">自动放技能</span><button class="px sm${auto?' on':''}" type="button" data-act="svxAuto">${auto?'开':'关'}</button></span></div><button class="px big on" type="button" data-act="svxExtGo"${H?'':' disabled'}>开始搜打撤</button></div>`;
   return`${goSubTabs('fun')}<div class="shrow">${svFunTabs()}${help}</div><div class="svh">${mapBox}${team}${day}</div>${foot}`}
 const svFunTabs=()=>`<div class="tabs sub">${CFG.funModes.map(f=>`<button class="px${(f.id==='ext')===(SV_MENU.mode==='ext')?' on':''}" type="button" data-act="${f.act}">${f.name}</button>`).join('')}</div>`;
 // —— 局内 ——
@@ -88082,7 +88105,7 @@ function extDanger(cx0,cy0,cx1,cy1){const Gn=EXT_GEN,X=G.sv&&G.sv.ext;if(!Gn||!X
     for(let k=0;k<n;k++){const x=x0+2+k*9;rectW(x+1,y,5,1,c);rectW(x,y+1,7,3,c);rectW(x+1,y+4,5,1,c);rectW(x+1,y+5,1,1,c);rectW(x+3,y+5,1,1,c);rectW(x+5,y+5,1,1,c);rectW(x+1,y+2,2,1,dk);rectW(x+4,y+2,2,1,dk)}}}   // 一个骷髅 7 × 6：头、两只眼睛、三颗牙
 // 门口的台阶（0.13.0g 用户定：明显一点的标记，让人知道从哪里进去；画在地面层）
 function extSteps(cx0,cy0,cx1,cy1){const B=EXT_GEN&&EXT_GEN.bld;if(!B)return;for(const b of B){if(!b.door||!b.ok)continue;if((b.x1+1)*16<cx0-20||b.x0*16>cx1+20||(b.y1+1)*16<cy0-20||b.y0*16-EXT_WH>cy1+20)continue;extArtSteps(b)}}
-// 小地图迷雾（0.13.0h 后，用户定：搜打撤的小地图走过的地方才显示；房子的轮廓照常画在迷雾上，撤离点、库房、空投照常标）：EXT_FOGC 一格一像素的遮罩（ui/draw.drawMini 叠在底图上），EXT_EXP 每格走过没有（没走过的地方小地图不标亡灵）
+// 小地图迷雾（0.13.0h 后，用户定：搜打撤的小地图走过的地方才显示；房子的轮廓照常画在迷雾上，撤离点、空投照常标；库房 0.13.1.4 起只标走过的地方）：EXT_FOGC 一格一像素的遮罩（ui/draw.drawMini 叠在底图上），EXT_EXP 每格走过没有（没走过的地方小地图不标亡灵）
 let EXT_FOGC=null,EXT_FX=-99,EXT_FY=-99;const EXT_EXP=new Uint8Array(NT_MAX);
 function extFogReset(){EXT_EXP.fill(0);EXT_FX=EXT_FY=-99;if(typeof document==='undefined')return;const c=EXT_FOGC||(EXT_FOGC=document.createElement('canvas'));c.width=MAP_W;c.height=MAP_H;const g=c.getContext('2d');
   g.globalCompositeOperation='source-over';g.fillStyle=`rgba(8,7,12,${CFG.ext.fog.a})`;g.fillRect(0,0,MAP_W,MAP_H);g.fillStyle='rgba(170,160,140,0.6)';
@@ -88093,7 +88116,7 @@ function extFogTick(h){if(!h||h.dead)return;const tx=h.x/16,ty=h.y/16;if(Math.ab
 // 小地图：撤离点（开的绿、没开的灰）、库房（紫）、空投（红，闪）
 function extMini(X_,Y_,u){const X=G.sv&&G.sv.ext;if(!X)return;const sq=(x,y,c,s)=>{mctx.fillStyle=c;mctx.fillRect(Math.round(X_(x)-s/2),Math.round(Y_(y)-s/2),s,s)};
   for(const e of X.ex)sq(e.x,e.y,e.k==='fast'?'#6af06a':'#f0b040',u*4);if(X.bal)sq(X.bal.x,X.bal.y,X.dv?'#7ac8ff':'#4a7a9a',u*4);
-  for(const v of X.vt)if(!v.done)sq(v.x,v.y,'#c0a0ff',u*3);
+  for(const v of X.vt)if(!v.done&&EXT_EXP[((v.y/16)|0)*MAP_W+((v.x/16)|0)])sq(v.x,v.y,'#c0a0ff',u*3);   // 0.13.1.4（用户定）库房只标走过（迷雾散开）的地方
   if(X.ad&&!X.ad.done&&Math.floor(G.time*3)%2===0)sq(X.ad.x,X.ad.y,'#ff5a3a',u*4)}
 // 暂停页
 function extPauseOpen(){const S=G.sv,X=S.ext,auto=S.auto,C=CFG.ext;
@@ -88103,11 +88126,13 @@ function extPauseOpen(){const S=G.sv,X=S.ext,auto=S.auto,C=CFG.ext;
     <div class="actions"><button class="px big on" type="button" data-act="resume">继续</button><button class="px" type="button" data-act="svxExtBag">背包</button><button class="px${auto?' on':''}" type="button" data-act="svxAuto">自动放技能<em>${auto?'开':'关'}</em></button><button class="px" type="button" data-act="settings">游戏设置</button><button class="px warn2" type="button" data-act="svxExtQuit">放弃这一局</button></div>
     <p class="meta">搜打撤局内不能存档。放弃 = 没撤出来：只带出保险口袋里的东西。</p>`,'[data-act=resume]')}
 // 结算页
+// 结算页写「今天还能带出」（0.13.1.4 用户定；同开局页那一行）
+const extLeftTxt=(m,d)=>{if(!CFG.maps[m])return'';const N=extDay(m,d),gc=extGoldCap(m,d),C=CFG.ext;return`<p class="meta">今天还能带出：${rwIco('金币','')} 金币 ${Math.max(0,gc-N.gold)} / ${gc}　英雄之魄 ${Math.max(0,C.day.soul-N.soul)} / ${C.day.soul}</p>`};
 function extResult(g){if(!g)return;const D=DIFFS[g.diff],cut=Object.keys(g.cut).map(k=>`${extItemNm(k)} ${g.cut[k]}`);
   openModal('svres',`<div class="svres exres"><h2 class="hd${g.ok?'':' lose'}">${g.ok?'撤离成功！':g.quit?'放弃了这一局':'队长倒下了'}</h2>
     <div class="stats"><div><b>${svTime(g.t)}${g.nb?' <span class="svnew">最快</span>':''}</b><span>用时</span></div><div><b>${g.o}</b><span>开箱</span></div><div><b>${g.k}</b><span>击杀</span></div><div><b>${D?D.name:''}</b><span>${CFG.maps[g.map]?CFG.maps[g.map].name:''}</span></div></div>
     <h4 class="sh">${g.ok?'带出来的':'保险口袋带出来的'}</h4><div class="exgot">${extChips(g.give)||'<span class="meta">没有</span>'}</div>${Object.keys(g.res||{}).length?`<p class="meta">折合：${Object.keys(g.res).map(k=>`${k} <b>+${g.res[k]}</b>`).join(' · ')}(× 地图倍率 ${Math.round((g.rk||1)*100)/100})</p>`:''}${g.exp?`<p class="meta">${g.hero}经验 +${g.exp}</p>`:''}
-    ${cut.length?`<p class="meta warn">今天的上限满了，没拿到：${cut.join('、')}</p>`:''}${Object.keys(g.lost).length?`<h4 class="sh lost">丢在里面的</h4><div class="exgot">${extChips(g.lost)}</div>`:''}
+    ${cut.length?`<p class="meta warn">今天的上限满了，没拿到：${cut.join('、')}</p>`:''}${extLeftTxt(g.map,g.diff)}${Object.keys(g.lost).length?`<h4 class="sh lost">丢在里面的</h4><div class="exgot">${extChips(g.lost)}</div>`:''}
     <div class="actions"><button class="px big on" type="button" data-act="svxExtAgain">再来一局</button><button class="px" type="button" data-act="svxExtBack">返回娱乐模式</button><button class="px" type="button" data-act="tomenu">返回主界面</button></div></div>`,'[data-act=svxExtAgain]')}
 function extAct(a,v,b){
   if(a==='svxExtOpen'){SV_MENU.mode='ext';SVH_POP=null;showHub('fun');svPagerFix()}
@@ -88380,7 +88405,7 @@ function egUpHTML(){const P=egUpPlan(EG_SC),to=egTo(),w=META.wallet.银币||0,mi
   const row=r=>`<div class="egr"><span class="meta">${egSlotN(r.s)}</span>${egIco(r.it.base,r.it)}<b style="color:${itemQ(r.it).color||CFG.itemQ[baseQ(r.it.base)].color}">${itemName(r.it)} <span class="meta">+${r.from} → +${r.to}</span></b><span class="egp">约 ${egN(r.exp)} 银币</span></div>`;
   const st=Object.keys(T).sort((a,b)=>a-b).map(t=>{const h=matHas('enh',+t),o=T[t];return`${matName('enh',+t)}：约 ${egN(o.e)}(至少 ${egN(o.n)})，现有 ${egN(h)}${h<o.n?' <span class="warn">不够</span>':''}`}).join('<br>');
   const ES=egS(),lu=P.reduce((a,r)=>a+r.lu,0),gu=P.reduce((a,r)=>a+r.gu,0);
-  const setR=`<div class="elrow"><span class="meta">强化到</span>${elBtn('elxegto','-1','−')}<b>+${to}</b>${elBtn('elxegto','+1','+')}${[10,15,20].map(n=>elBtn('elxegto',n,'+'+n,{on:to===n})).join('')}</div><div class="elrow">${elBtn('elxeglk','',`${ES.luck?'✓ ':''}自动放入幸运符`,{on:ES.luck,ti:`每次强化放 1 个同阶的幸运符，成功率 ×${CFG.smith.luckMul}(没有了就不放)`})}${elBtn('elxeggd','',`${ES.guard?'✓ ':''}自动放入护刃钳(+${CFG.smith.dropLv} 起)`,{on:ES.guard,ti:`+${CFG.smith.dropLv} 及以上强化时放 1 个同阶的护刃钳，失败不掉级(没有了就不放)`})}</div>`;
+  const setR=`<div class="elrow"><span class="meta">强化到</span>${elBtn('elxegto','-1','−')}<b>+${to}</b>${elBtn('elxegto','+1','+')}${[10,15,20,CFG.smith.maxEnh].filter((n,i,A)=>A.indexOf(n)===i).map(n=>elBtn('elxegto',n,'+'+n,{on:to===n})).join('')}</div><div class="elrow">${elBtn('elxeglk','',`${ES.luck?'✓ ':''}自动放入幸运符`,{on:ES.luck,ti:`每次强化放 1 个同阶的幸运符，成功率 ×${CFG.smith.luckMul}(没有了就不放)`})}${elBtn('elxeggd','',`${ES.guard?'✓ ':''}自动放入护刃钳(+${CFG.smith.dropLv} 起)`,{on:ES.guard,ti:`+${CFG.smith.dropLv} 及以上强化时放 1 个同阶的护刃钳，失败不掉级(没有了就不放)`})}</div>`;
   return`${setR}<div class="elrow">${elBtn('elxegsc','all','所有在役',{on:EG_SC==='all'})}${elBtn('elxegsc','dep','只看上阵',{on:EG_SC==='dep'})}<span class="meta">现有银币 <b>${egN(w)}</b></span>${ui2Q('一键强化',()=>hpL([`把精英穿着的、能强化的装备强化到 +${to}；已经 +${to} 以上的不动`,`封顶等级自己设(+1～+${CFG.smith.maxEnh})；成功率、花费、强化石照装备强化：会失败，失败了照扣银币和强化石，下次成功率提高`,'+10 以下失败不掉级；+10 起失败可能掉 1 级，勾了「自动放入护刃钳」就放(有同阶的才放)','勾了「自动放入幸运符」每次强化都放 1 个同阶的(用完就不放)','「所有在役」上阵的排在前面；按人、按 主武器 → 副手 → 头盔 → 胸甲 → 靴子 一件一件强化','银币不够下一次强化就停；某一阶的强化石不够就跳过那件，接着强化别的','「约」是按成功率估计的，实际看运气；「至少」是每次都成功的花费']))}</div>
     ${P.length?egGroup(P,row):`<p class="meta">没有要强化的：${EG_SC==='dep'?'上阵的':''}精英穿着的装备都已经 +${to}，或者没穿装备。</p>`}
     ${P.length?`<p class="egsum">${P.length} 件强化到 +${to} · 约 <b>${egN(exp)}</b> 银币(至少 ${egN(min)})${w<min?`<br><span class="warn">钱不够：按顺序强化到不够为止</span>`:''}<br>${st}${ES.luck&&lu?`<br>幸运符约 ${egN(lu)} 个`:''}${ES.guard&&gu?`<br>护刃钳约 ${egN(gu)} 个`:''}</p>`:''}
