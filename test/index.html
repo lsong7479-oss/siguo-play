@@ -15781,7 +15781,7 @@ CFG.skins.matiSchool={hero:'mati', name:'学生时代', frag:20, gold:150, spr:'
   fx:{tint:'#5a6ad8'}};
 
 /* ---------- 0.13.1 塔楼皮肤（用户定：首批六款、效果、主题；兑换码 + 商店金币购买，暂定 500 金币）----------
-   b 换哪种建筑的图；theme 主题；fx 效果（用着这款皮肤时，这种建筑全部生效）：aspd 攻速 +、pierce 最大穿透数 +、aoe 爆炸半径 +格、cap 驻军上限 +
+   b 换哪种建筑的图；theme 主题；fx 效果（用着这款皮肤时，这种建筑全部生效）：aspd 攻速 +、pierce 最大穿透数 +、aoe 爆炸半径 +格、cap 驻军上限 +、rng 射程 +（0.13.2，和别的射程加成相加）
    code 专属兑换码里的编号（tools/redeem_gen.html；定了就不能改）；图在 art/tskin_art.js（TSKIN_ART[皮肤](档 0～2) → canvas，同 HD_BUILD）；机制 game/tskin.js，商店 ui/shop 的「塔楼皮肤」页签 */
 CFG.towerSkins={
   redArrow:  {name:'赤色帝国 · 箭塔',   b:'arrowTower', theme:'赤色帝国', fx:{aspd:0.1},  desc:'攻速 +10%', code:1},
@@ -15790,6 +15790,11 @@ CFG.towerSkins={
   northG:    {name:'北境联盟 · 神机营', b:'campG',      theme:'北境联盟', fx:{cap:1},     desc:'驻军数量上限 +1', code:4},
   northI:    {name:'北境联盟 · 步兵营', b:'campI',      theme:'北境联盟', fx:{cap:1},     desc:'驻军数量上限 +1', code:5},
   northC:    {name:'北境联盟 · 骑兵营', b:'campC',      theme:'北境联盟', fx:{cap:1},     desc:'驻军数量上限 +1', code:6},
+  // 0.13.2（用户定）众和议会：大陆西南角的议会国，主题颜色蓝紫；四座魔法塔射程 +5%
+  cncIce:    {name:'众和议会 · 冰球塔', b:'iceTower',   theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', code:7},
+  cncFire:   {name:'众和议会 · 火球塔', b:'fireTower',  theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', code:8},
+  cncWind:   {name:'众和议会 · 旋风塔', b:'windTower',  theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', code:9},
+  cncEarth:  {name:'众和议会 · 土刺塔', b:'earthTower', theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', code:10},
 };
 CFG.towerSkinShop={gold:500};
 
@@ -24980,7 +24985,7 @@ function buildSprites(){
 // 建造栏图标：取精灵上部 16×20
 const wkey=(st,mask,lvl)=>st+'_'+mask+'_'+lvl;
 const ICONC={};
-function iconOf(type){const sk=typeof TSK_ON!=='undefined'&&TSK_ON[type]&&SPR.tsk&&SPR.tsk[TSK_ON[type]]?TSK_ON[type]:'',key=sk?type+'~'+sk:type;if(ICONC[key])return ICONC[key];   // sk：0.13.2（用户定）塔楼皮肤局外也显示，建筑图标换成正在用的皮肤
+function iconOf(type,raw){const sk=!raw&&typeof TSK_ON!=='undefined'&&TSK_ON[type]&&SPR.tsk&&SPR.tsk[TSK_ON[type]]?TSK_ON[type]:'',key=sk?type+'~'+sk:type;if(ICONC[key])return ICONC[key];   // sk：0.13.2（用户定）塔楼皮肤局外也显示，建筑图标换成正在用的皮肤；raw = 不换（左边「建筑」页签的箭塔图标，用户定不改色）
   const src=sk?SPR.tsk[sk][0].c:isWallT(type)?SPR.wall[wkey(type,0,2)].c:(SPR.b[type]||SPR.keep).c;
   const k=src._k||1,c=canvasOf(16*k,20*k),x=c.getContext('2d');
   if(src.width>16*k){const f=Math.min(16*k/src.width,20*k/src.height),w=src.width*f,h=src.height*f;x.drawImage(src,(16*k-w)/2,20*k-h,w,h)}   // v0.8.0 2×2 兵营：整张缩小放进图标
@@ -31120,17 +31125,19 @@ function wallCanvasHD(mask,lvl,style){
 /* ---------- 0.13.1 塔楼皮肤的图（数据 data/tskins.js）：TSKIN_ART[皮肤](档 0～2) → canvas，同 art/hd_build 的 HD_BUILD（hdFig，宽高 = 原图 ×2，逻辑尺寸、锚点和原建筑一样）----------
    art/hd_build.hdBuildSprites 登记进 SPR.tsk[皮肤]；画布尺寸、平台高度照原建筑（ui/draw.drawStruct 叠上去的弓 / 弩 / 炮管位置不变）
    赤色帝国：红砖 → 暗赤条石，红漆木、黄铜 / 金饰、红底金日的帝国旗（自创纹样，不用现实国家标志）
-   北境联盟：木石混构、深蓝 / 灰白、屋顶积雪和冰棱、冷色旗；三档 = 原木屋 → 石基木墙 → 灰白条石 + 银饰、窗里透暖光 */
+   北境联盟：木石混构、深蓝 / 灰白、屋顶积雪和冰棱、冷色旗；三档 = 原木屋 → 石基木墙 → 灰白条石 + 银饰、窗里透暖光
+   众和议会（0.13.2）：大陆西南角的议会国，蓝紫石、暗紫顶、银饰、紫色长旗上一颗白星；元素晶石照原塔的颜色 */
 let TSKA_MM=null;
 function tskaM(){if(TSKA_MM)return TSKA_MM;const m=(c,t)=>hdMat(c,t);
-  return TSKA_MM={brick:m('#a04a38','plain'),crim:m('#6a2a28','plain'),crimT:m('#7e3a34','plain'),lacq:m('#94302a','wood'),lacqL:m('#b8503e','wood'),tileE:m('#8a2620','plain'),   // 赤色帝国：红砖、暗赤条石、红漆木、深红瓦
+  return TSKA_MM={brick:m('#a8583a','plain'),crim:m('#6a441c','plain'),crimT:m('#8a6228','plain'),lacq:m('#a03a24','wood'),lacqL:m('#c0603a','wood'),tileE:m('#8e3a1c','plain'),   // 赤色帝国（0.13.2 用户定主题色暗金、赤金）：赤金砖、暗金条石、赤漆木、赤金瓦
+    cv0:m('#7a74b8','plain'),cv1:m('#655ea8','plain'),cv2:m('#4a4388','plain'),cvK:m('#332d66','plain'),vio:m('#6a40b8','cloth'),vioL:m('#b48cf0','cloth'),   // 众和议会（0.13.2 用户定：蓝紫）：淡蓝紫石、蓝紫石、深紫条石、暗紫顶、紫旗
     log:m('#6e5644','wood'),logL:m('#8c7058','wood'),stoneN:m('#8e949e','plain'),granite:m('#bcc2ca','plain'),timber:m('#3e4656','wood'),doorN:m('#4a3c34','wood'),   // 北境：原木、冷灰石、灰白花岗岩、蓝灰硬木
     snow:m('#e2eaf2','plain'),ice:m('#a8d4ee','gem'),navy:m('#2a4c84','cloth'),iceCl:m('#8cc4e8','cloth'),whiteCl:m('#e4eaf0','cloth'),silver:hdM('silver')}}
 // —— 帝国金日纹（红底上一轮金日，中间红心，四角四道光芒；打光后直接点色，小尺寸也认得出）：中心 (cx, cy)、半径 r ——
-function tskaSun(S,cx,cy,r){S.dt(cx,cy,r,'#a8701e');S.dt(cx,cy,r-0.6,'#e8b84a');S.dt(cx-0.5,cy-0.5,Math.max(0.5,r*0.35),'#f8e08a');S.dt(cx,cy,Math.max(0.6,r*0.3),'#9a2a22');
-  for(const[dx,dy]of[[-1,-1],[1,-1],[-1,1],[1,1],[0,-1.25],[0,1.25],[-1.25,0],[1.25,0]])S.px(Math.floor(cx+dx*(r+0.9)),Math.floor(cy+dy*(r+0.9)),'#e8b84a')}
+function tskaSun(S,cx,cy,r){S.dt(cx,cy,r,'#9a5a16');S.dt(cx,cy,r-0.6,'#e8a83a');S.dt(cx-0.5,cy-0.5,Math.max(0.5,r*0.35),'#f8d47a');S.dt(cx,cy,Math.max(0.6,r*0.3),'#8a2a16');
+  for(const[dx,dy]of[[-1,-1],[1,-1],[-1,1],[1,1],[0,-1.25],[0,1.25],[-1.25,0],[1.25,0]])S.px(Math.floor(cx+dx*(r+0.9)),Math.floor(cy+dy*(r+0.9)),'#e8a83a')}
 // —— 金边 / 铜箍 / 银边：b25Band 的描边 + 里面直接点色（细带子上金属打光整条偏暗，看着像木头）——
-const TSKA_BC={gold:['#f0c860','#c08a2a'],brass:['#d8a050','#9a6a30'],silver:['#f0f4f8','#a8b0bc']};
+const TSKA_BC={gold:['#f4c050','#b8761e'],brass:['#c8963c','#8a6224'],silver:['#f0f4f8','#a8b0bc']};   // 金边：0.13.2 赤色帝国调成赤金 / 暗金
 function tskaBand(S,x,y,w,mat,h){h=h||2;b25Band(S,x,y,w,mat,h);const m=hbm(),c=TSKA_BC[mat===m.gold?'gold':mat===m.brass?'brass':'silver'];S.rc(x+1,y,w-2,1,c[0]);if(h>1)S.rc(x+1,y+1,w-2,h-1,c[1])}
 // —— 帝国长旗：hbBanner 红底金边 + 下面一颗金日 ——
 function tskaBan(S,x,y,w,h,sun){const m=hbm();hbBanner(S,x,y,w,h,m.red,m.gold);S.ln(x,y+h-2,x,y+1,[m.gold,2]);S.ln(x+w-1,y+h-2,x+w-1,y+1,[m.gold,1]);if(sun)tskaSun(S,x+w/2,y+h*0.45,sun)}
@@ -31184,6 +31191,7 @@ const TSKA_ART={
     if(t===1){tskaBan(S,4.5,30,5,11);tskaBan(S,22.5,30,5,11)}
     if(t===2){hbFlag(S,28,0,12,m.red,m.gold,true);tskaSun(S,16,41.5,2.4);tskaBan(S,4.5,30,5,12);tskaBan(S,22.5,30,5,12);for(const x of[2,29])tskaFire(S,x,9)}
     else if(t===0)tskaBand(S,3,46,26,m.brass,1)}),
+  cncIce:t=>tskaCouncil(t,'gIce','#e8fbff'),cncFire:t=>tskaCouncil(t,'gFire','#ffe08a'),cncWind:t=>tskaCouncil(t,'gWind','#e8fff8'),cncEarth:t=>tskaCouncil(t,'gEarth','#fff0b0'),   // 众和议会的四座魔法塔：晶石照原来的元素颜色
   northG:t=>tskaCamp(t,'#2a3346','iceCl',3),   // 神机营：炭蓝瓦、冰蓝旗、盾上火铳
   northI:t=>tskaCamp(t,'#2f4c78','whiteCl',4),   // 步兵营：深蓝瓦、白旗、盾上长剑
   northC:t=>tskaCamp(t,'#56667a','navy',2),   // 骑兵营：铁灰瓦、深蓝旗、盾上马蹄铁
@@ -31214,6 +31222,18 @@ function tskaProp(S,mark,t){const m=hbm(),M=tskaM();
   if(mark===3){for(const x of[23,27]){S.rect(x,50.5,4.5,5.5,m.wood,{face:'cyl',R:0.6},1);S.rc(x,51.5,4,1,'#3a3e48');S.rc(x,54,4,1,'#3a3e48')}S.px(25,50,'#16131b');S.part(M.snow,{face:'top',R:0.5},p=>p.ell(29,50.3,2,0.8))}
   else if(mark===4){for(const x of[22,25])S.cap(x+3,56,x+5,44,0.5,0.5,m.woodD,{R:0.4});S.px(27,43,'#e4eaf0');S.px(30,43,'#e4eaf0');S.ell(26.5,52.5,2.6,2.6,M.navy,{R:1});S.dt(26.5,52.5,0.8,t===2?'#e4eaf0':'#b0b8c4')}
   else{S.part(hdMat('#c8a850','cloth'),{face:'cyl',R:1},p=>{p.rect(23,51,8,5,1.5);p.ell(27,51.5,3.2,2)});S.part(hdMat('#c8a850','cloth'),{face:1,edge:false},p=>{p.rect(24,53,6,0.8)});S.part(M.snow,{face:'top',R:0.5},p=>p.ell(27,50.2,2.6,1))}}
+// —— 众和议会的魔法塔（布局同 art/hd_build.hbObelisk：晶石尖在上、发光竖槽 y42）——
+//   档 0 淡蓝紫石 + 两根暗紫石柱；档 1 蓝紫石、银箍、两侧紫色长旗（银边、白星）；档 2 深紫条石、银箍、两侧浮着元素晶球、顶上一圈银环、长旗更长
+function tskaStar(S,x,y){S.px(x,y,'#f4f0ff');S.px(x-1,y,'#c8b8f0');S.px(x+1,y,'#c8b8f0');S.px(x,y-1,'#c8b8f0');S.px(x,y+1,'#c8b8f0')}
+function tskaCouncil(t,g,glow){return hdFig(32,64,S=>{const m=hbm(),M=tskaM(),G=m[g],st=t===2?M.cv2:t===1?M.cv1:M.cv0,cp=t===2?M.cvK:t===1?M.cv2:M.cv1;
+  b25Box(S,6,26,20,6,32,st,st,{br:[5,7]});b25Under(S,6,32,20,3,st);
+  b25Box(S,3,20,26,8,4,cp,cp,{tp:'flag'});
+  b25Box(S,10,17,12,4,5,M.cvK,M.cvK);
+  const top=t===2?0:3;b25Gem(S,16,top,t===2?14:12,20-top,G,glow);
+  S.rect(14,42,4,12,G,{R:1});S.px(15,44,glow);
+  if(t===0){h25Cyl(S,6,12,1.2,0.6,8,M.cvK);h25Cyl(S,26,12,1.2,0.6,8,M.cvK);S.px(6,11,'#b8a8f0');S.px(26,11,'#b8a8f0')}
+  if(t>=1){tskaBand(S,6,38,20,M.silver);tskaBand(S,3,28,26,M.silver);const h=t===2?12:9;for(const x of[6.5,21.5]){hbBanner(S,x,40,4,h,M.vioL,M.silver);tskaStar(S,x+2,44)}}
+  if(t===2){S.ell(5,10,2,2.5,G);S.ell(27,10,2,2.5,G);S.px(5,9,glow);S.px(27,9,glow);h25Cyl(S,16,18,8,2.4,1.4,M.silver);S.px(16,16,'#b8a8f0')}})}
 const TSKIN_ART={};
 for(const id in CFG.towerSkins){const S=CFG.towerSkins[id];TSKIN_ART[id]=TSKA_ART[id]||(t=>{const c=HD_BUILD[S.b](t),o=canvasOf(c.width,c.height),g=o.getContext('2d');g.drawImage(c,0,0);g.globalCompositeOperation='source-atop';   // 以后新加、还没画的皮肤先用原图染色顶着
   g.fillStyle=S.theme==='赤色帝国'?'rgba(200,30,30,0.28)':'rgba(70,130,230,0.28)';g.fillRect(0,0,o.width,o.height);o._k=c._k;return o})}
@@ -71953,7 +71973,7 @@ function towerW(s,add){   // add：v0.8.1 另外加进伤害加成里的（主�
   const bp=km+pm.buildDmg+dmgAllK()+(arcB?F.arcSeat.dmg:0)+(xb?F.xbowP.dmg:0)+TM.bDmg+(gun?TM.gunDmg:0)+(bow?TM.boltDmg:0)+(stone?TM.stoneDmg+(TM.stonePow||0):0)+(mg?TM.arcDmg||0:0)+(keep?TM.kDmg||0:btv(t,'dmg'))+(au?au.dmg:0)+(add||0)+(s.bfV?s.bfV[0]:0)+(!keep&&s.cfg.weapon&&s.cfg.weapon.techK?(TM[s.cfg.weapon.techK.key]||0)*s.cfg.weapon.techK.k:0);s.udB=1+bp;   // techK：0.12.4 边军大营的火炮另吃士兵的加伤害科技（折算）   // bfV：v0.8.6 统一 buff（engine/buff）的伤害加成；独立乘区 atkI 乘在 dmg 上
   const tRange=(gun?TM.gunRange:0)+(bow?TM.stringRange+(G&&G.gwK>0?G.gwK:0):0)+(stone?TM.stoneRange:0)+(mg?TM.arcRange||0:0);   // v0.4.6 投石塔不再吃「筋弦改良」；魔法塔「法阵延展」   // G.gwK：HA 加，v0.12 格文「风羽统帅」弓弩塔射程（heroes/ha_gwen）
   const evm=keep?1:((ev&&(ev.dmgMulSet||ev.dmgMul))||1)*(ev&&ev.dmgI?1+ev.dmgI:1),brt=keep?0:btv(t,'rate'),gx=mg?0:pm.gunDmg,rx=mg?0:pm.blastR+(pm.hiEx>0?F.hiEx.r:0);   // gx / rx：v0.8.23 建筑的爆炸伤害、范围（精制火药 + 高爆炸药）
-  return{w:techW(w,bow,stone),hit:100+(keep?0:bbA(t,'hit'))+(au?au.hit:0),critPt:keep?0:bbA(t,'crit'),dmg:(w.dmg+(w.magic&&!keep?mgcA(s):0)+(s.ydvAU>G.time?s.ydvA*w.int:0))*(keep?1:tlAtk(s)*bbM(t,'atk'))*(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*(w.magic&&!keep?mgcK(s):1)*haFgS(s),bp,am:(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*haFgS(s),range:(w.range+(keep?0:s.cfg.lvRange?s.cfg.lvRange[L]:TL.rangeAdd[L]))*rvFold((ev&&ev.rangeMul||1)*(1+pm.towerRange+pm.rangeC+(au?au.range:0)+tRange+(G.caRng||0)+HH_RA)*(G.zsMu||1)*OATH_RK*HH_RK*(w.lob&&pm.lobRange>0?1+pm.lobRange:1))*16*(ENV.rngK||1),   // rvFold：0.12.6 射程加成合起来折算（engine/env）   // zsMu：v0.7.0 五神法「目」（独立乘区）   // evm：进化写成 × 的伤害倍率、写明独立的 dmgI（单独乘）；写「伤害 +X%」的 dmgAdd 在 bp 里相加（v0.10.11）   // udB：这座建筑伤害加成池子的 1 + 合计（engine/combat.ufAddK 用）   // haFgS：HA 加，v0.12 安德鲁「神锻」攻击（独立乘区）   // HH_RK：0.11.4 代理hh 加，御敌之策射程   // ydvA：0.12.5 第二轮代理 T，源能装置「源能动力」的攻击 +X × 武器倍率（structs/yn_tdev）
+  return{w:techW(w,bow,stone),hit:100+(keep?0:bbA(t,'hit'))+(au?au.hit:0),critPt:keep?0:bbA(t,'crit'),dmg:(w.dmg+(w.magic&&!keep?mgcA(s):0)+(s.ydvAU>G.time?s.ydvA*w.int:0))*(keep?1:tlAtk(s)*bbM(t,'atk'))*(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*(w.magic&&!keep?mgcK(s):1)*haFgS(s),bp,am:(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*haFgS(s),range:(w.range+(keep?0:s.cfg.lvRange?s.cfg.lvRange[L]:TL.rangeAdd[L]))*rvFold((ev&&ev.rangeMul||1)*(1+pm.towerRange+pm.rangeC+(au?au.range:0)+tRange+(G.caRng||0)+HH_RA+(sk&&sk.rng||0))*(G.zsMu||1)*OATH_RK*HH_RK*(w.lob&&pm.lobRange>0?1+pm.lobRange:1))*16*(ENV.rngK||1),   // rvFold：0.12.6 射程加成合起来折算（engine/env）   // zsMu：v0.7.0 五神法「目」（独立乘区）   // evm：进化写成 × 的伤害倍率、写明独立的 dmgI（单独乘）；写「伤害 +X%」的 dmgAdd 在 bp 里相加（v0.10.11）   // udB：这座建筑伤害加成池子的 1 + 合计（engine/combat.ufAddK 用）   // haFgS：HA 加，v0.12 安德鲁「神锻」攻击（独立乘区）   // HH_RK：0.11.4 代理hh 加，御敌之策射程   // ydvA：0.12.5 第二轮代理 T，源能装置「源能动力」的攻击 +X × 武器倍率（structs/yn_tdev）
     minRange:(w.minRange||0)*16,int:w.int/Math.max(0.2,1+TM.bRate-TM.bRateMinus+pm.bRateC+(bow?TM.boltRate:0)+brt+((ev&&ev.rateAdd)||0)+(mg?TM.arcRate||0:0)+(sk&&sk.aspd||0))/ENV.ourAtk/(ev?(1+(ev.rateI||0))*(ev.ovd&&s.ovU>G.time?1+ev.ovd.mul:1):1),   // arcRate：v0.8.1 科技「法力爆发」   // rateI / ovd：v0.9.0 攻速独立乘区（精铁 / 精钢齿轮、精械改造、超能过载，structs/build090）
     mag:w.mag>0?Math.floor(w.mag*(1+TM.bMag+(mg?TM.arcMag||0:0)+((ev&&ev.magPct)||0)))+pm.magAdd+(!keep&&s.cfg.lvMag?s.cfg.lvMag[L]:0)+((ev&&ev.magAdd)||0):0,acc:pm.accuracy+(au?au.accuracy:0)+TM.bAcc,crit:TM.bCrit+(s.wk||0),
     aoeAdd:(gun?TM.gunAoe:0)+rx+(ev&&ev.aoeMul?ev.aoeMul-1:0)+(sk&&sk.aoe&&w.aoe?sk.aoe/w.aoe:0),bx:gx>0?(1+bp+gx)/Math.max(0.05,1+bp):1,bxR:rx,frg:(gun||stone)&&pm.fragShot>0?1:0,spen:mg?(TM.arcPen||0)+((ev&&ev.spenAdd)||0):0,   // v0.8.22 卡「精制火药」：建筑的爆炸伤害（和别的伤害加成相加，所以按比值乘）、爆炸范围（魔法塔不算）
@@ -82367,7 +82387,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.1.4',GAME_TAG='稳定版',GAME_CODE=224,GAME_BUILD="bebb5f0",GAME_BUILT=1793895902387,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.1.4',GAME_TAG='稳定版',GAME_CODE=224,GAME_BUILD="88bdcab",GAME_BUILT=1793897006816,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -83106,7 +83126,7 @@ function resChips(){const w=META.wallet,f=v=>Math.floor(v||0);
     `<span class="rc" title="金币" data-act="rcinfo" data-v="金币" role="button"><img alt="" src="${goldIcon()}"><small>金币</small><b>${f(w.金币)}</b></span>`}   // v0.10.1（用户定）人口换成金币（人口在各开拓地的详情里看）
 const RAIL_SMALL=new Set(['settle','tech','design','hero','family','soul','shop','daily','fun']);   // 其余（出征、仓库）用 32×32 装备图标，缩小显示时平滑缩放
 const RAIL_IC={};function railIcon(k){if(RAIL_IC[k])return RAIL_IC[k];
-  return RAIL_IC[k]=k==='go'?itemIcon({base:'longsword'}):k==='settle'?settleIcon('house'):k==='tech'?settleIcon('lab'):k==='design'?iconOf('arrowTower'):k==='hero'?heroIcon('arthur',1):k==='family'?heroIcon(SPR.heroes.el_infantry?'el_infantry':'el_recruit',1):k==='soul'?heroIcon('assassin',1):k==='shop'?heroIcon('merchant',1):k==='daily'?dailyIcon():k==='fun'?heroIcon('graveRaider',1):itemIcon({base:'chain'})}
+  return RAIL_IC[k]=k==='go'?itemIcon({base:'longsword'}):k==='settle'?settleIcon('house'):k==='tech'?settleIcon('lab'):k==='design'?iconOf('arrowTower',true):k==='hero'?heroIcon('arthur',1):k==='family'?heroIcon(SPR.heroes.el_infantry?'el_infantry':'el_recruit',1):k==='soul'?heroIcon('assassin',1):k==='shop'?heroIcon('merchant',1):k==='daily'?dailyIcon():k==='fun'?heroIcon('graveRaider',1):itemIcon({base:'chain'})}
 // o：title 标题、sub 副标题、back [act, v, 文字]、rail 页签 HTML、sk 内容区滚动记忆键、body 内容、over 盖在内容区上的东西（建筑科技抽屉）、gear false = 不显示「设置」
 // v0.10.1（用户定）资源栏点一下：名字和从哪来
 const RC_SRC={建材:'开拓地的林场、战斗结算',银币:'开拓地的摊位、市场、贸易中心和税收，贸易，战斗结算',科研点:'开拓地的图书馆、博物院，战斗结算',设计点:'开拓地的艺术馆、艺术院，战斗结算',金币:'战斗(每张地图每天有上限)、入侵战、扫荡、签到和日常'};
