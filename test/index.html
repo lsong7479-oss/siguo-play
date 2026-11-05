@@ -11817,7 +11817,7 @@ Object.assign(CFG.heroes,{
       {desc:'奥术阵座：水龙 2.75 格、每秒 35(+80%AP)；地龙 1.75 格、100(+100%AP)；火龙 2.25 格、400(+250%AP)；风龙 7.25 格、每秒 25(+40%AP)'},
       {q:true, desc:'【质变 · 四象归一】奥术阵座：水龙 3 格、每秒 40(+80%AP)；地龙 2 格、125(+100%AP)；火龙 2.5 格、500(+250%AP)；风龙 8 格、每秒 30(+40%AP)'}],
     lore:'一身白衣的阵法师，掌中的阵盘里转着水、土、火、风四条龙。擅长法杖、书，穿布甲。只能用兑换码获得，获得后英雄之魄也能从抽奖池抽到。',tough:108},   // v0.10.2 数值第一轮
-  arthur2:{name:'进阶-亚瑟', title:'骑士', quality:'blue', look:'arthur2', recruit:true, advOf:'arthur',
+  arthur2:{name:'亚瑟', title:'骑士', quality:'blue', look:'arthur2', recruit:true, advOf:'arthur',
     hp:430, def:3.4, dodge:0.03, crit:0.06, speed:4.5, vision:7,   // v0.10.2 数值第一轮
     prof:{weapon:['sword','spear','shield'], armor:['chain','plate']},
     start:{weapons:[], offhand:null, armor:'plate'},
@@ -11828,7 +11828,7 @@ Object.assign(CFG.heroes,{
       {desc:'破釜沉舟：400(+250%AD)、眩晕 2 秒；无前陷阵：路径 16(+58%AD)，终点 80(+190%AD)、眩晕 1.6 秒；战争旋风：每秒 45(+155%AD)'},
       {q:true, desc:'【质变 · 王者无前】破釜沉舟：550(+300%AD)、眩晕 2.5 秒；无前陷阵：路径 20(+60%AD)，终点 2 格、100(+200%AD)、眩晕 2 秒；战争旋风：2.75 格、每秒 60(+180%AD)'}],
     lore:'经历过王者之战的亚瑟，冲阵不再停步，旋风斩也不再停歇。擅长剑、长枪、盾，穿锁甲、板甲。和亚瑟不能同时上阵；以后在剧情里进阶获得。',tough:109},   // v0.10.2 数值第一轮
-  robin2:{name:'进阶-罗宾汉', title:'弓箭手', quality:'blue', look:'robin2', recruit:true, advOf:'robin',
+  robin2:{name:'罗宾汉', title:'弓箭手', quality:'blue', look:'robin2', recruit:true, advOf:'robin',
     hp:300, def:1, dodge:0.1, crit:0.14, speed:5.0, vision:9,   // v0.10.2 数值第一轮
     prof:{weapon:['bow','crossbow','dagger'], armor:['cloth','leather']},
     start:{weapons:[], offhand:null, armor:'leather'},
@@ -11839,7 +11839,7 @@ Object.assign(CFG.heroes,{
       {desc:'满天箭雨：2.75 格、每秒 28(+145%AD)，减速 30%；连环射击：每 0.18 秒一箭、13(+95%AD)，后撤箭 70(+230%AD)；连珠箭矢：每支 7(+100%AD)、贯穿 2 个目标'},
       {q:true, desc:'【质变 · 万箭齐发】连珠箭矢：每轮 7 支、每支 9(+115%AD)；满天箭雨：3 格、每秒 38(+170%AD)；连环射击：每 0.14 秒一箭、16(+100%AD)，后撤箭 90(+240%AD)'}],
     lore:'弓弦一刻不停的罗宾汉，按住弓就是一阵箭雨。擅长弓、弩、匕首，穿布甲、皮甲。和罗宾汉不能同时上阵；以后在剧情里进阶获得。',tough:104},   // v0.10.2 数值第一轮
-  merlin2:{name:'进阶-梅林', title:'法师', quality:'blue', look:'merlin2', recruit:true, advOf:'merlin',
+  merlin2:{name:'梅林', title:'法师', quality:'blue', look:'merlin2', recruit:true, advOf:'merlin',
     hp:270, def:0.6, dodge:0.05, crit:0.05, speed:4.4, vision:8.5,   // v0.10.2 数值第一轮
     prof:{weapon:['staff','tome'], armor:['cloth']},
     start:{weapons:[], offhand:null, armor:'cloth'},
@@ -12180,7 +12180,7 @@ CFG.story.regions.push(
     {id:'tm3', name:'塔底', waves:40, diff:'inferno', lineup:['merlin'], own:true, gold:50, from:20, inherit:true, desc:'最底层是一口井，井里有蓝光。',
      say:{start:[['n','最底层是一口井。井里是冰，冰下面是蓝光。'],['n','亡灵从冰缝里一个接一个往上爬，有几个还穿着学徒的袍子。'],['n','梅林右手里一直攥着一根旧法杖，擦了擦眼睛。']],
          p30:[['n','夜里，冰缝又裂开一道，爬上来的比前一夜多了一倍。']],
-         win:[['n','井里的光灭了。梅林坐在井边，喘了很久。'],['n','他上楼的时候，天已经亮了。范海辛坐在塔门口，烤着那条鹿腿。'],['hunter','底下是什么？'],['merlin','一口井，已经封了。'],['n','范海辛撕了半条腿递给他。梅林接过来，坐下。'],['merlin','你一个人住雪坡上，不会冷吗？搬来矿营，暖和。'],['hunter','不搬。'],['merlin','像是个倔强的小孩，没苦硬吃。'],['hunter','搬总行了吧。'],['n','梅林端详着眼前的法杖，上面刻着阵纹。'],['n','阵纹里面有一行字。'],['n','「勇气」'],['n','梅林举起法杖，久违地笑了。'],['npc','提示','梅林的试炼完成：梅林 5 星后，可以在英雄页进阶为进阶-梅林。']]}},
+         win:[['n','井里的光灭了。梅林坐在井边，喘了很久。'],['n','他上楼的时候，天已经亮了。范海辛坐在塔门口，烤着那条鹿腿。'],['hunter','底下是什么？'],['merlin','一口井，已经封了。'],['n','范海辛撕了半条腿递给他。梅林接过来，坐下。'],['merlin','你一个人住雪坡上，不会冷吗？搬来矿营，暖和。'],['hunter','不搬。'],['merlin','像是个倔强的小孩，没苦硬吃。'],['hunter','搬总行了吧。'],['n','梅林端详着眼前的法杖，上面刻着阵纹。'],['n','阵纹里面有一行字。'],['n','「勇气」'],['n','梅林举起法杖，久违地笑了。'],['npc','提示','梅林的试炼完成：梅林 5 星后，可以在英雄页进阶梅林。']]}},
   ]},
   {id:'trialArthur', name:'亚瑟的试炼', map:'desert', seed:61072, req:'factory', adv:'arthur', chapters:[
     {id:'ta1', name:'金字塔下', waves:10, diff:'hard', lineup:['arthur'], own:true, gold:30, desc:'卡西姆他们三个进了金字塔挖金子，五天没回来。',
@@ -12198,7 +12198,7 @@ CFG.story.regions.push(
          p25:[['arthur','卡西姆，把左边的通道堵上。'],['npc','卡西姆','那边放着两袋金子！'],['arthur','堵上。'],['n','卡西姆看了他一会儿，去推石头了。']],
          p32:[['n','哈立德跑不动了。他把肩上那袋金子扔在地上，没回头。']],
          p36:[['n','头顶上传来铁锹碰石头的声音，一缕光从沙里漏了下来。']],
-         win:[['n','入口挖通了。法里斯站在沙堆上，看着他们一个一个爬出来。'],['camelKnight','……都活着？'],['arthur','都活着。'],['npc','卡西姆','金子剩一袋。'],['camelKnight','一袋也行，够修一口井。'],['n','回绿洲的路上，法里斯问要不要给王都报一笔。'],['arthur','报什么？几个人进去迷了路。'],['npc','提示','亚瑟的试炼完成：亚瑟 5 星后，可以在英雄页进阶为进阶-亚瑟。']]}},
+         win:[['n','入口挖通了。法里斯站在沙堆上，看着他们一个一个爬出来。'],['camelKnight','……都活着？'],['arthur','都活着。'],['npc','卡西姆','金子剩一袋。'],['camelKnight','一袋也行，够修一口井。'],['n','回绿洲的路上，法里斯问要不要给王都报一笔。'],['arthur','报什么？几个人进去迷了路。'],['npc','提示','亚瑟的试炼完成：亚瑟 5 星后，可以在英雄页进阶亚瑟。']]}},
   ]},
   {id:'trialRobin', name:'罗宾汉的试炼', map:'jungle', seed:61073, req:'factory', adv:'robin', chapters:[
     {id:'tr1', name:'百箭之夜', waves:10, diff:'hard', lineup:['robin'], own:true, gold:30, desc:'林子深处有一个人。外人要守满三轮夜，才能进去。',
@@ -12214,7 +12214,7 @@ CFG.story.regions.push(
     {id:'tr3', name:'万箭齐发', waves:40, diff:'inferno', lineup:['robin'], own:true, gold:50, from:20, inherit:true, desc:'最后一轮，泥里、树上、溪对岸，到处都是亡灵。',
      say:{start:[['n','最后一轮，泥里、树上、溪对岸，到处都是亡灵。'],['n','罗宾汉没有先射，他听了一会儿。']],
          p30:[['n','他的手指磨破了，用布缠上，接着拉。']],
-         win:[['n','第四十天，林子安静了。'],['n','奥塞洛特领着他，往林子深处走了半天。'],['n','一间树屋底下坐着一个人，正在削箭杆。他抬起头，看了看罗宾汉。'],['robin','……不是他。'],['n','那人低下头，接着削。'],['n','罗宾汉在他旁边坐下，也拿了一根箭杆。'],['robin','你也是跟人走散的？'],['n','那人点了点头。'],['robin','叫什么？'],['npc','托马斯','……托马斯。'],['robin','行，托马斯。以后碰到找你的，我跟他们说你在这儿。'],['n','两个人削到天黑。罗宾汉走的时候，奥塞洛特问他还找不找。'],['robin','找，慢慢找。'],['npc','提示','罗宾汉的试炼完成：罗宾汉 5 星后，可以在英雄页进阶为进阶-罗宾汉。']]}},
+         win:[['n','第四十天，林子安静了。'],['n','奥塞洛特领着他，往林子深处走了半天。'],['n','一间树屋底下坐着一个人，正在削箭杆。他抬起头，看了看罗宾汉。'],['robin','……不是他。'],['n','那人低下头，接着削。'],['n','罗宾汉在他旁边坐下，也拿了一根箭杆。'],['robin','你也是跟人走散的？'],['n','那人点了点头。'],['robin','叫什么？'],['npc','托马斯','……托马斯。'],['robin','行，托马斯。以后碰到找你的，我跟他们说你在这儿。'],['n','两个人削到天黑。罗宾汉走的时候，奥塞洛特问他还找不找。'],['robin','找，慢慢找。'],['npc','提示','罗宾汉的试炼完成：罗宾汉 5 星后，可以在英雄页进阶罗宾汉。']]}},
   ]});
 
 /* ---------- v0.7.3 新城墙「符墙」（用户 2026-10-07 定）----------
@@ -14888,7 +14888,7 @@ CFG.heroes.arthur3={name:'亚瑟', title:'联盟共主', quality:'gold', look:'a
     {desc:'正义之心：半径 3 格、转化 25%、无视 20% 减伤；战意之风：半径 3 格、25%AD，自身另外 175(+50%AD)；胜利誓约：正义 +30%、震荡波 1 格 40%，公平反弹 20%，守护减伤 +30%、承受 +80%；决死意志：半径 3 格、每 1% +1%、免死 1.5 秒、持续 4 秒'},
     {desc:'正义之心：半径 5 格、转化 35%、无视 25% 减伤；战意之风：半径 5 格、27.5%AD，自身另外 200(+50%AD)；胜利誓约：正义 +40%、震荡波 1.25 格 45%，公平反弹 25%，守护减伤 +40%、承受 +65%；决死意志：半径 5 格、每 1% +1.25%、免死 1.75 秒、持续 4.5 秒'},
     {q:true, desc:'【质变 · 王者之誓】正义之心：半径 10 格、转化 50%、无视 30% 减伤；战意之风：半径 10 格、30%AD，自身另外 250(+50%AD)；胜利誓约：正义 +50%、震荡波 1.5 格 50%，公平反弹 30%，守护减伤 +50%、承受 +50%；决死意志：半径 10 格、每 1% +1.5%、免死 2 秒、持续 5 秒'}],
-  lore:'走完第一卷的亚瑟，被各方推为联盟共主。金冠上嵌着蓝宝石，白金板甲胸前一道金十字，肩头一对金狮，红披风镶着金纹；剑举起来的时候，身边的士兵都跟着他一起挥剑。擅长单手剑、单手枪、盾，穿板甲。和亚瑟、进阶-亚瑟不能同时上阵；通关第一卷剧情、进阶-亚瑟 5 星、四阶及以下所有地区的家族声望都到「忠诚」后，在英雄页再次进阶获得。'};
+  lore:'走完第一卷的亚瑟，被各方推为联盟共主。金冠上嵌着蓝宝石，白金板甲胸前一道金十字，肩头一对金狮，红披风镶着金纹；剑举起来的时候，身边的士兵都跟着他一起挥剑。擅长单手剑、单手枪、盾，穿板甲。和亚瑟的其它形态不能同时上阵；通关第一卷剧情、进阶后的亚瑟 5 星、四阶及以下所有地区的家族声望都到「忠诚」后，在英雄页再次进阶获得。'};
 CFG.heroStats.arthur3={atk:19, ap:4, mdef:4.5, defG:0.14, mdefG:0.09, aspd:0, prec:1.05};   // Claude 定：进阶-亚瑟（17.5 / 3.1 / 2.1）往上提一档，同金色近战（永 18、胡寒 17.5）
 Object.assign(CFG.heroes.arthur3,CFG.heroStats.arthur3);
 
@@ -14930,7 +14930,7 @@ CFG.heroes.merlin3={name:'梅林', title:'大贤者', quality:'gold', look:'merl
     {desc:'极火屏障：护盾 70%、6 格、200(+150%AP)、每秒 30%；风雪领域：每秒 100(+50%AP)，冰锥 180(+100%AP)，旋风 200(+100%AP)；藤蔓之锢：8 格、150(+100%AP)、2 格、定身 3.5 秒；驱霆策电：5 格、每 0.25 秒 90(+50%AP)、2 秒'},
     {desc:'极火屏障：护盾 85%、6.5 格、250(+150%AP)、每秒 35%；风雪领域：每秒 125(+50%AP)，冰锥 240(+100%AP)，旋风 250(+100%AP)；藤蔓之锢：9 格、175(+100%AP)、2.25 格、定身 4 秒；驱霆策电：5.5 格、每 0.25 秒 120(+50%AP)、2.25 秒'},
     {q:true, desc:'【质变 · 万象归一】极火屏障：护盾 100%、7 格、300(+150%AP)、每秒 40%；风雪领域：每秒 150(+50%AP)，冰锥 300(+100%AP)，旋风 300(+100%AP)；藤蔓之锢：10 格、200(+100%AP)、2.5 格、定身 5 秒；驱霆策电：6 格、每 0.25 秒 150(+50%AP)、2.5 秒'}],
-  lore:'白发白须编成长辫的梅林，蓝紫长袍镶着金纹、高领立起，紫色披风垂到脚边，腰间的皮带上挂着一本书；缠枝的银杖顶端是一颗蓝水晶，左手掌心总亮着一点蓝光。火、冰、藤、雷，到他这里都是一回事。擅长法杖、书，穿布甲。和梅林、进阶-梅林不能同时上阵；进阶-梅林 5 星、深渊通关元素森林、秘法工厂、堕落圣堂，且这三个地区的家族声望都到「狂热」后，在英雄页再次进阶获得。'};
+  lore:'白发白须编成长辫的梅林，蓝紫长袍镶着金纹、高领立起，紫色披风垂到脚边，腰间的皮带上挂着一本书；缠枝的银杖顶端是一颗蓝水晶，左手掌心总亮着一点蓝光。火、冰、藤、雷，到他这里都是一回事。擅长法杖、书，穿布甲。和梅林的其它形态不能同时上阵；进阶后的梅林 5 星、深渊通关元素森林、秘法工厂、堕落圣堂，且这三个地区的家族声望都到「狂热」后，在英雄页再次进阶获得。'};
 CFG.heroStats.merlin3={atk:2.5, ap:13.5, mdef:4.6, defG:0.07, mdefG:0.13, aspd:0, prec:1.05};   // Claude 定：进阶-梅林（2.1 / 10.5 / 3.7）往上提一档，同金色法师（冷 13、莉莲 14）
 Object.assign(CFG.heroes.merlin3,CFG.heroStats.merlin3);
 
@@ -14956,7 +14956,7 @@ Object.assign(CFG.skills,{
     byStar:{hpK:[0.1,0.125,0.15,0.175,0.2], sh:[0.1,0.15,0.2,0.25,0.3]},
     desc:p=>`所有城墙生命上限 +${pc_(p.hpK)}，并获得 ${pc_(p.sh)} 生命上限的护盾(不可叠加)，持续整波；冷却 ${p.cd} 秒(不受冷却缩减)`},
 });
-CFG.heroes.engineer2={name:'进阶-达·芬奇', title:'工程师', quality:'blue', look:'engineer2', recruit:true, advOf:'engineer', soulTier:3, allSkills:true,
+CFG.heroes.engineer2={name:'达·芬奇', title:'工程师', quality:'blue', look:'engineer2', recruit:true, advOf:'engineer', soulTier:3, allSkills:true,
   advReq:{clear:{map:'factory', diff:'abyss'}, rep:{map:'factory', lv:'狂热'}},
   hp:320, def:1.4, dodge:0.03, crit:0.06, speed:4.4, vision:8, tough:104,   // Claude 定：原版（260 / 1.1 / 0.05 / 7.5 / 100）往上提一档，幅度同进阶-罗宾汉、进阶-梅林（生命 +23%、韧性 104）
   prof:{weapon:['gun','crossbow','hammer','dagger'], armor:['leather','chain']},
@@ -14998,7 +14998,7 @@ Object.assign(CFG.skills,{
     byStar:{n:[5,6,7,8,10], b:[100,125,150,180,240]},
     desc:p=>`在 ${p.range} 格内选择一处，${p.win} 秒内依次瞬斩半径 ${p.r} 格内的至多 ${p.n} 只亡灵，各造成 ${sv_(p.b,p.ad)} 伤害(可暴击)；若击杀任意亡灵则刷新冷却，连续至多刷新 ${p.rmax} 次`},
 });
-CFG.heroes.assassin2={name:'进阶-夜鸦', title:'刺客', quality:'purple', look:'assassin2', backstab:true, recruit:true, advOf:'assassin', soulTier:5, allSkills:true,
+CFG.heroes.assassin2={name:'夜鸦', title:'刺客', quality:'purple', look:'assassin2', backstab:true, recruit:true, advOf:'assassin', soulTier:5, allSkills:true,
   advReq:{map:'shadowHigh', diff:'abyss', rep:'狂热'},
   hp:290, def:1.3, dodge:0.17, crit:0.24, speed:5.4, vision:8.5, tough:106,
   prof:{weapon:['dagger','sword'], armor:['cloth','leather']},
@@ -15038,7 +15038,7 @@ Object.assign(CFG.skills,{
     byStar:{fan:[70,80,90,100,110], range:[3.5,3.75,4,4.25,4.5], b:[50,75,100,125,150], max:[3,3,4,4,5]},
     desc:p=>`按住持续释放：向前方 ${p.fan}° 扇形、长 ${p.range} 格持续喷洒毒液，每秒造成 ${sv_(p.b,p.ad,'AP')} 伤害和 ${pc_(p.pct)} 中毒效果持续 ${p.t} 秒，至多独立叠加 ${p.max} 层；无冷却`},
 });
-CFG.heroes.poisoner2={name:'进阶-帕拉塞尔苏斯', title:'绝命毒师', quality:'purple', look:'poisoner2', recruit:true, advOf:'poisoner', soulTier:5, allSkills:true,
+CFG.heroes.poisoner2={name:'帕拉塞尔苏斯', title:'绝命毒师', quality:'purple', look:'poisoner2', recruit:true, advOf:'poisoner', soulTier:5, allSkills:true,
   advReq:{vol:1, fam:'安科', rep:'尊敬', ware:{blightResin:200}},
   hp:320, def:1, dodge:0.06, crit:0.06, speed:4.6, vision:8, tough:106,
   prof:{weapon:['flask','dagger','staff'], armor:['cloth','leather']},
@@ -15080,7 +15080,7 @@ Object.assign(CFG.skills,{
     byStar:{k:[1,0.95,0.9,0.85,0.8]},
     desc:p=>`主堡陷落后，可以花费 (${p.base} + ${p.per} × 波次²) × ${pc_(p.k)} 铜币：主堡恢复满生命，立刻进入准备阶段，场上所有亡灵返回地图边缘；每局限一次，阵亡后仍然可以使用`},
 });
-CFG.heroes.merchant2={name:'进阶-马可·波罗', title:'商人', quality:'purple', look:'merchant2', recruit:true, noSortie:true, advOf:'merchant', soulTier:5, allSkills:true,
+CFG.heroes.merchant2={name:'马可·波罗', title:'商人', quality:'purple', look:'merchant2', recruit:true, noSortie:true, advOf:'merchant', soulTier:5, allSkills:true,
   advReq:{tier:5, cost:{银币:10000000, 金币:1000}},
   hp:340, def:1.4, dodge:0.07, crit:0, speed:4.5, vision:7.5, tough:106,
   prof:{weapon:[], armor:['cloth','leather']},
@@ -24001,7 +24001,8 @@ CFG.designTree.push({id:'ynTesla', cost:300, req:['lightningTower'], map:'ynCity
 CFG.steam.mech.structs.push('ynTesla','ynDevice');   // 机械建筑（蒸汽重工、瓦特、电磁干扰、源能王城的机械入侵……）；电能塔也因此进骇入名单（data/yn_struct 的 CFG.hack.structs），源能装置在 CFG.hack.noS 里不会被骇入
 
 CFG.ynDev={
-  modes:['gold','pow','shd'], names:{gold:'源能生产', pow:'源能动力', shd:'源能屏障'}, def:'gold',   // def：新造的装置默认哪种模式（Claude 定）
+  modes:['gold','pow','shd'], names:{gold:'源能生产', pow:'源能动力', shd:'源能屏障'}, def:'gold',
+  modeNote:{gold:'每波结算额外产出铜币(每级 +25)；占 1 个矿山编制，编制不足时产出最低的先停产', pow:'范围内的我方机械单位和塔楼攻击、攻速提高', shd:'范围内共享一个护盾，每 15 秒补满；护盾还在时范围里的机械单位免疫骇入和电磁干扰'},   // 0.13.2（用户定）选中时只写当前模式的说明（ui/hud 的建筑面板）   // def：新造的装置默认哪种模式（Claude 定）
   box:[1,1,2,2,3],   // 范围的半边长（格），按等级：1 = 3×3、2 = 5×5、3 = 7×7（用户定：每 2 级 +2×2）；领域扩展、全域展开各 +1（ydBox / ydBox2）
   gold:{base:100, lv:25},   // 源能生产：每波结算 base + lv × (等级 − 1)（用户定）；高效 / 超效能源各 +25（ydGold / ydGold2）
   pow:{atk:10, lvK:[1,1.25,1.5,1.75,2], aspd:0.3, aspdLv:0.05},   // 源能动力：攻击 +atk × 等级倍率（Claude 定，同战鼓楼）× 武器倍率；攻速 +aspd + aspdLv × (等级 − 1)（用户定）
@@ -24979,11 +24980,11 @@ function buildSprites(){
 // 建造栏图标：取精灵上部 16×20
 const wkey=(st,mask,lvl)=>st+'_'+mask+'_'+lvl;
 const ICONC={};
-function iconOf(type){if(ICONC[type])return ICONC[type];
-  const src=isWallT(type)?SPR.wall[wkey(type,0,2)].c:(SPR.b[type]||SPR.keep).c;
+function iconOf(type){const sk=typeof TSK_ON!=='undefined'&&TSK_ON[type]&&SPR.tsk&&SPR.tsk[TSK_ON[type]]?TSK_ON[type]:'',key=sk?type+'~'+sk:type;if(ICONC[key])return ICONC[key];   // sk：0.13.2（用户定）塔楼皮肤局外也显示，建筑图标换成正在用的皮肤
+  const src=sk?SPR.tsk[sk][0].c:isWallT(type)?SPR.wall[wkey(type,0,2)].c:(SPR.b[type]||SPR.keep).c;
   const k=src._k||1,c=canvasOf(16*k,20*k),x=c.getContext('2d');
   if(src.width>16*k){const f=Math.min(16*k/src.width,20*k/src.height),w=src.width*f,h=src.height*f;x.drawImage(src,(16*k-w)/2,20*k-h,w,h)}   // v0.8.0 2×2 兵营：整张缩小放进图标
-  else x.drawImage(src,0,src.height<=20*k?20*k-src.height:0);return ICONC[type]=c.toDataURL();   // 0.5.7：高清图按它的倍数画
+  else x.drawImage(src,0,src.height<=20*k?20*k-src.height:0);return ICONC[key]=c.toDataURL();   // 0.5.7：高清图按它的倍数画
 }
 function unitIcon(k){const key='u:'+k;return ICONC[key]||(ICONC[key]=SPR.units[k][0].c.toDataURL())}
 const HICON={};function heroIcon(id,k){const key=id+(k||1);if(!HICON[key]){const c=SPR.heroes[id][0].c,s=Math.max(1,Math.round((k||1)/(c._k||1))),o=canvasOf(c.width*s,c.height*s),x=o.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(c,0,0,o.width,o.height);HICON[key]=o.toDataURL()}return HICON[key]}
@@ -71795,7 +71796,7 @@ function mp2Price(){const h=mp2Hero();if(!h)return 0;const p=skillParams('mercha
 function mp2Fall(s){if(G.mp2A)return true;if(G.phase!=='wave'||G.adv||G.mp2U||G.mode==='survivor'||!mp2Hero()||!UI.ready||!running)return false;
   s.hp=0;G.mp2A=1;mp2Ask();return true}
 function mp2Ask(){const c=mp2Price(),g=Math.floor(G.gold),lack=c-g,h=mp2Hero();sfx('crash');
-  openModal('mp2',`<h2 class="hd lose">主堡陷落</h2><div class="mp2box" style="display:flex;gap:10px;align-items:center">${skIcoH('mp2Mill')}<p class="meta" style="margin:0">${h?h.d.name:'进阶-马可·波罗'}「亡灵推磨」：花费 <b>${c}</b> 铜币(1000 + 100 × 第 ${G.wave} 波²，再 × ${Math.round(skillParams('merchant2',h?h.star:1,'mp2Mill').k*100)}%)，主堡恢复满生命，立刻进入准备阶段，场上所有亡灵返回地图边缘。每局限一次。</p></div>
+  openModal('mp2',`<h2 class="hd lose">主堡陷落</h2><div class="mp2box" style="display:flex;gap:10px;align-items:center">${skIcoH('mp2Mill')}<p class="meta" style="margin:0">${h?h.d.name:'马可·波罗'}「亡灵推磨」：花费 <b>${c}</b> 铜币(1000 + 100 × 第 ${G.wave} 波²，再 × ${Math.round(skillParams('merchant2',h?h.star:1,'mp2Mill').k*100)}%)，主堡恢复满生命，立刻进入准备阶段，场上所有亡灵返回地图边缘。每局限一次。</p></div>
     <p class="meta">现有 ${g} 铜币${lack>0?`，<span class="warn">还差 ${lack} 铜币</span>`:''}</p><div class="actions"><button class="px big on" type="button" data-act="mp2go"${lack>0?' disabled':''}>推磨(${c} 铜币)</button><button class="px big" type="button" data-act="mp2no">放弃(判负)</button></div>`,lack>0?'[data-act=mp2no]':'[data-act=mp2go]')}
 // ui/menus.onSheetClick 调：弹窗上的两个按钮
 function mp2Act(a){if(a==='mp2go'){mp2Do();return true}if(a==='mp2no'){G.mp2A=0;hideModal();gameOver();return true}return false}
@@ -74223,7 +74224,11 @@ function ydvSetMode(s,m){if(!s||s.type!=='ynDevice'||!YDV.names[m]||ydvMode(s)==
 const ydvSelKey=s=>'ydv'+s.tx+','+s.ty+ydvMode(s)+(s.ydvStop?1:0)+Math.round((s.ydvSh||0)/10);
 function ydvSelHTML(s){const m=ydvMode(s),b=(v,t,on)=>`<button type="button" class="px sm${on?' on':''}" data-m="ydv:${v}">${t}</button>`;
   const info=m==='gold'?(s.ydvStop?'停产(矿山编制不足)':`每波 +${ydvGold(s)} 铜币`):m==='pow'?`攻击 +${Math.round(ydvAtk(s)*10)/10} × 武器倍率，攻速 +${Math.round(ydvAspd(s)*100)}%`:`护盾 ${Math.round(s.ydvSh||0)} / ${Math.round(ydvShMax(s))}`;
-  return`<div class="tgrow"><span class="hmlab">模式</span>${YDV.modes.map(k=>b(k,YDV.names[k],k===m)).join('')}</div><div class="tgrow"><span class="hmlab">${info}</span></div>`}
+  return`<div class="tgrow"><span class="hmlab">模式</span>${YDV.modes.map(k=>b(k,YDV.names[k],k===m)).join('')}<button type="button" class="px sm" data-m="ydvall:${m}" title="把所有源能装置都换成「${YDV.names[m]}」">同类套用</button></div><div class="tgrow"><span class="hmlab">${info}</span></div>`}
+// 0.13.2（用户定）同类套用：所有源能装置换成这一种模式；返回换了几座
+function ydvSetAll(m){let n=0;for(let k=0;k<G.structs.length;k++){const s=G.structs[k];if(s.type==='ynDevice'&&!s.dead&&ydvSetMode(s,m))n++}return n}
+// 选中时的说明：只写当前模式的（0.13.2 用户定），后面带范围
+const ydvNote=s=>{const m=ydvMode(s),r=ydvBox(s);return`【${YDV.names[m]}】${YDV.modeNote[m]||''}${m==='gold'?'':`；范围 ${r*2+1}×${r*2+1}`}`};
 // 屏障模式的装置头上画一条护盾条
 const K_YDV1=C('#7fe0ff'),K_YDV0=C('#1a2a3a');
 function ydvDraw(cx0,cy0,cx1,cy1){for(let k=0;k<YDV_L.length;k++){const s=YDV_L[k];if(s.dead||ydvMode(s)!=='shd'||!(s.ydvShM>0))continue;const x=s.x,y=s.y-34;if(x<cx0-16||x>cx1+16||y<cy0-16||y>cy1+16)continue;
@@ -75858,7 +75863,7 @@ function goldDaySum(){const ms=Object.keys(CFG.maps).filter(m=>mapOpen(m)),dm=go
 function awardMeta(win,settle){for(const k in G.souls||{})if(!CFG.heroes[k])delete G.souls[k];if(META.souls)for(const k in META.souls)if(!CFG.heroes[k])delete META.souls[k];   // 0.12.0 修复：清掉不是英雄的英雄之魄（老版本精英抽到的）
     // settle：无尽「直接结算」（准备阶段结算 = 这一波也算击退）
   const ban=!!G.banRew;if(ban){const m=CFG.run.noRewardMul,h=v=>Math.floor((v||0)*m);for(const k in G.meta)G.meta[k]=h(G.meta[k]);for(const k in G.souls)G.souls[k]=h(G.souls[k]);G.soulPt=Math.floor((G.soulPt||0)*m);for(const k in G.skinFrag||{})G.skinFrag[k]=h(G.skinFrag[k]);for(const k in G.mats||{})G.mats[k]=h(G.mats[k]);G.loot=G.loot.filter((_,i)=>i%2===1)}   // v0.7.0（用户定）莉莲、冷参战过：不计通关记录；v0.7.7（用户定）奖励由 0 改成减半（noRewardMul；装备隔一件留一件）
-  const tr=heroPassive('treasure')+hhRes()+mp2Loot(),got={banned:ban};   // mp2Loot：0.12.7 代理 MP 加，进阶-马可·波罗「攫财之道」（heroes/merchant2）   // hhRes：0.11.4 代理hh 加，黄虎「筹万物」
+  const tr=heroPassive('treasure')+hhRes()+mp2Loot(),got={banned:ban};   // mp2Loot：0.12.7 代理 MP 加，马可·波罗「攫财之道」（heroes/merchant2）   // hhRes：0.11.4 代理hh 加，黄虎「筹万物」
   for(const k in G.meta)got[k]=Math.round(G.meta[k]*(k==='银币'||k==='建材'?1+pm.scav:k==='科研点'||k==='设计点'?1+pm.inspire:1)*(k==='金币'?1:1+tr));   // 卡「拾荒搜刮」「科研灵感」；tr：v0.4.2 商人「搜山检海」
   {const td=alTrade();if(td){got.trade=td;for(const k of['银币','建材','科研点','设计点'])if(td[k])got[k]=(got[k]||0)+td[k]}}   // v0.9.0 阿里巴巴「贸易天平」：剩下的铜币换资源（每种总量最多基础结算奖励的 300%）
   if(got.金币>0){const mk=G.map||'wild',st=goldDayState(),cap=goldCapOf(mk,DIFF.id),g=Math.min(got.金币,Math.max(0,cap-(st.m[mk]||0)));got.goldCut=got.金币-g;got.金币=g;st.m[mk]=(st.m[mk]||0)+g;got.goldDay=st.m[mk]+'/'+cap}   // v0.4.2 每日金币上限；v0.5.9 按地图
@@ -82362,7 +82367,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.1.4',GAME_TAG='稳定版',GAME_CODE=224,GAME_BUILD="0cf4637",GAME_BUILT=1793894873464,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.1.4',GAME_TAG='稳定版',GAME_CODE=224,GAME_BUILD="bebb5f0",GAME_BUILT=1793895902387,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -82420,7 +82425,8 @@ function buildUI(){hudFitInit();
     if(m.startsWith('elk:')){const e=elById(+m.slice(4));if(e){e.clk=!e.clk;saveMeta()}refreshSel(true);return}
     if(m.startsWith('h:')){const a=m.split(':');if(a.length>2)setHeroMode(a[2],a[1]);else setHeroMode(a[1]);return}   // v0.5.2 主堡：英雄指令（v0.5.6 h:英雄:指令 = 单个英雄）
     if(m.startsWith('tf:')){const k=m.slice(3);if(TF_KINDS[k]&&selected.cfg&&selected.cfg.weapon&&selected.cfg.weapon.tfac)selected.tfK=k;refreshSel(true);return}   // v0.10.2 陷阱工厂
-    if(m.startsWith('ydv:')){ydvSetMode(selected,m.slice(4));refreshSel(true);if(settleOn())settleSave();return}   // 0.12.5 第二轮代理 T：源能装置切换模式（structs/yn_tdev）
+    if(m.startsWith('ydv:')){ydvSetMode(selected,m.slice(4));refreshSel(true);if(settleOn())settleSave();return}
+    if(m.startsWith('ydvall:')){const n=ydvSetAll(m.slice(7));toast(n?`${n} 座源能装置换成了「${YDV.names[m.slice(7)]}」`:'别的源能装置已经是这种模式');refreshSel(true);if(settleOn())settleSave();return}   // 0.13.2（用户定）同类套用   // 0.12.5 第二轮代理 T：源能装置切换模式（structs/yn_tdev）
     if(isTowerS(selected)){const s=selected;   // v0.6.6 塔楼选目标
       if(m.startsWith('t:')){s.tgt=m.slice(2);s.tgI=-1}else if(m==='cont'){s.cont=!s.cont;s.tgI=-1}
       else if(m==='lock'){s.locked=!s.locked;toast(s.locked?'已锁定：「指令 → 塔楼」不会改变这座塔':'已解锁：跟随「指令 → 塔楼」')}
@@ -82546,6 +82552,7 @@ function refreshSel(force){
   else if(s.type==='warDrum'){const I=drumInfo(s),ev=btEvo('warDrum');note=(ev?`【${ev.name}】`:'')+`鼓声 ${(I.r/16).toFixed(1)} 格内：士兵、英雄攻击力 +${Math.round(I.f*100)/100} × 武器倍率(物理、法术都加)`+(I.awe?`；亡灵攻击 −${Math.round(I.f*50*(I.awe2?2:1))/100} × 武器倍率(最多 −50%)`:'')+'；多座不叠加'}
   else if(s.type==='magCircle'){const n=G.soldiers.filter(u=>u.layer===2&&u.post&&u.post.s===s).length,ev=btEvo('magCircle');note=(ev?`【${ev.name}】`:'')+`魔法士兵 ${n}/${mgcCap()} · ${noteFill(d.note,d)}`}   // v0.10.0 聚魔法阵
   else if(s.type==='watchtower'){const n=G.soldiers.filter(u=>u.layer===2&&u.post&&u.post.s===s).length,ev=btEvo('watchtower');note=(ev?`【${ev.name}】`:'')+`驻军 ${n}/${garrisonCap(s)} · ${noteFill(d.note,d)}`}
+  else if(s.type==='ynDevice')note=ydvNote(s);   // 0.13.2（用户定）源能装置只写当前模式的说明
   else if(wall&&!grp.some(t=>isGateT(t.type)))note='这段城墙没有城门：守军过不去，远程士兵也登不上来；连上一个城门即可';
   else note=noteFill(d.note,d)||(d.cat==='settle'&&SB.buildings[d.st]?SB.buildings[d.st].note:'');
   if(wall)note=twInfo(s,note);   // v0.11.0 城墙三阶生效没有（structs/evo3_tw）
@@ -84301,11 +84308,13 @@ function tskShopHTML(){const g=CFG.towerSkinShop.gold,w=META.wallet;tskFix(META)
     return`<div class="hst${own?' lock':''}"><b>${S.name}</b><img class="gp" alt="" src="${tskImg(id)}" style="image-rendering:pixelated;object-fit:contain"><span class="meta">${BDEF[S.b].name} · ${S.theme}<br>${S.desc}</span>
       ${own?'<button class="px" type="button" disabled>已拥有</button>':`<button class="px" type="button" data-act="shoptsk" data-v="${id}" ${(w.金币||0)<g?'disabled':''}>购买 ${priceTag(g,'金币')}</button>`}</div>`}).join('')}</div></div>`}
 // 「建筑」页建筑详情里的皮肤一栏：原样 + 这种建筑的各款皮肤（有的能换，没有的写去商店买）；动作 tskuse（ui/menus）
+//   0.13.2（用户定）改成一排、左右滑动的竖卡片（同商店的 hstrip / hst，卡片窄一点），不太占位置；用着的那张金框
 function tskDrawerHTML(t){const ids=Object.keys(CFG.towerSkins).filter(id=>CFG.towerSkins[id].b===t);if(!ids.length)return'';tskFix(META);const cur=META.tsk.on[t]||'';
-  const card=(id,img,name,desc,own)=>`<div class="btevo${cur===id?' on':''}${own?'':' lock'}"><b>${name}</b>${img?`<img alt="" src="${img}" style="image-rendering:pixelated;height:60px;width:auto;align-self:center">`:''}<span class="meta">${desc}</span>
-    ${own?`<button class="px${cur===id?' on':''}" type="button" data-act="tskuse" data-v="${t}:${id}">${cur===id?'使用中':'换上'}</button>`:'<span class="meta">商店 → 幸运商店购买，或用专属兑换码</span>'}</div>`;
+  const card=(id,img,name,desc,own)=>`<div class="hst tskc${cur===id?' on':''}${own?'':' lock'}"><b>${name}</b>${img?`<img class="gi" alt="" src="${img}">`:''}<span class="meta">${desc}</span>
+    ${own?`<button class="px sm${cur===id?' on':''}" type="button" data-act="tskuse" data-v="${t}:${id}"${cur===id?' disabled':''}>${cur===id?'使用中':'换上'}</button>`:'<span class="meta">商店购买 / 兑换码</span>'}</div>`;
   const base=SPR.bL&&SPR.bL[t]?SPR.bL[t][2]:SPR.b&&SPR.b[t];
-  return`<h4>塔楼皮肤 <span class="meta">同一种建筑只能用一款；用着的时候这种建筑全部有额外效果</span></h4><div class="btlist">${card('',base&&base.c?base.c.toDataURL():'','原样','没有额外效果',true)}${ids.map(id=>{const S=CFG.towerSkins[id];return card(id,tskImg(id),S.name,`${S.theme} · ${S.desc}`,tskOwn(id))}).join('')}</div>`}
+  return`<h4>塔楼皮肤 <span class="meta">同一种建筑只能用一款；用着的时候这种建筑全部有额外效果</span></h4><div class="hstrip tskstrip" data-hs="tsk-${t}">${card('',base&&base.c?base.c.toDataURL():'','原样','没有额外效果',true)}${ids.map(id=>{const S=CFG.towerSkins[id];return card(id,tskImg(id),S.name,S.desc,tskOwn(id))}).join('')}</div>`}
+if(typeof document!=='undefined'){const st=document.createElement('style');st.textContent='.tskstrip{flex:none}.tskstrip .hst.tskc{width:calc(96px * var(--fk,1));flex:none;padding:6px 4px;gap:3px}.tskstrip .tskc .gi{width:40px;height:48px}.tskstrip .tskc.on{box-shadow:0 0 0 2px var(--brass-hi),inset 0 0 0 1px #2e2838}.tskstrip .tskc.lock{opacity:.6}.tskstrip .tskc .meta{font-size:.72rem;line-height:1.3}';document.head.appendChild(st)}
 // v0.9.51（用户定）皮肤碎片（v0.10.1 起在幸运商店底部），每 24 小时刷新，三个槽各自按概率出现（game/skins.skinShopRoll）
 function skinShopHTML(){const L=skinShopRoll(),C=CFG.shop.skin,w=META.wallet,t=testOn();
   const rows=L.offers.map((o,i)=>{const K=CFG.skins[o.k],H=CFG.heroes[K.hero],n=(skinState().frag[o.k]||0);
@@ -86857,7 +86866,7 @@ let EL_EVX=new Set(),EL_EVT='',EL_TOP='hero',EL_SUB='list',EL_POP=null,EL_SORT='
 .elgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(116px * var(--fk,1)),1fr));gap:8px}.elgrid .hst{width:auto}
 .hst.elof{width:calc(156px * var(--fk,1))}.hst .elchips{justify-content:center}.hst.on{box-shadow:0 0 0 2px var(--brass),inset 0 0 0 1px #2e2838}.hst .elsl{color:var(--brass-hi);font-size:.78rem}
 .hst .gi.emp{display:block;background:#120f17;box-shadow:inset 0 0 0 1px var(--iron)}
-.elssr{display:flex;flex-wrap:nowrap;gap:4px;align-items:center;margin:2px 0;overflow-x:auto;max-width:100%;touch-action:pan-x pan-y}.elssr>*{flex:none}.elsep{width:6px}.elss.job{background:#1f4a5a}
+.elssr{display:flex;flex-wrap:nowrap;gap:4px;align-items:center;margin:2px 0;overflow-x:auto;max-width:100%;touch-action:pan-x pan-y}.elssr>*{flex:none}.elsep{width:6px}.elss.job{background:#1f4a5a;cursor:pointer}
 .elss{position:relative;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;background:#3a2650;box-shadow:inset 0 0 0 2px #120f17,0 0 0 1px var(--iron)}.elss.pas{background:#5a4416}
 .elss img{width:30px;height:30px;image-rendering:pixelated}.elss b{color:var(--bone);font-weight:400}
 .elss i{position:absolute;top:0;right:2px;font-style:normal;font-family:Georgia,serif;font-weight:700;font-size:.78rem;color:#fff;text-shadow:1px 1px 0 #000,-1px 0 0 #000,0 -1px 0 #000}
@@ -87016,12 +87025,15 @@ const elUseRank=(it,e)=>{const o=elOwnerOf(it.uid);return o===e?0:itemOwner(it.u
 // 背包的格子：自己穿着的金底「穿」；别的精英、英雄在用的绿底「用」
 function elItemCell(it,e){const Q=CFG.itemQ[baseQ(it.base)],ho=itemOwner(it.uid),eo=elOwnerOf(it.uid),mine=eo===e,who=ho?CFG.heroes[ho].name:eo&&!mine?elName(eo):'';
   return`<button class="it${mine?' worn mine':who?' worn':''}${EL_EQPK===it.uid?' on':''}" type="button" data-act="elxeq" data-v="${e.id}:${it.uid}" style="--qc:${Q.color}" title="${itemName(it)}${it.enh?' +'+it.enh:''}${mine?'(穿着)':who?`(${who}在用)`:''}"><img alt="" src="${itemIcon(it)}">${it.enh?`<i class="en">+${it.enh}</i>`:''}${BOOK_N.get(it.uid)>1?`<i class="en">×${BOOK_N.get(it.uid)}</i>`:''}${mine?'<i class="ow">穿</i>':who?'<i class="ow">用</i>':''}${gearTier(it.base)>1?`<i class="tr">${TIER_RN[gearTier(it.base)]||gearTier(it.base)}</i>`:''}</button>`}
+// 职业技能的格子（0.13.1 用户定：放在主动和被动中间，图标 SKI['jk_' + 职业]，art/el_jobsk_art）；0.13.2（用户定）点了弹出职业技能的说明（HELP 'jsk:职业'）
+function elJskCell(e){const J=EL().jobs[e.job],jk=J&&J.jsk;if(!jk)return'';const ju=skIcon('jk_'+e.job);HELP['jsk:'+e.job]=()=>({t:'职业技能 · '+jk[0],b:hpP(`${J.name}：${jk[1]}`)});
+  return`<b class="elsep"></b><span class="elss job" role="button" tabindex="0" data-help="jsk:${e.job}" title="职业技能 · ${jk[0]}：${jk[1]}">${ju?`<img alt="" src="${ju}">`:`<b>${jk[0].slice(0,1)}</b>`}</span>`}
 // 技能位（0.11.4 用户定：显示装配了什么技能，图标 + 右上角等级；主动在前、被动(金底)在后、空位暗色）
 function elSlotsHTML(e,big,qk){const sl=elSlots(e),q=(pas,i)=>qk?` role="button" data-act="elxqk" data-v="ask:${e.id}|${pas?'p':'a'}|${i}"`:'';   // qk：0.12.2 卡片上点技能位直接换技能
   const t=(k,pas,i)=>{if(!k)return`<span class="elss emp${pas?' pas':''}"${q(pas,i)} title="空的${pas?'被动':'主动'}技能位"></span>`;const S=EL().skills[k],u=elSkIco(k);
     return`<span class="elss${pas?' pas':''}"${q(pas,i)} title="${S.name} ${elRoman(e.sk[k]||1)} 级">${u?`<img alt="" src="${u}">`:`<b>${S.name.slice(0,1)}</b>`}<i>${elRoman(e.sk[k]||1)}</i></span>`};
   const A=[],P=[];for(let i=0;i<sl[0];i++)A.push(t(e.ea[i],false,i));for(let i=0;i<sl[1];i++)P.push(t(e.ep[i],true,i));
-  const J=EL().jobs[e.job],jk=J&&J.jsk,ju=jk?skIcon('jk_'+e.job):'',JS=jk?`<b class="elsep"></b><span class="elss job" title="职业技能 · ${jk[0]}：${jk[1]}">${ju?`<img alt="" src="${ju}">`:`<b>${jk[0].slice(0,1)}</b>`}</span>`:'';   // 0.13.1（用户定）职业技能放在主动和被动中间（图标 SKI['jk_' + 职业]，art/el_jobsk_art）
+  const JS=elJskCell(e);   // 0.13.1（用户定）职业技能放在主动和被动中间（图标 SKI['jk_' + 职业]，art/el_jobsk_art）
   return`<div class="elssr${big?' big':''}${qk?' qk':''}">${A.join('')}${JS}${P.length?'<b class="elsep"></b>':''}${P.join('')}</div>`}
 // 技能：装配、学习（0.12.0：在教官那里学，要几小时，科技缩短，可花银币加速）、功勋升阶、锁定
 // 0.12.0（用户定）已学会的在上面，没学会的在下面、暗色
@@ -87415,6 +87427,8 @@ function elAttrHead(e){const J=elJobD(e),P=EL().personality[e.pers];
 function elAttrHTML(e){const tabs=`<div class="tabs sub">${[['gs','装备技能'],['st','详情属性'],['mr','婚配情况']].map(([k,n])=>elBtn('elxat',k,n,{on:EL_AT===k})).join('')}</div>`;
   return`${elSayHTML()}${elAttrHead(e)}${tabs}${EL_AT==='st'?elAtStHTML(e):EL_AT==='mr'?elAtMrHTML(e):elAtGsHTML(e)}`}
 // —— 装备技能 ——
+// 0.13.2（用户定）属性页写出职业技能（技能行中间的格子点了也能看）
+const elJskLine=e=>{const J=EL().jobs[e.job],jk=J&&J.jsk;return jk?`<p class="meta">职业技能 · <b>${jk[0]}</b>：${jk[1]}</p>`:''};
 function elAtGsHTML(e){const sl=elSlots(e);
   const cell=([s,n])=>{const it=itemByUid(e.gear[s]),Q=it?CFG.itemQ[baseQ(it.base)]:null;
     return`<button class="slot" type="button" data-act="elxpop" data-v="aeq:${e.id}|${s}"><span class="sn">${n}</span>${it?`<span class="sic" style="--qc:${Q.color}"><img alt="" src="${itemIcon(it)}">${it.enh?`<i class="en">+${it.enh}</i>`:''}</span><b style="color:${Q.color}">${itemName(it)}</b>`:'<span class="sic empty"></span><b class="meta">空</b>'}</button>`};
@@ -87423,7 +87437,7 @@ function elAtGsHTML(e){const sl=elSlots(e);
   const A=[],Pa=[];for(let i=0;i<sl[0];i++)A.push(sk(e.ea[i],false,i));for(let i=0;i<sl[1];i++)Pa.push(sk(e.ep[i],true,i));
   const L=e.learn?`<p class="meta">正在学：<b>${EL().skills[e.learn.k].name} ${elRoman(e.learn.lv)} 级</b>，还要 ${Math.max(0,Math.ceil((e.learn.end-metaNow())/60000))} 分钟(在「训练所」可以加速)</p>`:'';
   return`<h5>装备 <span class="meta">点格子更换</span></h5><div class="elgs">${EL_SLOTS.map(cell).join('')}</div>
-    <h5>技能 <span class="meta">主动 ${e.ea.length}/${sl[0]} · 被动 ${e.ep.length}/${sl[1]}，点格子更换</span></h5><div class="elsks">${A.join('')}${Pa.length?'<b class="elsep"></b>':''}${Pa.join('')}</div>${L}
+    <h5>技能 <span class="meta">主动 ${e.ea.length}/${sl[0]} · 被动 ${e.ep.length}/${sl[1]}，点格子更换</span></h5><div class="elsks">${A.join('')}${elJskCell(e)}${Pa.length?'<b class="elsep"></b>':''}${Pa.join('')}</div>${elJskLine(e)}${L}
     <div class="elrow">${elBtn('elxautog1',e.id,'一键装备',{ti:'只给这个人换上仓库里能穿的最好的装备(锁定了也能用)'})}${elBtn('elxauto1',e.id,'一键技能',{ti:'只给这个人按技能等级装配(锁定了也能用)'})}${elBtn('elxlock',e.id,e.lock?'已锁定配置':'锁定配置',{on:e.lock,ti:'锁定后，精英页的一键装备、一键技能不再改这个人的装备和技能'})}</div>
     <p class="meta">技能在「训练所」学：教官挑一批学生一起上课，学完每人升一级。功勋 ${e.rank} 阶：主动 ${sl[0]} 个、被动 ${sl[1]} 个技能位；技能最高 ${elRoman(elSkMax())} 级。</p>`}
 // 换装备：只列这个部位、这名精英能穿的；未装备（默认）= 谁都没穿的，已装备 = 有人穿着的（含自己）；从好到坏
