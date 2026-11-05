@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.1.2",
- "code": 220,
- "size": 18385543,
- "sha256": "19e65e2c064c84d3f677f1bb30ad02d725d311ef12315130dec42593f82bd7f0",
+ "ver": "0.13.1.3",
+ "code": 222,
+ "size": 18387870,
+ "sha256": "7bdaf1effcfb16bcc033fb75378b963ef8194d206b1e080b33c4ef521845c92c",
  "minLoader": 1,
- "sig": "AGzbuipGESFRv833FDveI21Tdrq4im6G45FznqB0SMDgXyCIoAYRnHxyNU9Ln6etaznxqhuTntIEUYP4QnEc7A==",
- "note": "0.13.1.2：玛蒂小人去掉星杖；测试版和正式版同步",
- "at": "2026-11-05 06:53 UTC"
+ "sig": "Z7FwbnN55ipusZr/9iZFHfJxo2H94CZtykER1zrG6h/D8Q6h0JfdBygIjl/luv/+DShnOIBSG7d86Xd7ccHCxw==",
+ "note": "0.13.1.3：系统检修一轮，修了玛蒂技能冷却、帕拉塞尔苏斯毒抗、家族第二批、搜打撤等 21 处问题",
+ "at": "2026-11-05 10:16 UTC"
 }
