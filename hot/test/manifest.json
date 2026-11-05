@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.1c",
- "code": 217,
- "size": 18269197,
- "sha256": "22198035655270ac39ce6cdba57dc87253562c9342aa3ce66692251c7ebe81cc",
+ "ver": "0.13.1.2",
+ "code": 221,
+ "size": 18385543,
+ "sha256": "5a3184732da8bdb6719ced0dfb9810fea76e38f727caa504c3faeb05d3df28ba",
  "minLoader": 1,
- "sig": "lqmATvQY0d0+7NigQiMcM3yytVlIQ5OAGAYZKcymwaOkycjntDruR1hG/iNKLQtyma2d3o0nuauQh8N4kg4lmA==",
- "note": "0.13.1c：家族声望条美化；回声墓城好像多了一块碑",
- "at": "2026-11-05 04:27 UTC"
+ "sig": "prLP7viRgMsr2megfzinP+9pXyplRx7AF9woONLT0OC1qhzuBY7dgCipLCgJ7Xqv2ZUmmJh2OkvriiyYk6u5Hg==",
+ "note": "0.13.1.2：新英雄教皇·玛蒂（兑换码）、皮肤学生时代；和正式版同步",
+ "at": "2026-11-05 06:58 UTC"
 }

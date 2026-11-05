@@ -43536,7 +43536,7 @@ Object.assign(HD_HEROES,{poisoner2:hdPoisoner2});
 
 // ---------- 0.13.1.1 教皇·玛蒂的小人（hdMati）、皮肤「学生时代」的小人（hdMatiSchool）、四个技能图标；照 art/portraits/mati.png、sk_matiSchool.png 画（美术代理）----------
 // 玛蒂：精灵少女、尖耳，银白超长卷发垂到脚边；白金高主教冠（金十字、蓝宝石）；白袍金边，前襟开缝和下摆露出深蓝里衬；肩上白色短披肩（金边、胸前金十字）；
-//   后手（立绘左手那边）握一根比人还高的金色十字星杖，杖头金环里一颗蓝菱形宝石；前手空着（装备的法杖 / 书是 ui/draw 画在前手的）。32 × 32 上金线一多就糊，金色只留在边上
+//   后手（立绘左手那边）原来握一根金色十字星杖，用户定去掉；前手空着（装备的法杖 / 书是 ui/draw 画在前手的）。32 × 32 上金线一多就糊，金色只留在边上
 const MT_HAIR='#e6e8f2',MT_HAIRD='#aeb2c8',MT_EYE='#4a7ac8';
 // 背后的超长银白卷发（外缘一起一伏 = 卷），迈步帧往后摆一点；y1 发梢到哪
 function mtHairBack(S,fr,hair,hairD,y1){const P=fr?[[10,7],[14.4,7],[14,22],[12.8,y1-1.4],[9.2,y1],[5.4,y1-0.6],[3.4,y1-3.4],[4.6,y1-7],[3.2,19.8],[5,15.8],[4.4,11.8],[7,8]]:[[10,7],[14.4,7],[14.4,22],[13.4,y1-1],[9.8,y1+0.2],[6,y1-0.2],[4.2,y1-2.8],[5.4,y1-6.4],[4,20],[5.8,16],[5.2,12],[7.4,8]];
@@ -43550,15 +43550,11 @@ function hdMati(fr){return hdFig(32,32,S=>{const b=fr?1:0,
     hair=hm(MT_HAIR,'hair'),hairD=hm(MT_HAIRD,'hair'),robe=hm('#f4f0e4','cloth'),navy=hm('#22306a','cloth'),gold=hdM('gold'),skin=hm('#f6e2d6','skin'),gem=hm('#3a7ae0','gem'),mitre=hm('#f6f0dc','cloth'),
     GD='#f2c45a',GL='#c8902a';
   mtHairBack(S,fr,hair,hairD,30.6);
-  // 十字星杖（后手握着，比人高）：金杖身、杖头下一颗金球，杖头金环里一颗蓝菱形宝石，环外上 / 左 / 下伸出星芒、斜角四点金光
-  const sx=4.8;S.cap(sx,6.6,sx,30.6,0.8,0.8,gold,{R:0.6});S.ell(sx,8.8,1.3,1,gold,{R:0.6});
-  S.part(gold,{R:0.6},p=>{p.ell(sx,3.8,3.1,3.1);p.cut.ell(sx,3.8,1.9,1.9);p.poly([[sx-0.6,1],[sx,-0.6],[sx+0.6,1]]);p.poly([[sx-2.8,3.2],[sx-4.6,3.8],[sx-2.8,4.4]]);p.poly([[sx+2.8,3.2],[sx+4,3.8],[sx+2.8,4.4]])});
-  for(const[x,y]of[[sx-2.8,1],[sx+2.6,1],[sx-2.8,6.4]])S.px(x,y,[gold,4]);
-  S.part(gem,{R:0.6},p=>p.poly([[sx,1.8],[sx+1.5,3.8],[sx,5.8],[sx-1.5,3.8]]));S.px(sx-0.4,3,'#d8ecff');
+  const sx=4.8;   // 后手的位置（0.13.1.1 用户定：星杖去掉了）
   hdLegs2(S,fr,{pants:navy,boot:hm('#f0e8d6','cloth'),bootH:2,skirt:true});
-  // 后手：宽袖往下垂（金边、深蓝里衬），手握在杖上
+  // 后手：宽袖往下垂（金边、深蓝里衬）
   S.cap(10.6,16.4,7,20.2,2.4,2.2,robe);S.part(robe,{R:1.2},p=>p.poly([[6,18.6],[10,19],[9.6,24],[4.4,24.4],[3.6,22.4]]));S.ln(4.4,24,9.4,23.6,GL);
-  S.ell(sx+0.2,21,1.8,1.7,skin);S.px(sx,19,[gold,3]);
+  S.ell(sx+0.2,21,1.8,1.7,skin);
   // 白长袍（拖到脚边）：深蓝下摆一圈金边，前襟开缝露出深蓝里衬（两道金边），袍上几点金线花纹
   S.part(robe,{R:3},p=>p.poly([[9.6,15],[22.4,15],[25.8+b*0.4,30.4],[6.2-b*0.4,30.4]]));
   S.part(navy,{R:0.8,edge:false},p=>p.poly([[7,28],[25,28],[25.8+b*0.4,30.4],[6.2-b*0.4,30.4]]));S.ln(7,27.8,25,27.8,GL);
@@ -75966,8 +75962,8 @@ function rdRedeem(raw){const D=rdDecode(raw);if(D.err)return'兑换码无效';
 
 // ---------- 0.13.1.1（用户定）兑换码英雄锁定：玛蒂、冷、莉莲（CFG.heroes 里 codeOnly 的）只认兑换码 ----------
 // 这份存档用过这位英雄的兑换码（码的哈希在 META.redeemed / redeemed3 里，CFG.redeemCodes 里 hero = 这位）才算拥有；
-//   别的办法改出来的（改存档、CE 改内存……）一查到就收回：没拥有、1 星（英雄之魄不动）。查的时机：读档（metaFix）、开局（newGame 把没解锁的从阵容里去掉）、
-//   不在局内时每 3 秒一次（hlkTimer）；收回的同时从出战阵容里去掉
+//   别的办法改出来的（改存档、CE 改内存……）一查到就收回：没拥有、1 星（英雄之魄不动）。查的时机（用户定）：读档（metaFix）、开局（newGame 开头）。
+//   收回的同时从出战阵容里去掉
 const HLK_CODES={};   // 英雄 → 它的兑换码哈希（第一次用时从 CFG.redeemCodes 建）
 function hlkCodes(id){let L=HLK_CODES[id];if(!L){L=HLK_CODES[id]=Object.keys(CFG.redeemCodes).filter(k=>CFG.redeemCodes[k].hero===id)}return L}
 const hlkNames=()=>CFG.run.noRewardHeroes.map(id=>CFG.heroes[id]?CFG.heroes[id].name:id).join('、');   // 参战就不计通关、奖励减半的英雄（莉莲、冷、玛蒂），结算提示用
@@ -75977,8 +75973,6 @@ function hlkOk(id,m){if(!hlkOn(id))return true;m=m||META;if(!m)return false;cons
 // 收回不该有的；返回收回了几位
 function hlkFix(m){m=m||META;if(!m||!m.heroes)return 0;let n=0;for(const id in CFG.heroes){if(!hlkOn(id))continue;const H=m.heroes[id];if(H&&H.owned&&!hlkOk(id,m)){H.owned=false;H.star=1;n++;if(Array.isArray(m.lineup))m.lineup=m.lineup.filter(x=>advBase(x)!==id);if(m.hero===id)m.hero=(m.lineup&&m.lineup[0])||HIDS.find(k=>!CFG.heroes[k].advOf&&!hlkOn(k)&&m.heroes[k]&&m.heroes[k].owned)||HIDS[0]}}
   if(n){m._dirty=true;console.warn('hlkFix',n)}return n}
-function hlkTimer(){try{if(typeof META==='undefined'||!META||(typeof running!=='undefined'&&running))return;if(hlkFix(META)){saveMeta();toast('兑换码英雄只能用兑换码获得，已收回')}}catch(e){console.warn('hlkTimer',e)}}
-if(typeof window!=='undefined'&&typeof setInterval==='function')setInterval(hlkTimer,3000);
 
 // ---------- 0.11.4 零碎改动（用户 2026-10-24 策划「补充优化」）----------
 // 红色英雄五星所需英雄之魄 500 → 400（data/heroes.js）：已经五星的红色英雄，每位返还 100 个这位英雄的英雄之魄（只返一次，m.r5Ref 记着；进营地时提示）
@@ -82328,7 +82322,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.1.1',GAME_TAG='稳定版',GAME_CODE=219,GAME_BUILD="c795dba",GAME_BUILT=1793860648409,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.1.2',GAME_TAG='稳定版',GAME_CODE=220,GAME_BUILD="bda20a3",GAME_BUILT=1793861805867,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');

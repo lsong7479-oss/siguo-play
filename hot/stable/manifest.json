@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.1.1",
- "code": 219,
- "size": 18386872,
- "sha256": "193bf186e27ae678ad7020269fdb8b2c949cd6d7cfe4f17b8a15383c0f3273cd",
+ "ver": "0.13.1.2",
+ "code": 220,
+ "size": 18385543,
+ "sha256": "19e65e2c064c84d3f677f1bb30ad02d725d311ef12315130dec42593f82bd7f0",
  "minLoader": 1,
- "sig": "TmHrsKVEqzfR25SB3Weyb0Hh2S4zZ2An4HNlSIF4uFeYInNo1o3X4x8FRDNG2TcTN++hCwg/VaA8BXdYPr5wMg==",
- "note": "0.13.1.1：新英雄教皇·玛蒂（兑换码）和皮肤学生时代；兑换码英雄锁定",
- "at": "2026-11-05 06:27 UTC"
+ "sig": "AGzbuipGESFRv833FDveI21Tdrq4im6G45FznqB0SMDgXyCIoAYRnHxyNU9Ln6etaznxqhuTntIEUYP4QnEc7A==",
+ "note": "0.13.1.2：玛蒂小人去掉星杖；测试版和正式版同步",
+ "at": "2026-11-05 06:53 UTC"
 }
