@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.12.10",
- "code": 204,
- "size": 17650612,
- "sha256": "871a137237a8b98400a9d57583cbe1d76d39cb8c2ecb13bcecca317d0c6b7802",
+ "ver": "0.13.1",
+ "code": 218,
+ "size": 18269196,
+ "sha256": "6c6712289718534e416ea8e05bed3680121a832a47625ec7d0978dc14ec79446",
  "minLoader": 1,
- "sig": "jwmWwhMWD7eBgYV3HKT1LQEaXgTLKAMKflhO25xHag3i98juGrhwqtc8uJFXa4B1vGicPvIWG1ovqMOJAm3iQQ==",
- "note": "新剧情引子「开拓前夕」；死国奖励分开算（银币、建材 ×1.5，其余 ×1.25）；马可·波罗家族声望随星级 +25～50%；修复日常签到的星期栏",
- "at": "2026-11-02 06:28 UTC"
+ "sig": "bLa16p3c5hksYqX+QXWnS+mlcrvHwhtnQLOdu+cW4vRWxFqQp2qOCXbhEeLUr8zW9qLcEtaQHTkid+P3+h908g==",
+ "note": "0.13.1 稳定版：精英职业改版、搜打撤模式、家族重置一到四阶、英雄图鉴、英灵碑、塔楼皮肤、新英雄李偃、进阶帕拉塞尔苏斯等",
+ "at": "2026-11-05 04:43 UTC"
 }
