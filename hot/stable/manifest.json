@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.1",
- "code": 218,
- "size": 18269196,
- "sha256": "6c6712289718534e416ea8e05bed3680121a832a47625ec7d0978dc14ec79446",
+ "ver": "0.13.1.1",
+ "code": 219,
+ "size": 18386872,
+ "sha256": "193bf186e27ae678ad7020269fdb8b2c949cd6d7cfe4f17b8a15383c0f3273cd",
  "minLoader": 1,
- "sig": "bLa16p3c5hksYqX+QXWnS+mlcrvHwhtnQLOdu+cW4vRWxFqQp2qOCXbhEeLUr8zW9qLcEtaQHTkid+P3+h908g==",
- "note": "0.13.1 稳定版：精英职业改版、搜打撤模式、家族重置一到四阶、英雄图鉴、英灵碑、塔楼皮肤、新英雄李偃、进阶帕拉塞尔苏斯等",
- "at": "2026-11-05 04:43 UTC"
+ "sig": "TmHrsKVEqzfR25SB3Weyb0Hh2S4zZ2An4HNlSIF4uFeYInNo1o3X4x8FRDNG2TcTN++hCwg/VaA8BXdYPr5wMg==",
+ "note": "0.13.1.1：新英雄教皇·玛蒂（兑换码）和皮肤学生时代；兑换码英雄锁定",
+ "at": "2026-11-05 06:27 UTC"
 }
