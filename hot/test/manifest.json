@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.1",
- "code": 215,
- "size": 17988740,
- "sha256": "5f18a9ead0a4047521f43588a8bb7f82faa126d3b2e1db9def3419b7405f784b",
+ "ver": "0.13.1b",
+ "code": 216,
+ "size": 18234321,
+ "sha256": "319c0da63fae81700606ef69cd2548a7fa839bb369965995e2e19d4b064746e4",
  "minLoader": 1,
- "sig": "DM3loI8Cyj1hRoE3rIBlhdm2TmssbL0aBEGuIixiaZc/iMXyYhit2zLikLTH77Q0mjes7R6xYaPM5NPloaEsjA==",
- "note": "0.13.1：英雄图鉴、英灵碑、「我都记得」按英灵碑人数、塔楼皮肤六款、存档 ID 带日期",
- "at": "2026-11-04 17:25 UTC"
+ "sig": "YmDwcHet0RFUhp79TWyrr7gdKK2mFJe5P3L0dMXqiovw6dOmw03qYUdDgPRWnZvQwuzU8ICaRR6WyMPPSPp8FA==",
+ "note": "0.13.1b：新英雄李偃、进阶帕拉塞尔苏斯、一到四阶家族重置、转职分阶；修阵型卡住、神行驻守城墙",
+ "at": "2026-11-05 03:26 UTC"
 }
