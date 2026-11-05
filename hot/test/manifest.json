@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.1b",
- "code": 216,
- "size": 18234321,
- "sha256": "319c0da63fae81700606ef69cd2548a7fa839bb369965995e2e19d4b064746e4",
+ "ver": "0.13.1c",
+ "code": 217,
+ "size": 18269197,
+ "sha256": "22198035655270ac39ce6cdba57dc87253562c9342aa3ce66692251c7ebe81cc",
  "minLoader": 1,
- "sig": "YmDwcHet0RFUhp79TWyrr7gdKK2mFJe5P3L0dMXqiovw6dOmw03qYUdDgPRWnZvQwuzU8ICaRR6WyMPPSPp8FA==",
- "note": "0.13.1b：新英雄李偃、进阶帕拉塞尔苏斯、一到四阶家族重置、转职分阶；修阵型卡住、神行驻守城墙",
- "at": "2026-11-05 03:26 UTC"
+ "sig": "lqmATvQY0d0+7NigQiMcM3yytVlIQ5OAGAYZKcymwaOkycjntDruR1hG/iNKLQtyma2d3o0nuauQh8N4kg4lmA==",
+ "note": "0.13.1c：家族声望条美化；回声墓城好像多了一块碑",
+ "at": "2026-11-05 04:27 UTC"
 }
