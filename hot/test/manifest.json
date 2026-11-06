@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.1.4",
- "code": 225,
- "size": 18391010,
- "sha256": "b8beece47b521673c36121141eda7630b54f5e327b926807d089a6131402b281",
+ "ver": "0.13.2",
+ "code": 226,
+ "size": 18657768,
+ "sha256": "80250a0c2f8e6b020012a3bc42083e09eb4f9be3c59020dcc683afe39efc0aa5",
  "minLoader": 1,
- "sig": "KS3GsGjrHT9WnHt1AujHhTsXYX08GF/T1gt4iGkRCE+8ttdzgS7HPWjJCpxvZkvrqsGNG+Y4C9+OQ7BhA1AqpA==",
- "note": "0.13.1.4：毒池连续结算、精英升级学技能新规则、家族特性叠加、搜打撤空投和首领等按反馈调整；和正式版同步",
- "at": "2026-11-05 16:03 UTC"
+ "sig": "p8r8K47lP9iuxdgfLnazdgwimTya17jTZ63Mxwdo/21GrnSWsn1n1JdfVG6jt02y8WIEmwHQQzOi58IgZcC+lA==",
+ "note": "0.13.2 测试版：九阶天灾海域、航空司令帕恩、五阶家族、进阶范海辛、众和议会塔楼皮肤、塔楼兵营数值调整",
+ "at": "2026-11-06 07:45 UTC"
 }
