@@ -24395,9 +24395,11 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
 }
 
 // ---------- 0.13.2 家族重置第五批：七阶地区的家族（用户《0.13策划-家族重置》九节；逻辑 game/el_fam17.js；特性 / 技能 / 兵种在 data/el_fam17a.js）----------
-// 这一批只做定稿的三家：迷海遗迹：尼莫 nemo；斗神大殿：萝拉 lola（只有女性）；浮空之城：菲尔 fier。玄钢山城（凡斯）、黑幽灵船（戴肯）还在改，不动（老家族照旧）
+// 这一批只做定稿的三家：迷海遗迹：尼莫 nemo；斗神大殿：萝拉 lola（只有女性）；浮空之城：菲尔 fier。玄钢山城（凡斯）还在改，不动（老家族照旧）
+// 第二批（七阶代理加）：黑幽灵船：戴肯 decken（特性、技能在 data/el_fam17b、game/el_fam17b；没有特色兵种，用户定）
 // 和英雄的关系（用户定）：英雄斗神·萝拉是萝拉家族的人（不是族长，族长是赛琳娜）；英雄气球船长·韦恩是菲尔家族的人。这两家的技能、兵种不和英雄共用，所以不进 famHero
 // 这三个地区原来的家族（data/el_late，0.12.0 Claude 定的那一版）：
+//   戴肯 decken（黑幽灵船，七阶代理加）：老的「范·德·戴肯」就是这家，沿用老键（声望、血脉照旧，老特性 f_decken_40 / 60 / 100 按门槛对上新特性）；姓改成「戴肯」（game/el_fam17b.elFam17bMig）
 //   尼莫 nemo：同名，沿用老键，老存档里的血脉、声望照旧，老特性的键按门槛对上新特性（f_nemo_40 → 新的 40% 特性，同六阶的瓦特）
 //   马克西姆斯 huo、斯巴达克 ye（斗神大殿）、蒙哥菲尔 montgolfier（浮空之城）：去掉；声望均摊给同地区的新家族；血脉并进这个地区的平民、姓不改、老特性去掉（同五阶张氏的做法）
 //     为什么不并进新家族（Claude 定，拿不准，回报里列了）：萝拉家族只有女性，老家族的男人并进去会违反规则；用户说剧情稿的蒙哥菲尔家和菲尔家没有关系
@@ -24412,6 +24414,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
   nemo:{L:{atk:2,hp:1,reload:1,vision:1,speed:-1}, v:0.2, sp:{dmgR:[0.09,0.16]}},   // 潜艇：物理攻击、装填、生命 +300、视野；在水里（移速 −1）
   lola:{L:{atk:2,ap:2,aspd:1,hp:-1}, v:0.2, sp:{dmgM:[0.09,0.16]}},                 // 精灵法术系、把法术融进兵击：物理攻击、法术攻击、攻速
   fier:{L:{aspd:2,atk:1,rng:1,vision:1,hp:-1}, v:0.2, sp:{dmgR:[0.09,0.16]}},       // 热气球：攻速 +16%、射程、目标闪避、防空
+  decken:{L:{atk:2,hp:1,rng:1,vision:1,mdef:-1}, v:0.2, sp:{dmgM:[0.09,0.16]}},     // 海盗：物理攻击、生命、射程 +15%、瞭望；勾锁贴身劫掠（七阶代理加，Claude 暂定）
  };
  const F=(key,fam,reg,crest,head,desc,sit,look,o)=>{const T=E.fam17L[key];return Object.assign({key,fam,reg,L:T.L,v:T.v,sp:T.sp,crest,head,desc,sit,look:{hr:look[0],ey:look[1],sk:[SK(look[2])],b:BD(look[3])},tr0:[],tmp7:1},o||{})};   // tmp7：档位是暂定的（待七阶倍率表）
  const L17=[
@@ -24430,9 +24433,14 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
     '菲尔家族一直在浮空之城的岛上生活，是做热气球的人家。英雄韦恩是菲尔家族的人。',
     '菲尔家族一直在浮空之城的岛上生活。',
     [[6],[4],3,9]),   // 艾蒂安：七十岁，做热气球的老当家；白发剪得很短，个子小，总把一副黄铜风镜推在额头上，手上全是缝气囊磨出的茧
+  // ===== 黑幽灵船（七阶代理加）=====
+  F('decken','戴肯','ghostShip',{shape:'shield',bg:'black',pat:'ship',fg:'cyan'},'安德烈·德·戴肯',
+    '戴肯家族住在海中的群礁上，世代以劫掠为生，偶尔狩猎。英雄杰克(黑幽灵船长)曾经是戴肯家族最强大的人，亡灵化以后信念不死，甚至继承了原来的意志，对亡灵充满仇恨。',
+    '亡灵潮来了以后，戴肯家族引以为傲的黑幽灵船被亡灵夺走，支脉逃了出来，向海洋联盟寻求庇护。',
+    [[0,5],[4],5,13]),   // 安德烈：男，四十多岁，族长，世代劫掠为生，瞎了一只眼；黑红色卷发扎在脑后，戴单边眼罩，一身流氓气（眼罩、发型面相画不出来，只记在这里）   // 家徽沿用老的范·德·戴肯（Claude 定）
  ];
  for(const f of L17)if(f.key==='lola')f.look.ear=1;   // 精灵：尖耳（el_look 的 ear）
- E.fam17=L17;E.fam17Regs=['mistSea','wuHall','skyCity'];
+ E.fam17=L17;E.fam17Regs=['mistSea','wuHall','skyCity','ghostShip'];
  // 老家族的姓（迁移时改姓用；要在换掉之前记下）
  E.fam17OldFam={};for(const r of E.fam17Regs){const S=E.bloodSrc[r];for(const f of(S?(Array.isArray(S.f)?S.f:S.f?[S.f]:[]):[]))if(f.key)E.fam17OldFam[f.key]=f.fam}
  for(const r of E.fam17Regs){const S=E.bloodSrc[r];S.f=[]}   // 平民血脉沿用 el_late 的（七阶倍率表出了再换）
@@ -24521,6 +24529,41 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
  SKS('subCaptain',['cannoneer','heavyGunner','bigGunner']);SKS('balloonGunner',['musketeer']);
  const cat=(c,L)=>{const x=E.jobCat.find(r=>r[0]===c);if(x)for(const k of L)if(!x[2].includes(k))x[2].push(k)};
  cat('ranged',['subCaptain','balloonGunner']);
+ for(const k in E.skills)E.skills[k].id=k;
+}
+
+// ---------- 0.13.2 家族重置第五批 · 七阶：戴肯（黑幽灵船）的特性、技能（七阶代理加；逻辑 game/el_fam17b.js；家族本身在 data/el_fam17.js）----------
+// 用户《0.13策划-家族重置》九节「黑幽灵船：戴肯」：特性、秘传用户定；特殊技能望楼拟、用户改；没有特色兵种（用户定）
+// 新属性键（局内效果和中文说明在 game/el_fam17b）：
+//   f17bLoot [地区材料, 建材] 劫掠之手：战后结算的地区木、矿(石)、皮、布 ×(1 + 前者)，建材 ×(1 + 后者)
+//   f17bSea [暴击率, 暴击伤害, 闪避率] 海之眷顾：自身在水域中、或打中在水域中的亡灵时暴击率 / 暴击伤害加成（engine/enemy.dealE 的暴击那步调 f17bSea）；自身在水域中闪避率 +
+//   f17bLone [闪避率, 减伤, 增伤] 孤舰深入（秘传被动，需求：船只单位）
+//   已有的键：dodge 偏斜值(固定值)、deflE 偏斜效果（game/el_fam17a）、rng 射程、hitK 命中值、atkX / hpX 独立乘区（game/el_fam3）
+// Claude 定（策划没写细的，回报里列了）：
+//   劫掠之手：这一局上过场的精英有人带着就算(阵亡了也算)，几名带着的也只算一次(同德雷克的劫掠后裔)；地区材料是每波缴获的、商人那里买的四种基础物资(不含特产)，
+//     加成后的小数按概率进位；建材四舍五入
+//   海之眷顾：「水域」同坎宁的镇守海疆(站在水里；城墙上、塔上、飞着的不算)；「在水域中的目标」= 站在水里的地面亡灵(天上的不算)；
+//     暴击率 +25% = 暴击点数 +25(韧性 100 时暴击率 +25%)；自身在水里和目标在水里只算一次；闪避率每 0.25 秒看一次站没站在水里
+//   勾锁：瞄准点附近 1.5 格内最近的亡灵(要在 8 格内)，没有就打 8 格内离自己最近的；天上的也能勾；0.25 秒荡到它身边(期间无敌，同冲刺)，到了再造成伤害、眩晕；
+//     荡到的时候它已经死了或跑出 3 格就落空；城墙上、正载在船上的船员不能用
+//   孤舰深入：「队友」= 我方英雄、精英、士兵(建筑不算；载在自己船上的船员不算)；每 0.25 秒看一次周围 4 格；增伤进加算池子，减伤进减伤池子，闪避率直接加在偏斜率上
+//   技能图标先借英雄杰克的(勾锁借致命勾锁，孤舰深入借幽灵突袭)
+{const LV=(a,b)=>[a,a+(b-a)*0.1,a+(b-a)*0.2,a+(b-a)*0.3,a+(b-a)*0.5,a+(b-a)*0.6,a+(b-a)*0.7,a+(b-a)*0.8,a+(b-a)*0.9,b].map(v=>Math.round(v*1000)/1000);
+ const E=CFG.elite,FX=E.famFx,SHIP=E.f15b.ship;
+ // —— 局内参数（Claude 定）——
+ E.f17b={int:0.25, loneR:4, hookT:0.25, hookPick:1.5, hookMiss:3, lootKinds:['wood','ore','cloth','hide']};   // int 每几秒看一次水域 / 周围队友；loneR 孤舰深入的格数；hookT 勾锁荡过去的秒数；hookPick 瞄准点附近几格内找目标；hookMiss 荡到时目标离开几格算落空
+ // —— 家族特性（用户定）：[名字, 门槛, 属性]，说明按属性自动写（game/el_blood 的 EL_STD3）——
+ FX.decken.push(['戴肯的直觉',0.2,{dodge:20, deflE:0.2}],['戴肯的瞭望',0.4,{rng:0.15, hitK:0.1}],['劫掠之手',0.6,{f17bLoot:[0.1,0.2]}],['戴肯的狠辣',0.8,{atkX:0.15, hpX:0.1}],['海之眷顾',1,{f17bSea:[0.25,0.4,0.1]}]);
+ // —— 家族技能：fsk 家族、fr 要到的声望（尊敬 = 特殊技能，狂热 = 秘传）；「A～B」= 1～10 级的表；jreq = 需求：船只单位 ——
+ const LN=LV(0.2,0.3),LD=LV(0.15,0.25);
+ Object.assign(E.skills,{
+  el_f17bHook:{name:'勾锁', fsk:'decken', fr:'尊敬', sk:'f17bHook', raw:true, sc:['b'], lvT:{ad:LV(1.2,1.5), stun:LV(1,2)}, ico:'jkHook'},
+  el_f17bLone:{name:'孤舰深入', pas:true, fsk:'decken', fr:'狂热', jreq:SHIP, st1:{f17bLone:[0.1,0.2,0.15]}, lvT:{f17bLone:LN.map((v,i)=>[0.1,v,LD[i]])}, ico:'jkRaid'},
+ });
+ Object.assign(CFG.skills,{
+  f17bHook:{name:'勾锁', cd:10, aim:'target', range:8, b:80, ad:1.2, stun:1,
+    desc:p=>`向施法距离 ${p.range} 格内的一个敌人甩出勾锁，把自己拉到它身边，造成 ${sv_(p.b,p.ad)} 伤害，并眩晕 ${Math.round(p.stun*10)/10} 秒`},
+ });
  for(const k in E.skills)E.skills[k].id=k;
 }
 
@@ -25710,7 +25753,7 @@ f4OlN f4OlU f4RollU f4RollV f4SwU f4SwV f4SwP f4LsU f4LhU f4LhV f4PsU f4PsCd f4P
 svSq elBC elMvP elGun elChg elMvT elChgOn elRepT elHealT visFix elHealF elHealK jsHoldU jsHX jsHY jsCvU jsCvR jsGhU jsKs jsKsU elAccT elCv
 fbS f5bS
 f15S f15IdU f15Fg
-f16bS f17S`.trim().split(/\s+/);   // elBC…elHealK：0.13 精英职业技能（game/el_jobfx）；jsHoldU…jsKsU：0.13 精英新技能（game/el_jsk）；elAccT / elCv：骑兵加速（game/el_jobfx）   // svSq：0.12.7b 幸存者模式的队员位置（game/sv_squad）   // es2Rd es2Bn es2ArcN：0.12.7 代理 ES 加（精英技能第三批，game/el_skills3）   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）   // ydv*：0.12.5 第二轮代理 T，源能装置给的护盾、攻击加成（structs/yn_tdev）
+f16bS f17S f17bS`.trim().split(/\s+/);   // elBC…elHealK：0.13 精英职业技能（game/el_jobfx）；jsHoldU…jsKsU：0.13 精英新技能（game/el_jsk）；elAccT / elCv：骑兵加速（game/el_jobfx）   // svSq：0.12.7b 幸存者模式的队员位置（game/sv_squad）   // es2Rd es2Bn es2ArcN：0.12.7 代理 ES 加（精英技能第三批，game/el_skills3）   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）   // ydv*：0.12.5 第二轮代理 T，源能装置给的护盾、攻击加成（structs/yn_tdev）
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -48454,8 +48497,9 @@ function dealE_(i,raw,o){
   if(o.hk&&o.hk.hf&&o.hk.hf.landE&&!o.dot)o.hk.hf.landE(o.hk,i,o);   // v0.8.10 英雄打中了（闪避之后；HERO_FX[id].landE：凡恩「魔法屏障」）   // v0.7.0 凡恩「魔法屏障」：打中就加魔法护盾（每秒最多一次；v0.7.0 修复：落空、闪避掉的不算）
   if(ETG[E.t[i]]||E.clk[i]>0)eReveal(i);   // 弱隐身：挨打就显形（闪避掉的不算；燃烧、中毒这类持续伤害算）
   // bcF：0.13 精英职业刺客、影杀者「从背后攻击时必定暴击」（o.bc = 出手的精英）
+  // sea：0.13.2 七阶代理加，戴肯「海之眷顾」自身或目标在水里：暴击点数 +100 × sea[0]、暴击伤害 +sea[1]（game/el_fam17b.f17bSea；只看精英身上 f17bS.sea，别的出手不多读）
   // 暴击：暴击点数 = 100 + 100 × 暴击率（老数据的暴击率换成点数，对韧性 100 时概率不变）；暴击率 = (暴击 − 韧性) ÷ 韧性；o.crit ≥ 1 = 必定暴击（隐身首击、隐秘之术）；暴击伤害 = max(100%, 暴击倍率 − 守护)
-  const bcF=!!(o.bc&&isBehind(i,o.bc.x,o.bc.y)),pc_=1+(POT_ON&&(o.hk||o.fu||o.su)?POT.crit:0)+(o.critK||0);if((o.crit||o.critPt||pm.critPt||pc_>1||bcF)&&!defl&&!o.dot){const T=G.eTough+(c_.tough||0),pc=o.crit>=1||bcF||T<=0?1:((100+100*(o.crit||0)+(o.critPt||0)+pm.critPt)*pc_-T)/T;if(pc>0&&Math.random()<pc){dmg*=Math.max(1,((o.critMul||CFG.combat.critMul)+pm.critDmg-(c_.critGuard||0))*(E.fsNc[i]?1:1-em.critRes));crit=true;if(o.s2Vc)o.s2C=1}}   // hitPt / critPt / critDmg：v0.8.22 卡「精确瞄准」「弱点瞄准」全体单位的命中、暴击、暴击伤害   // critGuard：亡灵的「守护」（暴击伤害 − 守护，《数值策划案》）；v0.9.0 修——原来字段叫 guard，跟圣堂墓园 / 腐化圣堂 / 机械工厂替伤亡灵的 guard 技能（对象）撞名，数字减对象得 NaN，替伤亡灵挨一次暴击生命就变 NaN，空血不死   // s2C：S2 加，v0.10.11 弱点洞悉记下这一下暴击了（units/s2_camps.s2Hit 读）
+  const bcF=!!(o.bc&&isBehind(i,o.bc.x,o.bc.y)),sea=o.hk&&o.hk.f17bS&&o.hk.f17bS.sea?f17bSea(o.hk,i):null,pc_=1+(POT_ON&&(o.hk||o.fu||o.su)?POT.crit:0)+(o.critK||0);if((o.crit||o.critPt||pm.critPt||pc_>1||bcF||sea)&&!defl&&!o.dot){const T=G.eTough+(c_.tough||0),pc=o.crit>=1||bcF||T<=0?1:((100+100*(o.crit||0)+(o.critPt||0)+pm.critPt+(sea?100*sea[0]:0))*pc_-T)/T;if(pc>0&&Math.random()<pc){dmg*=Math.max(1,((o.critMul||CFG.combat.critMul)+pm.critDmg+(sea?sea[1]:0)-(c_.critGuard||0))*(E.fsNc[i]?1:1-em.critRes));crit=true;if(o.s2Vc)o.s2C=1}}   // hitPt / critPt / critDmg：v0.8.22 卡「精确瞄准」「弱点瞄准」全体单位的命中、暴击、暴击伤害   // critGuard：亡灵的「守护」（暴击伤害 − 守护，《数值策划案》）；v0.9.0 修——原来字段叫 guard，跟圣堂墓园 / 腐化圣堂 / 机械工厂替伤亡灵的 guard 技能（对象）撞名，数字减对象得 NaN，替伤亡灵挨一次暴击生命就变 NaN，空血不死   // s2C：S2 加，v0.10.11 弱点洞悉记下这一下暴击了（units/s2_camps.s2Hit 读）
   if(crit&&o.hk&&o.hk.hf&&o.hk.hf.critE)o.hk.hf.critE(o.hk,i,o);   // 0.12.6 代理 N 加：英雄打出暴击时的钩子 HERO_FX[英雄].critE（进阶-夜鸦「断喉之刃」暴击减冷却，heroes/assassin2）
   // 防御最先扣（用户定）、不保底：有效防御 = max(0, (防御 + 格挡防御〔格挡时〕 − 固定穿透) × Π(1 − 穿透比例))；持续伤害不算防御、格挡
   //   o.am：攻击方的增伤倍率（塔、士兵、英雄普攻带上）——raw ÷ am 是「攻击」，先减防御再乘回去；没带 am 的老调用按 raw 整个减防御
@@ -78816,6 +78860,7 @@ function awardMeta(win,settle){for(const k in G.souls||{})if(!CFG.heroes[k])dele
   {const td=alTrade();if(td){got.trade=td;for(const k of['银币','建材','科研点','设计点'])if(td[k])got[k]=(got[k]||0)+td[k]}}{const t2=f16aOath();if(t2){got.f16Oath=t2;got.银币=(got.银币||0)+t2.银币}}   // f16aOath：0.13.2 第四批代理 16a 加，阿里巴巴家族「天平之誓」（game/el_fam16a，和贸易天平各算各的）   // v0.9.0 阿里巴巴「贸易天平」：剩下的铜币换资源（每种总量最多基础结算奖励的 300%）
   if(got.金币>0){const mk=G.map||'wild',st=goldDayState(),cap=goldCapOf(mk,DIFF.id),g=Math.min(got.金币,Math.max(0,cap-(st.m[mk]||0)));got.goldCut=got.金币-g;got.金币=g;st.m[mk]=(st.m[mk]||0)+g;got.goldDay=st.m[mk]+'/'+cap}   // v0.4.2 每日金币上限；v0.5.9 按地图
   const cleared=win||settle?G.wave:Math.max(0,G.wave-1);got.hero=G.heroes[0]?G.heroes[0].id:null;got.heroes=G.heroes.filter(h=>!h.npc&&!h.elite).map(h=>h.id);got.soulMap=soulDayCap(Object.assign({},G.souls),got);got.mats=Object.assign({},G.mats||{});got.wares=Object.assign({},G.wares||{});got.cleared=cleared;
+  f17bLoot(got);   // f17bLoot：0.13.2 七阶代理加，戴肯「劫掠之手」地区材料、建材（game/el_fam17b；要在下面入库之前）
   {const ex=Math.round(waveRewSum(cleared)*olvMapExp(G.map||'wild')*(DIFF.reward||1)*(ban?CFG.run.noRewardMul:1));   // v0.10.2 每波 × waveRewK（方案 D）
   got.exp=ex;if(ex>0)olvPend(ex,Object.keys(G.usedB||{}),got.heroes,G.map||'wild',elOlvKeys())}   // v0.8.18（用户定）经验 = 波数 × 结算倍率 × 地图基础经验，只能升到这张地图那一阶的上限   // v0.8.14 局外经验：结算时玩家自己分（game/olv、ui/menus.showResult）
   if(!META.heroUse)META.heroUse={};for(const id of got.heroes)META.heroUse[advBase(id)]=(META.heroUse[advBase(id)]||0)+1;   // v0.7.3 进阶形态出战算原版的次数   // v0.3.3 英雄使用次数（英雄列表按它排序）
@@ -80770,7 +80815,7 @@ function elRecalc(h){const e=elById(h.elite);if(!e)return;const S=h.d.elS||{},w=
     h.speed*=1+(t.uMove||0)+(pm.moveSpd||0);h.gDmg+=w.cls==='melee'?(t.uMelee||0):rg?(t.uRanged||0):0;h.aspd+=w.cls==='melee'?(t.uMeleeSpd||0):rg?(t.uRgSpd||0):0;
     h.def+=t.uDef||0;h.mdef+=t.uMDef||0;h.dodge+=t.uDodge||0;obFElRecalc(h,w,t,mag,rg)}   // obFElRecalc：0.12.2 代理 4，补齐其余士兵的卡和科技（game/obf_elite）
   elXApply(h,S);elHallApply(h,e);f4Recalc(h,S,w);fbRecalc(h,S,w,mag,rg);f5bRecalc(h,S,w,mag,rg);f16bRecalc(h,S,w,mag,rg);   // f16bRecalc：0.13.2 代理 16b 加（雪步、毒沼、海豚、掷弹……，game/el_fam16b）   // f5bRecalc：0.13.2 代理 15b 加（船只单位、守护、斗舰生命，game/el_fam15b）   // f4Recalc：0.13.1 代理 A 加（沙漠适应、古老之咒、翻滚 / 盾墙期间的加成，game/el_fam14a）   // 0.12.2 家族特性的独立乘区：生命、物防、法防（game/el_fam3）；0.13.1 英灵碑的庇护（game/el_hall）
-  f16aRecalc(h,S,w,mag,rg);f17Recalc(h,S,w,mag,rg);   // f17Recalc：0.13.2 第五批（七阶）加：命中、射程 ×、风林火山的闪避、热气球（game/el_fam17a）   // 0.13.2 第四批代理 16a 加：装填 ×、远程物理暴击率、骑乘时移速（瓦特、阿里巴巴家族，game/el_fam16a）
+  f16aRecalc(h,S,w,mag,rg);f17Recalc(h,S,w,mag,rg);f17bRecalc(h,S);   // f17bRecalc：0.13.2 七阶代理加，戴肯的海之眷顾、孤舰深入的闪避（game/el_fam17b）   // f17Recalc：0.13.2 第五批（七阶）加：命中、射程 ×、风林火山的闪避、热气球（game/el_fam17a）   // 0.13.2 第四批代理 16a 加：装填 ×、远程物理暴击率、骑乘时移速（瓦特、阿里巴巴家族，game/el_fam16a）
   if(h.elGrief){const B=EL().bond,gx=1+(S.griefX||0);h.def*=1-Math.min(0.9,B.griefDef*gx);h.mdef*=1-Math.min(0.9,B.griefDef*gx)}}   // griefX：0.12.0 特性「护短」   // 0.12.0（用户定）亲人倒下：双防 −10%
 // 亲人同队的双攻倍率（heroRecalc 开头算，武器伤害要用）：亲人倒下过 +20%，否则有活着的亲人同队 +10%
 function elBondCalc(h){const B=EL().bond,gx=1+((h.d.elS&&h.d.elS.griefX)||0);h.elAtkK=(1+(h.elGrief?B.griefAtk*gx:h.elRel&&h.elRel.length&&G&&G.heroes&&G.heroes.some(o=>o.elite&&!o.dead&&h.elRel.includes(o.elite))?B.atk:0))*(1+elHallOf(elById(h.elite)))*f4MadAtk(h)}   // 0.13.1 英灵碑庇护：双攻（game/el_hall）
@@ -82349,7 +82394,7 @@ function elFam17Bt(m){const M=m&&m.el;if(!M)return;if(!M.f17t||typeof M.f17t!=='
   for(const L of[M.list,M.kids,M.roll,M.fam,M.staff])if(Array.isArray(L))L.forEach(one);for(const id of todo)M.f17t[id]=1;m._dirty=true;if(n)console.log('elFam17Bt',n)}
 META_LATE.push(['elFam17Bt',m=>{try{elFam17Bt(m)}catch(e){console.error(e)}}]);
 // 新建的精英存档（game/el_core.elSt 第一次建 META.el 时调，接在 elFam16New 后面）：七阶的老家族迁移、补抽特性都当已经做过（原因见 game/el_fam15.elFam15New）
-function elFam17New(m){m.f17=1;m.f17t={};for(const f of CFG.elite.fam17||[])m.f17t['f_'+f.key]=1;return m}
+function elFam17New(m){m.f17=1;m.f17d=1;m.f17t={};for(const f of CFG.elite.fam17||[])m.f17t['f_'+f.key]=1;return m}
 // 填特性的人如果把 CFG.elite.famFx.<键> 整个换成了新数组，家族的 tr 跟着对上（elBloodBuild 读 tr）
 for(const f of CFG.elite.fam17||[])if(Array.isArray(CFG.elite.famFx[f.key])&&CFG.elite.famFx[f.key]!==f.tr)f.tr=CFG.elite.famFx[f.key];
 // —— 只有女性的家族（用户定：萝拉，CFG.elite.famFem）——
@@ -82496,6 +82541,65 @@ Object.assign(EL_STD3,{
   f17Aura:(v,pc)=>`每 ${EL().f17.auraInt} 秒重铸一层斗气护盾，吸收 ${pc(v)} 最大生命的伤害；护盾不叠加`,
   f17Air:(v,pc)=>`对飞行单位造成的伤害 +${pc(v)}`,f17Hit:(v,pc)=>`目标闪避率 −${pc(v)}`,f17RngX:v=>`射程 ×${Math.round((1+v)*100)}%`,
   f17Sky:(v,pc)=>`自身和周围 ${v[0]} 格内的飞行单位增伤、减伤 +${pc(v[1])}，不可叠加`,f17Bal:()=>'飞行单位，无视地形；起风时会被吹着漂移',
+});
+
+// ---------- 0.13.2 家族重置第五批 · 七阶：戴肯（黑幽灵船）的特性、家族技能的效果（七阶代理加；数据 data/el_fam17b.js，Claude 定的细节写在那边开头）----------
+// 每个精英身上的状态放在 h.f17bS（f17bNewS 建好全部字段；core/shape 登记了 f17bS）；属性合计在 h.d.elS
+// 属性（el_battle.elRecalc 末尾调 f17bRecalc）：海之眷顾、孤舰深入的闪避直接加在 h.dodge 上（F.dg 记着加了多少，heroRecalc 重算后这里再加回去）
+// 钩子（feat elFam17b）：dmgBaseE（孤舰深入的增伤）、dmgInF（孤舰深入的减伤）、tick（每 0.25 秒看水域、周围队友）
+//   海之眷顾的暴击在 engine/enemy.dealE 的暴击那步直接调 f17bSea（暴击只看 o，钩子改不到）
+//   劫掠之手在 game/meta.awardMeta 调 f17bLoot（结算）
+function f17bNewS(){return{on:0,sea:null,lone:null,wet:0,ln:0,dg:0,t:0,hj:-1,hid:0,hd:0,hst:0}}
+const f17bS0=h=>h.f17bS||(h.f17bS=f17bNewS());
+const f17bF=()=>EL().f17b;
+const f17bWet=u=>!!(G.csW&&csWet(u));   // 站在水里（城墙上、塔上、飞着的不算；没有水的地图都算陆地）
+// —— 属性（el_battle.elRecalc 末尾调）——
+function f17bRecalc(h,S){const F=f17bS0(h);F.sea=S.f17bSea||null;F.lone=S.f17bLone||null;F.dg=0;if(!F.sea)F.wet=0;if(!F.lone)F.ln=0;f17bDodge(h,F);F.on=F.sea||F.lone?1:0}   // F.dg = 0：heroRecalc 刚重算过 h.dodge
+function f17bDodge(h,F){const want=(F.sea&&F.wet?F.sea[2]:0)+(F.lone&&F.ln?F.lone[0]:0);if(want!==F.dg){h.dodge+=want-F.dg;F.dg=want}}
+// —— 海之眷顾：自身在水域中、或打中在水域中的亡灵（engine/enemy.dealE 调；返回 [暴击率, 暴击伤害, …] 或 null）——
+function f17bSea(h,i){const F=h.f17bS;return F&&F.sea&&(f17bWet(h)||wetE(i))?F.sea:null}
+// —— 孤舰深入：周围 R 格内没有队友（载在自己船上的船员不算）——
+function f17bAlone(h){const R=f17bF().loneR*16,L=G.friends;for(let k=0;k<L.length;k++){const u=L[k];if(u===h||u.dead)continue;if(u.f5bS&&u.f5bS.on===h)continue;const dx=u.x-h.x,dy=u.y-h.y;if(dx*dx+dy*dy<=R*R)return false}return true}
+// —— 劫掠之手：这一局上过场的精英有人带着（结算，game/meta.awardMeta 调；不可叠加）——
+function f17bLootOf(){if(!G||!G.heroes)return null;for(const h of G.heroes)if(h.elite&&h.d&&h.d.elS&&h.d.elS.f17bLoot)return h.d.elS.f17bLoot;return null}
+function f17bLoot(got){const v=f17bLootOf();if(!v||!got)return;const K=f17bF().lootKinds,I=CFG.wares.items,W=got.wares||{},add={};
+  for(const w in W){const it=I[w];if(!it||!K.includes(it.kind)||!(W[w]>0))continue;const n=coreDropN(W[w]*(1+v[0]));if(n>W[w]){add[w]=n-W[w];W[w]=n}}
+  let m=0;if(got.建材>0){const n=Math.round(got.建材*(1+v[1]));m=n-got.建材;got.建材=n}
+  got.f17bLoot={w:add,m}}   // 结算界面要写的话用这个（现在只是记着）
+// —— 勾锁：甩向一个亡灵，荡到它身边，伤害 + 眩晕 ——
+function f17bHookTgt(h,a,R){const R2=(R+8)*(R+8);if(a&&a.x!==undefined){let b=-1,bd=1e9;eQuery(a.x,a.y,f17bF().hookPick*16,(j,d)=>{const dx=E.x[j]-h.x,dy=E.y[j]-h.y;if(dx*dx+dy*dy<=R2&&d<bd){bd=d;b=j}},true);if(b>=0)return b}
+  return nearestEnemy(h.x,h.y,R,true)}
+SK.f17bHook={cast(h,p,a){if(h.layer===1||(h.f5bS&&h.f5bS.on))return false;const j=f17bHookTgt(h,a,p.range*16);if(j<0)return false;const F=f17bS0(h);
+    const dx=E.x[j]-h.x,dy=E.y[j]-h.y,d=Math.hypot(dx,dy),o=Math.max(0,d-E.r[j]-6);F.hj=j;F.hid=E.id[j];F.hd=skD(h,p);F.hst=p.stun;
+    h.facing=dx>=0?1:-1;if(inViewPt(h.x,h.y)||inViewPt(E.x[j],E.y[j]))addFx({k:'tracer',x0:Math.round(h.x),y0:Math.round(h.y-8),x1:Math.round(E.x[j]),y1:Math.round(E.y[j]-6),life:0.25});
+    if(o<2){f17bHookLand(h);return true}startDash(h,'f17bHook',Math.atan2(dy,dx),o,f17bF().hookT,p);return true},
+  ai(h,p){if(h.layer===1||(h.f5bS&&h.f5bS.on))return null;const R=p.range*16*0.95;let b=-1,bs=-1;eQuery(h.x,h.y,R,j=>{const s=ETC[E.t[j]].tier*10+(E.stun[j]>0?-50:0);if(s>bs){bs=s;b=j}},true);return b>=0?{x:E.x[b],y:E.y[b]}:null}};
+function f17bHookLand(h){const F=h.f17bS;if(!F)return;const j=F.hj,id=F.hid;F.hj=-1;F.hid=0;if(h.dead||!eOk(j,id))return;
+  const dx=E.x[j]-h.x,dy=E.y[j]-h.y,d=Math.hypot(dx,dy);if(d>f17bF().hookMiss*16+E.r[j])return;h.facing=dx>=0?1:-1;h.swing=0.2;h.swingA=Math.atan2(dy,dx);
+  dealE(j,F.hd,{hk:h,crit:h.crit,critMul:heroCritMul(h),pen:h.ws.pen,penP:h.ws.penP,mix:{pierce:1},melee:1});if(E.alive[j]&&E.id[j]===id)eStun(j,F.hst);
+  if(inViewPt(E.x[j],E.y[j])){addFx({k:'ring',x:Math.round(E.x[j]),y:Math.round(E.y[j]-4),r:12,life:0.3,c:'#c3cad6'});G.shake=Math.max(G.shake,0.8);sfx('swing',h.x,h.y)}}
+DASH.f17bHook={land(h){f17bHookLand(h)}};
+// —— 每帧 ——
+function f17bTick(dt){const H=G.heroes,W=G.phase==='wave';for(let k=0;k<H.length;k++){const h=H[k];const F=h.f17bS;if(!F||!F.on||h.dead)continue;
+  F.t-=dt;if(F.t>0)continue;F.t=f17bF().int;F.wet=F.sea&&W&&f17bWet(h)?1:0;F.ln=F.lone&&W&&f17bAlone(h)?1:0;f17bDodge(h,F)}}
+function f17bWaveEnd(){for(const h of G.heroes){const F=h.f17bS;if(!F)continue;F.wet=0;F.ln=0;F.t=0;F.hj=-1;F.hid=0;f17bDodge(h,F)}}
+const f17bElS=h=>h&&h.elite&&h.f17bS&&h.f17bS.on?h.f17bS:null;
+feat('elFam17b',{ord:532,on:()=>!!(G&&G.heroes&&G.heroes.some(h=>h.elite)),hooks:{
+  waveEnd:f17bWaveEnd,tick:f17bTick,
+  dmgBaseE:(i,d,o)=>{const F=f17bElS(o&&o.hk);if(F&&F.ln)UF_AX+=F.lone[2];return d},   // 孤舰深入：增伤
+  dmgInF:(u,dmg,o)=>{const F=f17bElS(u);if(F&&F.ln)UF_DR+=F.lone[1];return dmg}}});   // 孤舰深入：减伤
+// —— 老存档：老家族「范·德·戴肯」沿用老键 decken，姓改成「戴肯」（一次，META.el.f17d；新档当作已经做过，game/el_fam17.elFam17New）——
+//   改名表按 data/el_fam17 的 fam17OldFam（换掉之前记下的老姓）：七阶家族沿用老键、姓变了的都改（尼莫同名不动）
+function elFam17bMig(m){const M=m&&m.el;if(!M||M.f17d)return;M.f17d=1;const OF=CFG.elite.fam17OldFam||{},nf={};let any=false;
+  for(const f of CFG.elite.fam17||[]){const o=OF[f.key];if(o&&o!==f.fam){nf[o]=f.fam;any=true}}if(!any)return;
+  const walk=(o,d)=>{if(!o||typeof o!=='object'||d>6)return;if(typeof o.fam==='string'&&nf[o.fam])o.fam=nf[o.fam];if(Array.isArray(o)){for(const x of o)walk(x,d+1)}else for(const k in o){const v=o[k];if(v&&typeof v==='object')walk(v,d+1)}};
+  walk(M,0);m._dirty=true}
+META_LATE.push(['elFam17bMig',m=>{try{elFam17bMig(m)}catch(e){console.error(e)}}]);
+// 特性、技能的说明
+Object.assign(EL_STD3,{
+  f17bLoot:(v,pc)=>`战后获得的地区木、石、皮、布材料 +${pc(v[0])}，建材 +${pc(v[1])}，不可叠加`,
+  f17bSea:(v,pc)=>`自身在水域中，或命中在水域中的目标时，暴击率 +${pc(v[0])}、暴击伤害 +${pc(v[1])}；自身在水域中时，闪避率 +${pc(v[2])}`,
+  f17bLone:(v,pc)=>`(需求：船只单位)周围 ${EL().f17b.loneR} 格内没有队友时，闪避率 +${pc(v[0])}，减伤 +${pc(v[1])}，增伤 +${pc(v[2])}`,
 });
 
 // ---------- 0.12.7 代理 EG：精英装备「一键购买」「一键强化」（用户 0.12.7 预告第 3、4 条；数据 data/el_gear2.js 的 CFG.elite.eg，界面 ui/el_gear2.js）----------
@@ -86062,7 +86166,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="9accb84",GAME_BUILT=1794005633716,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="52fbe8e",GAME_BUILT=1794008082800,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
