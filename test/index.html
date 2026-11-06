@@ -24171,6 +24171,7 @@ CFG.hot={pub:'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEe3VydwF6MOQeH1oOVjcTUS1ysEHFBO
 CFG.medals={
   obsidianPioneer:{code:1, name:'黑曜先驱', desc:'通关黑曜要塞深渊难度的纪念', how:'通关黑曜要塞深渊难度后，把存档 ID 发给作者领取专属兑换码'},
   pioneerKnight:{code:2, name:'开拓骑士', desc:'和我们一起测试《死国开拓者》的纪念：谢谢每一位报 bug、提建议、陪着游戏一版一版长大的开拓骑士', how:'参与过测试的玩家，把存档 ID 发给作者领取专属兑换码'},   // 0.12.9（用户定：慰劳一直在测试的玩家）
+  scourgePioneer:{code:3, name:'天灾先驱', desc:'通关天灾海域绝境难度的纪念', how:'通关天灾海域绝境难度后，把存档 ID 发给作者领取专属兑换码'},   // 0.13.2（用户定）
 };
 
 // ---------- 0.11.4 开拓地加工坊、铁匠铺（用户 2026-10-24：通关三阶地区后解锁；产量、造价 Claude 定）----------
@@ -41676,7 +41677,22 @@ function mdKnight(){const silver=bdM('#c8d0dc','metal'),blue=bdM('#2a4c9a','clot
     S.poly([[25.6,40],[38.2,40],[37,42.6],[26.8,42.6]],bdM('#6a4a2c','wood'),{R:0.5});   // 插旗的土堆（开拓的意思）
     S.dt(32,12,2.2,'#d83a4a');S.dt(32,12,1,'#ff8a96');   // 盾顶的红宝石
   },{k:2})}
-const MD_ART={obsidianPioneer:mdObsidian,pioneerKnight:mdKnight};
+// 天灾先驱（0.13.2，用户要的「天灾海域绝境通关纪念」；样子 Claude 定）：银边船舵形的圆章，八个舵柄；章面是雷雨夜的深海，一道金色闪电劈下，
+//   两条暗紫色的海神触手从浪里卷上来，最底下一排白浪；舵顶一颗青色宝石
+function mdScourge(){const silver=bdM('#c8d0dc','metal'),wood=bdM('#6a4628','wood'),sea=bdM('#16324a','gem'),deep=bdM('#0c1c2c','gem'),gold=bdM('#f0c24c','metal'),ten=bdM('#7a3a8c','skin'),tenL=bdM('#b07ac0','skin');
+  return hdFig(64,64,S=>{
+    for(let k=0;k<8;k++){const a=bdRad(k*45-90),c=Math.cos(a),s=Math.sin(a);S.ln(32+c*20,32+s*20,32+c*29,32+s*29,[wood,0],3);S.dt(32+c*29.5,32+s*29.5,2.4,k%2?'#8a5a34':'#a06a3c')}   // 船舵的八个舵柄
+    S.ell(32,32,22,22,silver,{R:2});S.ell(32,32,19.6,19.6,sea,{flat:0.3,R:4});   // 银边、深海的章面
+    S.ell(32,44,17,6,deep,{R:2});   // 章面下半更深的海
+    S.poly([[18,24],[24,20],[30,22],[36,18],[44,21],[46,25],[38,26],[30,27],[22,27]],bdM('#2a3a4c','cloth'),{R:2});   // 雷雨云
+    S.poly([[36,17],[26,32],[32,32],[25,47],[41,28],[34.6,28],[41,17]],gold,{R:0.6});S.ln(36,19,28.6,30.6,'#fff2b0',1);S.ln(32,33,27.4,43,'#fff2b0',1);   // 金色闪电
+    for(const sg of[1,-1]){const X=x=>32+sg*(x-32);   // 两条触手：从浪里卷上来，尖端往里勾
+      S.ln(X(19),49,X(16),40,[ten,0],4);S.ln(X(16),40,X(17.6),33,[ten,0],3.2);S.ln(X(17.6),33,X(22),30,[ten,0],2.4);S.dt(X(22.6),31.4,1.4,'#7a3a8c');
+      for(const[x,y]of[[18.6,45],[17.4,41],[17.6,37]])S.dt(X(x)+sg*1.4,y,0.8,'#e8c8f0');S.ln(X(17.6),47,X(15.6),41,[tenL,0],1)}
+    for(let i=0;i<5;i++){const x=17+i*7.5;S.ell(x,49,3.6,1.6,bdM('#dff4f2','plain'),{R:1});S.ell(x+1,50.4,3.6,1.4,bdM('#2c6a8a','cloth'),{R:1})}   // 底下一排白浪
+    S.dt(32,6,2.4,'#3ad8c8');S.dt(32,6,1.1,'#bff8f0');   // 舵顶的青色宝石
+  },{k:2})}
+const MD_ART={obsidianPioneer:mdObsidian,pioneerKnight:mdKnight,scourgePioneer:mdScourge};
 const MD_CACHE={},MD_SHADOW={};
 function mdSprite(id){if(MD_CACHE[id])return MD_CACHE[id];const f=MD_ART[id];if(!f)return null;let c=null;try{c=f()}catch(e){console.warn('medal',id,e)}return MD_CACHE[id]=c}
 function mdShadow(id){if(MD_SHADOW[id])return MD_SHADOW[id];const s=mdSprite(id);if(!s)return null;   // 剪影：同 art/bd_badges.badgeShadow（不透明的像素涂黑、透明度 0.6）
@@ -84869,7 +84885,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2',GAME_TAG='稳定版',GAME_CODE=227,GAME_BUILD="e432384",GAME_BUILT=1793968492273,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2',GAME_TAG='稳定版',GAME_CODE=227,GAME_BUILD="20c5953",GAME_BUILT=1793968771620,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
