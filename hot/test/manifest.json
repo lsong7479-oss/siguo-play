@@ -1,11 +1,11 @@
 {
  "ch": "test",
  "ver": "0.13.2",
- "code": 226,
- "size": 18657768,
- "sha256": "80250a0c2f8e6b020012a3bc42083e09eb4f9be3c59020dcc683afe39efc0aa5",
+ "code": 228,
+ "size": 18657137,
+ "sha256": "519c52de2adc9bd865e14ecd7861eab826128be37b7dcb31960ac0d6bd45c54a",
  "minLoader": 1,
- "sig": "p8r8K47lP9iuxdgfLnazdgwimTya17jTZ63Mxwdo/21GrnSWsn1n1JdfVG6jt02y8WIEmwHQQzOi58IgZcC+lA==",
- "note": "0.13.2 测试版：九阶天灾海域、航空司令帕恩、五阶家族、进阶范海辛、众和议会塔楼皮肤、塔楼兵营数值调整",
- "at": "2026-11-06 07:45 UTC"
+ "sig": "8Rp7d25WwEUy6Y1DuBtHVV+6O0rUIduH7WEnsSpVPaQJVPzM/sOG/pWR6Ax4K3V5x/k9uOxXIbt8d5MT1uTBjw==",
+ "note": "0.13.2（和正式版相同）",
+ "at": "2026-11-06 09:42 UTC"
 }
