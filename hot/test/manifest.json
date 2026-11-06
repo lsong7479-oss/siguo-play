@@ -1,11 +1,11 @@
 {
  "ch": "test",
  "ver": "0.13.2.1",
- "code": 230,
- "size": 18673033,
- "sha256": "20da6896865f1eb3a2add7c9e28d5f54fd8037ee7b60e195be8aeeb40df93a33",
+ "code": 231,
+ "size": 18676327,
+ "sha256": "7c10a58f860a96a62f835018f0c9288629b6ad5c8ff27999b19c3db70a56b894",
  "minLoader": 1,
- "sig": "WMelk4IpppmJAFSuW/4MMFmfcx4vhE1ijV0SdFIQC3S9BBiRWvAcnFmBX1eRaiefuuH2BO+sexhBqpRN1jrIcg==",
- "note": "0.13.2.1（和正式版相同）",
- "at": "2026-11-06 14:54 UTC"
+ "sig": "ZIQ5FS+fG2Alq7H6ieI2O6tML40GabVsv1L1n+eaUUsobgaO2al5EbOiHHsiACYbta6zbaKXu1KQkGYmH7VFEA==",
+ "note": "0.13.2.1 测试版：加纪念勋章不老先驱、赤血先驱、玄钢先驱",
+ "at": "2026-11-06 15:52 UTC"
 }

@@ -24172,6 +24172,9 @@ CFG.medals={
   obsidianPioneer:{code:1, name:'黑曜先驱', desc:'通关黑曜要塞深渊难度的纪念', how:'通关黑曜要塞深渊难度后，把存档 ID 发给作者领取专属兑换码'},
   pioneerKnight:{code:2, name:'开拓骑士', desc:'和我们一起测试《死国开拓者》的纪念：谢谢每一位报 bug、提建议、陪着游戏一版一版长大的开拓骑士', how:'参与过测试的玩家，把存档 ID 发给作者领取专属兑换码'},   // 0.12.9（用户定：慰劳一直在测试的玩家）
   scourgePioneer:{code:3, name:'天灾先驱', desc:'通关天灾海域绝境难度的纪念', how:'通关天灾海域绝境难度后，把存档 ID 发给作者领取专属兑换码'},   // 0.13.2（用户定）
+  blPioneer:{code:4, name:'不老先驱', desc:'通关不老之泉绝境难度的纪念', how:'通关不老之泉绝境难度后，把存档 ID 发给作者领取专属兑换码'},   // 0.13.2.1（用户定：不老之泉、赤血关隘、玄钢山城也加一套先驱勋章；难度照天灾先驱写绝境）
+  bloodPioneer:{code:5, name:'赤血先驱', desc:'通关赤血关隘绝境难度的纪念', how:'通关赤血关隘绝境难度后，把存档 ID 发给作者领取专属兑换码'},
+  steelPioneer:{code:6, name:'玄钢先驱', desc:'通关玄钢山城绝境难度的纪念', how:'通关玄钢山城绝境难度后，把存档 ID 发给作者领取专属兑换码'},
 };
 
 // ---------- 0.11.4 开拓地加工坊、铁匠铺（用户 2026-10-24：通关三阶地区后解锁；产量、造价 Claude 定）----------
@@ -41756,7 +41759,41 @@ function mdScourge(){const silver=bdM('#c8d0dc','metal'),wood=bdM('#6a4628','woo
     for(let i=0;i<5;i++){const x=17+i*7.5;S.ell(x,49,3.6,1.6,bdM('#dff4f2','plain'),{R:1});S.ell(x+1,50.4,3.6,1.4,bdM('#2c6a8a','cloth'),{R:1})}   // 底下一排白浪
     S.dt(32,6,2.4,'#3ad8c8');S.dt(32,6,1.1,'#bff8f0');   // 舵顶的青色宝石
   },{k:2})}
-const MD_ART={obsidianPioneer:mdObsidian,pioneerKnight:mdKnight,scourgePioneer:mdScourge};
+// 不老先驱（0.13.2.1，样子 Claude 定）：金边圆章，外圈一圈玉色的莲瓣；章面是翠绿的泉池，中间一股泉水往上喷、两边散成水弧，底下一片荷叶托着一枚发光的泉珠
+function mdSpring(){const gold=bdM('#e0b040','metal'),jade=bdM('#3a9a7a','gem'),jadeD=bdM('#1e5a4a','gem'),pool=bdM('#1c4a54','gem'),water=bdM('#9ae8f0','plain'),leaf=bdM('#4a9a3c','plain');
+  return hdFig(64,64,S=>{
+    for(let k=0;k<12;k++){const a=bdRad(k*30-90),c=Math.cos(a),s=Math.sin(a);S.ell(32+c*24,32+s*24,4.6,4.6,k%2?jade:jadeD,{R:1.2})}   // 外圈的莲瓣
+    S.ell(32,32,21.6,21.6,gold,{R:2});S.ell(32,32,19,19,pool,{flat:0.3,R:4});   // 金边、泉池
+    S.ln(32,44,32,16,[water,0],3);S.dt(32,15,2.2,'#dffcff');   // 往上喷的泉水
+    for(const sg of[1,-1]){const X=x=>32+sg*(x-32);S.ln(X(32),18,X(26),20,[water,0],2);S.ln(X(26),20,X(21),28,[water,0],2);S.ln(X(21),28,X(20),35,[water,0],1.6);S.dt(X(19.6),37,1.2,'#dffcff')}   // 两边散开的水弧
+    S.ell(32,45,10,3.4,leaf,{R:1});S.ln(24,45,40,45,'#7ac45a',1);S.dt(32,42,3,'#f6f0a0');S.dt(32,42,1.6,'#ffffff');   // 荷叶、泉珠
+    S.dt(32,6,2.2,'#3ad8a0');S.dt(32,6,1,'#c8ffe8');   // 顶上的翠玉
+  },{k:2})}
+// 赤血先驱（0.13.2.1，样子 Claude 定）：铁边的血红盾章，盾上一座关隘城楼（两座垛口塔夹一道城门），城楼上插一面赤旗；盾后交叉两杆长枪
+function mdBloodPass(){const iron=bdM('#8a8e98','metal'),red=bdM('#9a1e24','cloth'),redD=bdM('#5a0e14','cloth'),stone=bdM('#c8b8a0','plain'),stoneD=bdM('#8a7a64','plain'),gold=bdM('#e0b040','metal'),wood=bdM('#6a4628','wood');
+  return hdFig(64,64,S=>{
+    for(const sg of[1,-1]){const X=x=>32+sg*(x-32);S.ln(X(7),59,X(15),50,[wood,0],2.2);S.ln(X(49),12,X(54),7,[wood,0],2.2);S.poly([[X(53),8],[X(59),2],[X(56),9.6]],iron,{R:0.4});S.dt(X(7),59,1.4,'#8a8e98')}   // 盾后交叉的两杆长枪（只露出枪头和枪尾）
+    const SH=[[12,10],[52,10],[52,32],[46,44],[32,54],[18,44],[12,32]];
+    S.poly(SH,iron,{R:1.4});S.poly([[15,13],[49,13],[49,31.4],[43.8,42.2],[32,50.6],[20.2,42.2],[15,31.4]],red,{R:2});   // 铁边、血红盾面
+    S.poly([[15,36],[49,36],[43.8,42.2],[32,50.6],[20.2,42.2]],redD,{R:1.4});   // 盾下半更深的红
+    for(const x of[19,39])S.poly([[x,22],[x+6,22],[x+6,42],[x,42]],stone,{R:0.4});for(const x of[19,21.5,24,39,41.5,44])S.poly([[x,20],[x+1.6,20],[x+1.6,22],[x,22]],stone,{R:0.2});   // 两座垛口塔
+    S.poly([[25,28],[39,28],[39,42],[25,42]],stoneD,{R:0.4});S.ell(32,42,4,5.6,bdM('#2a1414','plain'),{R:1});S.ln(25,28,39,28,'#e8dcc8',1);   // 城墙和拱门
+    S.ln(32,28,32,14,[wood,0],1.2);S.poly([[32,14],[40,16],[32,19]],gold,{R:0.4});   // 城楼上的旗
+    S.dt(32,7,2,'#d83a4a');   // 盾顶的红宝石
+  },{k:2})}
+// 玄钢先驱（0.13.2.1，样子 Claude 定）：一圈齿轮形的玄钢章（十二个齿），章面是两座雪顶的山，山间一座钢城，城上一颗青色的源能核心发着光
+function mdSteel(){const steel=bdM('#4a505c','metal'),steelL=bdM('#8a92a0','metal'),dark=bdM('#1c2028','gem'),mount=bdM('#3a4250','plain'),snow=bdM('#e8eef4','plain'),city=bdM('#6a7280','metal');
+  return hdFig(64,64,S=>{
+    for(let k=0;k<12;k++){const a=bdRad(k*30),c=Math.cos(a),s=Math.sin(a),P=(t,n)=>[32+c*t-s*n,32+s*t+c*n];S.poly([P(19,-4.6),P(28,-3.4),P(28,3.4),P(19,4.6)],steel,{R:0.6})}   // 齿轮的十二个齿
+    S.ell(32,32,22,22,steelL,{R:2});S.ell(32,32,19.4,19.4,dark,{flat:0.3,R:4});   // 钢边、深色章面
+    S.poly([[13,44],[24,22],[33,40]],mount,{R:0.8});S.poly([[31,40],[42,18],[51,44]],mount,{R:0.8});   // 两座山
+    S.poly([[21,28],[24,22],[27,28],[24,26.6]],snow,{R:0.4});S.poly([[38.6,25],[42,18],[45.4,25],[42,23.4]],snow,{R:0.4});   // 雪顶
+    S.poly([[22,44],[22,36],[26,36],[26,32],[30,32],[30,29],[34,29],[34,32],[38,32],[38,36],[42,36],[42,44]],city,{R:0.4});   // 钢城
+    for(const x of[24,28,36,40])S.px(x,39,'#ffd070');   // 城里的灯
+    S.dt(32,27,2.6,'#3ad8f0');S.dt(32,27,1.2,'#e0fcff');   // 源能核心
+    S.ln(13,45,51,45,'#8a92a0',1);
+  },{k:2})}
+const MD_ART={obsidianPioneer:mdObsidian,pioneerKnight:mdKnight,scourgePioneer:mdScourge,blPioneer:mdSpring,bloodPioneer:mdBloodPass,steelPioneer:mdSteel};
 const MD_CACHE={},MD_SHADOW={};
 function mdSprite(id){if(MD_CACHE[id])return MD_CACHE[id];const f=MD_ART[id];if(!f)return null;let c=null;try{c=f()}catch(e){console.warn('medal',id,e)}return MD_CACHE[id]=c}
 function mdShadow(id){if(MD_SHADOW[id])return MD_SHADOW[id];const s=mdSprite(id);if(!s)return null;   // 剪影：同 art/bd_badges.badgeShadow（不透明的像素涂黑、透明度 0.6）
@@ -85082,7 +85119,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="0a0bb4f",GAME_BUILT=1793977100535,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="85c218c",GAME_BUILT=1793980670994,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
