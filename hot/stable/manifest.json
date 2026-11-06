@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.2",
- "code": 227,
- "size": 18657180,
- "sha256": "781291355ffc02880b099c410975d0942c4103f414b70433d59b8ade00626979",
+ "ver": "0.13.2.1",
+ "code": 229,
+ "size": 18673033,
+ "sha256": "32c89f9b11d9c88b22aec914fd9cb5e74689f45b723ec2e18438dbc157cb6e2a",
  "minLoader": 1,
- "sig": "Pv+qpdIS6We4L7rMI8YvKA9Nk9sXxn7z+sue9Iyi/t1vQ/4F71iICsgeS9w6jX9a2vVMK3oZ0R+Y09qS/fnHoA==",
- "note": "0.13.2：九阶天灾海域、航空司令帕恩、五阶家族、进阶范海辛、众和议会塔楼皮肤、塔楼兵营数值调整、死国和悬赏调整",
- "at": "2026-11-06 09:38 UTC"
+ "sig": "00vvrSnQu1aBeMjSyPV3tTjJu/eymQPWLqHhHuVfOOOVTe74zpTR2pTqK2YPHhyKde3mIxwiNhpESrLT09Xskw==",
+ "note": "0.13.2.1：新塔楼雷达基地、连锁只跳视野里的亡灵、天灾先驱勋章、葛氏老存档、家族船只上岸下船",
+ "at": "2026-11-06 14:50 UTC"
 }
