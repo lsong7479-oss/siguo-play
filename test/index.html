@@ -12924,8 +12924,8 @@ Object.assign(CFG.arcaneFactory.emMech.units,{mechWarrior:'gun', mechGunner:'mov
 //   v0.10.3（用户定）：没满就一直投，满了就停，被踩掉有空位再投；每波开始把这座塔的钉刺整套换新（上限枚）；优先投在亡灵来的路上（落点规则见 structs/build090 的 trapSpot，和陷阱工厂共用）
 //   踩中（Claude 定）：地面亡灵进到钉刺 0.45 格内；飞行的不踩
 CFG.buildings.nailTower={cat:'tower', name:'钉刺塔', cost:250, hp:500, def:4, vision:6, kind:'none',
-  weapon:{dmg:45, int:3, range:5, mix:{pierce:1}, nail:{life:20, r:0.45, fall:0.45}},   // life：v0.10.3（用户定）每枚留 20 秒（落地起算，准备阶段时停不算），取消上限
-  note:'每 3 秒往 5 格内投一枚钉刺，优先投在亡灵来的路上，每枚留 20 秒后消失；每波开始先铺满一整套(20 秒 ÷ 投放间隔枚)；地面亡灵踩中受到 45 点物理伤害，钉刺随即消失；伤害吃建筑和陷阱的伤害加成'};
+  weapon:{dmg:80, int:1, range:5, mix:{pierce:1}, nail:{life:20, r:0.45, fall:0.45}},   // 0.13.2（用户和界碑定）攻击 45 → 80、每 3 秒 → 每秒一枚（开波铺满变成 20 枚）；life：v0.10.3（用户定）每枚留 20 秒（落地起算，准备阶段时停不算），取消上限
+  note:'每秒往 5 格内投一枚钉刺，优先投在亡灵来的路上，每枚留 20 秒后消失；每波开始先铺满一整套(20 秒 ÷ 投放间隔枚)；地面亡灵踩中受到 80 点物理伤害，钉刺随即消失；伤害吃建筑和陷阱的伤害加成'};
 // —— v0.10.3 钉刺塔、陷阱工厂的落点（Claude 定，structs/build090 的 trapSpot）：side 出怪路线两边紧挨着的格子当作离主堡近几格（排在线上的格子后面）；gap 每波开始整套换新时一个接一个投出去的间隔（秒）——
 CFG.trapPlace={side:2, gap:0.05};
 CFG.btech.towers.nailTower={base:['hp','rate','dmg'], cost:[12,100], evoCost:[50,400], evo:{
@@ -12973,8 +12973,9 @@ CFG.steam.mech.structs.push('nailTower','rapidArrow');
 //   v0.10.11（用户定）射程 10～11 → 12.5～13.5 格（12.5 + 通用的每级 +0.25）；视野 11 → 14 跟上射程（Claude 定）
 //   命中削弱（用户定）：物理防御 −5（随等级、吃伤害加成）、物理减伤 −10%，持续 3 秒，不叠加（w.t2h，structs/evo3_t2）
 CFG.buildings.heavyBallista={cat:'tower', name:'重弩炮塔', cost:380, hp:850, def:6, vision:14, kind:'bolt', size:2,
-  weapon:{dmg:120, int:2.5, mag:0, range:12.5, spread:3, proj:'bigbolt', speed:20, pierce:5, pen:10, mix:{pierce:1}, t2h:{d:{k:'t2HB', def:5, pdr:0.1, t:3, n:1}}},
-  note:'占地 2×2；每 2.5 秒一支重弩，平射，贯穿 5 个目标，物理穿透 10；命中的亡灵物理防御 −5、物理减伤 −10%，持续 3 秒，不叠加，减防随建筑等级提升、吃伤害加成；无弹匣；机械单位'};
+  weapon:{dmg:180, int:2, mag:0, range:12.5, spread:3, proj:'bigbolt',   // 0.13.2（用户和界碑定）攻击 120 → 180、每 2.5 秒 → 每 2 秒
+ speed:20, pierce:5, pen:10, mix:{pierce:1}, t2h:{d:{k:'t2HB', def:5, pdr:0.1, t:3, n:1}}},
+  note:'占地 2×2；每 2 秒一支重弩，平射，贯穿 5 个目标，物理穿透 10；命中的亡灵物理防御 −5、物理减伤 −10%，持续 3 秒，不叠加，减防随建筑等级提升、吃伤害加成；无弹匣；机械单位'};
 CFG.btech.towers.heavyBallista={base:['hp','rate','dmg'], cost:[18,150], evoCost:[75,600], evo:{
   pierce:{name:'穿透钢弩', desc:'无视 30% 物理防御；最大穿透数 +15', penP:0.3, pierceAdd:15},
   boom:  {name:'爆裂火药', desc:'最后一次命中时爆炸：2 格内造成 50% 冲击伤害', w:{lastBoom:{r:2, mul:0.5}}},
@@ -13131,7 +13132,8 @@ CFG.btech.towers.magCircle={base:['hp'], cost:[10,80], evoCost:[40,320], evo:{
 }};
 CFG.designTree.push({id:'magCircle', cost:160, req:['iceTower'], tier:3, note:'通关任意三阶地区后才能研发'});
 CFG.buildings.toxTower={cat:'tower', name:'炼毒塔', cost:200, hp:500, def:2, vision:7.5, kind:'none',
-  weapon:{dmg:40, magic:true, int:1, mag:5, reload:3, range:6, spread:3, proj:'flask', speed:9, mix:{poison:1}, psnP:{p:0.2, t:3, max:1}},
+  weapon:{dmg:80, magic:true, int:1, mag:5, reload:3, range:6, spread:3, proj:'flask',   // 0.13.2（用户和界碑定）攻击 40 → 80
+ speed:9, mix:{poison:1}, psnP:{p:0.2, t:3, max:1}},
   note:'命中造成毒属性法术伤害，并让亡灵中毒：每秒受到这一发 20% 的伤害，持续 3 秒；弹匣 5 发，装填 3 秒'};
 CFG.btech.towers.toxTower={base:['hp','rate','dmg'], cost:[12,90], evoCost:[45,360], evo:{
   stack:  {name:'毒素叠加', desc:'中毒最多叠 5 层，每次叠加刷新持续时间', w:{psnP:{p:0.2, t:3, max:5}}},
@@ -13139,7 +13141,7 @@ CFG.btech.towers.toxTower={base:['hp','rate','dmg'], cost:[12,90], evoCost:[45,3
   plague: {name:'瘟疫传播', desc:'中了毒的亡灵死时，把中毒传给 2.5 格内的亡灵，算一轮，最多传 2 轮', w:{tplague:{r:2.5, n:2}}},
 }, evo2:{
   chem:   {name:'化学炼毒', req:'stack', desc:'中毒不限层数，每次叠加刷新持续时间；中毒伤害 20% → 50%，持续 5 秒', w:{psnP:{p:0.5, t:5, max:255}}},
-  acid:   {name:'酸蚀池液', req:'pool', desc:'毒液池每秒另造成这一发 100% 的伤害，持续 5 秒；池里的中毒 20% → 35%', w:{tpool:{r:3, dur:5, p:0.35, t:3, dmgP:1}}},
+  acid:   {name:'酸蚀池液', req:'pool', desc:'毒液池每秒另造成这一发 50% 的伤害，持续 5 秒；池里的中毒 20% → 35%', w:{tpool:{r:3, dur:5, p:0.35, t:3, dmgP:0.5}}},   // 0.13.2（用户和界碑定）dmgP 1 → 0.5
   fog:    {name:'毒雾爆发', req:'plague', desc:'中了毒的亡灵死时生成 4 格毒雾，持续 5 秒，算一轮：雾里每秒受到塔 20% 的伤害，并中毒，每秒受到等于塔这一发的伤害；最多 4 轮', w:{tfog:{r:4, dur:5, dmgP:0.2, t:3, n:4}}},
 }};
 CFG.designTree.push({id:'toxTower', cost:140, req:['arrowTower'], tier:2, note:'通关任意二阶地区后才能研发'});
@@ -13220,8 +13222,8 @@ CFG.btech.towers.lavaTower={base:['hp','dmg'], cost:[20,160], evoCost:[80,640], 
 }};
 CFG.designTree.push({id:'lavaTower', cost:280, req:['fireTower'], map:'lavaAbyss', mapName:'熔岩深渊', note:'通关熔岩深渊后才能研发'});
 CFG.buildings.iceSpikeTower={cat:'magic', name:'冰刺阵塔', cost:550, hp:1050, def:4, vision:9, kind:'magic', size:2,
-  weapon:{dmg:120, magic:true, int:1.25, range:7, ctr:true, mix:{frost:1}, ice:{n:[3,3,4,4,5], slow:{f:0.3, t:3}, frz:{hits:3, t:1, cd:8, reset:3}}},
-  note:'占地 2×2；每 1.25 秒一次：射程内最多 3 / 3 / 4 / 4 / 5 只亡灵(按建筑等级)各吃一根冰刺，120 点冰霜法术伤害并减速 30% 3 秒；同一只连续被冰刺打中 3 次冰冻 1 秒(冰刺阵塔之间共享)，冰冻结束后 8 秒内不再冰冻'};
+  weapon:{dmg:180, magic:true, int:1.25, range:7, ctr:true, mix:{frost:1}, ice:{n:[3,3,4,4,5], slow:{f:0.3, t:3}, frz:{hits:3, t:1, cd:8, reset:3}, vsSlow:0.25, vsFrz:1}},   // 0.13.2（用户和界碑定）攻击 120 → 180；vsSlow / vsFrz：打减速中的亡灵独立增伤 25%、冰冻中的 100%（structs/lavaice.iceCast）
+  note:'占地 2×2；每 1.25 秒一次：射程内最多 3 / 3 / 4 / 4 / 5 只亡灵(按建筑等级)各吃一根冰刺，180 点冰霜法术伤害(对减速中的亡灵独立增伤 25%、冰冻中的独立增伤 100%)并减速 30% 3 秒；同一只连续被冰刺打中 3 次冰冻 1 秒(冰刺阵塔之间共享)，冰冻结束后 8 秒内不再冰冻'};
 CFG.btech.towers.iceSpikeTower={base:['hp','rate','dmg'], cost:[20,160], evoCost:[80,640], evo:{
   array: {name:'冰刺阵列', desc:'冰刺数量翻倍', icN:{mul:2}},
   frost: {name:'霜冻之冰', desc:'减速改为 60%，冰冻改为 3 秒', icSlow:{f:0.6, t:3}, icFrz:{t:3}},
@@ -13349,13 +13351,13 @@ Object.assign(CFG.btech.towers.heavyBallista,{evo3:{
              机械箭塔的装填 +50% = 装填时间 ÷ 1.5 */
 CFG.camps.shipyard={name:'造船厂', tier:4, units:['ramShip','rocketShip','gunShip'], cost:450, hp:1200, train:45, size:2, campSlots:2, cap:[4,5,6,7,8], port:{r:3, heal:0.03}};
 Object.assign(CFG.units,{
-  ramShip:   {name:'铁甲斗舰', tier:4, hp:900, def:12, mdef:4, speed:3.2, capW:1, look:'ramShip', noWall:true, weapon:null,
-              melee:{dmg:120, int:0.8, reach:0.8}, ship:{turn:180, accel:2, land:0.25, crew:0, ram:{dmg:120, cd:0.8, charge:1.5}, boom:{r:2, dmg:120}},
+  ramShip:   {name:'铁甲斗舰', tier:4, hp:720, def:12, mdef:4, speed:3.2, capW:1, look:'ramShip', noWall:true, weapon:null,
+              melee:{dmg:120, int:0.8, reach:0.8}, ship:{turn:180, accel:2, land:0.25, crew:0, ram:{dmg:120, cd:2.5, charge:1.5}, boom:{r:2, dmg:120}},   // 0.13.2（用户和界碑定）撞击冷却 0.8 → 2.5 秒、生命 900 → 720
               note:'舰船；靠撞击造成伤害，满速冲撞 ×1.5；防御高、血厚；沉没时爆炸，2 格内造成伤害；不载士兵；占 1 个驻军位'},
   rocketShip:{name:'火箭楼船', tier:4, hp:700, def:6, mdef:2, speed:2.4, capW:2, look:'rocketShip', noWall:true, weapon:null,
               ranged:{dmg:40, int:1.2, mag:6, reload:3, range:7, spread:5, proj:'arrow', speed:14, burn:{dps:0, dpsP:0.3, t:3}, mix:{pierce:0.5, fire:0.5}},   // 0.12.5（用户定：海军只能打海战，提一档）攻击 25 → 40、装填 4 → 3 秒
-              ship:{turn:120, accel:2, land:0.25, crew:4, guns:{n:2, k:'rocket'}},
-              note:'舰船；船上 2 座火箭塔，射程 7 格，命中灼烧；可载 4 名士兵；占 2 个驻军位'},
+              ship:{turn:120, accel:2, land:0.25, crew:4, guns:{n:2, k:'rocket', lvAdd:[[3,1],[5,1]]}},   // lvAdd：0.13.2（用户和界碑定）兵营 Lv3 火箭塔 +1、Lv5 再 +1（units/ships.shipGunN）
+              note:'舰船；船上 2 座火箭塔(兵营 Lv3 起 3 座、Lv5 起 4 座)，射程 7 格，命中灼烧；可载 4 名士兵；占 2 个驻军位'},
   gunShip:   {name:'铁甲炮艇', tier:4, hp:800, def:10, mdef:3, speed:2.2, capW:2, look:'gunShip', noWall:true, weapon:null,
               ranged:{dmg:150, int:2.5, mag:0, range:6, spread:4, proj:'ball', speed:12, aoe:1.5, mix:{impact:1}},   // 0.12.5（用户定）攻击 100 → 150、间隔 3 → 2.5 秒、爆炸 1.2 → 1.5 格
               ship:{turn:120, accel:2, land:0.25, crew:2, guns:{n:1, k:'gun'}},
@@ -13370,7 +13372,7 @@ CFG.btech.towers.shipyard={base:['ctrain','chp','catk'], cost:[20,160], evoCost:
   powder:{name:'火药改良', desc:'炮塔造成的伤害 +30%，独立乘区；爆炸范围 +30%，独立乘区', shipA:{gDmg:0.3, gAoe:0.3}},
 }, evo2Cost:[160,1280], evo2:{
   steel: {name:'钢铁舰首', desc:'所有舰船生命 +50%，和舰体加固相加；斗舰满速冲撞改为 ×2', shipB:{hp:0.5, charge:2}},
-  towers:{name:'塔楼增筑', desc:'火箭楼船的火箭塔增加到 4 座，铁甲炮艇的炮塔增加到 2 门', shipB:{rocketN:4, gunN:2}},
+  towers:{name:'塔楼增筑', desc:'火箭楼船的火箭塔 +2 座，铁甲炮艇的炮塔增加到 2 门', shipB:{rocketAdd:2, gunN:2}},   // 0.13.2（用户和界碑定）原来「火箭塔增加到 4 座」(rocketN:4)，改成 +2，和兵营等级加的叠加
   port:  {name:'港口扩建', desc:'造船厂的驻军上限 +50%，独立乘区', shipB:{cap:0.5}},
 }};
 
@@ -15059,13 +15061,13 @@ Object.assign(CFG.heroes.poisoner2,CFG.heroStats.poisoner2);
    用户定：品质紫；advOf 原版猎魔人·范海辛；进阶条件：冰原拉格拉斯家族声望到「尊敬」、原版五星、消耗 200 雪原金；四个技能的效果和 1★～5★ 的数值
    advReq 同进阶帕拉塞尔苏斯（heroes/poisoner2 的 pp2Req*：没写 vol 就不要剧情）
    Claude 定：擅长武器 / 护甲照原版（弩、弓、匕首；皮甲、布甲）；基础属性（原版绿往上提两档，幅度参照进阶帕拉塞尔苏斯）；四个技能 1★ 就都有（allSkills）；
-     狩魔印记每一下削 10% 是一层一层加（10 下削满）；狩魔狙击的散射只在第一次命中时射出；其余细节见 heroes/hunter2.js 开头 */
+     狩魔印记每一下削 10% 是一层一层加（10 下削满）；狩魔狙击的主箭每次命中都散射（用户定）；减伤的削减不封顶（用户定），双防削到 100% 为止；其余细节见 heroes/hunter2.js 开头 */
 Object.assign(CFG.skills,{
   // 被动：范海辛的普通攻击、技能伤害命中时给目标「狩魔印记」t 秒（再命中重置）；有印记的亡灵受到的伤害 × (1 + vuln)（独立易伤），
   //   之后每受到一次攻击（谁打的都算，持续伤害不算），减伤效果和物理防御、法术防御再削 cut（一层层加，最多削满），印记消失就恢复
   vhMark:{name:'狩魔之矢', passive:true, cd:0, aim:'self', t:3, cut:0.1, byStar:{vuln:[0.15,0.18,0.24,0.3,0.4]},
     desc:p=>`被动：普通攻击或技能伤害命中时给目标「狩魔印记」，持续 ${p.t} 秒(再命中重置)；有印记的亡灵受到 ${pc_(p.vuln)} 独立易伤，之后每受到一次攻击，减伤效果和物理防御、法术防御再削减 ${pc_(p.cut)}，直到印记消失`},
-  // 朝目标方向射出一支 range 格的箭，b(+ad×AD)，穿透 pierce 个；第一次命中后从命中处向 ±15°（3★ 加 ±30°、5★ 再加 ±45°）各散射一支 sp 倍伤害的箭（射程 sr 格）；
+  // 朝目标方向射出一支 range 格的箭，b(+ad×AD)，穿透 pierce 个；主箭每次命中都从命中处向 ±15°（3★ 加 ±30°、5★ 再加 ±45°）各散射一支 sp 倍伤害的箭（射程 sr 格）；
   //   这支箭（含散射的）击杀目标就刷新冷却
   vhSnipe:{name:'狩魔狙击', cd:10, aim:'target', range:10, pierce:3, sp:0.5, sr:5, byStar:{b:[300,350,400,450,500], ad:[1.8,1.8,1.8,1.8,1.8], fan:[1,1,2,2,3]},
     desc:p=>`向目标方向射出一支 ${p.range} 格的箭矢，造成 ${sv_(p.b,p.ad)} 伤害，可穿透 ${p.pierce} 名目标；命中后向 ${[15,30,45].slice(0,p.fan).map(a=>'±'+a+'°').join('、')} 各散射一枚 ${pc_(p.sp)} 伤害的箭矢；击杀目标后刷新冷却`},
@@ -21582,21 +21584,24 @@ CFG.btech.towers.campBw={base:CFG.olv.lists.camp.slice(), baseOld:['ctrain','chp
      bjDrg3 {every, range, ang, speed, dmg, stun, r, mul, burn, bt}   三阶「炎龙火炮」：喷火时每 every 秒向前方 ±ang° 发射一枚火焰弹，命中第一个亡灵 dmg 伤害(随攻击倍率成长)、
                          眩晕 stun 秒，r 格内爆炸 mul 倍伤害，灼烧(每秒 burn × 火焰弹伤害，bt 秒) */
 CFG.camps.campBj={name:'边军大营', tier:4, units:['bjTiger','bjPhoenix','bjTortoise','bjDragon'], cost:500, hp:800, train:32, size:2, campSlots:2, cap:[4,5,6,7,8], vision:8, kind:'gunpowder',
-  weapon:{dmg:120, int:1, mag:1, reload:3, range:7, spread:4, proj:'ball', speed:16, pen:10, blast:{r:2.5, mul:0.5, mix:{impact:1}}, mix:{impact:1}, techK:{key:'uRanged', k:0.5}},   // techK：0.12.4（用户定）火炮另吃士兵的加伤害科技，折算 50%（Claude 定：用「武器改装」uRanged，远程士兵伤害）
-  note:'星阳边军的大营：带一门火炮(攻击 120，命中处 2.5 格爆炸 50% 伤害，射程 7 格，装填 3 秒)；四种兵都占 2 个驻军位'};
+  weapon:{dmg:80, int:1, mag:1, reload:3, range:7, spread:4, proj:'ball',   // 0.13.2（用户和界碑定）营炮 120 → 80
+ speed:16, pen:10, blast:{r:2.5, mul:0.5, mix:{impact:1}}, mix:{impact:1}, techK:{key:'uRanged', k:0.5}},   // techK：0.12.4（用户定）火炮另吃士兵的加伤害科技，折算 50%（Claude 定：用「武器改装」uRanged，远程士兵伤害）
+  note:'星阳边军的大营：带一门火炮(攻击 80，命中处 2.5 格爆炸 50% 伤害，射程 7 格，装填 3 秒)；四种兵都占 2 个驻军位'};
 Object.assign(CFG.units,{
   bjTiger:   {name:'星阳白虎骑', tier:4, hp:850, def:25, mdef:10, speed:4, capW:2, melee:{dmg:90, int:1, reach:1.5}, charge:2.5, cavalry:true, hitRun:{back:2.6, t:0.9},
               weapon:'spear', bj:{k:'tiger', cut:{def:0.2, pdr:0.2, vuln:0.1, t:3, max:3}, fear:3, leap:{r:6, t:1, aoe:2.5, mul:2, stun:2, cd:10}},
               note:'冲锋伤害 ×2.5，冲锋命中时目标恐惧 3 秒；每次命中让目标物理防御 −20%、物理减伤 −0.2、易伤 +10%，持续 3 秒，最多叠 3 层；技能「虎跃」：跃向 6 格内的目标，落地 2.5 格内 200% 伤害(无视物理防御和物理减伤)并眩晕 2 秒，冷却 10 秒'},
   bjPhoenix: {name:'星阳火凰射', tier:4, hp:650, def:18, mdef:8, speed:2.5, capW:2, melee:{dmg:30, int:1.2, reach:0.8},
-              ranged:{dmg:150, int:1/1.5, range:10, spread:2, mag:0, reload:0, proj:'arrow', speed:20, kb:0.5, blast:{r:1, mul:0.2, mix:{fire:1}}},
+              ranged:{dmg:140, int:1/1.5, range:10,   // 0.13.2（用户和界碑定）150 → 140
+ spread:2, mag:0, reload:0, proj:'arrow', speed:20, kb:0.5, blast:{r:1, mul:0.2, mix:{fire:1}}},
               weapon:'longbow', side:'dagger', rmix:{pierce:1},
               bj:{k:'phoenix', chg:{min:0.5, max:2}, pit:{r:1, t:2, dps:0.15, fr:0.5}, fall:{r:4, pitR:4, pitT:2, dps:0.15, clrT:3, mul:1.3, cd:10}},   // 0.12.7f（用户定：单体抬一些、群体略降）攻击 100 → 150，命中爆炸 50% → 20%，火坑每秒 30% → 15%，凰落 200% → 130%（数 Claude 定；木桩实测单体 +18%、密集 −5%）；0.12.5（用户定，压群伤）攻击 105 → 100；火坑每秒 50% → 30%、3 秒 → 2 秒（凰落的火坑同样 5 秒 → 2 秒）
               note:'射程 10 格，攻击速度 1.5 次/秒，击退 0.5 格；攻击可以蓄力到 2 倍攻击间隔、也可以提前到 0.5 倍放出，伤害 × 间隔倍数；命中处 1 格爆炸(20% 伤害)并留下 2 秒火坑，每秒灼烧 15% 攻击，火坑里的亡灵火焰抗性 −0.5(不叠加)；技能「凰落」：目标处 4 格爆炸 130% 伤害并留下 2 秒火坑(每秒 15%)，火坑里的亡灵火焰抗性清空 3 秒(火焰免疫不受影响)，冷却 10 秒'},
-  bjTortoise:{name:'星阳玄武卫', tier:4, hp:1800, def:45, mdef:25, speed:2, capW:2, block:0.75, shield:70, shieldSize:3, melee:{dmg:60, int:1, reach:0.5}, stagMul:0.5,
+  bjTortoise:{name:'星阳玄武卫', tier:4, hp:1800, def:45, mdef:25, speed:2, capW:2, block:0.75, shield:40, uDr:0.2, shieldSize:3,   // 0.13.2（用户和界碑定）格挡防御 70 → 40；uDr：常驻减伤 20%（engine/combat.hurtF 加进减伤池子，÷(1 + 0.2)）
+ melee:{dmg:60, int:1, reach:0.5}, stagMul:0.5,
               share:{r:4, f:0.8}, weapon:'club',
               bj:{k:'tortoise', bkSh:{pct:0.1, max:0.5, t:5, cd:1}, xd:{t:4, cd:10, bk:1, ref:0.2, icpt:1}},
-              note:'格挡 75%，格挡防御 70；4 格内的友军单位(含建筑)受到的直接伤害 80% 转给玄武卫；格挡时获得 10% 最大生命的护盾，最多 50%，冷却 1 秒；技能「玄盾」：4 秒内必定格挡、格挡防御 +100%、能格挡法术伤害，受到伤害时把原伤害的 20% 以法术伤害反弹，拦截身边的亡灵弹道，冷却 10 秒'},
+              note:'格挡 75%，格挡防御 40，常驻减伤 20%；4 格内的友军单位(含建筑)受到的直接伤害 80% 转给玄武卫；格挡时获得 10% 最大生命的护盾，最多 50%，冷却 1 秒；技能「玄盾」：4 秒内必定格挡、格挡防御 +100%、能格挡法术伤害，受到伤害时把原伤害的 20% 以法术伤害反弹，拦截身边的亡灵弹道，冷却 10 秒'},
   bjDragon:  {name:'星阳火龙车', tier:4, hp:1000, def:15, mdef:5, speed:1, capW:2, noWall:true, melee:{dmg:20, int:1.5, reach:0.8},
               ranged:{dmg:80, int:1, range:4.5, spread:0, mag:0, reload:0, proj:'fire', speed:10, magic:true},
               weapon:null, rmix:{fire:1},
@@ -21661,7 +21666,7 @@ Object.assign(CFG.units,{
                note:'闪电剑近战；背着 1 门闪电射线(攻击 70，射程 7 格，弹射 3 次，每 2.5 秒)和 1 门机炮(攻击 12，射程 7 格，每秒 2 发)，边走边打'},
   ynGunnerP:  {name:'源能重炮手', tier:4, hp:620, def:8, mdef:8, speed:2, melee:{dmg:20, int:1.2, reach:0.8}, mech:true, weapon:null, mmix:{slash:1},
                ranged:{dmg:180, int:2.5, range:8.5, spread:0, mag:0, reload:0, proj:'arcane', speed:16, magic:true}, rmix:{lightning:1},   // ranged：只用来走位（站在 8.5 格内），开火走 cy.guns；0.12.7f（用户定）射程 10 → 8.5
-               cy:{k:'g', guns:[{k:'ray', X:5, range:8.5, int:2.5, dmg:180, heavy:1, dk:0.6, arcDk:0.75}], over:{gun:{k:'ray', X:5, range:8.5, int:2.5, dmg:180, heavy:1, dk:0.6, arcDk:0.75}, n:1}},   // dk / arcDk：0.12.5（用户定，压群伤）重炮手的重型闪电射线每次弹射 ×0.6（别的闪电射线仍 ×0.8）；电弧穿刺对它是 ×0.75（对别的仍不衰减）
+               cy:{k:'g', guns:[{k:'ray', X:5, range:8.5, int:2.5, dmg:180, heavy:1, dk:0.6, arcDk:0.75}], over:{gun:{k:'ray', X:5, range:8.5, int:2.5, dmg:90, heavy:1, dk:0.6, arcDk:0.75}, n:1}},   // 0.13.2（用户和界碑定）装备超载多带的第二门 180 → 90（半伤害，第一门不变）；dk / arcDk：0.12.5（用户定，压群伤）重炮手的重型闪电射线每次弹射 ×0.6（别的闪电射线仍 ×0.8）；电弧穿刺对它是 ×0.75（对别的仍不衰减）
                note:'重型闪电射线：攻击 180，射程 8.5 格，命中后连锁 1.5 格内至多 3 个亡灵，弹射 5 次，每次伤害 ×0.6，每 2.5 秒一发'},
   ynEngineerP:{name:'源能工程师', tier:4, hp:650, def:8, mdef:10, speed:2.3, melee:{dmg:0, int:1, reach:0.8}, mech:true, weapon:null, mmix:{impact:1},
                ranged:{dmg:0, int:1, range:5, spread:0, mag:0, reload:0, proj:'arcane', speed:16, magic:true}, rmix:{lightning:1},   // ranged：只用来走位（走到目标 5 格内），自己不攻击
@@ -21687,7 +21692,7 @@ CFG.designTree.push({id:'campYn', cost:300, req:['campSteam'], map:'ynCity', map
 CFG.btech.towers.campYn={base:CFG.olv.lists.camp.slice(), baseOld:['ctrain','chp','catk'],   // base：本文件排在 data/olv.js 之后，直接用新的基础加成列表（同边军大营）
   cost:[22,180], evoCost:[90,720], evo:{
     hiEn:    {name:'高能装置', desc:'源能工厂的士兵和召唤物造成的伤害 +50%(建筑科技的独立乘区)', cyDmg1:0.5},
-    overload:{name:'装备超载', desc:'士兵移速 ×0.6；武器数量提升：武装战士多带 1 门闪电炮，重炮手多带 1 门重型闪电炮，工程师的无人机数量翻倍', cyOver:{mv:0.6}},
+    overload:{name:'装备超载', desc:'士兵移速 ×0.6；武器数量提升：武装战士多带 1 门闪电炮，重炮手多带 1 门重型闪电炮(第二门伤害减半)，工程师的无人机数量翻倍', cyOver:{mv:0.6}},
     feed:    {name:'源能输送', desc:'兵营每秒为生命比例最低的下属士兵恢复 10 + 2.5% × 兵营等级(含强化，最多 20%)最大生命的生命，并让它造成的伤害 +30%(和其他伤害加成相加)', cyFeed:{base:10, per:0.025, max:0.2, dmg:0.3, int:1}},
   }, evo2:{
     superEn: {name:'超能装置', desc:'源能工厂的士兵和召唤物造成的伤害再 +50%(和高能装置在同一个独立乘区相加)', cyDmg2:0.5},
@@ -24025,9 +24030,10 @@ CFG.ext.own=[
          领域维修：再修目标周围 3×3 格里的其它受损建筑（同样的量）；
        装置本身是机械建筑（会被电磁干扰，干扰期间三种模式、维修都停；不会被骇入）。 */
 CFG.buildings.ynTesla={cat:'tower', name:'电能塔', cost:500, hp:800, def:4, vision:8,
-  weapon:{dmg:75, int:0.25, mag:0, range:7.5, spread:0, proj:'lightning', mix:{pierce:0.5, lightning:0.5},
-    tesla:{X:3, lvX:2, stack:{per:0.02, max:1}, poolK:0, split:{base:1, per:0.5}}},   // 0.12.7g（用户定）均摊改成：链上先连、不直接打，连完以后这一发的总伤害 = 攻击 ×(100% + 50% × 打中的只数)，平分给打中的每一只（split；poolK 是 0.12.7f 的做法，现在 0；攻击 75 是 Claude 实测定：八阶满档木桩 单体约 3 万、打一群约 27 万，移动木桩 2.2 万 / 22 万）；同一发里每只亡灵的爆炸只吃一次、取最高（maps/yn_ray.YNR_BX）   // X：闪电装置的弹射次数，每升 lvX 级 +1；stack：同一个目标每次攻击 +per，至多 +max
-  note:'闪电装置：连线打中目标，再连锁 1.5 格内至多 3 个别的目标，弹射 X 次(Lv1～2 X = 3、Lv3～4 = 4、Lv5 = 5)，连完以后，这一发的总伤害 = 攻击 ×(100% + 50% × 打中的只数)，平分给打中的每一只(爆炸照旧按每跳 ×0.8 衰减)；同一发里每只亡灵的爆炸只算一次(取最高)；物理闪电伤害(物理攻击，50% 穿刺 + 50% 雷电)；每秒 4 次；对同一个目标持续攻击时每次攻击增伤 2%，至多 100%；机械单位'};
+  weapon:{dmg:65, int:0.25, mag:0, range:7.5,   // 0.13.2（用户和界碑定）攻击 75 → 65
+ spread:0, proj:'lightning', mix:{pierce:0.5, lightning:0.5},
+    tesla:{X:3, lvX:2, stack:{per:0.02, max:1}, poolK:0, split:{base:0.5, per:0.35}}},   // 0.13.2（用户和界碑定）均摊 ×(50% + 35% × 打中的只数)（原来 100% + 50%）；0.12.7g（用户定）均摊改成：链上先连、不直接打，连完以后这一发的总伤害 = 攻击 ×(100% + 50% × 打中的只数)，平分给打中的每一只（split；poolK 是 0.12.7f 的做法，现在 0；攻击 75 是 Claude 实测定：八阶满档木桩 单体约 3 万、打一群约 27 万，移动木桩 2.2 万 / 22 万）；同一发里每只亡灵的爆炸只吃一次、取最高（maps/yn_ray.YNR_BX）   // X：闪电装置的弹射次数，每升 lvX 级 +1；stack：同一个目标每次攻击 +per，至多 +max
+  note:'闪电装置：连线打中目标，再连锁 1.5 格内至多 3 个别的目标，弹射 X 次(Lv1～2 X = 3、Lv3～4 = 4、Lv5 = 5)，连完以后，这一发的总伤害 = 攻击 ×(50% + 35% × 打中的只数)，平分给打中的每一只(爆炸照旧按每跳 ×0.8 衰减)；同一发里每只亡灵的爆炸只算一次(取最高)；物理闪电伤害(物理攻击，50% 穿刺 + 50% 雷电)；每秒 4 次；对同一个目标持续攻击时每次攻击增伤 2%，至多 100%；机械单位'};
 CFG.btech.towers.ynTesla={base:CFG.olv.lists.tower.slice(), baseOld:['hp','rate','dmg'], cost:[18,150], evoCost:[75,600], evo:{   // base：本文件排在 data/olv.js 之后，自己写基础加成列表（同边军大营）
   ytBoom:{name:'聚能爆破', desc:'每次攻击对首个目标额外造成 2.5 格的爆炸，40% 伤害；第一次弹射造成 1.5 格的爆炸，25% 伤害', ytBm:[{r:2.5, mul:0.4},{r:1.5, mul:0.25}]},
   ytHv:  {name:'高压电能', desc:'弹射伤害不衰减；伤害 +50%，建筑进化的独立乘区', ytNd:1, dmgMul:1.5},
@@ -60664,7 +60670,7 @@ function hurtF(u,raw,o){eRevealHit(o);
   dmg*=hk;   // v0.8.14 命中系数（偏斜 / 暴击）在减完防御之后乘
   if(em.corrode>0&&eSrc&&!magic&&!u.dead){const X=CFG.eCardFx;u.corN=u.corU>G.time?Math.min(X.corrodeMax,u.corN+em.corrode):em.corrode;u.corU=G.time+X.corrodeT}   // v0.9.1 亡灵卡「腐蚀之刃」：这一下照旧按原来的防御算，之后每层防御 −1
   if(o.mix&&u.resist&&!tru)dmg*=mixMul(u.resist,o.mix);
-  if(u.mRed&&o.melee)dmg*=1-u.mRed;if(pm.meleeDR&&o.melee&&pD)dr+=pmNC(u,pm.meleeDR);if(pm.magicDR&&mD)dr+=pmNC(u,pm.magicDR);   // dr：v0.8.11（用户定）减伤全部相加，伤害 ÷ (1 + 合计)，在下面英雄减伤那里一起除；免伤（× (1 − X)）各自乘；v0.10.11 物理 / 法术减伤只算这种的直接伤害（pD / mD），原来几张卡另外不算爆炸、酸蚀的例外去掉（爆炸改成物理伤害，规则 3）   // v0.4.3 特殊装备「大蒜」：受到的近战伤害 −X%（免伤）
+  if(u.mRed&&o.melee)dmg*=1-u.mRed;if(u.c&&u.c.uDr>0)dr+=u.c.uDr;if(pm.meleeDR&&o.melee&&pD)dr+=pmNC(u,pm.meleeDR);if(pm.magicDR&&mD)dr+=pmNC(u,pm.magicDR);   // dr：v0.8.11（用户定）减伤全部相加，伤害 ÷ (1 + 合计)，在下面英雄减伤那里一起除；免伤（× (1 − X)）各自乘；v0.10.11 物理 / 法术减伤只算这种的直接伤害（pD / mD），原来几张卡另外不算爆炸、酸蚀的例外去掉（爆炸改成物理伤害，规则 3）   // v0.4.3 特殊装备「大蒜」：受到的近战伤害 −X%（免伤）
   if(o.mix&&o.mix.fire&&G.csW&&wetF(u))dmg*=waterFireK(o.mix.fire);   // v0.10.0 水里火焰伤害 −75%（engine/env.wetF）
   if(o.mix&&!tru){if(o.mix.fire&&(pm.fireRes>0||u.gFR>0||POT.rf>0)){const f=o.mix.fire;dmg*=1-f+f/(1+(pm.fireRes||0)+(u.gFR||0)+POT.rf)}if(pm.psnRes>0||POT.rp>0)dmg*=resK(o.mix.poison,pm.psnRes+POT.rp);if(o.mix.poison&&(u.psnRG>0||u.psnRP>0||u.psnRAU>G.time||u.psnImm))dmg*=u.psnImm?1-o.mix.poison:resK(o.mix.poison,(u.psnRG||0)+(u.psnRP||0)+(u.psnRAU>G.time?u.psnRA:0));if(pm.coldRes>0||POT.rc>0)dmg*=resK(o.mix.frost,pm.coldRes+POT.rc)}   // tru：真实伤害不吃伤害类型抗性   // POT：v0.9.4 商人的抗火 / 抗毒 / 抗寒药水，和卡牌的抗性相加   // psnRes / coldRes：v0.8.23 抗毒、抗寒药水   // v0.7.0 火焰伤害抗性：卡「抗火药水」+ 龙鳞 / 烈龙套装，÷ (1 + 合计)
   if(!tru){dmg*=envRes(o);if(POT.rb>0&&(o.blast||o.boom))dmg*=(1+(pm.blastRes||0))/(1+(pm.blastRes||0)+POT.rb)}if(u.fxHurtOn)dmg=fxHurt(u,dmg,o);dr+=UF_DR;let vn=UF_VN+(pm.frenzy>0&&u.fzN?CFG.cardFx.frenzy.per*u.fzN:0);UF_DR=ufD0;UF_VN=ufV0;   // vn：易伤池子（规则 5）：走火入魔的「受到的伤害 +2%/层」、统一 buff 的 vuln、钩子加的 UF_VN   // fxHurt：v0.5.0 装备特效注册表（gear/fx）；v0.10.11 装备的「减伤 +X%」在里面加进 UF_DR
@@ -62138,8 +62144,10 @@ const blocksMove=b=>!(b.cfg&&(b.cfg.pass||b.trap));
 // 刚造出来 / 读档：航向朝最近的水，补上炮塔、船员
 function shipInit(u){const c=u.c,e=shipEv(u),B=e.shipB||{};
   u.shd=-Math.PI/2;u.ssp=0;u.kcrew=[];u.kcT=0;u.ramCd=0;u.shGun=[];u.shPT=0;u.shPP=null;u.shWT=0;u.shWP=null;
-  const G_=c.ship.guns;if(G_){const n=G_.k==='rocket'?(B.rocketN||G_.n):(B.gunN||G_.n);for(let k=0;k<n;k++)u.shGun.push({cd:0.3*k,ammo:c.ranged.mag,rel:0})}
+  const n=shipGunN(u,B);for(let k=0;k<n;k++)u.shGun.push({cd:0.3*k,ammo:c.ranged.mag,rel:0});
   return u}
+// 炮塔数（0.13.2 用户定）：基础 n + 兵营等级到了的 lvAdd + 进阶「塔楼增筑」的 rocketAdd（火箭楼船）；炮艇照旧 gunN；兵营升级以后 shipTick 补上
+function shipGunN(u,B){const G_=u.c.ship.guns;if(!G_)return 0;if(G_.k!=='rocket')return B.gunN||G_.n;const lv=(u.camp&&u.camp.level)||1;let n=B.rocketN||G_.n;if(G_.lvAdd)for(const[l,a]of G_.lvAdd)if(lv>=l)n+=a;return n+(B.rocketAdd||0)}
 // 最近的水（整张图找，2 秒找一次；黄沙海岸退潮时水可能在几十格外）
 function nearWaterPt(px,py){if(!G.csW)return null;const tx=px>>4,ty=py>>4,W=G.csW;let best=null,bd=1e9;
   for(let y=1;y<MAP_H-1;y++){const dy=(y-ty)*(y-ty);if(dy>=bd)continue;for(let x=1;x<MAP_W-1;x++){if(!W[y*MAP_W+x])continue;const d=dy+(x-tx)*(x-tx);if(d<bd){bd=d;best={x:x*16+8,y:y*16+8}}}}
@@ -62158,6 +62166,7 @@ function shipGoal(s){const b=s.camp&&!s.camp.dead?s.camp:null,md=b?b.mode:'guard
 function shipPick(s,ram){const R=Math.max(s.vision||8,ram?8:s.rg.range+2)*16,b=s.camp&&!s.camp.dead?s.camp:null,H=(!b||b.mode==='guard')?shipHome(s):null;let best=-1,bd=1e9;   // S5 加：读 s.rg（甲板增高的射程）
   eQuery(s.x,s.y,R,(j,d)=>{if(ram&&E.air[j])return;if(H&&Math.hypot(E.x[j]-H.x,E.y[j]-H.y)>12*16)return;if(d<bd){bd=d;best=j}},true);return best}
 function shipTick(s,dt){const c=s.c,P=c.ship,e=shipEv(s),A=e.shipA||{},B=e.shipB||{};
+  if(P.guns&&s.shGun.length<shipGunN(s,B))s.shGun.push({cd:0.3,ammo:c.ranged.mag,rel:0});   // 0.13.2 兵营升级 / 点了进阶以后补炮塔
   if(s.flash>0)s.flash-=dt;if(s.recoil>0)s.recoil-=dt;s.think-=dt;if(s.ramCd>0)s.ramCd-=dt*(s.bfV?Math.max(0.1,1+s.bfV[2]):1);
   // 港口回血
   const b=s.camp&&!s.camp.dead?s.camp:null,port=b&&b.cfg.port;if(port&&s.hp<s.maxHp&&Math.hypot(b.x-s.x,b.y-s.y)<=port.r*16+16)s.hp=Math.min(s.maxHp,s.hp+s.maxHp*port.heal*dt);
@@ -71794,7 +71803,7 @@ HCOL.poisoner2='#86e05a';
 //     减伤效果（E.drmF / drmU，「移除减伤」）、物理防御（E.pdF / pdU）、法术防御（E.mdP / mdU）都按「削 + 领域里的 k」取大写进去，到期 = 印记到期
 // 狩魔领域：范海辛在场没倒下就一直有（tick 每 0.25 秒）：半径 r 格内的亡灵统一 buff vhF {weak:k, aspd:−k, mspd:−k}（0.5 秒，刷新），防御 / 法防削 k，印记给到 1 秒；
 //   主动：VH_M 里所有还有印记的亡灵各挨 b(+ad×AD)
-// 狩魔狙击：fireAt / fireAng 一支穿透 pierce 的大弩矢（o 每次新建，o.vhSn = 1）；afterHitE 里第一次命中时（vhSn 1 → 2）从命中处朝 ±15° / ±30° / ±45° 散射 sp 倍伤害的箭；
+// 狩魔狙击：fireAt / fireAng 一支穿透 pierce 的大弩矢（o 每次新建，o.vhSn = 1）；afterHitE 里主箭每次命中（用户定）都从命中处朝 ±15° / ±30° / ±45° 散射 sp 倍伤害的箭；
 //   这支箭和散射的箭 onKill 都刷新冷却
 // 狩魔勾锁：从英雄往瞄准方向找 range 格内离线 10 像素以内、最近的一只（碰到第一只）；没有就画一下勾锁收回（返回 true，照样进冷却）；
 //   有：先打 b(+ad×AD)，startDash 'vhHook' 用 dt 秒飞到它旁边（startDash 自带无敌）；落地 vhHookLand：br 格内 bb(+bad×AD)、bin 格内再打一遍（= 两倍），顺着飞的方向弹出 back 格（hookBack）
@@ -71803,8 +71812,8 @@ const VH_M=new Map(),VH_FE=new Map(),VH_L=[];
 const vhOn=()=>VH_H&&!VH_H.dead&&VH_H.psv;
 const vhFEff=k=>{let e=VH_FE.get(k);if(!e){e={weak:k,aspd:-k,mspd:-k};VH_FE.set(k,e)}return e};
 // 印记的削减写进 E 的几张表（取大）：c = 这只现在该被削多少
-function vhCut(j,c,u){if(!(c>0))return;const t=G.time;c=Math.min(1,c);
-  E.drmF[j]=E.drmU[j]>t?Math.max(E.drmF[j],c):c;E.drmU[j]=Math.max(E.drmU[j],u);
+function vhCut(j,c,u){if(!(c>0))return;const t=G.time;   // 0.13.2（用户定）减伤的削减不封顶（层数一直加；引擎里移除减伤到 100% 就是池子清零）；双防削到 100% 为止
+  E.drmF[j]=E.drmU[j]>t?Math.max(E.drmF[j],c):c;E.drmU[j]=Math.max(E.drmU[j],u);c=Math.min(1,c);
   E.pdF[j]=E.pdU[j]>t?Math.max(E.pdF[j],c):c;E.pdU[j]=Math.max(E.pdU[j],u);
   E.mdP[j]=E.mdU[j]>t?Math.max(E.mdP[j],c):c;E.mdU[j]=Math.max(E.mdU[j],u)}
 function vhMarkAdd(j,dur){if(!E.alive[j])return;const id=E.id[j],u=G.time+dur;let r=VH_M.get(id);if(!r){r={u,n:0,j};VH_M.set(id,r)}else{r.j=j;if(u>r.u)r.u=u}}
@@ -71817,9 +71826,9 @@ const vhFieldP=h=>{const s=h.skills.indexOf('vhField');return s>=0?h.sp[s]:null}
 function vhAfterHit(i,d,o){if(o.dot||!E.alive[i])return;const h=VH_H;if(!h||!h.psv)return;
   const r=VH_M.get(E.id[i]),was=!!r&&r.u>G.time;if(o.hk===h)vhMarkAdd(i,h.psv.t);   // was：这一下之前就有印记才算「挨了一下」（给印记的这一下不算）
   if(was){r.n++;const f=vhFieldP(h),inF=f&&Math.hypot(E.x[i]-h.x,E.y[i]-h.y)<=f.r*16*(1+pm.aoe);vhCut(i,r.n*h.psv.cut+(inF?f.k:0),r.u)}
-  if(o.vhSn===1){o.vhSn=2;vhScatter(h,i,o)}}
-function vhScatter(h,i,o){const P=o.vhP,x=E.x[i],y=E.y[i]-6,w=VH_W,R=P.sr*16;const o2={crit:h.crit,pen:10,mix:{pierce:1},hk:h,onKill:o.onKill};
-  for(let f=1;f<=P.fan;f++)for(const s of[-1,1]){const a=o.vhA+s*f*15*Math.PI/180;fireAng(x+Math.cos(a)*8,y+Math.sin(a)*8,a,R,w,o.vhD*P.sp,o2,R,h.layer===1,1)}}
+  if(o.vhSn===1)vhScatter(h,i,o)}   // 0.13.2（用户定）主箭每一次命中都散射（散射的箭不再散射）
+function vhScatter(h,i,o){const P=o.vhP,x=E.x[i],y=E.y[i]-6,ro=E.r[i]+6,w=VH_W,R=P.sr*16;const o2={crit:h.crit,pen:10,mix:{pierce:1},hk:h,onKill:o.onKill};
+  for(let f=1;f<=P.fan;f++)for(const s of[-1,1]){const a=o.vhA+s*f*15*Math.PI/180;fireAng(x+Math.cos(a)*ro,y+Math.sin(a)*ro,a,R,w,o.vhD*P.sp,o2,R,h.layer===1,1)}}   // ro：从被打中的亡灵身子外面射出去，免得又打中它
 const VH_W={proj:'bigbolt',speed:24,spread:0,mix:{pierce:1}};
 function vhSnipeCast(h,p,a){const mx=h.x+h.facing*4,my=h.y-9-h.elev,R=p.range*16,slot=h.skills.indexOf('vhSnipe');
   let j=nearestEnemy(a.x,a.y,40,true);if(j>=0&&Math.hypot(E.x[j]-h.x,E.y[j]-h.y)>R*1.15)j=-1;
@@ -73383,7 +73392,7 @@ function iceCast(s,T){const w=T.w,I=w.ice,ev=btEvoS(s)||LV_E0,cx=s.x,cy=lvCtr(s)
   const arr=IC_L.slice(0,n);if(n>cap){const D=G.dist,md=s.tgt||'free',g=j=>D[tidx(E.x[j],E.y[j])]||0,key=md==='near'?(j=>Math.hypot(E.x[j]-cx,E.y[j]-cy)):md==='hp'?(j=>-E.hp[j]):md==='back'?(j=>(ETC_BACK[E.t[j]]?0:1e9)-g(j)):g;
     arr.sort((a,b)=>key(a)-key(b));const f=towerPick(s,cx,cy,R,0);if(f>=0){const i=arr.indexOf(f);if(i>0){arr.splice(i,1);arr.unshift(f)}}}
   const m=Math.min(n,cap),SL=ev.icSlow||I.slow,FZ=Object.assign({},I.frz,ev.icFrz||null),WL=ev.icWall,o=IC_O;o.am=T.am;o.hd=T.dmg;o.spen=TM.uSpellPen||0;
-  for(let a=0;a<m;a++){const j=arr[a];if(!E.alive[j])continue;const x=E.x[j],y=E.y[j];dealE(j,T.dmg,o);
+  for(let a=0;a<m;a++){const j=arr[a];if(!E.alive[j])continue;const x=E.x[j],y=E.y[j];dealE(j,T.dmg*(E.frz[j]>0?1+(I.vsFrz||0):1)*(E.slowT[j]>0&&E.slowF[j]>0?1+(I.vsSlow||0):1),o);   // 0.13.2（用户定）冰冻中 ×(1 + vsFrz)、减速中 ×(1 + vsSlow)，两条都是独立增伤（都有就都乘）
     if(inViewPt(x,y)){if(!G.icFx)G.icFx=[];G.icFx.push({x,y,t0:G.time})}
     if(!E.alive[j])continue;if(SL.f>=E.slowF[j])E.slowF[j]=SL.f;E.slowT[j]=slowMx(j,slowFor(SL.t));
     const id=E.id[j];let c=IC_F.get(id);if(!c){c={n:0,last:0,cdU:0};IC_F.set(id,c)}
@@ -82535,7 +82544,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.1.4',GAME_TAG='稳定版',GAME_CODE=224,GAME_BUILD="e05cc8c",GAME_BUILT=1793914308228,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.1.4',GAME_TAG='稳定版',GAME_CODE=224,GAME_BUILD="915c55c",GAME_BUILT=1793939148030,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
