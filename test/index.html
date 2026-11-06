@@ -24401,8 +24401,8 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
 // 这三个地区原来的家族（data/el_late，0.12.0 Claude 定的那一版）：
 //   戴肯 decken（黑幽灵船，七阶代理加）：老的「范·德·戴肯」就是这家，沿用老键（声望、血脉照旧，老特性 f_decken_40 / 60 / 100 按门槛对上新特性）；姓改成「戴肯」（game/el_fam17b.elFam17bMig）
 //   尼莫 nemo：同名，沿用老键，老存档里的血脉、声望照旧，老特性的键按门槛对上新特性（f_nemo_40 → 新的 40% 特性，同六阶的瓦特）
-//   马克西姆斯 huo、斯巴达克 ye（斗神大殿）、蒙哥菲尔 montgolfier（浮空之城）：去掉；声望均摊给同地区的新家族；血脉并进这个地区的平民、姓不改、老特性去掉（同五阶张氏的做法）
-//     为什么不并进新家族（Claude 定，拿不准，回报里列了）：萝拉家族只有女性，老家族的男人并进去会违反规则；用户说剧情稿的蒙哥菲尔家和菲尔家没有关系
+//   马克西姆斯 huo、斯巴达克 ye（斗神大殿）、蒙哥菲尔 montgolfier（浮空之城）：去掉；声望均摊给同地区的新家族；血脉并进萝拉 / 菲尔（用户 11-07 定，fam17To）、老特性去掉；姓：并进菲尔的改姓菲尔，并进萝拉的照随母规则（萝拉血脉超过一半才改姓萝拉）（原来是并进平民，同五阶张氏的做法）
+//     （原来 Claude 定的是并进平民，怕萝拉「只有女性」和老家族的男人冲突；用户 11-07 定并进萝拉 / 菲尔，男人照样带萝拉血脉，只是姓按随母规则）
 // 平民血脉：七阶地区的平民血脉也等七阶倍率表，先不重建，沿用 data/el_late 的（迷海平民、武馆平民、浮城平民）
 // 家族的档位 L、波动 v、特别属性 sp：七阶倍率表（望楼）还没出，下面 fam17L 是 Claude 按策划里每家的属性倾向、照六阶的幅度往上推一档暂定的——表出了整张换掉 fam17L 就行
 // 介绍、局面：用户定；家主、面相：望楼拟（用户认可）；家徽：Claude 定（尼莫沿用老的）
@@ -24449,7 +24449,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
  E.famFem={lola:1};
  // 老家族 → 存档迁移（game/el_fam17.elFam17Mig）：声望均摊给同地区的家族；血脉并进 fam17To 指定的家族（没写的并进平民，姓不改）
  E.fam17Gone={wuHall:['huo','ye'], skyCity:['montgolfier']};
- E.fam17To={};
+ E.fam17To={huo:'lola', ye:'lola', montgolfier:'fier'};   // 用户 11-07 定：斗神大殿的马克西姆斯、斯巴达克并进萝拉，浮空之城的蒙哥菲尔并进菲尔（原来 Claude 定的是并进平民）
  // 七阶家族兵种：30000 银币、精英 60 级（用户定：25000 低了，后期银币倍率高）
  E.famJobCost7={silver:30000, lv:60};
  if(!E.jobTierName[5])E.jobTierName[5]='五阶';if(!E.jobTierName[6])E.jobTierName[6]='六阶';E.jobTierName[7]='七阶';
@@ -82382,7 +82382,8 @@ function elFam17Mig(m){const M=m&&m.el;if(!M||M.f17)return;M.f17=1;const G=CFG.e
   if(M.rep&&typeof M.rep==='object')for(const r in G){const N=elRegFamsAll(r);let s=0;for(const k of G[r]){const v=M.rep['f_'+k];if(v){s+=v;delete M.rep['f_'+k]}}if(s&&N.length){const each=Math.round(s/N.length);for(const f of N)M.rep[f]=(M.rep[f]||0)+each}}
   const TO=CFG.elite.fam17To||{},OF=CFG.elite.fam17OldFam||{},B=elBlood(),nf={},gone=Object.keys(old);for(const id of gone){const k=id.slice(2),t=TO[k];if(t&&B['f_'+t]&&OF[k])nf[OF[k]]=B['f_'+t].fam}
   const fix=o=>{if(!o||typeof o!=='object')return;if(o.bl&&typeof o.bl==='object'&&!Array.isArray(o.bl)){let hit=false;for(const id in o.bl)if(old[id]){hit=true;const t=TO[id.slice(2)],c=t&&B['f_'+t]?'f_'+t:'c_'+old[id];o.bl[c]=(o.bl[c]||0)+o.bl[id];delete o.bl[id]}
-      if(hit&&typeof o.fam==='string'&&nf[o.fam])o.fam=nf[o.fam];if(Array.isArray(o.bt))o.bt=o.bt.filter(k=>!gone.some(id=>String(k).startsWith(id+'_')))}};   // hit：只改身上有那家血脉的人的姓
+      if(hit&&typeof o.fam==='string'&&nf[o.fam]){const t=TO[(Object.keys(OF).find(k=>OF[k]===o.fam))||''];if(!(t&&CFG.elite.famFem&&CFG.elite.famFem[t])||elFemMain(o))o.fam=nf[o.fam]}   // 并进只有女性的家族（萝拉）：照随母规则，萝拉血脉超过一半的才改姓萝拉，其余保留原姓
+     if(Array.isArray(o.bt))o.bt=o.bt.filter(k=>!gone.some(id=>String(k).startsWith(id+'_')))}};   // hit：只改身上有那家血脉的人的姓
   const walk=(o,d)=>{if(!o||typeof o!=='object'||d>6)return;fix(o);if(Array.isArray(o)){for(const x of o)walk(x,d+1)}else for(const k in o){const v=o[k];if(v&&typeof v==='object')walk(v,d+1)}};
   walk(M,0);m._dirty=true}
 META_LATE.push(['elFam17Mig',m=>{try{elFam17Mig(m)}catch(e){console.error(e)}}]);
@@ -82400,14 +82401,16 @@ for(const f of CFG.elite.fam17||[])if(Array.isArray(CFG.elite.famFx[f.key])&&CFG
 // —— 只有女性的家族（用户定：萝拉，CFG.elite.famFem）——
 //   族里的女性之间不能联姻（game/el_mar.elTeamMarry 先查这条）；女精英不能和这家办相亲宴会（宴会出的人选是这家的男人，这家没有男人：elFeastCheck）；
 //   这家血脉超过一半（> 10 份）的人只会是女性（出生、招募：game/el_core.elGen 调 elFemFix）；家族声望招募来的这家族人都是女性（el_core.elRecRoll 调 elFemFix(e, true)）；
-//   生成男性配偶 / 人选时不带这家的血脉（el_mar.elSpGen 调 elFemFr）；这家的女人和外人生的儿子随父亲的姓（父亲是平民也随父亲）
+//   生成男性配偶 / 人选时不带这家的血脉（el_mar.elSpGen 调 elFemFr）；这家的女人和外人生的孩子：萝拉血脉超过 50% 的随母（姓萝拉），否则随父（父亲是平民也随父亲；用户 11-07 定）
 function elFemId(id){const k=typeof id==='string'&&id.startsWith('f_')?id.slice(2):null;return!!(k&&CFG.elite.famFem&&CFG.elite.famFem[k])}   // 都写成函数声明：el_core 里的调用可能早于本文件加载完
 function elFemMain(x){if(!x||!x.bl)return null;const N=EL().bloodN;for(const id in x.bl)if(elFemId(id)&&x.bl[id]*2>N)return id;return null}   // 这家血脉超过一半
 function elFemOf(x){if(!x||typeof x.fam!=='string')return null;const B=elBlood();for(const id in B)if(B[id].kind==='f'&&B[id].fam===x.fam&&elFemId(id))return id;return null}   // 姓这家的（族人）
 // e：刚生成的人（血脉已经定了）；force：家族声望招募的这家族人（不看占比）；kid：{P 精英父 / 母, S 配偶}
 function elFemFix(e,force,kid){if(!e)return e;const R=EL().regions[e.reg]||{},want=force||!!elFemMain(e);
   if(want&&e.sex!=='f'){e.sex='f';const f=elFamOf(e),B=f&&elBlood()[f],P=EL().names[(B&&B.cul)||R.culture]||EL().names.west;e.given=elGivenPick(P.f||P.m,kid&&kid.P);if(e.lk)delete e.lk}
-  else if(!want&&e.sex==='m'&&kid&&elFemOf(e)){const P=kid.P,S=kid.S,fa=P&&P.sex==='m'?P:S;if(fa&&fa.fam&&fa.fam!==e.fam)e.fam=fa.fam}   // 儿子随父亲的姓
+  if(kid){const mid=elFemMain(e),MB=mid&&elBlood()[mid];   // 0.13.2（用户 11-07 定）萝拉族人生的孩子：萝拉血脉超过 50% 的随母（姓萝拉），否则随父
+    if(MB&&MB.fam&&e.fam!==MB.fam)e.fam=MB.fam;
+    else if(!mid&&elFemOf(e)){const P=kid.P,S=kid.S,fa=P&&P.sex==='m'?P:S;if(fa&&fa.fam&&fa.fam!==e.fam)e.fam=fa.fam}}
   return e}
 // 生成男性配偶 / 人选的血脉要求：去掉只有女性的家族
 function elFemFr(fr,sex){if(sex!=='m'||!fr)return fr||{};let o=null;for(const id in fr)if(elFemId(id)){if(!o)o=Object.assign({},fr);delete o[id]}return o||fr}
@@ -86166,7 +86169,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="52fbe8e",GAME_BUILT=1794008082800,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="06ad8ec",GAME_BUILT=1794008686147,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
