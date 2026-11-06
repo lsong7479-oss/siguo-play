@@ -22733,6 +22733,7 @@ CFG.elite.allyTier=4;   // 地区阶（0 起）≥ 这个数的家族要结盟�
 // 新的名字风格（0.12.0 用户定：只有道观废墟是东方，佛窟是中亚—西域，风见、赤木是日文，其余西方）：east 中文、japan 日文（风见、赤木两家）、sogd 中亚、slav 东欧；ord:'fam' = 姓在前（张承志），其余「名·姓」
 Object.assign(CFG.elite.names,{
   east: {ord:'fam', m:['承志','德明','光远','怀仁','景行','鸿渐','清风','守一','玄成','云起','长庚','子敬','伯安','仲达','子昂','少卿'], f:['婉清','素心','若兰','采薇','明月','青鸾','雪芝','含烟','如意','秋水','灵芸','晚晴']},
+  isle:{ord:'fam', m:['诺亚','凯洋','伊恩','瑞澜','洛川','亚伦','卡洛','海因','沐恩','里昂','雷汐','澜德'], f:['莉娅','汐雅','艾澜','米雅','露娜','洛汐','伊莎','妮娅','澜音','塞琳']},   // 0.13.2 绝望孤岛安家（用户定：介于东方和西方之间的名字；姓在前，如安诺亚、安汐雅；名字 Claude 起）
   japan:{ord:'fam', m:['隼人','健太','翔','苍真','和也','诚','悠斗','莲','大和','拓海','龙之介','新之助'], f:['遥','雪乃','樱','千夏','凛','葵','美月','纱织','琴音','雫']},
   sogd: {m:['巴哈尔','帖木儿','阿尔斯兰','苏赫拉布','鲁斯塔姆','法尔哈德','贾姆希德','达里乌斯','伊斯坎德尔','纳林'], f:['古丽','阿依莎','帕丽','米赫丽','罗克珊娜','莎琳','娜迪拉','扎丽娜']},
   slav: {m:['弗拉德','米尔恰','拉杜','博格丹','斯特凡','伊万','德拉戈米尔','康斯坦丁','瓦西里','米哈伊'], f:['伊丽莎白','安娜','玛丽卡','伊莲娜','索菲娅','斯维特拉娜','柳德米拉','卡特琳娜']}});
@@ -22748,7 +22749,7 @@ Object.assign(CFG.elite.regions,{
   fallenSanctum:{culture:'latin', fam:['德·蒙','罗什','瓦莱','杜布瓦','马雷'], st:{ap:0.05}, res:{poison:0.1}, desc:'法攻 +5%、毒抗 +10%'},
   endlessDesert:{culture:'desert',fam:['哈希姆','苏莱曼','易卜拉欣','穆斯塔法','阿卜杜勒'], st:{aspd:0.03}, res:{fire:0.2}, desc:'攻速 +3%、火抗 +20%'},
   arcticTundra: {culture:'north', fam:['南森','约尔根','斯韦德','哈康森','索尔伯格'], st:{hp:0.05}, res:{frost:0.25}, desc:'生命 +5%、冰抗 +25%'},
-  greyMarsh:    {culture:'west',  fam:['马什','芬奇','巴罗','霍洛韦','格里姆'], st:{mdef:0.05}, res:{poison:0.2}, desc:'法防 +5%、毒抗 +20%'},
+  greyMarsh:    {culture:'west',  fam:['索恩','芬奇','巴罗','霍洛韦','格里姆'], st:{mdef:0.05}, res:{poison:0.2}, desc:'法防 +5%、毒抗 +20%'},
   despairIsle:  {culture:'west',  fam:['塞尔柯克','格雷森','黑尔','沃克','卡弗'], st:{hp:0.05}, desc:'生命 +5%'},
   cliffEdge:    {culture:'west',  fam:['克莱夫','罗克','斯蒂普','海德','皮克'], st:{def:0.05}, desc:'物防 +5%'},
   echoCrypt:    {culture:'latin', fam:['罗西','费拉里','孔蒂','加洛','马里尼'], st:{mdef:0.08}, desc:'法防 +8%'},
@@ -24135,6 +24136,255 @@ CFG.elite.eg={enhTo:10, maxTry:500};   // 0.12.7a（用户定）enhTo 只是默�
  for(const k in E.skills)E.skills[k].id=k;
 }
 
+// ---------- 0.13.2 家族重置第四批：六阶地区的家族（用户《0.13策划-家族重置》八节；逻辑 game/el_fam16.js）----------
+// 蒸汽重工：瓦特 watt；赤血关隘：魏德曼 weidmann（族长 = 英雄魏德曼本人，headHero）；堕落圣堂：约恩 jorn；无尽沙漠：阿里巴巴 alibaba；北极苔原：摩尔 moore；
+//   绝望孤岛：安 an；绝壁峭崖：莫顿 morton；灰褐沼泽：皮尔森 pearson（2026-11-07 新加；原来灰褐沼泽、绝壁峭崖没有家族）
+// 和英雄的关系（用户定）：英雄瓦特、魏德曼、阿里巴巴、安洋是这四家的人（hero：家族的英雄，famShareSk / famShareJob 用；魏德曼是族长，headHero）
+// 这八个地区原来的家族（data/el_late，0.12.0 Claude 定的那一版）全部换掉：同名的沿用老键（瓦特 watt），老存档里的血脉、声望照旧，老特性的键按门槛对上新特性（f_watt_20 → 新的 20% 特性）；
+//   去掉的家族（game/el_fam16.elFam16Mig）：声望均摊给同地区的家族；血脉并进 fam16To 指定的同地区新家族、姓改成那家的；老特性去掉
+//   哈德良 yue、莱昂哈特 yang → 魏德曼；德·莱斯 derais → 约恩；白图泰 battuta → 阿里巴巴；阿蒙森 amundsen → 摩尔；克鲁索 crusoe → 安（同地区新家族承接老家族，同五阶的规矩，Claude 定）
+// 平民血脉：八个地区按附表重建（望楼拟：名字、档位、波动）；家族的档位 L、波动 v、特别属性 sp：附表（望楼拟）；介绍、局面：用户定；家主、面相：汇总表（望楼拟 / 用户定）；家徽：Claude 定（瓦特沿用老的）
+//
+// —— 给填六阶家族内容的人 ——（写法同 data/el_fam15 开头）
+//   家族特性：往 CFG.elite.famFx.<家族键> 里 push（这个数组就是这家的 tr，不要整个换掉），一条 [名字, 门槛, 属性, 说明(可省), 选项(可省，同门槛二选一 {k, w})]；键 = f_<家族键>_<门槛×100>
+//     属性用到游戏里还没有的键：在 game/ 里实现局内效果，并在 game/el_blood.js 的 EL_STD3 里写中文说明（t_fam3 查）
+//   家族特殊技能（尊敬）/ 秘传（狂热）：写进 CFG.elite.skills（fsk:'<家族键>'、fr:'尊敬' / '狂热'）；主动的另写 CFG.skills + SK
+//     同英雄的（瓦特：电磁静默、蜂群攻势；魏德曼：御敌千里、无坚不摧；阿里巴巴：驼铃悠悠、香料贸易）不写 fsk，写好技能后调 famShareSk('<技能键>','<家族键>','尊敬' / '狂热')
+//   特色兵种（忠诚）：J(...) 写进 CFG.elite.jobs，tier:6，cost:famJob6('<家族键>')（20000 银币、50 级，用户认可；famRep 默认「忠诚」），加进 CFG.elite.jobCat 的归类
+//     同英雄的兵种：再调 famShareJob('<职业键>','<家族键>',星级)（英雄 N★ 或家族声望）
+//   补抽：特性表填上以后，身上有这家血脉、一条这家特性都没有的老精英读档时补抽一次（game/el_fam16.elFam16Bt，META.el.f16t 按家族记）；新建的存档当作已经抽过
+{const E=CFG.elite,BD=h=>[Math.max(0,10-h),3,Math.max(0,h-10)];
+ // 面相：发色 0 黑 1 深棕 2 棕 3 浅棕 4 金 5 红 6 银 7 铂金；瞳色 0 黑 1 褐 2 蓝 3 绿 4 灰 5 红 6 琥珀；肤色（1～20）按 1～3 → 0 白皙、4～7 → 1 常见、8～11 → 2 小麦、12～15 → 3 褐、16～20 → 4 深
+ const SK=n=>n<=3?0:n<=7?1:n<=11?2:n<=15?3:4;
+ const F=(key,fam,reg,L,v,sp,crest,head,desc,sit,look,o)=>Object.assign({key,fam,reg,L,v,sp,crest,head,desc,sit,look:{hr:look[0],ey:look[1],sk:[SK(look[2])],b:BD(look[3])},tr0:[]},o||{});
+ // 六阶平民血脉（望楼拟）：[名字, 档位, 波动]
+ E.fam16C={steamWorks:['蒸汽重工平民',{reload:1,def:1,speed:-1},0.1], bloodPass:['关隘平民',{hp:1,atk:1,ap:-1},0.1], fallenSanctum:['堕圣堂平民',{mdef:1,ap:1,def:-1},0.2],
+  endlessDesert:['沙海平民',{speed:1,vision:1,hp:-1},0.2], arcticTundra:['苔原平民',{hp:1,def:1,speed:-1},0.1], despairIsle:['孤岛平民',{vision:1,aspd:1,mdef:-1},0.2],
+  greyMarsh:['沼民',{hp:1,ap:1,speed:-1},0.2], cliffEdge:['崖民',{atk:1,hp:1,speed:-1},0.2]};
+ const L16=[
+  // ===== 蒸汽重工 =====
+  F('watt','瓦特','steamWorks',{atk:2,reload:2,def:1,hp:-1},0.1,{dmgR:[0.08,0.14]},{shape:'rect',bg:'brown',pat:'wave',fg:'silver'},'奥托·瓦特',
+    '一直以来是赤色帝国的工匠家族，以严谨、踏实著称。政治上没有立场，家族只为精械科技研发而前进，这也是瓦特家族特有的明哲保身之道。',
+    '蒸汽重工被亡灵夺取后，瓦特家族躲在早先修好的地下庇护所里苟延残喘。',
+    [[6],[4],5,12],{hero:'watt'}),   // 奥托：六十多岁，重工厂的老厂长，英雄瓦特的父亲；灰白短发 → 银；额头推着护目镜
+  // ===== 赤血关隘 =====
+  F('weidmann','魏德曼','bloodPass',{def:2,hp:2,atk:1,speed:-1},0.1,{drP:[0.08,0.14]},{shape:'rectNotch',bg:'red',pat:'lion',fg:'black'},'魏德曼',
+    '军统世家，世代都是将官。魏德曼本人统率赤色帝国北境的帅级军团。',
+    '帝国内部政斗，把魏德曼家族调虎离山调到了赤血关隘。魏德曼开局就被亡灵化，后来由希尔德加德净化回来；守着关的幸存者是魏德曼家族的精英。净化回来以后，和「亚瑟的联盟」结盟。',
+    [[2,4],[2,4],3,14],{headHero:'weidemann',hero:'weidemann'}),   // 族长 = 英雄魏德曼本人（用户定），立绘用英雄的；族人的面相 Claude 定
+  // ===== 堕落圣堂 =====
+  F('jorn','约恩','fallenSanctum',{ap:3,mdef:2,atk:-1,hp:-1},0.2,{dmgS:[0.08,0.14]},{shape:'rectArc',bg:'purple',pat:'sun',fg:'gold'},'格雷戈里奥·约恩',
+    '教廷首都也有约恩家族，堕落圣堂这一支是分支家族。约恩家族是主动成为亡灵的；分支家族里有一部分人反抗、逃了出来，后来流入王宫。',
+    '亚瑟夺回堕落圣堂以后，约恩家族回到这里重建家族。',
+    [[0,6],[1],6,13]),   // 格雷戈里奥：五十多岁，教皇约恩的侄子；灰黑长发束在脑后，眉心很窄
+  // ===== 无尽沙漠 =====
+  F('alibaba','阿里巴巴','endlessDesert',{speed:2,aspd:1,vision:1,def:-1},0.2,{dmgR:[0.08,0.14]},{shape:'rectArc',bg:'orange',pat:'scale',fg:'white'},'卡西姆·阿里巴巴',
+    '无尽沙漠中的大商旅家族，八面玲珑，奉行合作共赢的理念，打通了沙漠商路；地图勘测、战斗、贸易和人际交往都能力卓越。',
+    '亡灵占了沙漠里的大城以后，阿里巴巴家族的商队改走绿洲之间的小路，替各地的幸存者运货、换粮，商会靠这条路撑了下来。',   // 局面：策划没写，Claude 按合理性补（用户 11-06 让补）
+    [[0],[0],14,11],{hero:'alibaba'}),   // 卡西姆：五十岁，英雄阿里巴巴的哥哥，商会的大股东；头裹白巾，十个手指戴了七枚戒指
+  // ===== 北极苔原 =====
+  F('moore','摩尔','arcticTundra',{hp:3,atk:1,speed:-1},0.2,{resFrost:[0.35,0.45]},{shape:'rectTri',bg:'blue',pat:'mountain',fg:'white'},'哈拉尔·摩尔',
+    '雪原猛犸的畜牧猎人家族。和英雄雪狼之子（狼神后裔）没有直接关系。',
+    '一直在北极苔原。',
+    [[4],[2,4],1,18]),   // 哈拉尔：六十岁，老猎人；浅金长发编成辫子，披猛犸皮袍
+  // ===== 绝望孤岛 =====
+  F('an','安','despairIsle',{atk:2,hp:1,speed:1,mdef:-1},0.3,{dmgM:[0.08,0.14]},{shape:'shield',bg:'cyan',pat:'wave',fg:'white'},'安鲸',
+    '海上一个比较独立的家族。亡灵潮之前远离人类世界，亡灵潮之后加入了海洋联盟。英雄安洋（虎鲸骑士）是安家的人。',
+    '亡灵潮之后加入了海洋联盟；海洋联盟的盟军司令不是安家的人。',
+    [[0],[0],10,12],{hero:'anyang',cul:'isle'}),   // 安鲸：四十五岁，长发飘飘的美男子；发色没写，Claude 定黑；族人的名字介于东方和西方之间（用户 11-06 定，姓在前，el_late 的 isle）
+  // ===== 绝壁峭崖 =====
+  F('morton','莫顿','cliffEdge',{atk:2,hp:1,reload:1,speed:-1},0.2,{resFire:[0.35,0.45]},{shape:'rectNotch',bg:'black',pat:'flame',fg:'orange'},'格哈德·莫顿',
+    '莫顿家族原本在别的地方生活，亡灵潮来了以后，搬到了绝壁峭崖的平顶山顶。',
+    '家主格哈德是「帝国第七爆破队」现在的头：三十年前帝国派这支爆破队来开崖路，帝国撤走后留在了这里。',
+    [[2],[1],4,15]),   // 格哈德：五十五岁；被火药燎掉了半边眉毛，耳朵有点背，嗓门大
+  // ===== 灰褐沼泽 =====
+  F('pearson','皮尔森','greyMarsh',{ap:3,mdef:1,def:-1},0.2,{resPoison:[0.35,0.45]},{shape:'rect',bg:'green',pat:'tree',fg:'purple'},'埃德加·皮尔森',
+    '灰沼村的老住户，在毒沼边住了几代；被封村的十二年里学会了拿沼里的毒当武器。',
+    '十二年前灰沼村被王都派来的医官封了村，现在主事的是老皮尔森。',
+    [[6],[4,3],6,10]),   // 埃德加（老皮尔森）：七十岁；稀疏的灰发，浑浊的灰绿眼，手背有青灰色毒斑
+ ];
+ E.fam16=L16;E.fam16Regs=['steamWorks','bloodPass','fallenSanctum','endlessDesert','arcticTundra','despairIsle','cliffEdge','greyMarsh'];
+ // 老家族的姓（迁移时改姓用；要在换掉之前记下）
+ E.fam16OldFam={};for(const r of E.fam16Regs){const S=E.bloodSrc[r];for(const f of(S?(Array.isArray(S.f)?S.f:S.f?[S.f]:[]):[]))if(f.key)E.fam16OldFam[f.key]=f.fam}
+ for(const r of E.fam16Regs){const S=E.bloodSrc[r]||(E.bloodSrc[r]={});S.c=E.fam16C[r];S.f=[]}
+ for(const f of L16){f.tr=f.tr0;E.famFx[f.key]=f.tr0;E.bloodSrc[f.reg].f.push(f);E.famInfo[f.key]={head:f.head,desc:f.desc,sit:f.sit};E.look.fam[f.key]=f.look;if(f.name===undefined)f.name=f.fam+'家族'}
+ // 老家族 → 存档迁移（game/el_fam16.elFam16Mig）：声望均摊给同地区的家族；血脉并进 fam16To 指定的家族（没写的并进平民）
+ E.fam16Gone={bloodPass:['yue','yang'], fallenSanctum:['derais'], endlessDesert:['battuta'], arcticTundra:['amundsen'], despairIsle:['crusoe']};
+ E.fam16To={yue:'weidmann', yang:'weidmann', derais:'jorn', battuta:'alibaba', amundsen:'moore', crusoe:'an'};
+ // 家族 → 家族的英雄（和英雄共用的技能、兵种按「英雄或家族声望」开放，用户 11-04 定）：一到四阶的四家 + 六阶有英雄的四家
+ E.famHero=Object.assign(E.famHero||{},{faris:'camelKnight', ho:'gunslinger', bonaparte:'napoleon', william:'ironMarshal'});for(const f of L16)if(f.hero)E.famHero[f.key]=f.hero;
+ // 六阶家族兵种：20000 银币（表里的「铜币」= 银币）、精英 50 级（用户认可）
+ E.famJobCost6={silver:20000, lv:50};
+ if(!E.jobTierName[5])E.jobTierName[5]='五阶';E.jobTierName[6]='六阶';
+}
+// 和英雄共用的技能、兵种的开放条件（「英雄或家族声望」，满足任一个就行；公共写法，Claude 定）：
+//   技能：need = 家族的英雄（英雄 5★ 或进阶形态），fneed = [家族键, 声望]（game/el_core.elNeedOk；顾问教官 game/el_fam13.elFamSkills、家族兵种升级 elLvSk 都认 fneed + 尊敬）
+//   兵种：cost.hero + star（英雄 N★），cost.fam（家族声望 famRep，默认「忠诚」）（game/el_core.elJobLock）
+function famShareSk(k,fam,rep){const S=CFG.elite.skills[k],h=CFG.elite.famHero[fam];if(!S||!h)return false;S.need=h;S.fneed=[fam,rep||'尊敬'];delete S.fsk;delete S.fr;return true}
+function famShareJob(k,fam,star,rep){const J=CFG.elite.jobs[k],h=CFG.elite.famHero[fam];if(!J||!h)return false;const c=J.cost||(J.cost={});c.hero=h;c.star=star||3;c.fam=fam;if(rep)c.famRep=rep;return true}
+// 六阶家族兵种的费用：cost:famJob6('<家族键>')
+const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
+
+// ---------- 0.13.2 家族重置第四批 · 六阶：瓦特、魏德曼、约恩、阿里巴巴的特性、技能、特色兵种（工坊代理 16a；逻辑 game/el_fam16a.js；家族本身在 data/el_fam16.js）----------
+// 用户《0.13策划-家族重置》八节：特性、技能、兵种是望楼草拟、用户改定；家族兵种 20000 银币、精英 50 级（famJob6）
+// 新属性键（局内效果和中文说明在 game/el_fam16a；为了不和同时做另外四家的代理撞名，新键都带 f16 前缀）：
+//   f16Rld 装填速度 ×、f16RepEmp 维修的目标解除电磁干扰、f16Mech [格, 加成] 精械之魂、f16Cmd [格, 加成] 赤血军令、f16LowDr [生命比例, 减伤] 约恩的执念、
+//   f16Crown [格, 概率, 复活生命] 复苏之冕、f16MtSpd 骑乘时移速、f16RgCrit 远程物理暴击率、f16Shrewd 精明（流浪商人涨价 −X）、f16Oath [每几铜币, 上限] 天平之誓、
+//   f16Spice 香料贸易（每波铜币的倍数）、f16Siege 摧城（对精英、首领、重型 ×）、f16HealSh 冕下之仆（治疗附带护盾）、f16JDrone 重工技师每波的无人机（倍率）
+//   已有的键：reloadK 装填速度、aspd 攻速、atkX / apX / defX / mdefX 独立乘区、defF / mdefF 固定值、ccR 全控制抗性（训练「意志训练」那个）、vision 视野、dmgS 法术伤害、
+//   aspdX 攻速 ×、speedX 移速 ×（game/el_fam14b）、autoRep 工程维修、chg 冲锋、courage 周围亡灵越多增伤减伤越高（game/el_fam15a）、noWall 不上城墙、dr 减伤、movePrec 移动精准、
+//   desertOk 无视沙漠惩罚（game/el_fam14a）、dsMount 骑乘的沙漠兵种
+// 同英雄的技能（famShareSk，「英雄或家族声望」开放）：瓦特 el_f16Silence 电磁静默（尊敬）/ el_f16Swarm 蜂群攻势（狂热）；魏德曼 el_f16Far 御敌千里 / el_f16Break 无坚不摧；
+//   阿里巴巴 el_caravan 驼铃悠悠（0.12.0 的老技能，改成照英雄的做：至多一支、不随波次消失、补齐阵亡的）/ el_f16Spice 香料贸易
+// Claude 定（策划没写细的，回报里列了）：
+//   和英雄被动同类的特性（精械之魂、赤血军令、天平之誓）：多名精英之间不叠加，和英雄本人的被动各算各的、可以叠加（同用户给天平之誓定的）
+//   精械之魂：机械士兵、无人机用统一 buff 的 aspd + rld，机械类建筑用 aspd（建筑的 aspd 同时管装填）；只在波次中刷新
+//   瓦特的严谨：工程维修、随身维修、主动技能「维修」修到的建筑都解除电磁干扰（empU / empH 清掉）
+//   蜂群攻势 / 重工技师的无人机：机炮伤害照英雄的另外 −50%；重工技师那一架单独记，不算进蜂群攻势的上限；读档后精英的无人机不恢复（下一波开始时技师重新放出）
+//   赤血军令：步兵 = 不是骑兵、不是重械的士兵（同英雄 wdInfU）；重械打巨型、重械亡灵（EBIG）；骑兵增伤加进士兵的伤害加成池子
+//   复苏之冕：士兵（不含召唤物）和精英（含自己）；先看复苏大阵、再看复苏之冕，两边各记各的次数；斩杀也能复活；复活 = 濒死那一下不倒下，生命直接变成上限的 30%
+//   必死大阵：同一只亡灵多个阵不叠加；「不能回血」= 禁疗；易伤走统一 buff 的 vuln
+//   冕下之仆：护盾加在被治疗的别人身上（不给自己），吸收量 = 这次治疗量的 30%，同一个目标至多叠到它生命上限的 30%，持续 5 秒
+//   天平之誓：额外的银币至多 = 这一局基础结算银币的 100%（英雄的贸易天平额外至多 200%）；精明、天平之誓、香料贸易：上阵过就算（倒下了也算，同英雄的被动）
+//   摧城：×180% 独立乘区；「精英、首领」= 阶 ≥ 4 或小首领，「重型」= 巨大体型或重械（maps/blood 的 EBIG）
+{const LV=(a,b)=>[a,a+(b-a)*0.1,a+(b-a)*0.2,a+(b-a)*0.3,a+(b-a)*0.5,a+(b-a)*0.6,a+(b-a)*0.7,a+(b-a)*0.8,a+(b-a)*0.9,b].map(v=>Math.round(v*1000)/1000);
+ const E=CFG.elite,FX=E.famFx;
+ // —— 家族特性（望楼拟、用户改定）——
+ FX.watt.push(['瓦特的精密',0.2,{reloadK:0.12}],['瓦特的效率',0.4,{aspd:0.08, reloadK:0.08}],['瓦特的严谨',0.6,{f16RepEmp:1}],['瓦特的天赋',0.8,{atkX:0.12, f16Rld:0.08}],['精械之魂',1,{f16Mech:[5,0.15]}]);
+ FX.weidmann.push(['魏德曼的严整',0.2,{defF:15}],['魏德曼的纪律',0.4,{ccR:0.2}],['魏德曼的高瞻',0.6,{vision:0.15}],['魏德曼的铁腕',0.8,{atkX:0.12, defX:0.1}],['赤血军令',1,{f16Cmd:[6,0.1]}]);
+ FX.jorn.push(['约恩的虔敬',0.2,{mdefF:15}],['约恩的威仪',0.4,{dmgS:0.15}],['约恩的执念',0.6,{f16LowDr:[0.3,0.15]}],['约恩的神威',0.8,{apX:0.12, mdefX:0.08}],['复苏之冕',1,{f16Crown:[5,0.15,0.3]}]);
+ FX.alibaba.push(['阿里巴巴的脚力',0.2,{f16MtSpd:0.1}],['阿里巴巴的眼力',0.4,{f16RgCrit:0.08}],['阿里巴巴的精明',0.6,{f16Shrewd:0.1}],['阿里巴巴的身手',0.8,{aspdX:0.06, f16Rld:0.06, speedX:0.12}],['天平之誓',1,{f16Oath:[50,1]}]);
+ // —— 家族技能（「A～B」= 1～10 级的表；raw：表上的数就是精英的数）——
+ Object.assign(E.skills,{
+  el_f16Silence:{name:'电磁静默', sk:'emSilence', raw:true, sc:[], lvT:{r:LV(4,6), dur:LV(2,3), heal:LV(0.1,0.25)}, ico:'emSilence'},
+  el_f16Swarm:  {name:'蜂群攻势', fam:['mech'], sk:'f16Swarm', raw:true, sc:[], lvT:{max:[2,2,2,2,3,3,3,3,3,3], k:LV(0.4,0.6)}, ico:'droneSwarm'},   // 需求：机械系（用户认可）
+  el_f16Far:    {name:'御敌千里', sk:'wdFar', raw:true, sc:[], lvT:{r:LV(5,7.5), vis:LV(0.1,0.2), rng:LV(0.1,0.2)}, ico:'wdFar'},
+  el_f16Break:  {name:'无坚不摧', sk:'wdBreak', raw:true, sc:[], lvT:{range:LV(7,10), r:LV(2,2.5), def:LV(0.2,0.4), rm:LV(0.2,0.4)}, ico:'wdBreak'},
+  el_f16Rez:    {name:'复苏大阵', fsk:'jorn', fr:'尊敬', sk:'f16Rez', raw:true, sc:[], lvT:{r:LV(2,2.5), dur:LV(3,5), hp:LV(0.2,0.3)}, ico:'vnRevive'},
+  el_f16Doom:   {name:'必死大阵', fsk:'jorn', fr:'狂热', sk:'f16Doom', raw:true, sc:[], lvT:{r:LV(2,2.5), k:LV(0.3,0.5)}, ico:'dreadField'},
+  el_f16Spice:  {name:'香料贸易', pas:true, st1:{f16Spice:1}, lvT:{f16Spice:LV(1,3)}, ico:'alSpice'},
+ });
+ // 驼铃悠悠（0.12.0 的精英版是「60 秒冷却、30 秒后离开」）：改成照英雄的做（heroes/alibaba 的 alCaravan：场上至多一支、不随波次消失、再放补齐阵亡的；冷却 30 秒），属性 50～80%
+ Object.assign(E.skills.el_caravan,{sk:'alCaravan', raw:true, sc:[], lvT:{k:LV(0.5,0.8)}});
+ if(E.skV&&E.skV.el_caravan)E.skV.el_caravan={add:{k:0.1}, t:'驼队的属性 +10%'};   // V 级质变原来是「跟随作战 40 秒」，现在不会离开了，换成属性（Claude 定）
+ famShareSk('el_f16Silence','watt','尊敬');famShareSk('el_f16Swarm','watt','狂热');
+ famShareSk('el_f16Far','weidmann','尊敬');famShareSk('el_f16Break','weidmann','狂热');
+ famShareSk('el_caravan','alibaba','尊敬');famShareSk('el_f16Spice','alibaba','狂热');
+ const pcF=v=>Math.round(v*1000)/10+'%';
+ Object.assign(CFG.skills,{
+  f16Swarm:{name:'蜂群攻势', cd:15, noCdr:true, aim:'self', unit:'mechDrone', gun:CFG.skills.droneSwarm.gun, n:1, max:2, k:0.4, boom:0,
+    desc:p=>`放出 ${p.n} 架机炮无人机随自身作战，场上至多 ${p.max} 架，波次结束时不消散；无人机的生命、伤害为自身物理攻击的 ${pcF(p.k)}(机炮伤害另外 −${pcF(1-p.gun)})；冷却 ${p.cd} 秒，不受冷却速度影响`},
+  f16Rez:  {name:'复苏大阵', cd:20, aim:'point', range:10, r:2, dur:3, hp:0.2,
+    desc:p=>`在施法距离 ${p.range} 格内的指定地点布下半径 ${p.r} 格的复苏阵，持续 ${p.dur} 秒；阵内的非建筑友军阵亡时立即以 ${pcF(p.hp)} 生命复活，每名每次阵法限 1 次`},
+  f16Doom: {name:'必死大阵', cd:15, aim:'point', range:10, r:2, dur:5, k:0.3,
+    desc:p=>`在施法距离 ${p.range} 格内的指定地点布下半径 ${p.r} 格的必死阵，持续 ${p.dur} 秒；阵内的亡灵获得 ${pcF(p.k)} 易伤，不能回血`},
+ });
+ // —— 特色兵种（望楼拟、用户认可 / 用户定；六阶、20000 银币、精英 50 级、家族声望「忠诚」）——
+ const J0=E.jobs.recruit,AR=['cloth','leather','chain','plate'];
+ const J=(name,cat,fam,armor,weapon,x,key,jsk,st,o)=>{const j=Object.assign({hp:J0.hp,atk:J0.atk,ap:J0.ap,def:J0.def,mdef:J0.mdef,dodge:J0.dodge,crit:J0.crit,speed:J0.speed,vision:J0.vision,aspd:J0.aspd,prec:J0.prec},{name,tier:6,cat,fam,armor:AR.slice(0,AR.indexOf(armor)+1),weapon,x,cost:Object.assign({},E.famJobCost6,{fam:key}),jsk,st:st||{}},o||{});
+   j.hp+=x.hp||0;j.atk+=x.atk||0;j.ap+=x.ap||0;j.def+=x.def||0;j.mdef+=x.mdef||0;return j};   // 同 data/el_jobs3 的 J()；费用 = game/el_fam16 的 famJob6（那是 const，数据文件里还没定义，这里直接拼）
+ Object.assign(E.jobs,{
+  wattTech:    J('重工技师','magic',['mech'],'leather',['gun','club'],{hp:280, atk:22},'watt',
+    ['重工','保留工程师的工程维修(5 格内每秒维修一座受损建筑，维修量 100%AD，维修时不攻击)；每波开始时放出 1 架机炮无人机随自身作战(至多 1 架，生命、伤害为自身物理攻击的 50%，和蜂群攻势的无人机分开算上限)'],
+    {autoRep:[5,1], f16JDrone:0.5},{ser:'工程师'}),
+  vanguardInf: J('先登步兵','heavy',['warrior','shield'],'plate',['sword','spear','shield'],{hp:550, def:12},'weidmann',['先登','全控制抗性 +60%，减伤 +25%'],{ccR:0.6, dr:0.25},{ser:'步兵'}),
+  xianzhenCav: J('陷阵骑兵','cav',['cav','shield'],'plate',['spear','shield'],{hp:450, atk:20},'weidmann',
+    ['陷阵','骑兵单位，冲锋伤害 ×180%(同重骑兵)；自身半径 3 格内每有 1 个敌人，增伤、减伤 +4%，至多 6 层'],{chg:[1.8,2.5], courage:[3,0.04,6]},{ser:'重骑兵', mount:true}),
+  siegeCannon: J('摧城重炮','ranged',['archer'],'chain',['gun','ammobox'],{hp:200, atk:32},'weidmann',['摧城','无法登上城墙；对精英亡灵、首领和重型(巨型、重械)亡灵造成的伤害 ×180%'],{noWall:1, f16Siege:0.8},{ser:'火炮手'}),
+  redCardinal: J('红衣主教','magic',['mage'],'cloth',['staff','tome'],{hp:220, ap:26},'jorn',['冕下之仆','治疗时额外给目标一层护盾，吸收量为这次治疗量的 30%'],{f16HealSh:0.3},{ser:'牧师'}),
+  camelBowCav: J('骆驼弓骑兵','cav',['cav','archer'],'leather',['bow','crossbow','gun','quiver','ammobox'],{hp:380, atk:24},'alibaba',
+    ['驼铃','骑兵单位，移动精准 +50%(同弓弩骑兵)；无视沙漠地形惩罚和沙尘暴效果'],{movePrec:0.5, desertOk:1, dsMount:1},{ser:'弓弩骑兵', mount:true}),
+ });
+ // 能学的技能 = 同系列的职业的（家族兵种另外升级学本家族的特殊技能，game/el_core）
+ for(const[k,s]of[['wattTech','engineer'],['vanguardInf','infantry'],['xianzhenCav','heavyCav'],['siegeCannon','cannoneer'],['redCardinal','priest'],['camelBowCav','horseArcher']]){const L=E.jobs[k].sks=[];for(const x of(E.jobs[s]&&E.jobs[s].sks)||[])if(!L.includes(x))L.push(x)}
+ for(const[c,k]of[['magic','wattTech'],['heavy','vanguardInf'],['cav','xianzhenCav'],['ranged','siegeCannon'],['magic','redCardinal'],['cav','camelBowCav']]){const x=E.jobCat.find(r=>r[0]===c);if(x&&!x[2].includes(k))x[2].push(k)}
+ for(const k in E.skills)E.skills[k].id=k;
+}
+
+// ---------- 0.13.2 家族重置第四批 · 六阶：摩尔（北极苔原）、安（绝望孤岛）、莫顿（绝壁峭崖）、皮尔森（灰褐沼泽）的特性、技能、特色兵种（工坊代理 16b；逻辑 game/el_fam16b.js；家族本身在 data/el_fam16.js）----------
+// 用户《0.13策划-家族重置》八节：特性、家族特殊技能（尊敬）、秘传技能（狂热）、特色兵种（忠诚）都是用户定（望楼拟、用户改）；写法同第三批（data/el_fam15a、el_fam15b）
+// 新属性键（局内效果和中文说明在 game/el_fam16b）：
+//   摩尔：snowOk 不受积雪和冰面的地形惩罚；visFix 视野不降（同骆驼骑兵，game/el_jobfx 已有，这里补说明）；nightHunt 永夜猎手；chgK 冲锋伤害 +X；f16Mam [践踏比例, 击退格数] 猛犸
+//   安：chgAs [秒, 攻速] 乘海破浪；tide [秒, 减伤, 增伤] 潮汐攻势；f16Dol [水里移速, 上岸移速倍率] 海豚
+//   莫顿：boomTk 受到的爆炸伤害 −X；fuse [概率, 半径格, 比例] 引信；boomX 爆炸伤害和范围 ×(1 + X)；boomChain [半径格, 比例] 连环引爆；f16Gren [射程, 半径, 比例, 击退格] 掷弹；boomRes 爆炸抗性
+//   皮尔森：psnHitF [比例, 秒] 淬沼之毒；psnX 中毒伤害 ×(1 + X)；f16Mia [层数, 扩散半径格] 瘴疠；psnHeal 百毒不侵；swampOk 不受毒沼的地形惩罚
+//   已有的键：resFrost 冰抗、hpX / atkX / apX 独立乘区、hpF / atkF / apF 固定值、critDmg 暴击伤害、kbA 击退抗性、resPoison 毒抗、eva 闪避率、psnStack 炼毒（同炼药师）、hp / speed 生命、移速 +%
+// Claude 定（策划没写细的，回报里列了）：
+//   积雪和冰面：北极苔原的积雪层数减速 + 冰原（tundra）的全图雪地减速（同「冰原守备」tundraOk，两个都有只抵一次）；冷湖减速只对士兵（精英本来不吃），冰面转向变慢只对士兵 / 船（精英本来不吃）
+//   摩尔的夜视：用骆驼骑兵的 visFix（视野不会因为夜晚、天气下降，策划清单写的「同骆驼骑兵 visFix」）
+//   永夜猎手：夜晚、深夜或北极苔原的暴风雪里，增伤 +15%；北极苔原暴风雪的攻速惩罚抵掉（寒霜叠层另算，照旧）；精英夜里本来就不降攻速
+//   践踏 / 猛犸驯术「需求：骑乘」= 职业是骑兵（mount）；践踏内半圈 = 离自身 ≤ 半径一半的亡灵 ×2
+//   猛犸驯术「冲锋伤害」：骑兵冲锋那一下、冲锋类技能冲刺途中的伤害、猛犸的践踏，都 ×(1 + X)
+//   猛犸骑兵：「冲锋时」= 连续移动满加速时间的一半（骑兵 2 秒加到最快，即 1 秒）以后；身前碰到的地面亡灵每只 1 秒内最多被踩一次，伤害 = 物理攻击 × 50%（钝击），往外推 1 格；体型大先只写在说明里（小人借重骑兵的）
+//   乘海破浪「冲锋命中」= 骑兵冲锋那一下近战、或冲锋类技能冲刺途中打中亡灵；3 秒内攻速 +15%（统一 buff，再命中刷新）
+//   潮汐攻势：每波开始先是「减伤 +20%」，10 秒后换「增伤 +20%」，再 10 秒换回来，一直交替
+//   跃浪：0.5 秒划弧落到目标点；落点不是水（或者这张图没有水）就放不出来；落在深海、自己又不会游泳的，落地后游回岸边
+//   漩涡：每 0.5 秒把范围里的亡灵往中心拉 0.5 格（吃控制抗性），并造成每秒伤害的一半
+//   海豚骑士：同虎鲸（无视水域惩罚、能下深海、水里不减攻速），水里移速 ×125%（独立）、上岸（含没有水的地图）移速 ×40%（独立）；闪避率 +10% = eva
+//   引信：普攻每一下（同一帧只判一次）15% 概率，在目标处小爆炸，1 格内（含目标）的亡灵受到 30% 物理攻击的爆炸伤害；引信、技能、普攻炮弹的爆炸都算「自身的爆炸」
+//   火药配置：爆炸伤害、爆炸范围各 ×110%（独立乘区，不和重炮手的「爆炸伤害 +50%」相加）
+//   连环引爆：自身的爆炸伤害杀死亡灵，下一帧在它倒下的地方再炸一次（1.5 格内，这一下伤害的 50%）；连爆不再引发连爆
+//   定向爆破：2 秒后爆炸，半径 2 格内全额（不衰减），击退 2 格（吃击退抗性）；开山：面前每 2 格一段、共 3 段，每段是半径 1.5 格的爆炸，每隔 0.3 秒引爆一段
+//   掷弹兵：普攻改成抛射的炸药（飞行速度 10 格 / 秒，射程 5 格）；落点的那只吃全额，1.5 格内别的亡灵吃 50% 的爆炸伤害，命中的都往外推 1 格；爆炸抗性 +100% = 受到的爆炸伤害 ÷ 2
+//   淬沼之毒：普攻（同一帧只判一次）给目标上中毒，3 秒内合计 30% 法术攻击（每秒 10%）；没有叠层能力的只上 1 层（只刷新），有瘴疠 / 炼毒的按 3 层叠
+//   炼毒天赋「中毒伤害 ×115%」：自己上的中毒（淬沼之毒、瘴疠 / 炼毒的叠毒）每秒伤害 ×115%，自己的毒属性技能伤害（毒沼）×115%
+//   瘴疠：同炼药师的「炼毒」（每次命中叠 1 层，至多 3 层，每层每秒 10% 法术攻击）；身上有自己上的毒的亡灵死了，剩下的中毒（层数、剩余时间、每层伤害取大）传给 1.5 格内的亡灵，传出去的不再扩散
+//   毒沼：每 0.5 秒结算一次（每秒伤害的一半，法术、毒属性），减速 30%；毒沼的伤害直接结算，不算「中毒」状态
+//   百毒不侵：身上的持续中毒伤害（丛林的中毒、灰褐沼泽分种类叠的中毒……）不扣血，改为回复这一下的 50%～100%；毒沼地形的伤害不算中毒
+//   瘴毒术士「不受毒沼的地形惩罚」：灰褐沼泽的毒沼泽不减速、不掉血
+//   技能图标、小人先借现有的（ico；猛犸骑兵借重骑兵，海豚骑士借英雄安洋，掷弹兵借火枪手，瘴毒术士借炼药师）
+{const LV=(a,b)=>[a,a+(b-a)*0.1,a+(b-a)*0.2,a+(b-a)*0.3,a+(b-a)*0.5,a+(b-a)*0.6,a+(b-a)*0.7,a+(b-a)*0.8,a+(b-a)*0.9,b].map(v=>Math.round(v*1000)/1000);
+ const E=CFG.elite,FX=E.famFx;
+ // —— 家族特性（用户定）：[名字, 门槛, 属性]，说明按属性自动写（game/el_blood 的 EL_STD3）——
+ FX.moore.push(['摩尔的耐寒',0.2,{resFrost:0.2}],['摩尔的雪步',0.4,{snowOk:1}],['摩尔的夜视',0.6,{visFix:1}],['摩尔的体魄',0.8,{hpX:0.15,atkX:0.08}],['永夜猎手',1,{nightHunt:0.15}]);
+ FX.an.push(['安家的筋骨',0.2,{hpF:240}],['安家的悍勇',0.4,{critDmg:0.2}],['乘海破浪',0.6,{chgAs:[3,0.15]}],['安家的骁勇',0.8,{atkX:0.15,hpX:0.1}],['潮汐攻势',1,{tide:[10,0.2,0.2]}]);
+ FX.morton.push(['莫顿的臂力',0.2,{atkF:30}],['莫顿的胆量',0.4,{kbA:0.4,boomTk:0.2}],['莫顿的引信',0.6,{fuse:[0.15,1,0.3]}],['火药配置',0.8,{atkX:0.1,boomX:0.1}],['连环引爆',1,{boomChain:[1.5,0.5]}]);
+ FX.pearson.push(['皮尔森的毒术',0.2,{apF:28}],['沼民之躯',0.4,{resPoison:0.3}],['淬沼之毒',0.6,{psnHitF:[0.3,3]}],['炼毒天赋',0.8,{apX:0.12,psnX:0.15}],['瘴疠',1,{f16Mia:[3,1.5]}]);
+ // —— 家族技能：fsk 家族、fr 要到的声望（尊敬 = 特殊技能，狂热 = 秘传）；「A～B」= 1～10 级的表；rreq = 需求：骑乘（职业是骑兵）——
+ Object.assign(E.skills,{
+  el_f16bStomp:  {name:'践踏', fsk:'moore', fr:'尊敬', rreq:1, sk:'f16bStomp', raw:true, sc:['b'], lvT:{r:LV(3,5), ad:LV(0.5,0.8)}, ico:'camelStomp'},
+  el_f16bTame:   {name:'猛犸驯术', pas:true, fsk:'moore', fr:'狂热', rreq:1, st1:{hp:0.15, speed:0.15, chgK:0.2}, lvT:{hp:LV(0.15,0.25), speed:LV(0.15,0.25), chgK:LV(0.2,0.4)}, ico:'charge'},
+  el_f16bLeap:   {name:'跃浪', fsk:'an', fr:'尊敬', sk:'f16bLeap', raw:true, sc:['b'], lvT:{ad:LV(1.2,1.5)}, ico:'anRush'},
+  el_f16bVortex: {name:'漩涡', fsk:'an', fr:'狂热', sk:'f16bVortex', raw:true, sc:['b'], lvT:{r:LV(2,2.5), ad:LV(0.4,0.6)}, ico:'anQuake'},
+  el_f16bTnt:    {name:'定向爆破', fsk:'morton', fr:'尊敬', sk:'f16bTnt', raw:true, sc:['b'], lvT:{ad:LV(1.5,2)}, ico:'lkChain'},
+  el_f16bMine:   {name:'开山', fsk:'morton', fr:'狂热', sk:'f16bMine', raw:true, sc:['b'], lvT:{ad:LV(1,1.3)}, ico:'lkRain'},
+  el_f16bSwamp:  {name:'毒沼', fsk:'pearson', fr:'尊敬', sk:'f16bSwamp', raw:true, sc:['b'], lvT:{r:LV(2,2.5), ad:LV(0.4,0.6)}, ico:'acidPool'},
+  el_f16bImmune: {name:'百毒不侵', pas:true, fsk:'pearson', fr:'狂热', st1:{psnHeal:0.5}, lvT:{psnHeal:LV(0.5,1)}, ico:'massHeal'},
+ });
+ const pcF=v=>Math.round(v*1000)/10+'%';
+ Object.assign(CFG.skills,{
+  f16bStomp: {name:'践踏', cd:15, aim:'self', r:3, b:50, ad:0.5, desc:p=>`对自身半径 ${p.r} 格内的敌人造成 ${sv_(p.b,p.ad)} 伤害，离自身 ${Math.round(p.r*5)/10} 格以内的敌人受到双倍伤害`},
+  f16bLeap:  {name:'跃浪', cd:10, aim:'point', range:6, r:1.5, b:60, ad:1.2, kb:1, T:0.5, desc:p=>`跃向施法距离 ${p.range} 格内的指定水域地点，落地时对半径 ${p.r} 格内的亡灵造成 ${sv_(p.b,p.ad)} 伤害，并击退 ${p.kb} 格`},
+  f16bVortex:{name:'漩涡', cd:15, aim:'point', range:8, r:2, dur:4, b:30, ad:0.4, pull:0.5, desc:p=>`在施法距离 ${p.range} 格内的指定水域地点卷起半径 ${p.r} 格的漩涡，持续 ${p.dur} 秒，把范围内的亡灵往中心拉，并每秒造成 ${sv_(p.b,p.ad)} 伤害`},
+  f16bTnt:   {name:'定向爆破', cd:12, aim:'point', range:7, delay:2, r:2, b:100, ad:1.5, kb:2, desc:p=>`向施法距离 ${p.range} 格内的指定地点扔出一捆炸药，${p.delay} 秒后爆炸，对半径 ${p.r} 格内的亡灵造成 ${sv_(p.b,p.ad)} 爆炸伤害，并击退 ${p.kb} 格`},
+  f16bMine:  {name:'开山', cd:15, aim:'point', range:6, w:3, len:6, n:3, gap:0.3, b:80, ad:1, kb:1, desc:p=>`在面前宽 ${p.w} 格、长 ${p.len} 格的范围内埋下一排炸药，分 ${p.n} 段依次引爆，每段造成 ${sv_(p.b,p.ad)} 爆炸伤害，并击退 ${p.kb} 格`},
+  f16bSwamp: {name:'毒沼', cd:15, aim:'point', range:8, r:2, dur:6, slow:0.3, b:20, ad:0.4, mag:true, desc:p=>`在施法距离 ${p.range} 格内的指定地点泼出半径 ${p.r} 格的毒沼，持续 ${p.dur} 秒；毒沼里的亡灵减速 ${pcF(p.slow)}，每秒受到 ${sv_(p.b,p.ad,'AP')} 中毒伤害`},
+ });
+ // —— 特色兵种（用户定表格；六阶：20000 银币、精英 50 级、家族声望「忠诚」；数同 CFG.elite.famJobCost6，直接写数：famJob6 合并后在 game/ 里，data 加载时还没定义）——
+ const J0=E.jobs.recruit,AR=['cloth','leather','chain','plate'];
+ const J=(name,tier,cat,fam,armor,weapon,x,cost,jsk,st,o)=>{const j=Object.assign({hp:J0.hp,atk:J0.atk,ap:J0.ap,def:J0.def,mdef:J0.mdef,dodge:J0.dodge,crit:J0.crit,speed:J0.speed,vision:J0.vision,aspd:J0.aspd,prec:J0.prec},{name,tier,cat,fam,armor:AR.slice(0,AR.indexOf(armor)+1),weapon,x,cost,jsk,st:st||{}},o||{});
+   j.hp+=x.hp||0;j.atk+=x.atk||0;j.ap+=x.ap||0;j.def+=x.def||0;j.mdef+=x.mdef||0;j.speed+=x.speed||0;return j};   // 同 data/el_jobs3 的 J()
+ Object.assign(E.jobs,{
+  mammothCav:J('猛犸骑兵',6,'cav',['cav','shield','archer'],'leather',['spear','bow','crossbow','shield'],{hp:700, atk:22, def:6},{silver:20000, lv:50, fam:'moore'},
+    ['猛犸','骑兵单位，体型大，基础移速 ×60%；冲锋时践踏路径上的亡灵，击退并造成 50% 物理攻击的伤害；不受积雪和冰面的地形惩罚'],{snowOk:1, f16Mam:[0.5,1]},{ser:'重骑兵', mount:true}),
+  dolphinKn: J('海豚骑士',6,'cav',['cav'],'leather',['spear','shield'],{hp:400, atk:22},{silver:20000, lv:50, fam:'an'},
+    ['海豚','骑兵单位，骑海豚；无视水域惩罚，可以在深海中行动，在水域中移速 +25%，上岸移速 ×40%；闪避率 +10%'],{f16Dol:[0.25,0.4], eva:0.1},{ser:'轻骑兵', mount:true}),
+  grenadier: J('掷弹兵',6,'ranged',['archer'],'leather',['gun','ammobox'],{hp:300, atk:28},{silver:20000, lv:50, fam:'morton'},
+    ['掷弹','普通攻击换成投掷炸药，射程 5 格，命中处 1.5 格内 50% 爆炸伤害，并击退 1 格；爆炸抗性 +100%'],{f16Gren:[5,1.5,0.5,1], boomRes:1},{ser:'火枪手'}),
+  miasmaMage:J('瘴毒术士',6,'magic',['alch'],'leather',['flask','staff'],{hp:260, ap:26},{silver:20000, lv:50, fam:'pearson'},
+    ['瘴毒','造成的中毒可以叠加 3 层；不受毒沼的地形惩罚'],{psnStack:3, swampOk:1},{ser:'炼药师'}),
+ });
+ E.jobs.mammothCav.speed*=0.6;   // 猛犸：基础移速 ×60%（用户定：直接降低基础移速，不进加减速的加算乘区）
+ // 能学的技能：同系列职业的（家族兵种另外升级学本家族的特殊技能，game/el_core.elLvSk）
+ const JB=E.jobs,SKS=(k,from)=>{const L=[];for(const f of from)for(const s of(JB[f]&&JB[f].sks)||[])if(!L.includes(s))L.push(s);JB[k].sks=L};
+ SKS('mammothCav',['heavyCav','horseArcher']);SKS('dolphinKn',['lightCav']);SKS('grenadier',['musketeer']);SKS('miasmaMage',['alchemist']);
+ const cat=(c,L)=>{const x=E.jobCat.find(r=>r[0]===c);if(x)for(const k of L)if(!x[2].includes(k))x[2].push(k)};
+ cat('cav',['mammothCav','dolphinKn']);cat('ranged',['grenadier']);cat('magic',['miasmaMage']);
+ // —— 局内参数（Claude 定）——
+ E.f16b={trampleT:1, trampleR:10, trampleAcc:0.5, leapT:0.5, mineR:1.5, swampTick:0.5, vortexTick:0.5};   // trampleT 同一只亡灵多久能再被踩、trampleR 身前的判定半径（像素）、trampleAcc 走满加速时间的几成算冲锋；leapT 跃浪的飞行秒数；mineR 开山每段的爆炸半径（格）；两个区域技能的结算间隔
+ for(const k in E.skills)E.skills[k].id=k;
+}
+
 // ---------- 0.12.1 不老之泉的禁疗（用户定：史诗、传说卡和商人独特商品；名字 Claude 定；效果在 maps/bl_spring 的 afterHitE）----------
 // 我方所有单位造成伤害后，给亡灵禁疗（受到的治疗 −X%）；卡和坏血弹药是两个来源，按 engine/buff.eHwPut 相乘；传说「断泉」顶替史诗「蚀泉」（拿了传说，史诗不再出、不再算）
 CFG.blHw={t:3, mc:0.3};
@@ -25320,7 +25570,8 @@ es2Rd es2Bn es2ArcN
 f4OlN f4OlU f4RollU f4RollV f4SwU f4SwV f4SwP f4LsU f4LhU f4LhV f4PsU f4PsCd f4PsH f4VisK f4MadOn
 svSq elBC elMvP elGun elChg elMvT elChgOn elRepT elHealT visFix elHealF elHealK jsHoldU jsHX jsHY jsCvU jsCvR jsGhU jsKs jsKsU elAccT elCv
 fbS f5bS
-f15S f15IdU f15Fg`.trim().split(/\s+/);   // elBC…elHealK：0.13 精英职业技能（game/el_jobfx）；jsHoldU…jsKsU：0.13 精英新技能（game/el_jsk）；elAccT / elCv：骑兵加速（game/el_jobfx）   // svSq：0.12.7b 幸存者模式的队员位置（game/sv_squad）   // es2Rd es2Bn es2ArcN：0.12.7 代理 ES 加（精英技能第三批，game/el_skills3）   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）   // ydv*：0.12.5 第二轮代理 T，源能装置给的护盾、攻击加成（structs/yn_tdev）
+f15S f15IdU f15Fg
+f16bS`.trim().split(/\s+/);   // elBC…elHealK：0.13 精英职业技能（game/el_jobfx）；jsHoldU…jsKsU：0.13 精英新技能（game/el_jsk）；elAccT / elCv：骑兵加速（game/el_jobfx）   // svSq：0.12.7b 幸存者模式的队员位置（game/sv_squad）   // es2Rd es2Bn es2ArcN：0.12.7 代理 ES 加（精英技能第三批，game/el_skills3）   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）   // ydv*：0.12.5 第二轮代理 T，源能装置给的护盾、攻击加成（structs/yn_tdev）
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -52491,8 +52742,8 @@ function atWaveStart(){const S=G.atSn,R=G.atRd,T=G.terrain,M=ATS.max;for(let t=0
   const k=Math.round(G.atAs*100);sayT(`暴风雪：攻速 −${k}%；积雪 +1 层(每层移速 −${Math.round(ATS.per*100)}%)`)}
 function atWaveEnd(){const R=G.atRd;for(let t=0;t<R.length;t++)if(R[t])R[t]--;G.atLad=[];G.atRoar=[];G.atSpk.clear()}
 // —— 我方的倍率（engine/combat.friendMv / maps/shadowhigh.fAtkK 调）——
-const atMvK=u=>{if(u.layer||u.fly||u.elev)return 1;const t=tidx(u.x,u.y);let k=1-ATS.per*G.atSn[t];const lk=G.atLk[t];if(!u.isHero&&lk>=0&&G.atLakes[lk].cold)k*=1-ATL.slow;
-  if(u.atFU>G.time)k*=1-AT_FR.per*u.atFN*(1-(u.iceSlowRes||0))/(1+(pm.coldRes||0));return Math.max(0.05,k)};   // coldRes：v0.11.4 冰属性减速吃「保暖衣物」这类冰霜减速减免，同 chillF
+const atMvK=u=>{if(u.layer||u.fly||u.elev)return 1;const t=tidx(u.x,u.y);let k=u.isHero&&u.f16bS&&u.f16bS.sn?1:1-ATS.per*G.atSn[t];const lk=G.atLk[t];if(!u.isHero&&lk>=0&&G.atLakes[lk].cold)k*=1-ATL.slow;
+  if(u.atFU>G.time)k*=1-AT_FR.per*u.atFN*(1-(u.iceSlowRes||0))/(1+(pm.coldRes||0));return Math.max(0.05,k)};   // f16bS.sn：0.13.2 代理 16b 加，摩尔「雪步」、猛犸骑兵不吃积雪（game/el_fam16b）   // coldRes：v0.11.4 冰属性减速吃「保暖衣物」这类冰霜减速减免，同 chillF
 const atAtkK=u=>(1-G.atAs)*(u.atFU>G.time?1-AT_FR.per*u.atFN*(1-(u.iceAtkRes||0)):1);
 // 冰湖塌成冷湖（整片）
 function atCollapse(lk){const L=G.atLakes[lk];if(!L||L.cold)return;L.cold=true;let x=0,y=0,n=0;const K=G.atLk;for(let t=0;t<K.length&&n<40;t++)if(K[t]===lk){x+=(t%MAP_W)*16+8;y+=((t/MAP_W)|0)*16+8;n++}
@@ -52710,18 +52961,18 @@ function gmPix(P,px,py,t,lx,ly,tx,ty,h){const S=G.gmSw;if(!S||!S[ty*MAP_W+tx]||t
 function gmStart(){G.gmOn=true;G.gmFog=false;G.gmPsN=0;G.gmTag=new Map();G.gmNoTag=new Set();G.gmRet=[];G.gmGl=null;G.gmGlK=0;G.gmT=0;G.gmT2=0;if(!G.gmSw)G.gmSw=new Uint8Array(MAP_W*MAP_H)}
 function gmWaveStart(n){G.gmFog=G.weather==='fog'||n%GM.fog.every===0;if(G.gmFog)sayB('毒沼之雾',`我方每秒失去 ${Math.round(GM.fog.fLoss*100)}% 当前生命，亡灵每秒回复 ${Math.round(GM.fog.eHeal*100)}% 最大生命`)}
 function gmWaveEnd(){G.gmFog=false;G.gmTag.clear();G.gmNoTag.clear();G.gmRet=[];for(const u of G.friends)if(u.gmPs)u.gmPs.clear()}
-const gmMvK=u=>!u.layer&&!u.fly&&!u.elev&&G.gmSw[tidx(u.x,u.y)]?1-GM.swamp.slow:1;
+const gmMvK=u=>!u.layer&&!u.fly&&!u.elev&&!(u.isHero&&u.f16bS&&u.f16bS.sw)&&G.gmSw[tidx(u.x,u.y)]?1-GM.swamp.slow:1;   // f16bS.sw：0.13.2 代理 16b 加，瘴毒术士不受毒沼泽惩罚（game/el_fam16b）
 // —— 中毒（我方）：key = 来源（亡灵种类等），d 每秒伤害、t 秒；同一来源只刷新，不同来源叠在一起 ——
 const gmBossSrc=i=>i>=0&&E.alive[i]&&(ETC[E.t[i]].tier>=5||ETC[E.t[i]].mini);
 function gmPoison(u,key,d,t,src){if(u.dead||u.psnImm||!(d>0))return;if((u.shieldHp>0||u.mshHp>0)&&!gmBossSrc(src))return;   // 有护盾：不叠中毒（首领、小首领除外）
   const M=u.gmPs||(u.gmPs=new Map()),r=M.get(key),ut=G.time+t;if(r&&r.u>G.time){r.d=Math.max(r.d,d);r.u=Math.max(r.u,ut)}else M.set(key,{d,u:ut})}
-const GM_PSN={magic:true,dot:true,mix:{poison:1},src:-1,noFx:true};
+const GM_PSN={magic:true,dot:true,mix:{poison:1},src:-1,noFx:true},GM_SWD={magic:true,dot:true,mix:{poison:1},src:-1,noFx:true,gmSw:1};
 // 每 0.5 秒：我方的中毒结算、毒沼泽和毒沼之雾的伤害、亡灵在雾里回血；数一下场上的中毒层数
 function gmTick(dt){G.gmT-=dt;if(G.gmT<=0){G.gmT=0.5;const now=G.time,S=G.gmSw,SW=GM.swamp,F=GM.fog;let n=0;
     for(let k=0;k<G.friends.length;k++){const u=G.friends[k];if(u.dead)continue;
       if(u.gmPs&&u.gmPs.size){let s=0;for(const[key,r]of u.gmPs){if(r.u<=now){u.gmPs.delete(key);continue}s+=r.d;n++}if(s>0){hurtF(u,s*0.5,GM_PSN);if(inViewPt(u.x,u.y))fxPoison(u.x,u.y-(u.elev||0),10)}}
       if(u.fpT>0)n+=u.fpN||1;if(u.dead||u.layer||u.fly||u.elev)continue;
-      if(S[tidx(u.x,u.y)])hurtF(u,u.maxHp*SW.dmg*0.5*(u.isHero?SW.heroK:1),GM_PSN);
+      if(S[tidx(u.x,u.y)]&&!(u.isHero&&u.f16bS&&u.f16bS.sw))hurtF(u,u.maxHp*SW.dmg*0.5*(u.isHero?SW.heroK:1),GM_SWD);   // GM_SWD：0.13.2 代理 16b 加，毒沼泽地形的伤害和中毒分开（百毒不侵只认中毒；字段同 GM_PSN）
       if(G.gmFog&&u.hp>1)u.hp=Math.max(1,u.hp*(1-F.fLoss*0.5))}
     G.gmPsN=n;
     if(G.gmFog)for(let i=0;i<E.n;i++)if(E.alive[i]&&E.hp[i]<E.mhp[i])E.hp[i]=Math.min(E.mhp[i],E.hp[i]+E.mhp[i]*F.eHeal*0.5*eHK(i))}
@@ -70603,7 +70854,7 @@ feat('vnRevive',{on:()=>heroEver('vanessa'),hooks:{dmgRedF:vnReviveRed,waveEnd:(
 // 英雄身上：anT 虎鲸下一口的计时、anD 这次冲锋的伤害；能下深海（gear/fx.fxCollect 按 h.d.orca 设 csSw），水里不减速不减攻速（maps/coast.csMvK0 / csAtkK）
 // 打潜着的潜艇：虎鲸的咬和三个技能都带 diFull（maps/isle.diDmg 不打折）
 // 骑着虎鲸上岸：移速 × land（用户定 50%）；城墙上、飞着的不算，站在水里（黄沙海岸、绝望孤岛的浅滩 / 深海）不减
-const anLandK=h=>{if(h.fly||h.layer)return 1;if(G.csOn&&G.csW&&csWet(h))return 1;return 1-(CFG.skills.anOrca.land||0)};
+const anLandK=h=>{if(h.fly||h.layer)return 1;if(G.csOn&&G.csW&&csWet(h))return 1;return h.d.dolLand>0?h.d.dolLand:1-(CFG.skills.anOrca.land||0)};   // dolLand：0.13.2 代理 16b 加，精英海豚骑士上岸移速 ×40%（game/el_fam16b）
 const anWetE=j=>!!(G.csOn&&G.csW&&!E.air[j]&&csWAt(E.x[j],E.y[j])>0);   // 亡灵站在水里（不是水的地图都算陆地）
 heroFx('anyang',{g:83,init(h){h.csSw=true;h.anT=h.anT||1},
   tick(h,dt){if(h.dead||h.reviveT>0)return;const P=h.psv||CFG.skills.anOrca;h.anT=(h.anT||0)-dt;if(h.anT>0)return;
@@ -77005,7 +77256,7 @@ function endWave(){
   heroAssistEnd();   // v0.5.2 助战英雄到期离开   // v0.4.2 诅咒「命运无常」：幸运随机 −5～+5
   const mineG=goldMineIncome();G.lastMine=mineG;
   let reward=Math.round(waveReward())+mineG+(TM.waveFlat||0);if(TM.invest)reward+=Math.min(CFG.run.investCap,Math.floor(G.gold*CFG.run.investPct));
-  if(pm.capital>0)reward+=Math.floor(G.gold*pm.capital);reward+=tuntianGold()+alSpiceGold();   // alSpiceGold：v0.9.0 阿里巴巴「香料贸易」   // v0.8.22 卡「资本主义」（按这一波结算前的铜币）、「屯田令」
+  if(pm.capital>0)reward+=Math.floor(G.gold*pm.capital);reward+=tuntianGold()+alSpiceGold()+f16aSpice();   // f16aSpice：0.13.2 第四批代理 16a 加，精英「香料贸易」（game/el_fam16a）   // alSpiceGold：v0.9.0 阿里巴巴「香料贸易」   // v0.8.22 卡「资本主义」（按这一波结算前的铜币）、「屯田令」
   if(OATH_GK!==1)reward=Math.round(reward*OATH_GK);
   if(CH_WGK!==1)reward=Math.round(reward*CH_WGK);   // 代理 CH 无尽挑战「后勤切断」：每波结算铜币归零（game/ch_chal）   // v0.9.4 誓约「贪婪」：代价 0、回报 ×2（game/oath094）
   if(pm.loanN>0&&!G.invade){const d=Math.min(G.gold+reward,pm.loanA);reward-=d;pm.loanN--;if(d>0)toast(`算缗告缗：扣除 ${d} 铜币${pm.loanN>0?`(还剩 ${pm.loanN} 波)`:'(扣完了)'}`)}   // v0.8.22 卡「算缗告缗」：接下来 6 波每波扣这次所得的 20%（铜币不够就扣到 0）
@@ -77604,7 +77855,7 @@ const mcAl=()=>G&&G.heroes?heroPassiveP('alScale'):null;
 const mcItemMax=()=>{const p=mcAl();return Math.max(CFG.merchant.itemMax||99,(p&&p.mcMax)||0)};
 const mc2Full=C=>(C.nb||0)>=mcItemMax();
 function mc2Base(id){const M=CFG.merchant,I=M.items[id],n=mc2Cnt(id);return(I.price>0?I.price+(I.up||0)*n:(I.base!=null?I.base:M.itemBase)+(I.per!=null?I.per:M.itemPer)*G.wave)*(1+(I.step||0)*n)}
-const itemPrice=id=>{const C=G.mc;return Math.round(mc2Base(id)*(1+(mcAl()?0:CFG.merchant.itemUp||0)*(C&&C.nb||0))*mp2Buy())};   // mcAl：0.12.2 阿里巴巴在场不涨价
+const itemPrice=id=>{const C=G.mc;return Math.round(mc2Base(id)*(1+(mcAl()?0:Math.max(0,(CFG.merchant.itemUp||0)-f16aItemDn()))*(C&&C.nb||0))*mp2Buy())};   // mcAl：0.12.2 阿里巴巴在场不涨价   // f16aItemDn：0.13.2 第四批代理 16a 加，阿里巴巴家族「精明」涨价 −10%（game/el_fam16a）
 const mcBought=(C,id)=>!mc2Left(id)||C.bought.includes(id);   // v0.11.0（用户定）幸运卡牌、几种升级（可重复买的）同一个商人只能买一次
 const mc2D={on:false,bp:0,bm:0,up:0,um:0,ip:0,im:0};
 function mc2Sync(){for(const k in mc2D)if(k!=='on')mc2D[k]=0;mc2D.on=false;const N=G&&G.mcN,I=CFG.merchant.items;if(!N)return;
@@ -77684,7 +77935,7 @@ function mcHTML(){const C=mcNorm(G.mc),M=CFG.merchant,W=CFG.wares.items;
   else if(MC_TAB==='item'){const full=mc2Full(C),AL=mcAl();body=C.items.map(id=>{const I=M.items[id],n=mc2Cnt(id),L=mc2Lim(id),tag=L>1?`已买 ${n}/${L} 次`:!L&&n?`已买 ${n} 次`:'';
     const ic=skIcon('mc_'+id),nm=ic?`<img alt="" src="${ic}" style="width:20px;height:20px;image-rendering:pixelated;vertical-align:middle"> ${I.name}`:I.name;   // 0.13.1 有图标的道具（沙漠商人的专属装置，SKI['mc_' + 道具]，art/el_famsk_art）
     return mcBought(C,id)?`<div class="mcrow"><div><b>${nm}</b>${tag?` <span class="meta">${tag}</span>`:''}<br><span class="meta">${I.desc}</span></div><button type="button" class="px sm" disabled>${L>1?'已买满':'已买'}</button></div>`:row(nm,I.desc,itemPrice(id),'item',id,full?`已买 ${mcItemMax()} 件`:false,tag)}).join('')+(AL&&AL.mcRef?`<div class="row2"><button type="button" class="px sm" data-act="mcref" ${(C.rf||0)<AL.mcRef?'':'disabled'}>刷新道具(${AL.mcRef-(C.rf||0)}/${AL.mcRef})</button><span class="meta">阿里巴巴：整批道具换成新的一批，重新购买</span></div>`:'')+
-    `<p class="meta">这一次最多买 ${mcItemMax()} 件(已买 ${C.nb||0} 件)；${AL?'阿里巴巴在场：道具不涨价':`每买一件，这次剩下的道具价格 +${Math.round(M.itemUp*100)}%(加算)`}；效果这一局一直有效；同一种道具这个商人只卖一件；装置和限次数的买满了以后不再出现</p>`}
+    `<p class="meta">这一次最多买 ${mcItemMax()} 件(已买 ${C.nb||0} 件)；${AL?'阿里巴巴在场：道具不涨价':`每买一件，这次剩下的道具价格 +${Math.round(Math.max(0,M.itemUp-f16aItemDn())*100)}%(加算)`}；效果这一局一直有效；同一种道具这个商人只卖一件；装置和限次数的买满了以后不再出现</p>`}
   else body=C.lots.map((L,k)=>{const I=W[L.id];return row(`${wareIco(L.id)}${I.name} ×${L.n}`,`${I.kind==='core'?CFG.maps[I.map].name+'特产':CFG.wares.kinds[I.kind]+' · '+(WM_TN[I.tier]||I.tier+1)+'阶地区'} · 标准价 ${I.price} 银币 / 个`,mp2LotP(L),'ware',k,L.sold,'')}).join('')+'<p class="meta">买到的物资在结算时入库(打赢打输都算)</p>';
   return`<h2 class="hd">${C.ds?'沙漠商人':'流浪商人'}</h2><p class="meta">铜币 <b data-mcg="1">${Math.floor(G.gold)}</b> · 开始下一波时商人离开</p><div class="tabs sub">${tabs}</div><div class="mclist">${body}</div><div class="actions"><button type="button" class="px" data-act="mcx" data-v="">离开</button></div>`}
 // v0.10.0（玩家反馈：开着自动下一波，选完卡直接开打，商人白来了）商人来了的准备阶段：选完卡（和誓约、五神法）后自动打开商人；go = 本来要自动开下一波 → 离开商人时再开
@@ -78349,7 +78600,7 @@ function awardMeta(win,settle){for(const k in G.souls||{})if(!CFG.heroes[k])dele
   const ban=!!G.banRew;if(ban){const m=CFG.run.noRewardMul,h=v=>Math.floor((v||0)*m);for(const k in G.meta)G.meta[k]=h(G.meta[k]);for(const k in G.souls)G.souls[k]=h(G.souls[k]);G.soulPt=Math.floor((G.soulPt||0)*m);for(const k in G.skinFrag||{})G.skinFrag[k]=h(G.skinFrag[k]);for(const k in G.mats||{})G.mats[k]=h(G.mats[k]);G.loot=G.loot.filter((_,i)=>i%2===1)}   // v0.7.0（用户定）莉莲、冷参战过：不计通关记录；v0.7.7（用户定）奖励由 0 改成减半（noRewardMul；装备隔一件留一件）
   const tr=heroPassive('treasure')+hhRes()+mp2Loot(),got={banned:ban};   // mp2Loot：0.12.7 代理 MP 加，马可·波罗「攫财之道」（heroes/merchant2）   // hhRes：0.11.4 代理hh 加，黄虎「筹万物」
   for(const k in G.meta)got[k]=Math.round(G.meta[k]*(k==='银币'||k==='建材'?1+pm.scav:k==='科研点'||k==='设计点'?1+pm.inspire:1)*(k==='金币'?1:1+tr));if(got.银币>0)got.银币=Math.round(got.银币*(1+f5bSilverK()));   // f5bSilverK：0.13.2 代理 15b 加，德雷克「劫掠后裔」   // 卡「拾荒搜刮」「科研灵感」；tr：v0.4.2 商人「搜山检海」
-  {const td=alTrade();if(td){got.trade=td;for(const k of['银币','建材','科研点','设计点'])if(td[k])got[k]=(got[k]||0)+td[k]}}   // v0.9.0 阿里巴巴「贸易天平」：剩下的铜币换资源（每种总量最多基础结算奖励的 300%）
+  {const td=alTrade();if(td){got.trade=td;for(const k of['银币','建材','科研点','设计点'])if(td[k])got[k]=(got[k]||0)+td[k]}}{const t2=f16aOath();if(t2){got.f16Oath=t2;got.银币=(got.银币||0)+t2.银币}}   // f16aOath：0.13.2 第四批代理 16a 加，阿里巴巴家族「天平之誓」（game/el_fam16a，和贸易天平各算各的）   // v0.9.0 阿里巴巴「贸易天平」：剩下的铜币换资源（每种总量最多基础结算奖励的 300%）
   if(got.金币>0){const mk=G.map||'wild',st=goldDayState(),cap=goldCapOf(mk,DIFF.id),g=Math.min(got.金币,Math.max(0,cap-(st.m[mk]||0)));got.goldCut=got.金币-g;got.金币=g;st.m[mk]=(st.m[mk]||0)+g;got.goldDay=st.m[mk]+'/'+cap}   // v0.4.2 每日金币上限；v0.5.9 按地图
   const cleared=win||settle?G.wave:Math.max(0,G.wave-1);got.hero=G.heroes[0]?G.heroes[0].id:null;got.heroes=G.heroes.filter(h=>!h.npc&&!h.elite).map(h=>h.id);got.soulMap=soulDayCap(Object.assign({},G.souls),got);got.mats=Object.assign({},G.mats||{});got.wares=Object.assign({},G.wares||{});got.cleared=cleared;
   {const ex=Math.round(waveRewSum(cleared)*olvMapExp(G.map||'wild')*(DIFF.reward||1)*(ban?CFG.run.noRewardMul:1));   // v0.10.2 每波 × waveRewK（方案 D）
@@ -79444,7 +79695,7 @@ function localDayIdx(){const h=new Date(metaNow()).getHours(),H=SB.dayHours;let 
 //        dep 上阵, cmd 局内指令（'sortie' / 'guard'）, log {n 场, k 杀, d 输出, t 承伤, h 治疗, c 控制, L 最近的战报}, par 父母编号, kids 孩子编号, gen 第几代, learn {k, lv, end}, ly 上次学特性的年龄}
 const EL=()=>CFG.elite;
 const elRi=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),elPick=a=>a[Math.floor(Math.random()*a.length)];
-function elSt(){const m=META.el||(META.el=elFam15New({}));if(!(m.t>0))m.t=metaNow();if(!(m.n>0))m.n=1;for(const k of['list','kids','roll','ins','staff','ev','fam','follow','cf'])if(!Array.isArray(m[k]))m[k]=[];if(!(m.del>=0))m.del=0;for(const k of['rec','tch','irec','irq','rep'])if(!m[k]||typeof m[k]!=='object')m[k]={};if(!m.opt||typeof m.opt!=='object')m.opt={injOff:true};if(!m.v6&&typeof elBlMig==='function'){m.v6=1;for(const L of[m.list,m.kids,m.roll,m.staff])L.forEach(elBlMig);for(const r in m.rec)(m.rec[r].offers||[]).forEach(elBlMig);for(const r in m.irec)(m.irec[r].offers||[]).forEach(elBlMig);for(const c of m.kids)if(c.enr==null)c.enr=1}   // v6：0.12.0 血脉（老存档按籍贯算平民血脉）、训练所里原有的孩子都算已入学   // elFam15New：0.13.2 修，新建的精英存档把一次性的补抽特性标成做过（game/el_fam15）
+function elSt(){const m=META.el||(META.el=elFam16New(elFam15New({})));if(!(m.t>0))m.t=metaNow();if(!(m.n>0))m.n=1;for(const k of['list','kids','roll','ins','staff','ev','fam','follow','cf'])if(!Array.isArray(m[k]))m[k]=[];if(!(m.del>=0))m.del=0;for(const k of['rec','tch','irec','irq','rep'])if(!m[k]||typeof m[k]!=='object')m[k]={};if(!m.opt||typeof m.opt!=='object')m.opt={injOff:true};if(!m.v6&&typeof elBlMig==='function'){m.v6=1;for(const L of[m.list,m.kids,m.roll,m.staff])L.forEach(elBlMig);for(const r in m.rec)(m.rec[r].offers||[]).forEach(elBlMig);for(const r in m.irec)(m.irec[r].offers||[]).forEach(elBlMig);for(const c of m.kids)if(c.enr==null)c.enr=1}   // v6：0.12.0 血脉（老存档按籍贯算平民血脉）、训练所里原有的孩子都算已入学   // elFam15New：0.13.2 修，新建的精英存档把一次性的补抽特性标成做过（game/el_fam15）
   if(!m.v7&&m.v6){m.v7=1;const N=EL().bloodN,sc=x=>{if(!x||!x.bl)return;let t=0,big=null;for(const id in x.bl)t+=x.bl[id];if(t===N)return;for(const id in x.bl){x.bl[id]=Math.round(x.bl[id]*N/t);if(!big||x.bl[id]>x.bl[big])big=id}let u=0;for(const id in x.bl)u+=x.bl[id];if(big)x.bl[big]+=N-u};
     for(const L of[m.list,m.kids,m.roll,m.staff,m.fam])L.forEach(sc);for(const r in m.rec)(m.rec[r].offers||[]).forEach(sc);for(const r in m.irec)(m.irec[r].offers||[]).forEach(sc)}else if(!m.v7)m.v7=1;   // v7：0.12.0 血脉 16 份 → 20 份（精度 5%）
   if(!m.v9){m.v9=1;for(const cf of m.cf||[])for(const t in cf.tr||{})if(!(CFG.elite.cfam.trG[t]||[]).some(o=>o.key===cf.tr[t]))delete cf.tr[t];m.cfv=(m.cfv||0)+1}   // v9：0.12.0 自建家族特性改成五格各一组，老的选择清掉（重新免费选）
@@ -80293,7 +80544,8 @@ function elRecalc(h){const e=elById(h.elite);if(!e)return;const S=h.d.elS||{},w=
   {const t=(typeof TM!=='undefined'&&TM)||{};   // v0.11.4（用户定）精英吃士兵的卡牌和科技：生命、伤害、攻速、冷却的池子在 heroes/hero（heroHpPool、heroDmgM、heroAtkInt）；这里补移速、近战 / 远程伤害、攻速、防御、法防、偏斜
     h.speed*=1+(t.uMove||0)+(pm.moveSpd||0);h.gDmg+=w.cls==='melee'?(t.uMelee||0):rg?(t.uRanged||0):0;h.aspd+=w.cls==='melee'?(t.uMeleeSpd||0):rg?(t.uRgSpd||0):0;
     h.def+=t.uDef||0;h.mdef+=t.uMDef||0;h.dodge+=t.uDodge||0;obFElRecalc(h,w,t,mag,rg)}   // obFElRecalc：0.12.2 代理 4，补齐其余士兵的卡和科技（game/obf_elite）
-  elXApply(h,S);elHallApply(h,e);f4Recalc(h,S,w);fbRecalc(h,S,w,mag,rg);f5bRecalc(h,S,w,mag,rg);   // f5bRecalc：0.13.2 代理 15b 加（船只单位、守护、斗舰生命，game/el_fam15b）   // f4Recalc：0.13.1 代理 A 加（沙漠适应、古老之咒、翻滚 / 盾墙期间的加成，game/el_fam14a）   // 0.12.2 家族特性的独立乘区：生命、物防、法防（game/el_fam3）；0.13.1 英灵碑的庇护（game/el_hall）
+  elXApply(h,S);elHallApply(h,e);f4Recalc(h,S,w);fbRecalc(h,S,w,mag,rg);f5bRecalc(h,S,w,mag,rg);f16bRecalc(h,S,w,mag,rg);   // f16bRecalc：0.13.2 代理 16b 加（雪步、毒沼、海豚、掷弹……，game/el_fam16b）   // f5bRecalc：0.13.2 代理 15b 加（船只单位、守护、斗舰生命，game/el_fam15b）   // f4Recalc：0.13.1 代理 A 加（沙漠适应、古老之咒、翻滚 / 盾墙期间的加成，game/el_fam14a）   // 0.12.2 家族特性的独立乘区：生命、物防、法防（game/el_fam3）；0.13.1 英灵碑的庇护（game/el_hall）
+  f16aRecalc(h,S,w,mag,rg);   // 0.13.2 第四批代理 16a 加：装填 ×、远程物理暴击率、骑乘时移速（瓦特、阿里巴巴家族，game/el_fam16a）
   if(h.elGrief){const B=EL().bond,gx=1+(S.griefX||0);h.def*=1-Math.min(0.9,B.griefDef*gx);h.mdef*=1-Math.min(0.9,B.griefDef*gx)}}   // griefX：0.12.0 特性「护短」   // 0.12.0（用户定）亲人倒下：双防 −10%
 // 亲人同队的双攻倍率（heroRecalc 开头算，武器伤害要用）：亲人倒下过 +20%，否则有活着的亲人同队 +10%
 function elBondCalc(h){const B=EL().bond,gx=1+((h.d.elS&&h.d.elS.griefX)||0);h.elAtkK=(1+(h.elGrief?B.griefAtk*gx:h.elRel&&h.elRel.length&&G&&G.heroes&&G.heroes.some(o=>o.elite&&!o.dead&&h.elRel.includes(o.elite))?B.atk:0))*(1+elHallOf(elById(h.elite)))*f4MadAtk(h)}   // 0.13.1 英灵碑庇护：双攻（game/el_hall）
@@ -80373,7 +80625,7 @@ feat('elite',{on:()=>!!(G&&((G.elites&&G.elites.length)||elMemOn())),hooks:{
   dmgInE:(i,dmg,o)=>{const h=o&&o.hk,k=h&&h.elite&&h.d.elS&&h.d.elS.alchK;return k&&o.mix&&(o.mix.acid||o.mix.poison||o.mix.fire)?dmg*(1+k):dmg},   // 药剂学：自己的酸蚀、毒、火焰伤害
   afterHitE:(i,dmg,o)=>{const h=o&&o.hk;if(h&&h.elite&&E.hp[i]<=0&&h.d.elS&&h.d.elS.killHeal&&!h.dead)healF(h,h.maxHp*h.d.elS.killHeal)}}});   // killHeal：0.12.0 特性「嗜血」（0.12.2 修复：原来按 alive 判断，这时还没结算死亡，从来不触发）
 // 克劳德自己的增伤（heroRecalc 末尾，和精英一起）
-function elMemRecalc(h){h.clStK=h.id==='scribe'?clStK():0;h.gDmg+=h.clStK;if(h.id==='scribe')h.gDmg+=elMemN()*0.01;if(h.elite)f5bPost(h)}   // 克劳德自己：开局 heroRecalc 时还没进 G.heroes（elMemOn 是假），不能用 elMemK   // clStK：0.13.1 回声墓城英灵碑看过几代 Claude（ui/cl_stele），只给克劳德
+function elMemRecalc(h){h.clStK=h.id==='scribe'?clStK():0;h.gDmg+=h.clStK;if(h.id==='scribe')h.gDmg+=elMemN()*0.01;if(h.elite){f5bPost(h);f16bPost(h)}}   // f16bPost：0.13.2 代理 16b 加，精英特性的击退抗性（原来被 fxCollect 清零，从来没生效，game/el_fam16b）   // 克劳德自己：开局 heroRecalc 时还没进 G.heroes（elMemOn 是假），不能用 elMemK   // clStK：0.13.1 回声墓城英灵碑看过几代 Claude（ui/cl_stele），只给克劳德
 // —— 结算：战报、功勋、经验 ——
 function elAward(got){elAllySync();if(G&&!G.invade&&!G.story)got.rep=elRepBattle(G.map,got.cleared||0,((typeof DIFF!=='undefined'&&DIFF.reward)||1)*(1+((pm&&pm.repUp)||0))*(1+mp2Rep()));   // 0.12.0 打地区地图给本地家族声望（game/el_mar）；0.12.5 代理 F：× (1 + pm.repUp) 卡牌「名声大噪 / 四海名扬」   // mp2Loot：0.12.7 代理 MP 加，进阶-马可·波罗「攫财之道」家族声望 ×(1 + X)（heroes/merchant2）
   if(!G||!G.elites||!G.elites.length)return;const M=EL().merit,now=metaNow(),out=[];
@@ -80520,7 +80772,7 @@ function elPasSt(k,lv){const key=k+'|'+lv;let o=EL_PAS.get(key);if(o)return o;co
   if(P.lvT)for(const x in P.lvT){const T=P.lvT[x];o[x]=T[Math.min(T.length,Math.max(1,lv|0))-1]}   // lvT：0.12.1 按等级查表（赞颂之歌）
   EL_PAS.set(key,o);return o}
 // 技能说明：按这一级的参数写（主动用那个技能的 desc(p)，被动按属性自动写）
-function elSkDesc(k,lv){const S=EL().skills[k];if(!S)return'';lv=Math.max(1,lv|0);const wq=(S.wreq?`(要拿${S.wreq.map(t=>(CFG.weaponTypes[t]||{name:t}).name).join(' / ')})`:'')+(S.oreq?`(副手要拿${S.oreq==='bigShield'?'大盾':'盾'})`:'');if(S.pas)return(elStDesc(elPasSt(k,lv))||S.desc||'')+wq;
+function elSkDesc(k,lv){const S=EL().skills[k];if(!S)return'';lv=Math.max(1,lv|0);const wq=(S.wreq?`(要拿${S.wreq.map(t=>(CFG.weaponTypes[t]||{name:t}).name).join(' / ')})`:'')+(S.oreq?`(副手要拿${S.oreq==='bigShield'?'大盾':'盾'})`:'')+(S.rreq?'(需求：骑乘)':'');if(S.pas)return(elStDesc(elPasSt(k,lv))||S.desc||'')+wq;
   const B=CFG.skills[S.sk],V=EL().skV&&EL().skV[k],vt=V?(lv>=EL().skVLv?`【V 级】${V.t}`:`(V 级起：${V.t})`):'';try{if(B&&typeof B.desc==='function')return B.desc(elSkP(k,lv))+wq+vt}catch(e){console.warn('elSkDesc',k,e)}return(S.desc||'')+wq}
 // 精英拿的武器类型（被动的武器要求用）
 const elWType=e=>{const w=e&&e.gear&&e.gear.w?itemByUid(e.gear.w):null,o=e&&e.gear&&e.gear.o?itemByUid(e.gear.o):null;return w&&CFG.weapons[w.base]?{type:CFG.weapons[w.base].type,o:o&&CFG.weapons[o.base]||null}:null};   // o：0.13 副手（技能的 oreq）
@@ -80920,7 +81172,7 @@ function elRoyalStage(n){const R=EL().royalRep,lv=R.stage[Math.max(0,Math.min(R.
 function elRoyalAdd(fid,n){EL_RSTORY=true;try{elRepAdd(fid,n)}finally{EL_RSTORY=false}}
 // —— 家族技能的使用要求 ——
 const elSkMeleeOk=w=>{const T=w&&CFG.weaponTypes[w.type];return!!(T&&T.cls==='melee'&&!w.magic)};
-function elSkUseOk(e,k,w,oc){const S=EL().skills[k];if(!S)return true;if(!elSkWOk(k,w,oc))return false;if(S.jreq&&!S.jreq.includes(e.job))return false;if(S.mreq&&!elSkMeleeOk(w))return false;return true}
+function elSkUseOk(e,k,w,oc){const S=EL().skills[k];if(!S)return true;if(!elSkWOk(k,w,oc))return false;if(S.jreq&&!S.jreq.includes(e.job))return false;if(S.mreq&&!elSkMeleeOk(w))return false;if(S.rreq&&!elJobD(e).mount)return false;return true}   // rreq：0.13.2 代理 16b 加，需求：骑乘（职业是骑兵；摩尔的践踏、猛犸驯术）
 // —— 顾问教官 ——
 const elInsIsHero=key=>String(key).startsWith('h:'),elInsIsFam=key=>String(key).startsWith('f:'),elInsIsReg=key=>!elInsIsHero(key)&&!elInsIsFam(key);
 const elInsRegN=()=>elSt().ins.filter(elInsIsReg).length;
@@ -81408,7 +81660,7 @@ function f15Adj(s,v){const n=s.fs||1,x0=s.tx,y0=s.ty;F15_AD.length=0;   // 十�
   for(let k=0;k<F15_AD.length;k++){const q=F15_AD[k];if(q===s||!(q.hp<q.maxHp)||(s.f15G&&s.f15G.includes(q)))continue;f15RepHeal(q,v);healFx(q.x,q.y-14,'#e8c66a')}F15_AD.length=0}
 function f15RepTick(u,S,dt){u.elRepT=(u.elRepT||0)-dt;if(u.elRepT>0)return;const A=S.autoRep,iv=A[1]/Math.max(0.1,1+(S.repSpd||0));u.elRepT=iv;
   const R=(A[0]+(S.repR||0))*16,n=1+Math.max(0,Math.round(S.repN||0)),v=f15RepAmt(u,S),adj=S.repAdj||0;F15_RL.length=0;
-  for(let k=0;k<n;k++){const s=f15Worst(u,R);if(!s)break;F15_RL.push(s);f15RepHeal(s,v);healFx(s.x,s.y-14,'#e8c66a');if(adj>0)f15Adj(s,v*adj)}
+  for(let k=0;k<n;k++){const s=f15Worst(u,R);if(!s)break;F15_RL.push(s);f15RepHeal(s,v);if(S.f16RepEmp)f16aEmpClr(s);healFx(s.x,s.y-14,'#e8c66a');if(adj>0)f15Adj(s,v*adj)}   // f16aEmpClr：0.13.2 第四批代理 16a 加，瓦特的严谨（game/el_fam16a）
   if(F15_RL.length)u.atkCd=Math.max(u.atkCd||0,iv);F15_RL.length=0}   // 修的那一下不攻击（同原来的工程维修）
 // —— 筑石垒土 ——
 function f15EarthOk(i,tx,ty){return tx>=1&&ty>=1&&tx<MAP_W-1&&ty<MAP_H-1&&!G.structAt[i]&&!G.trapAt[i]&&friendPassT(i)&&!F15_BADT.includes(G.terrain[i])&&obsCdOk(i)&&Math.hypot(tx*16+8-G.base.x,ty*16+8-G.base.y)>=3*16}
@@ -81578,6 +81830,279 @@ Object.assign(EL_STD3,{
   f5bTower:(v,pc)=>`船上额外装一座箭塔，攻击距离 ${EL().f15b.tower.range} 格，每秒攻击 1 次，每次造成 ${pc(v)} 物理攻击的伤害(需求：船只单位)`,
   f5bShip:()=>`船只单位：无视水域惩罚；在陆地上移速 ×${Math.round(EL().f15b.land*100)}%、伤害 ×${Math.round(EL().f15b.dmg*100)}%；在水里可以载 ${EL().f15b.crew} 人上船(上岸就下船)`,
   f5bHpX:v=>`生命 ×${Math.round((1+v)*100)}%`,f5bRamK:v=>`斗舰冲撞伤害 ×${Math.round((1+v)*100)}%`,
+});
+
+// ---------- 0.13.2 家族重置第四批：六阶地区的家族（数据 data/el_fam16.js；家族特性 / 技能 / 兵种后面另外填，见 data/el_fam16 开头的说明）----------
+// 存档迁移（一次，META.el.f16）：data/el_fam16 的 fam16Gone 里的老家族（哈德良、莱昂哈特、德·莱斯、白图泰、阿蒙森、克鲁索）——声望均摊给同地区（elRegFamsAll）的家族；
+//   精英、候选人身上的血脉份数并进 fam16To 指定的同地区新家族，没写的并进这个地区的平民；身上有那家血脉的人姓也换成新家族的；这几家的家族特性去掉（同 0.13.1 / 0.13.2 的做法）
+function elFam16Mig(m){const M=m&&m.el;if(!M||M.f16)return;M.f16=1;const G=CFG.elite.fam16Gone||{},old={};for(const r in G)for(const k of G[r])old['f_'+k]=r;
+  if(M.rep&&typeof M.rep==='object')for(const r in G){const N=elRegFamsAll(r);let s=0;for(const k of G[r]){const v=M.rep['f_'+k];if(v){s+=v;delete M.rep['f_'+k]}}if(s&&N.length){const each=Math.round(s/N.length);for(const f of N)M.rep[f]=(M.rep[f]||0)+each}}
+  const TO=CFG.elite.fam16To||{},OF=CFG.elite.fam16OldFam||{},B=elBlood(),nf={},gone=Object.keys(old);for(const id of gone){const k=id.slice(2),t=TO[k];if(t&&B['f_'+t]&&OF[k])nf[OF[k]]=B['f_'+t].fam}
+  const fix=o=>{if(!o||typeof o!=='object')return;if(o.bl&&typeof o.bl==='object'&&!Array.isArray(o.bl)){let hit=false;for(const id in o.bl)if(old[id]){hit=true;const t=TO[id.slice(2)],c=t&&B['f_'+t]?'f_'+t:'c_'+old[id];o.bl[c]=(o.bl[c]||0)+o.bl[id];delete o.bl[id]}
+      if(hit&&typeof o.fam==='string'&&nf[o.fam])o.fam=nf[o.fam];if(Array.isArray(o.bt))o.bt=o.bt.filter(k=>!gone.some(id=>String(k).startsWith(id+'_')))}};   // hit：只改身上有那家血脉的人的姓
+  const walk=(o,d)=>{if(!o||typeof o!=='object'||d>6)return;fix(o);if(Array.isArray(o)){for(const x of o)walk(x,d+1)}else for(const k in o){const v=o[k];if(v&&typeof v==='object')walk(v,d+1)}};
+  walk(M,0);m._dirty=true}
+META_LATE.push(['elFam16Mig',m=>{try{elFam16Mig(m)}catch(e){console.error(e)}}]);
+// 补抽六阶家族的特性（META.el.f16t = {家族血脉: 1}）：这一批只登记了家族、特性表是空的，后面填上以后，
+//   身上有这家血脉、却一条这家特性都没有的人（老家族并进来的、填表之前出生 / 招募的）按招募的规矩（占比到门槛、按概率）抽一次；哪家的表还空着就先不记，等填上再抽（同 elFam15Bt）
+//   瓦特沿用老键：老瓦特族人身上的 f_watt_20 / 60 / 100 按门槛直接对上新特性，有这几条的不补抽
+function elFam16Bt(m){const M=m&&m.el;if(!M)return;if(!M.f16t||typeof M.f16t!=='object')M.f16t={};const B=elBlood(),todo=[];
+  for(const f of CFG.elite.fam16||[]){const id='f_'+f.key,S=B[id];if(S&&!S.noBlood&&S.tr.length&&!M.f16t[id])todo.push(id)}if(!todo.length)return;let n=0;
+  const one=e=>{if(!e||!e.bl||typeof e.bl!=='object')return;for(const id of todo){if(!(e.bl[id]>0))continue;const S=B[id];if(Array.isArray(e.bt)&&e.bt.some(k=>S.tr.includes(k)))continue;const n0=(e.bt||[]).length;elBlTrOne(e,id,[],true);n+=(e.bt||[]).length-n0}};
+  for(const L of[M.list,M.kids,M.roll,M.fam,M.staff])if(Array.isArray(L))L.forEach(one);for(const id of todo)M.f16t[id]=1;m._dirty=true;if(n)console.log('elFam16Bt',n)}
+META_LATE.push(['elFam16Bt',m=>{try{elFam16Bt(m)}catch(e){console.error(e)}}]);
+// 新建的精英存档（game/el_core.elSt 第一次建 META.el 时调，接在 elFam15New 后面）：六阶的老家族迁移、补抽特性都当已经做过（原因见 game/el_fam15.elFam15New）
+function elFam16New(m){m.f16=1;m.f16t={};for(const f of CFG.elite.fam16||[])m.f16t['f_'+f.key]=1;return m}
+// 填特性的人如果把 CFG.elite.famFx.<键> 整个换成了新数组，家族的 tr 跟着对上（elBloodBuild 读 tr）
+for(const f of CFG.elite.fam16||[])if(Array.isArray(CFG.elite.famFx[f.key])&&CFG.elite.famFx[f.key]!==f.tr)f.tr=CFG.elite.famFx[f.key];
+
+// ---------- 0.13.2 家族重置第四批 · 六阶：瓦特、魏德曼、约恩、阿里巴巴的特性、家族技能、特色兵种的效果（工坊代理 16a；数据 data/el_fam16a.js，Claude 定的细节写在那里开头）----------
+// 新属性键（属性合计 h.d.elS，说明在下面的 EL_STD3）：
+//   f16aRecalc（game/el_battle.elRecalc 调）：f16Rld 装填 ×、f16RgCrit 远程物理暴击率、f16MtSpd 骑乘时移速
+//   每 0.25 秒（f16aTick）：f16Mech 精械之魂（机械士兵 / 无人机 buff f16Mech：aspd + rld；机械类建筑 buff f16MechS：aspd）、f16Cmd 赤血军令（记下有这条的精英，F16A.cmd）、
+//     f16Crown 复苏之冕（F16A.crown）、f16RepEmp + 随身维修（fix）解除范围里受损建筑的电磁干扰
+//   伤害：f16Siege 摧城（dmgBaseE 独立乘）、赤血军令的骑兵增伤 / 重械打重型（dmgBaseE 加进 UF_AX）、步兵减伤和 f16LowDr 约恩的执念（dmgInF 加进 UF_DR）
+//   免死（saveF）：复苏大阵（F16A.rz 里的阵，每个阵记 used）、复苏之冕（F16A.cr 这一波复活过的）
+//   治疗（healInF）：f16HealSh 冕下之仆；每波开始（waveStart）：f16JDrone 重工技师的无人机（F16A.jd 单独记，不算进蜂群攻势）
+//   结算：f16Spice 香料贸易（game/game.endWave 调 f16aSpice）、f16Oath 天平之誓（game/meta.awardMeta 调 f16aOath）、f16Shrewd 精明（game/merchant094.itemPrice 调 f16aItemDn）
+//   f16RepEmp 工程维修：game/el_fam15a.f15RepTick 修完一座调 f16aEmpClr；主动技能「维修」（SK.repair）在下面包了一层
+// 没有给单位加新字段（都记在 F16A 的 Set / 数组里），不用登记 core/shape
+const F16A={t:0,jd:new Set(),cr:new Set(),rz:[],cmd:[],crown:[]};   // jd：重工技师的无人机；cr：这一波复苏之冕复活过的；rz：复苏大阵；cmd / crown：这 0.25 秒里有赤血军令 / 复苏之冕的精英
+const F16A_EF=new Map();const f16aEff=(k,f)=>{let e=F16A_EF.get(k);if(!e){e=f();F16A_EF.set(k,e)}return e};   // 统一 buff 的效果对象缓存（eff 当常量用）
+let F16A_DE=null;   // 必死大阵这一跳的效果（eQuery 回调借用，免得每跳新建闭包）
+EL_SPR_FB.wattTech='el_engineer';EL_SPR_FB.vanguardInf='el_shieldGuard';EL_SPR_FB.xianzhenCav='el_heavyCav';EL_SPR_FB.siegeCannon='el_cannoneer';EL_SPR_FB.redCardinal='el_priest';EL_SPR_FB.camelBowCav='el_camelCav';   // 小人先借同系列的（美术代理之后画）
+// —— 属性（elRecalc 末尾调）——
+function f16aRecalc(h,S,w,mag,rg){
+  if(S.f16Rld>0&&w.reload>0)w.reload/=1+S.f16Rld;
+  if(S.f16RgCrit&&rg)h.crit+=S.f16RgCrit;
+  if(S.f16MtSpd){const e=elById(h.elite),J=e&&elJobD(e);if(J&&J.mount)h.speed*=1+S.f16MtSpd}}
+// —— 瓦特的严谨：维修的目标解除电磁干扰 ——
+function f16aEmpClr(s){if(s&&!s.dead){s.empU=0;s.empH=0}}
+{const R0=SK.repair&&SK.repair.cast;if(R0)SK.repair.cast=function(h,p){const r=R0.call(this,h,p);if(r&&h&&h.elite&&h.d&&h.d.elS&&h.d.elS.f16RepEmp){const R=p.radius*16;for(const s of G.structs)if(!s.dead&&!s.temp&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R)f16aEmpClr(s)}return r}}   // 主动技能「维修」修到的建筑
+// —— 重工技师的无人机、蜂群攻势 ——
+const f16aSwarmN=h=>{let n=0;for(let k=0;k<G.soldiers.length;k++){const u=G.soldiers[k];if(!u.dead&&u.owner===h&&u.v8&&u.v8.k==='dr'&&!F16A.jd.has(u))n++}return n};
+function f16aJobDrone(h,v){for(const u of F16A.jd)if(u.dead||G.soldiers.indexOf(u)<0)F16A.jd.delete(u);for(const u of F16A.jd)if(u.owner===h)return false;
+  const n0=G.soldiers.length;wattDrones(h,{k:v,gun:CFG.skills.f16Swarm.gun,boom:0},1);for(let k=n0;k<G.soldiers.length;k++)F16A.jd.add(G.soldiers[k]);return G.soldiers.length>n0}
+SK.f16Swarm={cast(h,p){const n=Math.min(p.n,p.max-f16aSwarmN(h));if(n<=0)return false;wattDrones(h,p,n);
+    if(inViewPt(h.x,h.y)){addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-10),r:14,life:0.35,c:'#7fe0ff'});for(let k=0;k<8;k++)pp(h.x+vr(-6,6),h.y-10,0,vr(-16,16),vr(-20,-4),vr(4,8),0,0.4,vpick(['#c8d0dc','#7fe0ff']),1,0,1)}
+    h.swing=0.2;sfx('zap',h.x,h.y);return{cd:p.cd}},   // {cd}：冷却不吃冷却速度（同英雄的蜂群攻势）
+  ai(h,p){return G.phase==='wave'&&f16aSwarmN(h)<p.max&&countNear(h.x,h.y,9*16)>=2?{}:null}};
+// —— 复苏大阵 / 必死大阵 ——
+function f16aRezPt(h,R){let b=null,bv=0.45;const F=G.friends;for(let k=0;k<F.length;k++){const u=F[k];if(u.dead||u.layer||Math.hypot(u.x-h.x,u.y-h.y)>R)continue;const v=u.hp/Math.max(1,u.maxHp);if(v<bv&&countNear(u.x,u.y,3*16)>=2){bv=v;b=u}}return b?{x:b.x,y:b.y}:null}   // 托管（Claude 定）：射程里有残血(< 45%)、身边有亡灵的友军
+SK.f16Rez={cast(h,p,a){const t=a||f16aRezPt(h,p.range*16);if(!t)return false;const c=clampAim(h,t,p.range*16),z={k:'f16Rez',x:c.x,y:c.y,r:p.r*16,dur:p.dur,hp:p.hp,used:new Set(),t:0};
+    addZone(z);F16A.rz.push(z);if(inViewPt(c.x,c.y))addFx({k:'ring',x:Math.round(c.x),y:Math.round(c.y),r:z.r,life:0.5,c:'#ffe08a'});sfx('aegis',c.x,c.y);h.facing=c.x>=h.x?1:-1;return true},
+  ai(h,p){return G.phase==='wave'?f16aRezPt(h,p.range*16):null}};
+SK.f16Doom={cast(h,p,a){const t=a||(()=>{const c=densest(h.x,h.y,p.range*16);return c&&c.n>=3?c:null})();if(!t)return false;const c=clampAim(h,t,p.range*16);
+    addZone({k:'f16Doom',x:c.x,y:c.y,r:p.r*16,dur:p.dur,k2:p.k,tk:0,t:0});if(inViewPt(c.x,c.y))addFx({k:'ring',x:Math.round(c.x),y:Math.round(c.y),r:p.r*16,life:0.5,c:'#e0443a'});sfx('zap',c.x,c.y);h.facing=c.x>=h.x?1:-1;return true},
+  ai(h,p){if(G.phase!=='wave')return null;const c=densest(h.x,h.y,p.range*16);return c&&c.n>=3?{x:c.x,y:c.y}:null}};
+const f16aDoomJ=j=>{bfAddE(j,'f16Doom',F16A_DE,0.35,{debuff:true});if(!(E.hcT[j]>0.35))E.hcT[j]=0.35};   // 同一只多个阵不叠加（同一个 id 刷新）；禁疗 = 不能回血
+ZONE_FX.f16Rez={tick(z){if(z.t>=z.dur)z.dead=true},draw(z){const a=Math.max(0,1-z.t/z.dur);dotRing(z.x,z.y,z.r,'#ffd36a',0.45+0.35*a,Math.max(12,Math.round(z.r/3)),1);dotRing(z.x,z.y,z.r*0.55,'#fff2b0',0.35*a+0.2,10,1)}};
+ZONE_FX.f16Doom={tick(z,dt){if(z.t>=z.dur){z.dead=true;return}z.tk-=dt;if(z.tk>0)return;z.tk=0.25;F16A_DE=f16aEff('d'+z.k2,()=>({vuln:z.k2}));eQuery(z.x,z.y,z.r,f16aDoomJ)},
+  draw(z){const a=Math.max(0,1-z.t/z.dur);dotRing(z.x,z.y,z.r,'#e0443a',0.5+0.3*a,Math.max(12,Math.round(z.r/3)),1);dotRing(z.x,z.y,z.r*0.5,'#7a1010',0.4,10,1)}};
+// 复活：濒死的那一下不倒下，生命变成上限的 k
+function f16aRevive(u,k,c){u.hp=Math.max(1,u.maxHp*k);if(inViewPt(u.x,u.y)){addFx({k:'ring',x:Math.round(u.x),y:Math.round(u.y-8),r:14,life:0.5,c});healFx(u.x,u.y-12,c)}return 0}
+function f16aSave(u,dmg,o){if(!(dmg>0)||u.hp-dmg>=1||u.cfg)return dmg;
+  if(F16A.rz.length){for(let k=F16A.rz.length-1;k>=0;k--){const z=F16A.rz[k];if(z.dead||z.t>=z.dur){F16A.rz.splice(k,1);continue}
+      if(!z.used.has(u)&&Math.hypot(u.x-z.x,u.y-z.y)<=z.r){z.used.add(u);return f16aRevive(u,z.hp,'#ffe08a')}}}   // 复苏大阵：阵内的非建筑友军，每名每次阵法一次
+  if(F16A.crown.length&&(u.elite||(!u.isHero&&!u.summon))&&!F16A.cr.has(u)){for(let k=0;k<F16A.crown.length;k++){const h=F16A.crown[k],C=h.d.elS.f16Crown;if(h.dead||Math.hypot(u.x-h.x,u.y-h.y)>C[0]*16)continue;
+      F16A.cr.add(u);return chance(C[1])?f16aRevive(u,C[2],'#f3d47c'):dmg}}   // 复苏之冕：士兵和精英，每名每波一次（没抽中也算用过：倒下了就没有下一次）；多名约恩不叠加
+  return dmg}
+// —— 每 0.25 秒 ——
+function f16aTick(dt){if((F16A.t-=dt)>0)return;F16A.t=0.25;F16A.cmd.length=0;F16A.crown.length=0;const H=G.heroes,wave=G.phase==='wave',T=CFG.buffs.aura;
+  for(let k=0;k<H.length;k++){const h=H[k];if(h.dead||!h.elite||!h.d.elS)continue;const S=h.d.elS;
+    if(S.f16Cmd)F16A.cmd.push(h);if(S.f16Crown)F16A.crown.push(h);
+    if(S.f16Mech&&wave){const R=S.f16Mech[0]*16,v=S.f16Mech[1],eu=f16aEff('mu'+v,()=>({aspd:v,rld:v})),es=f16aEff('ms'+v,()=>({aspd:v}));
+      for(let q=0;q<G.soldiers.length;q++){const u=G.soldiers[q];if(swMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R)bfAdd(u,'f16Mech',eu,T)}
+      for(let q=0;q<G.structs.length;q++){const s=G.structs[q];if(swMechS(s)&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R)bfAdd(s,'f16MechS',es,T)}}   // 同一个 id：多名瓦特不叠加
+    if(S.f16RepEmp&&S.fix&&wave){const R=S.fix[0]*16;for(let q=0;q<G.structs.length;q++){const s=G.structs[q];if(!s.dead&&s.hp<s.maxHp&&s.empU>G.time&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R)f16aEmpClr(s)}}}}   // 随身维修修到的建筑
+// 赤血军令：u 在哪名精英的范围里（返回加成，0 = 不在）
+function f16aCmdV(u){const L=F16A.cmd;for(let k=0;k<L.length;k++){const h=L[k],C=h.d.elS.f16Cmd;if(!h.dead&&Math.abs(u.x-h.x)<=C[0]*16&&Math.hypot(u.x-h.x,u.y-h.y)<=C[0]*16)return C[1]}return 0}
+function f16aDmgE(i,d,o){const h=o&&o.hk;
+  if(h&&h.elite){const S=h.d.elS;if(S&&S.f16Siege>0){const t=E.t[i],c=ETC[t];if(c&&(c.tier>=4||c.mini||EBIG[t]))d*=1+S.f16Siege}}   // 摧城：独立乘区
+  if(F16A.cmd.length){const u=o&&(o.fu||o.su);if(u&&!u.isHero&&u.c){const v=f16aCmdV(u);if(v>0){if(u.c.cavalry)UF_AX+=v;else if(wdHvyU(u)&&EBIG[E.t[i]])UF_AX+=v}}}
+  return d}
+function f16aDmgF(u,dmg,o){
+  if(F16A.cmd.length&&!u.isHero&&!u.cfg&&u.c&&wdInfU(u)){const v=f16aCmdV(u);if(v>0)UF_DR+=v}   // 赤血军令：步兵减伤
+  if(u.elite){const S=u.d&&u.d.elS;if(S&&S.f16LowDr&&u.hp<u.maxHp*S.f16LowDr[0])UF_DR+=S.f16LowDr[1]}   // 约恩的执念
+  return dmg}
+// 冕下之仆：治疗别人时给对方护盾（这次治疗量的 X，同一个目标至多叠到它生命上限的 X）
+function f16aHealIn(u,amt,src){if(!(amt>0)||!src||src===u||!src.elite||src.dead)return amt;const S=src.d&&src.d.elS;if(!S||!S.f16HealSh)return amt;
+  const cap=u.maxHp*S.f16HealSh,cur=u.shieldHp>0?u.shieldHp:0,v=Math.min(cap,cur+amt*S.f16HealSh);if(v>cur){u.shieldHp=v;u.shieldMax=Math.max(u.shieldMax||0,v);u.shieldT=Math.max(u.shieldT||0,5)}return amt}
+// —— 波次 ——
+function f16aWaveStart(){F16A.cr.clear();F16A.t=0;for(const h of G.heroes){if(h.dead||!h.elite||!h.d.elS)continue;const v=h.d.elS.f16JDrone;if(v>0)f16aJobDrone(h,v)}}
+function f16aWaveEnd(){F16A.cr.clear();F16A.rz.length=0}
+function f16aStart(){F16A.t=0;F16A.jd.clear();F16A.cr.clear();F16A.rz.length=0;F16A.cmd.length=0;F16A.crown.length=0}
+feat('elFam16a',{ord:530,on:()=>!!(G&&G.heroes&&G.heroes.some(h=>h.elite)),hooks:{
+  waveStart:f16aWaveStart,waveEnd:f16aWaveEnd,tick:f16aTick,dmgBaseE:f16aDmgE,dmgInF:f16aDmgF,saveF:f16aSave,healInF:f16aHealIn}});
+feat('elFam16aS',{ord:531,on:()=>true,hooks:{start:f16aStart}});   // 开局清状态（精英是开局以后才放出来的，上面那个的 start 赶不上）
+// —— 结算（上阵过就算，倒下了也算；多名精英不叠加，取最大的）——
+function f16aMaxS(k){let v=null;if(!G||!G.heroes)return v;for(const h of G.heroes){if(!h.elite||!h.d||!h.d.elS)continue;const x=h.d.elS[k];if(x&&(v===null||(Array.isArray(x)?x[1]>v[1]:x>v)))v=x}return v}
+// 香料贸易：每波结算铜币 + 兵营编制数 × (5 + 波数 × 0.4) × v（同英雄的 alSpiceGold；不吃卡牌；和英雄的各算各的）
+function f16aSpice(){const v=f16aMaxS('f16Spice');if(!v)return 0;const P=CFG.skills.alSpice;return Math.round(campCount()*(P.base+G.wave*P.per)*v)}
+// 天平之誓：手上每 per 铜币 1 银币，额外的至多 = 基础结算银币 × cap（和英雄的贸易天平各算各的上限）；返回 {g, 银币} 或 null
+function f16aOath(){const V=f16aMaxS('f16Oath');if(!V||!G.meta)return null;const g=Math.max(0,Math.floor(G.gold||0)),v=Math.min(Math.floor(g/V[0]),Math.floor((G.meta.银币||0)*V[1]));return v>0?{g,银币:v}:null}
+// 精明：流浪商人每买一件、剩下的涨价 −X（加算，不叠加）
+const f16aItemDn=()=>{const v=f16aMaxS('f16Shrewd');return v>0?v:0};
+// —— 说明（特性、被动、职业特性）——
+Object.assign(EL_STD3,{
+  f16Rld:v=>`装填速度 ×${Math.round((1+v)*100)}%`,f16RepEmp:()=>'维修的目标解除电磁干扰',
+  f16Mech:(v,pc)=>`自身半径 ${v[0]} 格内友军的机械单位(机械类建筑、机械士兵、无人机)攻速、装填速度 +${pc(v[1])}，不可叠加`,
+  f16Cmd:(v,pc)=>`自身半径 ${v[0]} 格内的友军士兵：步兵减伤 +${pc(v[1])}，骑兵增伤 +${pc(v[1])}，重械对巨型、重械亡灵的伤害 +${pc(v[1])}，不可叠加`,
+  f16LowDr:(v,pc)=>`生命低于 ${pc(v[0])} 时减伤 +${pc(v[1])}`,
+  f16Crown:(v,pc)=>`自身半径 ${v[0]} 格内的友方士兵阵亡时，有 ${pc(v[1])} 概率以 ${pc(v[2])} 生命复活，每名士兵每波限 1 次，不可叠加(和「复苏大阵」分开计次)`,
+  f16MtSpd:(v,pc)=>`骑乘时移速 +${pc(v)}`,f16RgCrit:(v,pc)=>`远程物理暴击率 +${pc(v)}`,
+  f16Shrewd:(v,pc)=>`在流浪商人处每买一件道具，剩下的道具涨价 −${pc(v)}(加算)，不可叠加`,
+  f16Oath:(v,pc)=>`战斗结算时，每持有 ${v[0]} 铜币额外获得 1 银币，额外的银币至多为基础结算银币的 ${pc(v[1])}，不可叠加(和英雄的「贸易天平」各算各的)`,
+  f16Spice:v=>`每波结算时铜币额外增加 兵营编制数 ×(5 + 波数 × 0.4)× ${Math.round(v*100)/100}，不受卡牌加成影响；阵亡后仍然生效；不可叠加`,
+  f16Siege:v=>`对精英亡灵、首领和重型(巨型、重械)亡灵造成的伤害 ×${Math.round((1+v)*100)}%`,
+  f16HealSh:(v,pc)=>`治疗时额外给目标一层护盾，吸收量为这次治疗量的 ${pc(v)}`,
+  f16JDrone:(v,pc)=>`每波开始时放出 1 架机炮无人机随自身作战(至多 1 架，生命、伤害为自身物理攻击的 ${pc(v)})`});
+if(!EL_STD3.ccR)EL_STD3.ccR=(v,pc)=>`全控制抗性 +${pc(v)}`;   // ccR 是 0.12.0 训练「意志训练」的键（game/el_battle 的 ccInF），原来没有特性说明
+
+// ---------- 0.13.2 家族重置第四批 · 六阶：摩尔、安、莫顿、皮尔森的特性、家族技能、特色兵种的效果（工坊代理 16b；数据 data/el_fam16b.js，Claude 定的细节写在那边开头）----------
+// 每个精英身上的状态放在 h.f16bS（f16bNewS 建好全部字段；core/shape 登记了 f16bS）；属性合计在 h.d.elS
+// 属性（el_battle.elRecalc 末尾调 f16bRecalc）：
+//   snowOk → F.sn（maps/arctic.atMvK 不算积雪；冰原的全图雪地减速在下面的 fMvK 抵掉）；swampOk → F.sw（maps/marsh.gmMvK、毒沼泽掉血跳过）
+//   f16Dol 海豚 → h.d.orca（同英雄安洋的虎鲸：gear/fx 给 csSw、maps/coast 不吃水域惩罚）+ h.d.dolLand（heroes/anyang.anLandK 上岸移速）+ 水里移速（fMvK）
+//   f16Gren 掷弹 → 普攻的武器 h.ws 换成抛射炸药（lob、bomb、mblast：落点那只全额、周围 50%），命中往外推（afterHitE）
+// 钩子（feat elFam16b）：dmgBaseE 增伤（永夜猎手、潮汐、猛犸驯术的冲锋、爆炸 ×、中毒 ×）、afterHitE（冲锋命中、引信、连环引爆、掷弹击退、淬沼之毒、瘴疠）、
+//   dmgInF（潮汐减伤、受到的爆炸伤害）、dmgRedF（百毒不侵）、boomR（火药配置的爆炸范围）、fMvK（冰原雪地、海豚水里）、fAtkK（暴风雪攻速）、eDie（瘴疠扩散）、tick（潮汐计时、践踏、爆炸队列）
+// 爆炸（引信、连环引爆、定向爆破、开山）：f16bBoom（同 engine/combat.explode 的范围钩子 boomR、带 o.boom；全额不衰减）；
+//   在命中回调（afterHitE，可能正在别的爆炸 / eQuery 里）里引发的爆炸先进队列 F16B.q，下一帧 tick 里炸（避免嵌套 eQuery）
+const F16B={q:[],psM:new Map(),t:0,pend:null};   // q：[精英, x, y, 半径格, 伤害, 种类]；psM：亡灵 id → 瘴疠标记到期（自己上的毒，死了扩散）；pend：[亡灵 id, 精英, 连爆伤害]——afterHitE 时还没死（eKillBy 在后面），真死了（eDie）才连爆
+const F16B_EF=new Map();   // 统一 buff 的效果对象缓存（eff 当常量用）
+const f16bEff=(k,f)=>{let e=F16B_EF.get(k);if(!e){e=f();F16B_EF.set(k,e)}return e};
+function f16bNewS(){return{on:0,sn:0,sw:0,dol:0,dolW:0,gren:0,mam:0,tdT:0,fzT:-1,psT:-1,cgT:-1,px:0,py:0,trM:null,trO:null,lj:null}}
+const f16bS0=h=>h.f16bS||(h.f16bS=f16bNewS());
+const f16bF=()=>EL().f16b;
+const f16bElS=h=>h&&h.elite&&h.d&&h.d.elS||null;
+const f16bNight=()=>{const P=DAYP[G.dayIdx];return!!P&&(P.id==='night'||P.id==='midnight')};
+// —— 属性（el_battle.elRecalc 末尾调）——
+function f16bRecalc(h,S,w,mag,rg){const F=f16bS0(h);F.sn=S.snowOk?1:0;F.sw=S.swampOk?1:0;F.mam=S.f16Mam?1:0;F.dol=S.f16Dol?1:0;F.dolW=F.dol?S.f16Dol[0]:0;
+  if(F.dol){h.d.orca=true;h.d.dolLand=S.f16Dol[1]}
+  if(S.f16Gren&&w&&w.cls==='ranged'&&!mag){const g=S.f16Gren;w.lob=true;w.proj='bomb';w.speed=10;w.range=g[0];w.mblast={r:g[1],mul:g[2]};w.aoe=0;w.mix={impact:1};if(w.scatter)w.scatter=null;F.gren=g[3]}else F.gren=0;
+  F.on=F.sn||F.sw||F.mam||F.dol||F.gren||S.nightHunt||S.chgAs||S.tide||S.chgK||S.boomTk||S.boomRes||S.fuse||S.boomX||S.boomChain||S.psnHitF||S.psnX||S.f16Mia||S.psnHeal?1:0}
+// heroRecalc 最后（el_battle.elMemRecalc 调；gear/fx.fxCollect 之后）：精英特性的击退抗性 kbA——elRecalc 里给的会被 fxCollect 清零（h.kbA = 0，绝壁峭崖的装备从 0 起加），这里补回去
+function f16bPost(h){const S=h.d&&h.d.elS;if(S&&S.kbA>0)h.kbA=Math.min(1,(h.kbA||0)+S.kbA)}
+// —— 爆炸：半径 r 格（吃 pm.aoe 和 boomR 钩子），全额 d，往外推 kb 像素 ——
+let FB_X=0,FB_Y=0,FB_D=0,FB_KB=0,FB_O=null;
+const f16bBoomHit=j=>{if(E.air[j])return;dealE(j,FB_D,FB_O);if(FB_KB>0&&E.alive[j]){const dx=E.x[j]-FB_X,dy=E.y[j]-FB_Y,l=Math.hypot(dx,dy)||1;knockback(j,dx/l,dy/l,FB_KB,0.2)}};
+function f16bBoom(h,x,y,r,d,kb,ex){const hk=h&&!h.dead?h:null,o={hk,boom:1,mix:{impact:1},crit:hk?hk.crit:0,critMul:hk?heroCritMul(hk):undefined,f16Ch:ex&&ex.ch?1:0,f16Fz:ex&&ex.fz?1:0};let rad=r*16*(1+pm.aoe);
+  if(HK.boomR.length){const L=HK.boomR;for(let k=0;k<L.length;k++)rad=L[k](rad,o)}
+  const X0=FB_X,Y0=FB_Y,D0=FB_D,K0=FB_KB,O0=FB_O;FB_X=x;FB_Y=y;FB_D=d;FB_KB=kb||0;FB_O=o;try{eQuery(x,y,rad,f16bBoomHit)}finally{FB_X=X0;FB_Y=Y0;FB_D=D0;FB_KB=K0;FB_O=O0}
+  disbandNear(x,y,rad);if(inViewPt(x,y)){addFx({k:'boom',x:Math.round(x),y:Math.round(y),r:Math.max(8,rad),life:0.35});sfx('boom',x,y)}return rad}
+function f16bFlush(){const Q=F16B.q;if(!Q.length)return;const L=Q.splice(0,Q.length);for(const q of L)f16bBoom(q[0],q[1],q[2],q[3],q[4],0,q[5])}
+// —— 冲锋命中：骑兵冲锋那一下近战、冲锋类技能冲刺途中 ——
+const f16bChg=(h,o)=>!!(h&&((h.elChgOn&&o.melee)||h.dashT>0&&h.dashKind!=='f16bLeap'));
+// —— 摩尔：践踏（技能）——
+SK.f16bStomp={cast(h,p){const R=p.r*16*(1+pm.aoe),d=skD(h,p),o={hk:h,crit:h.crit,critMul:heroCritMul(h),mix:{blunt:1}};let n=0;
+    eQuery(h.x,h.y,R,(j,dd)=>{if(E.air[j])return;const di=Math.hypot(E.x[j]-h.x,E.y[j]-h.y);dealE(j,di<=R*0.5?d*2:d,o);n++});
+    if(inViewPt(h.x,h.y)){addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-2),r:R,life:0.4,c:'#c8b088'});addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-2),r:R*0.5,life:0.3,c:'#fff0c0'});G.shake=Math.max(G.shake,1)}sfx('thump',h.x,h.y);return n>0},
+  ai(h,p){const R=p.r*16;return countNear(h.x,h.y,R)>=3||countNear(h.x,h.y,R*0.5)>=2?{}:null}};
+// —— 猛犸骑兵：冲锋时践踏身前的亡灵（每帧；回调用模块变量传参，不建闭包）——
+let TR_H=null,TR_D=0,TR_KB=0,TR_UX=0,TR_UY=0;
+const f16bTrHit=j=>{if(E.air[j])return;const F=TR_H.f16bS,id=E.id[j],t=F.trM.get(id);if(t>G.time)return;F.trM.set(id,G.time+f16bF().trampleT);dealE(j,TR_D,F.trO);
+  if(TR_KB>0&&E.alive[j]){const dx=E.x[j]-TR_H.x,dy=E.y[j]-TR_H.y,l=Math.hypot(dx,dy)||1;knockback(j,dx/l,dy/l,TR_KB,0.2)}};
+function f16bTrample(h,F,S){const dx=h.x-F.px,dy=h.y-F.py;F.px=h.x;F.py=h.y;if(!h.walking||h.layer||!(h.elAccT>0)||!(h.elMvT>=h.elAccT*f16bF().trampleAcc))return;const l=Math.hypot(dx,dy);if(!(l>0.05))return;
+  if(!F.trM)F.trM=new Map();if(!F.trO)F.trO={hk:h,mix:{blunt:1},f16Tr:1};TR_H=h;TR_UX=dx/l;TR_UY=dy/l;TR_D=heroStatG(h,'atk')*S.f16Mam[0]*(1+(S.chgK||0));TR_KB=S.f16Mam[1]*16;
+  eQuery(h.x+TR_UX*8,h.y+TR_UY*8,f16bF().trampleR,f16bTrHit);TR_H=null}
+// —— 安：跃浪（划弧落到水域地点）、漩涡 ——
+const f16bWetPt=(x,y)=>wetPt(x,y);
+function f16bWaterE(h,R,need){let b=-1,bn=need-1;eQuery(h.x,h.y,R,j=>{if(E.air[j]||!f16bWetPt(E.x[j],E.y[j]))return;const c=countNear(E.x[j],E.y[j],2*16);if(c>bn){bn=c;b=j}},true);return b}   // R 内站在水里、扎堆最多（≥ need）的那只
+SK.f16bLeap={cast(h,p,a){if(h.layer||!G.csW)return false;const t=a&&a.x!==undefined?a:null;if(!t)return false;const c=clampAim(h,t,p.range*16);if(!f16bWetPt(c.x,c.y))return false;   // 只能选水域地点
+    const F=f16bS0(h),ang=Math.atan2(c.y-h.y,c.x-h.x),T=p.T||f16bF().leapT;F.lj={x0:h.x,y0:h.y,x1:c.x,y1:c.y,T,d:skD(h,p),r:p.r,kb:p.kb};
+    startDash(h,'f16bLeap',ang,1,T,p);h.dvx=h.dvy=0;h.dashNoStop=true;h.facing=c.x>=h.x?1:-1;if(inViewPt(h.x,h.y))csSplashF(h.x,h.y,8);sfx('dash',h.x,h.y);return true},
+  ai(h,p){if(h.layer||!G.csW)return null;const j=f16bWaterE(h,p.range*16*0.95,2);return j>=0?{x:E.x[j],y:E.y[j]}:null}};
+DASH.f16bLeap={step(h,dt){const J=h.f16bS&&h.f16bS.lj;if(!J)return;const u=Math.min(1,1-h.dashT/J.T);h.x=J.x0+(J.x1-J.x0)*u;h.y=J.y0+(J.y1-J.y0)*u;h.jz=48*u*(1-u)*2},
+  land(h){const F=h.f16bS,J=F&&F.lj;if(F)F.lj=null;h.jz=0;h.dashNoStop=false;if(!J)return;h.x=J.x1;h.y=J.y1;
+    const R=J.r*16*(1+pm.aoe),o={hk:h,crit:h.crit,critMul:heroCritMul(h),mix:{blunt:1}};eQuery(h.x,h.y,R,j=>{if(E.air[j])return;dealE(j,J.d,o);if(E.alive[j]&&J.kb>0){const dx=E.x[j]-h.x,dy=E.y[j]-h.y,l=Math.hypot(dx,dy)||1;knockback(j,dx/l,dy/l,J.kb*16,0.2)}});
+    let q=null;if(G.csOn&&G.csW&&csWAt(h.x,h.y)===2&&!h.csSw)q=csShore(h.x,h.y);else if(!friendPassPt(h.x,h.y))q=walkableNear(h.x,h.y,4);if(q){h.x=q.x;h.y=q.y}h.nav=null;   // 深海里不会游泳：游回岸边（同 game/el_fam15b.f5bOff）
+    if(inViewPt(h.x,h.y)){csSplashF(h.x,h.y,14);addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-2),r:R,life:0.35,c:'#9ad8e8'});G.shake=Math.max(G.shake,0.8)}sfx('crash',h.x,h.y)}};
+SK.f16bVortex={cast(h,p,a){if(!G.csW||!a||a.x===undefined)return false;const c=clampAim(h,a,p.range*16);if(!f16bWetPt(c.x,c.y))return false;const tk=f16bF().vortexTick;
+    bkZone({k:'c',r:p.r},{who:'E',dmg:tk,mix:{blunt:1},st:{pull:p.pull},gnd:1,fx:'frost'},bkCH(h,skD(h,p),c.x,c.y,0),{dur:p.dur-0.05,tick:tk});if(inViewPt(c.x,c.y))csSplashF(c.x,c.y,12);sfx('surge',c.x,c.y);return true},
+  ai(h,p){if(!G.csW)return null;const j=f16bWaterE(h,p.range*16*0.95,3);return j>=0?{x:E.x[j],y:E.y[j]}:null}};
+// —— 莫顿：定向爆破（2 秒后炸）、开山（3 段依次炸）——
+const f16bPt=(h,R,r,n)=>{const j=fbClump(h.x,h.y,R*0.95,r,n);return j>=0?{x:E.x[j],y:E.y[j]}:null};
+SK.f16bTnt={cast(h,p,a){const R=p.range*16,t=a&&a.x!==undefined?a:f16bPt(h,R,p.r*16,1);if(!t)return false;const c=clampAim(h,t,R);
+    addZone({k:'f16bTnt',h,x:c.x,y:c.y,x0:h.x+h.facing*4,y0:h.y-12,d:skD(h,p),r:p.r,kb:p.kb,delay:p.delay,t:0,done:0});h.facing=c.x>=h.x?1:-1;sfx('swing',h.x,h.y);return true},
+  ai(h,p){return f16bPt(h,p.range*16,p.r*16,3)}};
+zoneDef('f16bTnt',{tick(z){if(z.done||z.t<z.delay)return;z.done=1;z.dead=true;f16bBoom(z.h,z.x,z.y,z.r,z.d,z.kb*16,null);G.shake=Math.max(G.shake,1.2)},
+  draw(z){const u=Math.min(1,z.t/0.4),X=Math.round(z.x0+(z.x-z.x0)*u),Y=Math.round(z.y0+(z.y-z.y0)*u-30*u*(1-u)*4);bkWarnC(z.x,z.y,z.r*16,z.t/z.delay,z.delay-z.t,'#ff9a40');
+    rectW(X-3,Y-2,6,3,C('#a8322a'));rectW(X-3,Y-1,6,1,C('#d85a3a'));rectW(X+2,Y-4,1,2,(G.time*12|0)%2?K.flY:K.boomC)}});
+SK.f16bMine={cast(h,p,a){const t=a&&a.x!==undefined?a:null;if(!t)return false;const ang=Math.atan2(t.y-h.y,t.x-h.x);
+    addZone({k:'f16bMine',h,x:h.x,y:h.y,ux:Math.cos(ang),uy:Math.sin(ang),d:skD(h,p),n:p.n,sl:p.len/p.n,w:p.w,kb:p.kb,gap:p.gap,ni:0,t:0});h.facing=Math.cos(ang)>=0?1:-1;sfx('build',h.x,h.y);return true},
+  ai(h,p){const c=densest(h.x,h.y,p.len*16*0.9);return aiN(h,p,c,3)?{x:c.x,y:c.y}:null}};
+zoneDef('f16bMine',{tick(z){while(z.ni<z.n&&z.t>=z.gap*(z.ni+1)){const L=z.sl*16*(z.ni+0.5);f16bBoom(z.h,z.x+z.ux*L,z.y+z.uy*L,f16bF().mineR,z.d,z.kb*16,null);z.ni++}if(z.ni>=z.n)z.dead=true},   // ni：炸到第几段（z.k 是区域的种类名，不能拿来计数）
+  draw(z){const L=z.sl*16;for(let k=z.ni;k<z.n;k++){const a=z.x+z.ux*L*k,b=z.y+z.uy*L*k;bkWarnLine(a,b,a+z.ux*L,b+z.uy*L,z.w*16,Math.min(1,z.t/(z.gap*(k+1))),z.gap*(k+1)-z.t,'#ff9a40')}}});
+// —— 皮尔森：毒沼 ——
+SK.f16bSwamp={cast(h,p,a){const R=p.range*16,t=a&&a.x!==undefined?a:f16bPt(h,R,p.r*16,1);if(!t)return false;const c=clampAim(h,t,R),tk=f16bF().swampTick;
+    bkZone({k:'c',r:p.r},{who:'E',dmg:tk,magic:1,mix:{poison:1},st:{slow:{f:p.slow,t:tk+0.2}},gnd:1},bkCH(h,skD(h,p),c.x,c.y,0),{dur:p.dur-0.05,tick:tk});
+    if(inViewPt(c.x,c.y))fxPoison(c.x,c.y,16);sfx('flame',c.x,c.y);return true},
+  ai(h,p){return f16bPt(h,p.range*16,p.r*16,3)}};
+// —— 中毒（皮尔森）：淬沼之毒、炼毒天赋的倍率、瘴疠的叠毒和标记 ——
+function f16bPsn(i,h,S,atk){const ap=heroStatG(h,'ap'),k=1+(S.psnX||0),M=S.f16Mia;
+  if(M&&!(S.psnStack>0))ejPsn(i,M[0],h);   // 瘴疠：同炼药师的炼毒（职业已经有 psnStack 的不再叠一次）
+  if((S.psnStack>0||M)&&E.psn[i]>0)E.psnD[i]=Math.max(E.psnD[i],ap*0.1*k);   // 炼毒天赋：叠毒的每层伤害 ×(1 + psnX)
+  const P=S.psnHitF,F=h.f16bS;if(P&&atk&&F.psT!==G.time){F.psT=G.time;if(!(E.psn[i]>0))E.psn[i]=1;E.psnT[i]=Math.max(E.psnT[i],P[1]);E.psnD[i]=Math.max(E.psnD[i],ap*P[0]/P[1]*k)}   // 淬沼之毒：普攻
+  if(M&&E.psn[i]>0)F16B.psM.set(E.id[i],G.time+E.psnT[i])}
+function f16bSpread(i){const id=E.id[i],t=F16B.psM.get(id);if(t===undefined)return;F16B.psM.delete(id);if(!(t>G.time)||!(E.psn[i]>0)||!(E.psnT[i]>0))return;
+  const n=E.psn[i],pt=E.psnT[i],pd=E.psnD[i];let R=0;for(const h of G.heroes){const S=f16bElS(h);if(S&&S.f16Mia&&S.f16Mia[1]>R)R=S.f16Mia[1]}if(!(R>0))return;
+  eQuery(E.x[i],E.y[i],R*16,j=>{if(j===i||!E.alive[j])return;E.psn[j]=Math.max(E.psn[j],n);E.psnT[j]=Math.max(E.psnT[j],pt);E.psnD[j]=Math.max(E.psnD[j],pd)});
+  if(inViewPt(E.x[i],E.y[i]))fxPoison(E.x[i],E.y[i],12)}
+// —— 每帧：爆炸队列、潮汐计时、践踏 ——
+function f16bTick(dt){f16bFlush();const H=G.heroes;for(let k=0;k<H.length;k++){const h=H[k];const F=h.f16bS;if(!F||!F.on||h.dead)continue;const S=h.d.elS;if(!S)continue;
+  if(S.tide)F.tdT+=dt;if(F.mam)f16bTrample(h,F,S)}}
+const f16bTideDr=(h,S)=>((h.f16bS.tdT/S.tide[0])|0)%2===0;   // 每波开始先「减伤」，S.tide[0] 秒后换「增伤」
+function f16bWaveStart(){F16B.q.length=0;F16B.psM.clear();for(const h of G.heroes){const F=h.f16bS;if(!F)continue;F.tdT=0;F.fzT=-1;F.psT=-1;if(F.trM)F.trM.clear()}}
+function f16bWaveEnd(){f16bFlush();F16B.psM.clear();for(const h of G.heroes){const F=h.f16bS;if(F&&F.trM)F.trM.clear()}}
+function f16bStart(){F16B.q.length=0;F16B.psM.clear();F16B.t=0;F16B.pend=null}
+const f16bPsnDot=o=>!!(o&&o.dot&&o.mix&&o.mix.poison>=1&&!o.gmSw);   // 持续的中毒伤害（毒沼地形的伤害带 gmSw，不算）
+feat('elFam16b',{ord:527,on:()=>!!(G&&G.heroes&&G.heroes.some(h=>h.elite)),hooks:{
+  start:f16bStart,waveStart:f16bWaveStart,waveEnd:f16bWaveEnd,tick:f16bTick,
+  dmgBaseE:(i,d,o)=>{const h=o&&o.hk,S=f16bElS(h);if(!S||!h.f16bS||!h.f16bS.on)return d;
+    if(S.nightHunt&&(G.atOn||f16bNight()))UF_AX+=S.nightHunt;   // 永夜猎手：夜晚、暴风雪里增伤
+    if(S.tide&&G.phase==='wave'&&!f16bTideDr(h,S))UF_AX+=S.tide[2];   // 潮汐攻势：增伤的那 10 秒
+    if(!o.f16Tr&&f16bChg(h,o)){h.f16bS.cgT=G.time;if(S.chgK)d*=1+S.chgK}   // 猛犸驯术：冲锋伤害（践踏自己算过了）；cgT：这一帧是冲锋命中（elJob 的 afterHitE 排在前面、会清掉 elChgOn，乘海破浪看它）
+    if(S.boomX&&(o.boom||o.blast))d*=1+S.boomX;   // 火药配置：爆炸伤害（独立）
+    if(S.psnX&&o.mix&&o.mix.poison>0)d*=1+S.psnX;   // 炼毒天赋：自己的毒属性伤害（毒沼）
+    return d},
+  afterHitE:(i,dmg,o)=>{const h=o&&o.hk,S=f16bElS(h);if(!S)return;const F=h.f16bS;if(!F||!F.on)return;
+    if(S.chgAs&&!o.dot&&F.cgT===G.time&&!o.f16Tr){const A=S.chgAs;bfAdd(h,'f16bSurf',f16bEff('s'+A[1],()=>({aspd:A[1]})),A[0])}   // 乘海破浪
+    if(o.dot)return;
+    if((o.boom||o.blast)&&S.boomChain&&!o.f16Ch&&E.hp[i]<=0&&dmg>0){F16B.pend=[E.id[i],h,dmg*S.boomChain[1]];return}   // 连环引爆：这一下打死了（eDie 里确认，下一帧在原地再炸）
+    if(!E.alive[i]||E.hp[i]<=0)return;
+    if(F.gren>0&&o.atk&&o.boom){const dx=E.x[i]-h.x,dy=E.y[i]-h.y,l=Math.hypot(dx,dy)||1;knockback(i,dx/l,dy/l,F.gren*16,0.2)}   // 掷弹：命中往外推
+    if(S.fuse&&o.atk&&!o.f16Fz&&F.fzT!==G.time){F.fzT=G.time;const U=S.fuse;if(Math.random()<U[0])F16B.q.push([h,E.x[i],E.y[i],U[1],heroStatG(h,'atk')*U[2],F16B_FZ])}   // 引信：同一帧只判一次
+    if(S.psnHitF&&o.atk||S.f16Mia||S.psnX&&S.psnStack>0)f16bPsn(i,h,S,!!o.atk)},
+  dmgInF:(u,dmg,o)=>{const S=u.elite&&u.f16bS&&u.f16bS.on?u.d.elS:null;if(!S)return dmg;
+    if(S.tide&&G.phase==='wave'&&f16bTideDr(u,S))UF_DR+=S.tide[1];   // 潮汐攻势：减伤的那 10 秒
+    if(o.blast||o.boom){if(S.boomTk)dmg*=1-S.boomTk;if(S.boomRes)dmg/=1+S.boomRes}return dmg},   // 受到的爆炸伤害 −X；爆炸抗性 ÷(1 + X)（同防爆盔甲）
+  dmgRedF:(u,dmg,o)=>{if(!u.elite||!(dmg>0))return dmg;const S=u.d.elS;if(!S||!S.psnHeal||!f16bPsnDot(o))return dmg;healF(u,dmg*S.psnHeal);return 0},   // 百毒不侵：中毒改回血
+  boomR:(rad,o)=>{const h=o&&o.hk,S=f16bElS(h);return S&&S.boomX?rad*(1+S.boomX):rad},   // 火药配置：爆炸范围
+  fMvK:(u,k)=>{const F=u.elite&&u.f16bS;if(!F||!F.on)return k;
+    if(F.sn&&G.mv<1&&!u.d.elS.tundraOk)k/=Math.max(0.05,f4TundraK());   // 雪步：冰原的雪地减速（有冰原守备的那边已经抵过）
+    if(F.dol&&F.dolW&&wetF(u))k*=1+F.dolW;return k},   // 海豚：水里移速
+  fAtkK:(u,k)=>{const S=u.elite&&u.f16bS&&u.f16bS.on?u.d.elS:null;return S&&S.nightHunt&&G.atOn&&G.atAs>0&&G.atAs<1?k/(1-G.atAs):k},   // 永夜猎手：北极苔原暴风雪的攻速惩罚
+  eDie:i=>{const P=F16B.pend;if(P){F16B.pend=null;if(P[0]===E.id[i]){const S=f16bElS(P[1]);if(S&&S.boomChain)F16B.q.push([P[1],E.x[i],E.y[i],S.boomChain[0],P[2],F16B_CH])}}if(F16B.psM.size)f16bSpread(i)}}});
+const F16B_CH={ch:1},F16B_FZ={fz:1};   // 队列里的爆炸种类：连爆（不再连爆）/ 引信
+// 特色兵种的小人（美术代理之后画）：猛犸骑兵借重骑兵，海豚骑士借英雄安洋，掷弹兵借火枪手，瘴毒术士借炼药师
+Object.assign(EL_SPR_FB,{mammothCav:'el_heavyCav',dolphinKn:'anyang',grenadier:'el_musketeer',miasmaMage:'el_alchemist'});
+// 特性、技能、职业特性的说明
+Object.assign(EL_STD3,{
+  snowOk:()=>'不受积雪和冰面的地形惩罚',visFix:()=>'视野不会因为夜晚、天气下降',
+  nightHunt:(v,pc)=>`夜晚和暴风雪中攻速不会降低，增伤 +${pc(v)}`,
+  chgK:(v,pc)=>`冲锋伤害 +${pc(v)}`,f16Mam:(v,pc)=>`冲锋时践踏路径上的亡灵，击退 ${v[1]} 格并造成 ${pc(v[0])} 物理攻击的伤害`,
+  chgAs:(v,pc)=>`冲锋命中后 ${v[0]} 秒内攻速 +${pc(v[1])}`,tide:(v,pc)=>`每 ${v[0]} 秒切换一次状态：减伤 +${pc(v[1])}，或增伤 +${pc(v[2])}`,
+  f16Dol:(v,pc)=>`无视水域惩罚，可以在深海中行动，在水域中移速 +${pc(v[0])}，上岸移速 ×${Math.round(v[1]*100)}%`,
+  boomTk:(v,pc)=>`受到的爆炸伤害 −${pc(v)}`,boomRes:(v,pc)=>`爆炸抗性 +${pc(v)}`,
+  fuse:(v,pc)=>`普通攻击有 ${pc(v[0])} 概率引发小爆炸，对目标周围 ${v[1]} 格内的亡灵造成 ${pc(v[2])} 物理攻击的爆炸伤害`,
+  boomX:v=>`爆炸伤害和爆炸范围 ×${Math.round((1+v)*100)}%`,
+  boomChain:(v,pc)=>`自身的爆炸伤害杀死亡灵时，亡灵会原地再爆炸一次，对 ${v[0]} 格内的亡灵造成这次伤害的 ${pc(v[1])}；连爆不会再引发连爆`,
+  f16Gren:(v,pc)=>`普通攻击换成投掷炸药，射程 ${v[0]} 格，命中处 ${v[1]} 格内 ${pc(v[2])} 爆炸伤害，并击退 ${v[3]} 格`,
+  psnHitF:(v,pc)=>`普通攻击附带中毒，${v[1]} 秒内造成 ${pc(v[0])} 法术攻击的伤害`,psnX:v=>`中毒伤害 ×${Math.round((1+v)*100)}%`,
+  f16Mia:(v,pc)=>`自身造成的中毒可以叠加 ${v[0]} 层；中毒的亡灵死亡时，剩下的中毒扩散到周围 ${v[1]} 格内的亡灵`,
+  psnHeal:(v,pc)=>`自身中毒时不掉血，改为按中毒伤害的 ${pc(v)} 回复生命`,
+  psnStack:v=>`造成的中毒效果可叠加 ${v} 层`,swampOk:()=>'不受毒沼的地形惩罚',
 });
 
 // ---------- 0.12.7 代理 EG：精英装备「一键购买」「一键强化」（用户 0.12.7 预告第 3、4 条；数据 data/el_gear2.js 的 CFG.elite.eg，界面 ui/el_gear2.js）----------
@@ -85119,7 +85644,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="85c218c",GAME_BUILT=1793980670994,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="4486967",GAME_BUILT=1794000594030,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -86660,7 +87185,7 @@ function showResult(win,got){
     ${ex?`<p class="meta">${CFG.maps[exR].name}开拓地第 ${G.expand+1} 次开拓完成：区域扩大到 ${stArea(exR)} × ${stArea(exR)}。</p>`:''}
     ${got.banned?`<p class="warn">${hlkNames()}参战过：这一局不计入通关记录和成就，结算奖励减半</p>`:''}${tutResultTip()}${got.autoExp?`<p class="newmap">${got.autoExp}</p>`:''}${(got.newMaps||[]).map(k=>`<p class="newmap">解锁新地图：<b>${CFG.maps[k].name}</b><span class="meta">(出征 → 常规 / 无尽模式里选择)</span></p>`).join('')}${(got.newDesign||[]).map(id=>`<p class="newmap">可以研发新建筑：<b>${BDEF[id].name}</b><span class="meta">(营地 → 建筑，花设计点和银币解锁)</span></p>`).join('')}
     <div class="stats"><div><b>${got.cleared??(win?G.wave:Math.max(0,G.wave-1))}</b><span>击退波次</span></div><div><b>${G.kills}</b><span>击杀</span></div><div><b>${DIFF.name}</b><span>${iv?'入侵战':G.expand!=null?'扩张战':MODE==='regular'?'常规':'无尽'}</span></div></div>
-    <div class="rule"></div><p class="meta">结算奖励(×${DIFF.reward})：银币 <b>${got.银币||0}</b> · 建材 <b>${got.建材}</b> · 科研点 <b>${got.科研点}</b> · 设计点 <b>${got.设计点}</b>${got.金币||got.goldCut?` · 金币 <b>${got.金币}</b>(${mapDef().name}今日 ${got.goldDay}${got.goldCut?`，已到上限，少拿 ${got.goldCut}`:''})`:''}${got.trade?`<br>贸易天平(剩余 ${got.trade.g} 铜币)：${['银币','建材','科研点','设计点'].filter(k=>got.trade[k]).map(k=>`${k} +${got.trade[k]}`).join(' · ')}(已算进上面)`:''}</p>
+    <div class="rule"></div><p class="meta">结算奖励(×${DIFF.reward})：银币 <b>${got.银币||0}</b> · 建材 <b>${got.建材}</b> · 科研点 <b>${got.科研点}</b> · 设计点 <b>${got.设计点}</b>${got.金币||got.goldCut?` · 金币 <b>${got.金币}</b>(${mapDef().name}今日 ${got.goldDay}${got.goldCut?`，已到上限，少拿 ${got.goldCut}`:''})`:''}${got.trade?`<br>贸易天平(剩余 ${got.trade.g} 铜币)：${['银币','建材','科研点','设计点'].filter(k=>got.trade[k]).map(k=>`${k} +${got.trade[k]}`).join(' · ')}(已算进上面)`:''}${got.f16Oath?`<br>天平之誓(剩余 ${got.f16Oath.g} 铜币)：银币 +${got.f16Oath.银币}(已算进上面)`:''}</p>
     <p class="meta">${got.soulPt?`培养值 <b>+${got.soulPt.pt}</b>${got.soulPt.dbl?`(丰收 ×${got.soulPt.dbl})`:''}${got.soulPt.id?`：${CFG.heroes[got.soulPt.id].name}${got.soulPt.n?`换成英雄之魄 <b>×${got.soulPt.n}</b>`:'没换到'}(今日 ${got.soulPt.day}/${CFG.soulPt.heroDay}，每个 ${got.soulPt.c})`:''}；今日魄值池还剩 ${got.soulPt.pool}(换培养对象时给下一位，0 点清空)<br>`:''}英雄之魄：${Object.keys(got.soulMap||{}).length?Object.entries(got.soulMap).filter(([id])=>CFG.heroes[id]).map(([id,n])=>`${CFG.heroes[id].name} <b>+${n}</b>`).join(' · '):'本局没有(培养值每轮结束给培养英雄；来源地图的英雄每轮固定掉)'}${got.soulCut?`<br><span class="warn">今日上限(每位英雄在别的地图每天最多 ${CFG.drops.soulDay} 个)：${Object.entries(got.soulCut).filter(([id])=>CFG.heroes[id]).map(([id,n])=>`${CFG.heroes[id].name} 少拿 ${n}`).join('、')}</span>`:''}${Object.keys(got.skinFrag||{}).length?`<br>皮肤碎片：${Object.entries(got.skinFrag).map(([k,n])=>`${CFG.heroes[CFG.skins[k].hero].name}「${CFG.skins[k].name}」 <b>+${n}</b>`).join(' · ')}`:''}</p>
     ${Object.keys(got.wares||{}).length?`<p class="meta">地区物资：${Object.entries(got.wares).filter(([k])=>CFG.wares.items[k]).map(([k,n])=>`${CFG.wares.items[k].name} <b>+${n}</b>`).join(' · ')}</p>`:''}
     ${Object.keys(got.mats||{}).length?`<p class="meta">强化材料：${Object.entries(got.mats).map(([k,n])=>`${matName(k.replace(/\d+$/,''),+k.replace(/^\D+/,''))} <b>+${n}</b>`).join(' · ')}</p>`:''}
@@ -89818,7 +90343,7 @@ const EL_JX={hp:['生命',''],atk:['物攻',''],ap:['法攻',''],def:['物防','
 const elJobX=x=>Object.keys(x||{}).map(k=>{const D=EL_JX[k];if(!D)return'';const v=x[k],n=D[1]==='%'?Math.round(v*100):v;return`${D[0]} +${n}${D[1]==='%'?'(%)':''}`}).filter(Boolean).join(' · ');
 function elJobHTML(e){const J=EL().jobs,CAT=EL().jobCat,TN=EL().jobTierName,cur=CAT.find(c=>c[2].includes(e.job));if(!EL_JOBCAT||!CAT.some(c=>c[0]===EL_JOBCAT))EL_JOBCAT=(cur||CAT[0])[0];const L0=CAT.find(c=>c[0]===EL_JOBCAT)[2].filter(k=>J[k]),TS=[...new Set(L0.map(k=>J[k].tier||0))].sort((a,b)=>a-b);if(EL_JOBTIER&&!TS.includes(EL_JOBTIER))EL_JOBTIER=0;const L=EL_JOBTIER?L0.filter(k=>(J[k].tier||0)===EL_JOBTIER):L0;
   const tabs=`<div class="elrow">${CAT.map(([k,n])=>elBtn('elxjcat',e.id+':'+k,n,{on:k===EL_JOBCAT})).join('')}</div><div class="elrow">${[0].concat(TS).map(t=>elBtn('elxjtier',e.id+':'+t,t?TN[t]:'全部',{on:t===EL_JOBTIER})).join('')}</div>`,ar=a=>CFG.armorTypes[a]||a;
-  return`<p class="meta">现在：<b>${elJobD(e).name}</b>${J[e.job]&&J[e.job].tier?` · ${TN[J[e.job].tier]}`:''}。可以直接转成任何职业(不用先转前一阶)；二阶要精英 10 级，三阶 20 级、四阶 30 级、五阶 40 级；有的还要对应英雄 3 星、家族声望或地区材料。属性 = 基础属性 + 职业的额外属性。换职业后，新职业用不了的技能、装备会卸下(技能等级保留)。</p>${tabs}
+  return`<p class="meta">现在：<b>${elJobD(e).name}</b>${J[e.job]&&J[e.job].tier?` · ${TN[J[e.job].tier]}`:''}。可以直接转成任何职业(不用先转前一阶)；二阶要精英 10 级，三阶 20 级、四阶 30 级、五阶 40 级、六阶 50 级；有的还要对应英雄 3 星、家族声望或地区材料。属性 = 基础属性 + 职业的额外属性。换职业后，新职业用不了的技能、装备会卸下(技能等级保留)。</p>${tabs}
     <div class="elgrid">${L.map(k=>{const j=J[k],lk=elJobLock(e,k);   // 0.11.4（用户定）平铺：名字在上、小人在中、转职按钮在下
       return`<div class="hst${k===e.job?' on':''}" title="生命 ${Math.round(j.hp)} · 物攻 ${j.atk} · 法攻 ${j.ap} · 物防 ${j.def} · 法防 ${j.mdef} · 移速 ${+j.speed.toFixed(2)}"><b>${j.name} <span class="optag">${TN[j.tier]}</span></b><img class="gp" alt="" src="${heroIcon(elSprLk({job:k,sex:e.sex,lk:elLook(e)}),2)}"><span class="meta">${elJobX(j.x)}${j.jsk?`<br><b>${j.jsk[0]}</b>：${j.jsk[1]}`:''}<br>${j.weapon.map(t=>CFG.weaponTypes[t].name).join('、')} · ${ar(j.armor[j.armor.length-1])}${j.mount?' · 骑兵':''}</span>${k===e.job?'':elJobCostHTML(e,k)}${k===e.job?elBtn('elxjob',e.id+':'+k,'当前',{dis:true}):lk?`<span class="meta warn">${lk}</span>`+elBtn('elxjob',e.id+':'+k,'转职',{dis:true}):EL_JOBASK===k?elBtn('elxjobok',e.id+':'+k,'确认转职',{on:true})+elBtn('elxjob',e.id+':','取消'):elBtn('elxjob',e.id+':'+k,'转职')}</div>`}).join('')}</div>`}   // 0.12.0（用户定）转职要确认
 function elLogHTML(e){const g=e.log;
