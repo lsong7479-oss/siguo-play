@@ -16173,7 +16173,8 @@ CFG.buildings.amJet={cat:'amJet', name:'喷气平台', cost:150, hp:450, def:1, 
   note:'帕恩的特殊建筑(城墙类)：搭在深海、虚空这类不能建造的地方，变成能建造、能通行的金属平台；亡灵能从上面走过去，也会把它当建筑打；被打坏时地形变回原样，上面的建筑一起毁，站在上面的守军掉进水里'};
 
 /* ---------- 0.13.1 塔楼皮肤（用户定：首批六款、效果、主题；兑换码 + 商店金币购买，暂定 500 金币）----------
-   b 换哪种建筑的图；theme 主题；fx 效果（用着这款皮肤时，这种建筑全部生效）：aspd 攻速 +、pierce 最大穿透数 +、aoe 爆炸半径 +格、cap 驻军上限 +、rng 射程 +（0.13.2，和别的射程加成相加）
+   b 换哪种建筑的图；theme 主题；fx 效果（用着这款皮肤时，这种建筑全部生效）：aspd 攻速 +、pierce 最大穿透数 +、aoe 爆炸半径 +格、cap 驻军上限 +、rng 射程 +（0.13.2，和别的射程加成相加）、
+   dmg 塔楼伤害 +（0.13.2，和别的建筑伤害加成相加）、solHp / solAtk 这座兵营训练的士兵生命 / 攻击 +（0.13.2，和别的士兵生命 / 伤害加成相加）
    code 专属兑换码里的编号（tools/redeem_gen.html；定了就不能改）；图在 art/tskin_art.js（TSKIN_ART[皮肤](档 0～2) → canvas，同 HD_BUILD）；机制 game/tskin.js，商店 ui/shop 的「塔楼皮肤」页签 */
 CFG.towerSkins={
   redArrow:  {name:'赤色帝国 · 箭塔',   b:'arrowTower', theme:'赤色帝国', fx:{aspd:0.1},  desc:'攻速 +10%', code:1},
@@ -16187,6 +16188,11 @@ CFG.towerSkins={
   cncFire:   {name:'众和议会 · 火球塔', b:'fireTower',  theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', code:8},
   cncWind:   {name:'众和议会 · 旋风塔', b:'windTower',  theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', code:9},
   cncEarth:  {name:'众和议会 · 土刺塔', b:'earthTower', theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', code:10},
+  papalChurch:{name:'教廷圣堂 · 教堂', b:'church',     theme:'教廷圣堂', fx:{cap:1},     desc:'驻军数量上限 +1', code:11},   // 0.13.2（用户 11-06 定）第三批五款：教廷圣堂（教堂）、教廷魔导（雷电塔、激光塔）是新主题「教廷」（白、金、浅蓝，Claude 定配色）；机械营另有众和议会、赤色帝国两款
+  cncMech:   {name:'众和议会 · 机械营', b:'campM',      theme:'众和议会', fx:{cap:1},     desc:'驻军数量上限 +1', code:12},
+  redMech:   {name:'赤色帝国 · 机械营', b:'campM',      theme:'赤色帝国', fx:{solHp:0.1, solAtk:0.1}, desc:'士兵生命、攻击 +10%', code:13},
+  papalZap:  {name:'教廷魔导 · 雷电塔', b:'lightningTower', theme:'教廷魔导', fx:{dmg:0.1},  desc:'伤害 +10%', code:14},
+  papalLaser:{name:'教廷魔导 · 激光塔', b:'laserTower', theme:'教廷魔导', fx:{dmg:0.1},   desc:'伤害 +10%', code:15},
 };
 CFG.towerSkinShop={gold:500};
 
@@ -32117,13 +32123,15 @@ function wallCanvasHD(mask,lvl,style){
    art/hd_build.hdBuildSprites 登记进 SPR.tsk[皮肤]；画布尺寸、平台高度照原建筑（ui/draw.drawStruct 叠上去的弓 / 弩 / 炮管位置不变）
    赤色帝国：红砖 → 暗赤条石，红漆木、黄铜 / 金饰、红底金日的帝国旗（自创纹样，不用现实国家标志）
    北境联盟：木石混构、深蓝 / 灰白、屋顶积雪和冰棱、冷色旗；三档 = 原木屋 → 石基木墙 → 灰白条石 + 银饰、窗里透暖光
-   众和议会（0.13.2）：大陆西南角的议会国，蓝紫石、暗紫顶、银饰、紫色长旗上一颗白星；元素晶石照原塔的颜色 */
+   众和议会（0.13.2）：大陆西南角的议会国，蓝紫石、暗紫顶、银饰、紫色长旗上一颗白星；元素晶石照原塔的颜色
+   教廷（0.13.2 第三批，Claude 定）：白石、金边、浅蓝瓦 / 浅蓝旗，圣徽 = 金十字套一圈金环、四道光芒（自创纹样）；教廷圣堂偏庄严的圣堂（彩窗、尖塔、扶壁小尖塔），教廷魔导偏法术塔（发射器圣金色、浅蓝符文） */
 let TSKA_MM=null;
 function tskaM(){if(TSKA_MM)return TSKA_MM;const m=(c,t)=>hdMat(c,t);
   return TSKA_MM={brick:m('#a8583a','plain'),crim:m('#6a441c','plain'),crimT:m('#8a6228','plain'),lacq:m('#a03a24','wood'),lacqL:m('#c0603a','wood'),tileE:m('#8e3a1c','plain'),   // 赤色帝国（0.13.2 用户定主题色暗金、赤金）：赤金砖、暗金条石、赤漆木、赤金瓦
     cv0:m('#7a74b8','plain'),cv1:m('#655ea8','plain'),cv2:m('#4a4388','plain'),cvK:m('#332d66','plain'),vio:m('#6a40b8','cloth'),vioL:m('#b48cf0','cloth'),   // 众和议会（0.13.2 用户定：蓝紫）：淡蓝紫石、蓝紫石、深紫条石、暗紫顶、紫旗
     log:m('#6e5644','wood'),logL:m('#8c7058','wood'),stoneN:m('#8e949e','plain'),granite:m('#bcc2ca','plain'),timber:m('#3e4656','wood'),doorN:m('#4a3c34','wood'),   // 北境：原木、冷灰石、灰白花岗岩、蓝灰硬木
-    snow:m('#e2eaf2','plain'),ice:m('#a8d4ee','gem'),navy:m('#2a4c84','cloth'),iceCl:m('#8cc4e8','cloth'),whiteCl:m('#e4eaf0','cloth'),silver:hdM('silver')}}
+    snow:m('#e2eaf2','plain'),ice:m('#a8d4ee','gem'),navy:m('#2a4c84','cloth'),iceCl:m('#8cc4e8','cloth'),whiteCl:m('#e4eaf0','cloth'),silver:hdM('silver'),
+    pw:m('#eeeae2','plain'),pw2:m('#d8d6d4','plain'),pBlue:m('#6c9ed4','plain'),pBlueD:m('#4a74b0','plain'),pCl:m('#f4f2ec','cloth'),pClB:m('#8cc0ec','cloth'),pGem:m('#f4c040','gem'),pZap:m('#9ad8ff','gem')}}   // 教廷（0.13.2 Claude 定）：白石、灰白条石、浅蓝瓦、深一点的浅蓝、白旗、浅蓝旗、圣金晶石、浅蓝电球
 // —— 帝国金日纹（红底上一轮金日，中间红心，四角四道光芒；打光后直接点色，小尺寸也认得出）：中心 (cx, cy)、半径 r ——
 function tskaSun(S,cx,cy,r){S.dt(cx,cy,r,'#9a5a16');S.dt(cx,cy,r-0.6,'#e8a83a');S.dt(cx-0.5,cy-0.5,Math.max(0.5,r*0.35),'#f8d47a');S.dt(cx,cy,Math.max(0.6,r*0.3),'#8a2a16');
   for(const[dx,dy]of[[-1,-1],[1,-1],[-1,1],[1,1],[0,-1.25],[0,1.25],[-1.25,0],[1.25,0]])S.px(Math.floor(cx+dx*(r+0.9)),Math.floor(cy+dy*(r+0.9)),'#e8a83a')}
@@ -32183,6 +32191,8 @@ const TSKA_ART={
     if(t===2){hbFlag(S,28,0,12,m.red,m.gold,true);tskaSun(S,16,41.5,2.4);tskaBan(S,4.5,30,5,12);tskaBan(S,22.5,30,5,12);for(const x of[2,29])tskaFire(S,x,9)}
     else if(t===0)tskaBand(S,3,46,26,m.brass,1)}),
   cncIce:t=>tskaCouncil(t,'gIce','#e8fbff'),cncFire:t=>tskaCouncil(t,'gFire','#ffe08a'),cncWind:t=>tskaCouncil(t,'gWind','#e8fff8'),cncEarth:t=>tskaCouncil(t,'gEarth','#fff0b0'),   // 众和议会的四座魔法塔：晶石照原来的元素颜色
+  papalChurch:t=>tskaChurch(t),papalZap:t=>tskaZap(t),papalLaser:t=>tskaLaser(t),   // 0.13.2 教廷圣堂、教廷魔导（Claude 定画法）
+  cncMech:t=>tskaMech(t,false),redMech:t=>tskaMech(t,true),   // 0.13.2 机械营：众和议会、赤色帝国
   northG:t=>tskaCamp(t,'#2a3346','iceCl',3),   // 神机营：炭蓝瓦、冰蓝旗、盾上火铳
   northI:t=>tskaCamp(t,'#2f4c78','whiteCl',4),   // 步兵营：深蓝瓦、白旗、盾上长剑
   northC:t=>tskaCamp(t,'#56667a','navy',2),   // 骑兵营：铁灰瓦、深蓝旗、盾上马蹄铁
@@ -32225,6 +32235,75 @@ function tskaCouncil(t,g,glow){return hdFig(32,64,S=>{const m=hbm(),M=tskaM(),G=
   if(t===0){h25Cyl(S,6,12,1.2,0.6,8,M.cvK);h25Cyl(S,26,12,1.2,0.6,8,M.cvK);S.px(6,11,'#b8a8f0');S.px(26,11,'#b8a8f0')}
   if(t>=1){tskaBand(S,6,38,20,M.silver);tskaBand(S,3,28,26,M.silver);const h=t===2?12:9;for(const x of[6.5,21.5]){hbBanner(S,x,40,4,h,M.vioL,M.silver);tskaStar(S,x+2,44)}}
   if(t===2){S.ell(5,10,2,2.5,G);S.ell(27,10,2,2.5,G);S.px(5,9,glow);S.px(27,9,glow);h25Cyl(S,16,18,8,2.4,1.4,M.silver);S.px(16,16,'#b8a8f0')}})}
+// —— 0.13.2 第三批（Claude 定画法）：教廷圣徽 = 金十字套一圈金环、ray 四角四点光芒；中心 (cx, cy)、r 环半径（2～4）——
+function tskaHoly(S,cx,cy,r,ray){const G='#d89a2e',D='#9a6a1a',H='#fff4c0';   // 点在墙面上：环暗一点、十字亮，小尺寸也分得开
+  for(let k=0;k<32;k++){const a=k/32*Math.PI*2,y=Math.round(cy+Math.sin(a)*r);S.px(Math.round(cx+Math.cos(a)*r),y,y<=cy?G:D)}
+  S.ln(cx,cy-r-1,cx,cy+r+1,H);S.ln(cx-r+1,cy-1,cx+r-1,cy-1,H);
+  if(ray)for(const[dx,dy]of[[-1,-1],[1,-1],[-1,1],[1,1]])S.px(cx+dx*(r+1),cy+dy*(r+1),H)}
+// —— 尖顶上的金十字（尖顶只有 8 像素宽，套环会糊成一团，只画十字）：脚下一颗金球、交叉处一点浅蓝宝石；ray 再加四点光 ——
+function tskaHolyTop(S,ray){const G=hbm().gold;S.ell(16,7.5,2,1.4,G,{R:0.6});S.rect(15,-2,2,9,G,{R:0.5});S.rect(12.5,1,7,2,G,{R:0.5});S.px(15,1,'#bfefff');S.px(16,1,'#6ab8f0');
+  if(ray)for(const[x,y]of[[11,-1],[20,-1],[11,4],[20,4]])S.fx(x,y,'#fff4c0',0.9)}
+// —— 彩窗：先挖黑窗，再一格格点彩色玻璃，每 3 行一道铅条；顶上一行只点中间（尖拱）——
+const TSKA_GL=['#4a8ae0','#f0c050','#d04a58','#7a5ad8','#58c0b0'];
+function tskaGlass(S,x,y,w,h){b25Win(S,x,y,w,h,Math.min(2,w/2));for(let j=1;j<h;j++)for(let i=0;i<w;i++){if(j===1&&(i===0||i===w-1))continue;S.px(x+i,y+j,j%3===0?'#2a2438':TSKA_GL[(i+j*2+x)%5])}}
+// —— 玫瑰窗：金框圆 + 八瓣彩色玻璃 + 金心 ——
+function tskaRose(S,cx,cy,r){S.ell(cx,cy,r,r,hbm().gold,{R:1});S.dt(cx,cy,r-1,'#2a2438');for(let k=0;k<8;k++){const a=k/8*Math.PI*2;S.px(Math.floor(cx+Math.cos(a)*(r-2)),Math.floor(cy+Math.sin(a)*(r-2)),TSKA_GL[k%5])}
+  for(const[dx,dy]of[[-1,-1],[0,-1],[-1,0],[0,0]])S.px(cx+dx,cy+dy,'#f8d47a')}
+// —— 符文：一排 2×3 的小符号，浅蓝发光（间隔 4）——
+const TSKA_RN=[[[0,0],[1,1],[0,2]],[[0,0],[0,1],[0,2],[1,1]],[[1,0],[0,1],[1,2]],[[0,0],[1,0],[0,2],[1,2]],[[0,0],[1,1],[1,2],[0,1]]];
+function tskaRunes(S,x,y,w,c){let k=0;for(let xx=x;xx+1<x+w;xx+=4,k++)for(const[dx,dy]of TSKA_RN[k%TSKA_RN.length])S.px(xx+dx,y+dy,c||'#9ae0ff')}
+// —— 教廷圣堂（布局同 art/hd_build 的教堂：钟楼 x9～23、大殿 x1～31、玫瑰窗 (16, 36)、门在楼下）——
+//   档 0 白石、浅蓝瓦、彩窗、金十字；档 1 砌缝、两角扶壁小尖塔、金箍、圣徽（十字套金环）；档 2 深一点的浅蓝瓦 + 金脊、扶壁上挂浅蓝长旗、圣徽放光、金门框
+function tskaChurch(t){return hdFig(32,60,S=>{const m=hbm(),M=tskaM(),w=M.pw,rf=t===2?M.pBlueD:M.pBlue,G=m.gold;
+  b25Box(S,1,30,30,10,20,w,w,t>=1?{br:[6,9]}:{});b25Gable(S,1,40,30,10,10,w,rf,{gable:false});
+  if(t>=1)for(const x of[0,28]){b25Box(S,x,35,4,2,23,M.pw2,M.pw2);const P=b25Pyr(S,x,35,4,2,t===2?6:4,rf,{ov:0.5,ln:0});S.px(Math.floor(P.ax)-1,Math.floor(P.ay)-1,'#f4c84a')}
+  for(const x of[5,23])tskaGlass(S,x,44,4,t===0?7:8);
+  b25Box(S,9,12,14,6,42,w,w,t>=1?{br:[6,7]}:{});b25Pyr(S,8.5,18,15,6,8,rf);
+  if(t===2){S.ln(7,19,15,8,'#e8b84a');S.ln(25,19,17,8,'#e8b84a')}
+  b25Win(S,13,22,6,7,3);S.ell(16,26,2,2,G);
+  if(t===0){S.rect(15,-1,2,8,G,{R:0.5});S.rect(13,1.5,6,2,G,{R:0.5})}else tskaHolyTop(S,t===2)
+  tskaRose(S,16,36,4);
+  b25Door(S,16,60,8,13,m.woodD,t>=1?G:null);
+  if(t>=1){tskaBand(S,9,30,14,G,1);tskaBand(S,1,50.5,4,G,1);tskaBand(S,27,50.5,4,G,1)}
+  if(t===2){tskaBand(S,9,18,14,G,1);for(const x of[0.5,28.5]){hbBanner(S,x,40,3,10,M.pClB,G);S.px(x+1,44,'#f4f2ec')}}})}
+// —— 教廷魔导 · 雷电塔（布局同原塔：石座 y38、杆 x16、线圈、电球中心 (16, 8)；电光画在 y2～14）——
+//   档 0 白石座、金杆、三道金线圈（线圈前面点浅蓝符文）；档 1 金杆、四道线圈、两边金爪、座上金箍和符文；档 2 灰白条石、电球后面一圈金色光环、座上圣徽
+function tskaZap(t){return hdFig(32,64,S=>{const m=hbm(),M=tskaM(),st=t===2?M.pw2:M.pw,G=m.gold;
+  b25Box(S,4,38,24,8,18,st,st,{br:[5,7],tp:'flag'});
+  if(t>=1){tskaBand(S,4,46,24,G,t===2?2:1);tskaRunes(S,7,t===2?50:52,20)}
+  if(t===2){tskaBand(S,4,62,24,G,1);tskaHoly(S,16,57,3,true)}
+  h25Cyl(S,16,12,2,1,30,G);
+  for(const y of(t===0?[18,25,32]:[16,22,28,34])){h25Cyl(S,16,y,8,3,2,G,{top:G});S.px(11,y+3,'#9ae0ff');S.px(16,y+4,'#e8fbff');S.px(21,y+3,'#9ae0ff')}
+  if(t>=1)for(const s of[-1,1]){S.part(G,{face:'cyl',R:0.5},p=>p.cap(16+s*4,12,16+s*10,4,0.7));S.px(16+s*10-(s>0?1:0),3,'#bfefff')}
+  if(t===2)for(let k=0;k<40;k++){const a=k/40*Math.PI*2;S.px(Math.round(16+Math.cos(a)*9.5),Math.round(8+Math.sin(a)*9.5),Math.sin(a)<0?'#f4c84a':'#b07a1e')}
+  S.ell(16,8,t===2?7:6,t===2?7:6,M.pZap);hbGlow(S,14,5,'#ffffff','#e8fbff');
+  S.part(G,{R:0.5},p=>{p.cap(11,12,13,14.5,0.8);p.cap(21,12,19,14.5,0.8)});
+  if(t>=1){S.fx(6,3,'#bfefff',0.8);S.fx(26,3,'#bfefff',0.8)}if(t===2)S.ln(16,1,16,-2,'#ffffff')})}
+// —— 教廷魔导 · 激光塔（布局同原塔：石座 y34、金圆台、中柱、金横梁、晶石尖在 y0；光画在 y4～14）——
+//   晶石换成圣金色；档 0 白石座、金圆台（前沿一圈符文）、浅蓝中柱；档 1 加两根白柱（顶上圣金小球）、座上金箍和符文；档 2 灰白条石、两边浮着圣金晶球、座上圣徽
+function tskaLaser(t){return hdFig(32,64,S=>{const m=hbm(),M=tskaM(),st=t===2?M.pw2:M.pw,G=m.gold;
+  b25Box(S,6,34,20,6,24,st,st,{br:[5,7]});b25Under(S,6,40,20,3,st);
+  if(t>=1){tskaBand(S,6,44,20,G,1);tskaRunes(S,9,59,16)}
+  if(t===2)tskaHoly(S,16,52,3,true);
+  h25Cyl(S,16,30,13,4,4,G);for(const x of[6,11,16,21,26])S.px(x,x===16?36:35,'#9ae0ff');
+  if(t>=1)for(const x of[6,26]){h25Cyl(S,x,16,1.8,0.9,14,M.pw);S.ell(x,15,1.7,1.7,M.pGem)}
+  b25Box(S,12,16,8,4,13,M.pw,M.pBlue);tskaRunes(S,14,23,4,'#e8fbff');h25Box(S,7,20,18,3,3,G,G);S.px(9,24,'#9ae0ff');S.px(22,24,'#9ae0ff');
+  b25Gem(S,16,0,13,20,M.pGem,'#ffffff');
+  if(t===2){S.ell(5,12,2,2,M.pGem);S.ell(27,12,2,2,M.pGem);S.px(4,11,'#ffffff');S.px(26,11,'#ffffff')}})}
+// —— 机械营的两款（布局同 art/hd_build 的机械营：烟囱 x24、墙 2～30、前坡顶檐口 y28、正面大齿轮 (16, 38)、门在 y56）——
+//   众和议会：档 0 淡蓝紫石、暗紫顶、钢齿轮；档 1 蓝紫石、银箍、银齿轮中间紫晶、两边紫色长旗（白星）；档 2 深紫条石、银脊、长旗更长、银门框
+//   赤色帝国：档 0 赤漆木板墙、赤金瓦、黄铜齿轮；档 1 赤金砖、铜箍、齿轮中间帝国金日、两边帝国长旗；档 2 暗金条石、金齿轮、金箍金门框、屋脊两头火盆、烟囱口透出炉火
+function tskaMech(t,red){return hdFig(32,56,S=>{const m=hbm(),M=tskaM();
+  const wl=red?(t===0?M.lacqL:t===1?M.brick:M.crim):(t===0?M.cv0:t===1?M.cv1:M.cv2),rf=red?M.tileE:M.cvK,tr=red?(t===2?m.gold:m.brass):M.silver,gear=red?(t===2?m.gold:m.brass):(t===0?m.steelD:M.silver);
+  h25Cyl(S,24,2,2.6,1.3,16,red?(t===2?M.crim:M.brick):(t===2?M.cvK:m.iron),{open:hdMat('#1a1416','plain')});if(t>=1)b25Ring(S,24,6,2.6,1.3,1.5,tr);
+  if(red&&t===2){S.px(23,2,'#ff9a3a');S.px(24,2,'#ffe08a');S.px(25,2,'#ff7a2e')}
+  b25Box(S,2,18,28,10,28,wl,wl,red&&t===0?{pl:6}:{br:t===0?[4,6]:[5,8]});b25Shed(S,2,28,28,9,rf,{ln:3});
+  if(t>=1)tskaBand(S,2,29,28,tr);
+  if(t===2){if(red)for(const x of[2,29])tskaFire(S,x,19);else S.ln(2,19,29,19,'#e8ecf4')}
+  if(t>=1){const h=t===2?13:10;for(const x of[3,25]){if(red)tskaBan(S,x,31,4,h);else{hbBanner(S,x,31,4,h,M.vioL,M.silver);tskaStar(S,x+2,36)}}}
+  S.ell(16,38,7,7,gear);for(let k=0;k<8;k++){const a=k/8*Math.PI*2;S.rect(16+Math.cos(a)*8-1.5,38+Math.sin(a)*8-1.5,3,3,gear)}
+  if(t===0)S.ell(16,38,3,3,m.dark);else if(red)tskaSun(S,16,38,2.6);else{S.ell(16,38,3,3,M.cvK);S.ell(16,38,2,2,m.gArc);S.px(15,37,'#ffffff')}
+  b25Door(S,16,56,8,9,m.woodD,t===2?tr:null)})}
 const TSKIN_ART={};
 for(const id in CFG.towerSkins){const S=CFG.towerSkins[id];TSKIN_ART[id]=TSKA_ART[id]||(t=>{const c=HD_BUILD[S.b](t),o=canvasOf(c.width,c.height),g=o.getContext('2d');g.drawImage(c,0,0);g.globalCompositeOperation='source-atop';   // 以后新加、还没画的皮肤先用原图染色顶着
   g.fillStyle=S.theme==='赤色帝国'?'rgba(200,30,30,0.28)':'rgba(70,130,230,0.28)';g.fillRect(0,0,o.width,o.height);o._k=c._k;return o})}
@@ -63858,7 +63937,7 @@ const uHpWave=u=>{const U=CFG.unitGrowth,k=u&&u.c&&!u.c.ranged?U.hpWaveMelee:U.h
 const uHpMul=(u,chp)=>u&&u.noCard?1+(pm.heroHp||0):uHpMul_(u,chp);   // v0.8.15 张道成的草人：只吃英雄的生命卡
 // v0.8.22 卡「百战老兵」：拿卡之后每波 +3%（最多 +60%）；「淬火战甲」只加重甲士兵（combat.hvArm）
 const vetK=()=>{if(!(pm.veteran>0)||!G)return 0;const F=CFG.cardFx.veteran;return Math.min(F.max,F.per*Math.max(0,G.wave-pm.vetW))};
-const uHpMul_=(u,chp)=>(1+pm.unitHp+TM.uHp+(pm.bodyHp||0)+vetK()+(chp!==undefined?chp:(u&&u.chp)||0)+(G&&G.zsSeal?G.zsSeal.hp:0))*(u&&u.summon?1:uWave('hp')*uHpWave(u))*glassHp()*(u&&u.c&&u.c.ship?shipHpK(u):1)*haFgU(u)*(1+HH_DS)*bjHpK(u)*xnHpK(u);   // BJ 加：bjHpK 0.12.4 边军大营羽林精锐 / 将领 / 神兽白虎的生命（独立乘区，units/bianjun）   // v0.8.1 生命加成相加（卡、科技、兵营科技「体魄」chp、将臣印玺），每波成长单独乘   // zsSeal：v0.7.0 将臣印玺   // S5 加：shipHpK 传 u（钢铁合金按这艘船的造船厂算）   // haFgU：HA 加，v0.12 安德鲁「神锻」兵营的士兵生命（独立乘区）   // HH_DS：0.11.4 代理hh 加，黄虎「定四方」士兵生命   // xnHpK：0.12.6 代理 H 加，希娜「龙之恩赐」士兵生命（独立乘区，heroes/xina）
+const uHpMul_=(u,chp)=>(1+pm.unitHp+TM.uHp+(pm.bodyHp||0)+vetK()+(chp!==undefined?chp:(u&&u.chp)||0)+(G&&G.zsSeal?G.zsSeal.hp:0)+(u&&!u.summon&&u.camp?tskSol(u.camp.type,'solHp'):0))*(u&&u.summon?1:uWave('hp')*uHpWave(u))*glassHp()*(u&&u.c&&u.c.ship?shipHpK(u):1)*haFgU(u)*(1+HH_DS)*bjHpK(u)*xnHpK(u);   // BJ 加：bjHpK 0.12.4 边军大营羽林精锐 / 将领 / 神兽白虎的生命（独立乘区，units/bianjun）   // v0.8.1 生命加成相加（卡、科技、兵营科技「体魄」chp、将臣印玺），每波成长单独乘   // zsSeal：v0.7.0 将臣印玺   // S5 加：shipHpK 传 u（钢铁合金按这艘船的造船厂算）   // haFgU：HA 加，v0.12 安德鲁「神锻」兵营的士兵生命（独立乘区）   // HH_DS：0.11.4 代理hh 加，黄虎「定四方」士兵生命   // xnHpK：0.12.6 代理 H 加，希娜「龙之恩赐」士兵生命（独立乘区，heroes/xina）   // tskSol：0.13.2 塔楼皮肤 solHp（训练它的兵营用着皮肤时士兵生命 +，和别的生命加成相加）
 // v0.8.1（用户定）伤害加成相加后乘一次（原来各自相乘）：卡（士兵伤害、物理 / 法术攻击、弓箭 / 弩箭 / 火器、全体伤害）+ 建筑科技「武备」+ 傀儡核心 + 力量药水 + 将臣印玺 + add（调用处给的科技：力量训练、法术训练、披坚执锐）；士兵属性倍率、每波成长单独乘
 function unitDmgMul(c,statMul,s,mg,add){const nc=!!s&&(s.noCard||G&&G.fsOn&&fsNoCard(s));let b=nc?(add||0):pm.unitDmg+(mg?pm.spellAtk:pm.physAtk)+dmgAllK()+vetK()+(mg&&s&&pm.manaRes>0?manaResK(s):0)+(add||0);   // nc：v0.8.7 惩戒骑士移除了卡牌效果（maps/fallen）；v0.8.22（用户定）弓箭 / 弩 / 火药的卡改成只加建筑，士兵不再吃；百战老兵、法力共鸣
   if(s){b+=s.atkAdd||0;if(s.gcU>G.time)b+=s.gcV.dmg;if(s.auDmU>G.time)b+=s.auDm;if(s.flgU>G.time)b+=s.flgF;if(s.powU>G.time)b+=TM.potPow;if(s.bfV)b+=s.bfV[0];if(G.wdCav>0&&s.c&&s.c.cavalry)b+=G.wdCav}if(G&&G.zsSeal)b+=G.zsSeal.dmg;if(s)s.udB=1+b;return statMul*(s&&s.summon?1:uWave('atk'))*(1+b)*(s&&s.bfV?1+s.bfV[1]:1)*haFgU(s)}   // bfV：v0.8.6 统一 buff（engine/buff）的伤害加成（相加）、独立乘区   // powU：v0.8.1 科技「力量药水」   // gcU：v0.7.0 傀儡核心   // haFgU：HA 加，v0.12 安德鲁「神锻」兵营的士兵攻击（独立乘区）
@@ -63888,7 +63967,7 @@ function makeSoldier(camp,type){
   if(c.ship)shipInit(u);if(c.abK)abInit(u);soldierBt(u);u.ammo=u.rg?u.rg.mag:0;u.vision=u.rgr?soldierVision(c,Object.assign({},u.rg,{range:u.rg.range-u.rgr.range}))+u.rgr.range:soldierVision(c,u.rg);s5Vis(u);return u}   // rgr：v0.7.0 森林游侠视野 +2 格（原来按射程推，只多 1.5 格）   // S5 加：s5Vis 甲板增高的视野
 // —— v0.3.4 兵营科技与进阶：按训练它的兵营（u.ct）算；u.rg = 这名士兵实际用的远程武器（进阶可能改射程、弹匣、抛射）——
 function soldierBt(u){const c=u.c,ct=u.ct,e=ct?btEvoT(ct,evo3On(u.camp)):null;let rg=c.ranged||null;   // S3 改：v0.10.11 兵营三阶（这一座兵营够门槛才合进来，structs/structs.btEvoT）
-  u.atkAdd=0;u.atkMul=1;u.rgMul=1;u.critAdd=0;u.critMulAdd=0;u.pierceN=0;u.mvSp=CFG.combat.moveSpread;u.kiteK=0.55;u.guer=null;u.phalanx=null;u.fury=null;u.guard=null;u.ironC=null;
+  u.atkAdd=u.summon?0:tskSol(ct,'solAtk');u.atkMul=1;u.rgMul=1;u.critAdd=0;u.critMulAdd=0;u.pierceN=0;u.mvSp=CFG.combat.moveSpread;u.kiteK=0.55;u.guer=null;u.phalanx=null;u.fury=null;u.guard=null;u.ironC=null;   // tskSol：0.13.2 塔楼皮肤「赤色帝国 · 机械营」士兵攻击 +10%（game/tskin；和卡牌等伤害加成相加）
   u.healer=c.healer||null;u.share=c.share?Object.assign({},c.share):null;u.proc=c.proc||null;u.hg=null;u.hymn=null;   // v0.4.1 教堂（units/church）
   u.repairer=c.repair?Object.assign({mul:1,over:0},c.repair):null;u.dull=!!c.dull;u.chip=null;   // v0.5.3 机械营（units/mech）
   u.abX=null;u.fK='';u.fg=null;u.fDR=0;u.fDmg=1;u.fPen=0;u.fMel=1;u.lzMul=1;u.wedge=null;u.volley=null;u.spearSq=null;u.icpt=null;u.chip2=null;u.horn=null;u.vsH=0;u.steady=null;u.assn=null;u.blust=null;u.fbar=null;u.grace=null;u.mSplit=null;u.swave=null;u.mArm=0;   // v0.6.1 二阶进化（units/formation）
@@ -74555,7 +74634,7 @@ function towerW(s,add){   // add：v0.8.1 另外加进伤害加成里的（主�
   const sk=keep?null:tskFx(t),kind=keep?'gunpowder':s.cfg.kind,km=kindMod(kind),gun=kind==='gunpowder',bow=kind==='arrow'||kind==='bolt',stone=kind==='stone',mg=kind==='magic';
   // v0.8.1（用户定）卡牌、科技、建筑科技、光环的加成相加后乘一次（原来各自相乘）：卡（这一类建筑、建筑伤害、全体伤害）+ 科技（重装弹药、火药 / 弩箭 / 投石 / 奥术、投石强化、炮楼强化）+ 建筑科技「武备」+ 瞭望塔光环
   const F=CFG.cardFx,arcB=!keep&&pm.arcSeat>0&&(mg||s.cfg.cat==='magic'),xb=bow&&pm.xbowP>0;   // v0.8.23（用户定）奥术阵座：魔法建筑伤害、装填 +50%（原来射程、攻速 +35%）；破甲弩箭：弓弩建筑伤害 +50%、最大穿透数 +50%
-  const bp=km+pm.buildDmg+dmgAllK()+(arcB?F.arcSeat.dmg:0)+(xb?F.xbowP.dmg:0)+TM.bDmg+(gun?TM.gunDmg:0)+(bow?TM.boltDmg:0)+(stone?TM.stoneDmg+(TM.stonePow||0):0)+(mg?TM.arcDmg||0:0)+(keep?TM.kDmg||0:btv(t,'dmg'))+(au?au.dmg:0)+(add||0)+(s.bfV?s.bfV[0]:0)+(!keep&&s.cfg.weapon&&s.cfg.weapon.techK?(TM[s.cfg.weapon.techK.key]||0)*s.cfg.weapon.techK.k:0);s.udB=1+bp;   // techK：0.12.4 边军大营的火炮另吃士兵的加伤害科技（折算）   // bfV：v0.8.6 统一 buff（engine/buff）的伤害加成；独立乘区 atkI 乘在 dmg 上
+  const bp=km+pm.buildDmg+dmgAllK()+(arcB?F.arcSeat.dmg:0)+(xb?F.xbowP.dmg:0)+TM.bDmg+(gun?TM.gunDmg:0)+(bow?TM.boltDmg:0)+(stone?TM.stoneDmg+(TM.stonePow||0):0)+(mg?TM.arcDmg||0:0)+(keep?TM.kDmg||0:btv(t,'dmg'))+(au?au.dmg:0)+(add||0)+(s.bfV?s.bfV[0]:0)+(sk&&sk.dmg||0)+(!keep&&s.cfg.weapon&&s.cfg.weapon.techK?(TM[s.cfg.weapon.techK.key]||0)*s.cfg.weapon.techK.k:0);s.udB=1+bp;   // techK：0.12.4 边军大营的火炮另吃士兵的加伤害科技（折算）   // bfV：v0.8.6 统一 buff（engine/buff）的伤害加成；独立乘区 atkI 乘在 dmg 上   // sk.dmg：0.13.2 塔楼皮肤伤害 +（教廷魔导，和别的建筑伤害加成相加）
   const tRange=(gun?TM.gunRange:0)+(bow?TM.stringRange+(G&&G.gwK>0?G.gwK:0):0)+(stone?TM.stoneRange:0)+(mg?TM.arcRange||0:0);   // v0.4.6 投石塔不再吃「筋弦改良」；魔法塔「法阵延展」   // G.gwK：HA 加，v0.12 格文「风羽统帅」弓弩塔射程（heroes/ha_gwen）
   const evm=keep?1:((ev&&(ev.dmgMulSet||ev.dmgMul))||1)*(ev&&ev.dmgI?1+ev.dmgI:1),brt=keep?0:btv(t,'rate'),gx=mg?0:pm.gunDmg,rx=mg?0:pm.blastR+(pm.hiEx>0?F.hiEx.r:0);   // gx / rx：v0.8.23 建筑的爆炸伤害、范围（精制火药 + 高爆炸药）
   return{w:techW(w,bow,stone),hit:100+(keep?0:bbA(t,'hit'))+(au?au.hit:0),critPt:keep?0:bbA(t,'crit'),dmg:(w.dmg+(w.magic&&!keep?mgcA(s):0)+(s.ydvAU>G.time?s.ydvA*w.int:0))*(keep?1:tlAtk(s)*bbM(t,'atk'))*(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*(w.magic&&!keep?mgcK(s):1)*haFgS(s),bp,am:(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*haFgS(s),range:(w.range+(keep?0:s.cfg.lvRange?s.cfg.lvRange[L]:TL.rangeAdd[L]))*rvFold((ev&&ev.rangeMul||1)*(1+pm.towerRange+pm.rangeC+(au?au.range:0)+tRange+(G.caRng||0)+HH_RA+(sk&&sk.rng||0))*(G.zsMu||1)*OATH_RK*HH_RK*(w.lob&&pm.lobRange>0?1+pm.lobRange:1))*16*(ENV.rngK||1),   // rvFold：0.12.6 射程加成合起来折算（engine/env）   // zsMu：v0.7.0 五神法「目」（独立乘区）   // evm：进化写成 × 的伤害倍率、写明独立的 dmgI（单独乘）；写「伤害 +X%」的 dmgAdd 在 bp 里相加（v0.10.11）   // udB：这座建筑伤害加成池子的 1 + 合计（engine/combat.ufAddK 用）   // haFgS：HA 加，v0.12 安德鲁「神锻」攻击（独立乘区）   // HH_RK：0.11.4 代理hh 加，御敌之策射程   // ydvA：0.12.5 第二轮代理 T，源能装置「源能动力」的攻击 +X × 武器倍率（structs/yn_tdev）
@@ -79369,7 +79448,8 @@ function skinShopBuy(i,slot){const L=skinShopRoll();if(slot!==undefined&&L.slot!
 
 /* ---------- 0.13.1 塔楼皮肤（数据 data/tskins.js）----------
    META.tsk = {own {皮肤: 1}, on {建筑种类: 皮肤}}；买到 / 兑换到自动用上（同一种建筑只能用一款）
-   TSK_ON[建筑种类] = 正在用的皮肤（tskSync 按 META 重算）：画图 art/hd_build.bSpr 换图（亡灵阵营的不换）、效果 tskFx（structs/structs.towerW 的攻速 / 穿透 / 爆炸半径，units/soldiers.campCap 的驻军上限） */
+   TSK_ON[建筑种类] = 正在用的皮肤（tskSync 按 META 重算）：画图 art/hd_build.bSpr 换图（亡灵阵营的不换）、效果 tskFx（structs/structs.towerW 的攻速 / 穿透 / 爆炸半径 / 射程 rng / 伤害 dmg，units/soldiers.campCap 的驻军上限）
+   0.13.2 加 dmg（塔楼伤害，加进 towerW 的 bp，和卡牌、科技等建筑伤害加成相加）、solHp（这座兵营训练的士兵生命，加进 units/soldiers.uHpMul_ 的和）、solAtk（士兵攻击，soldierBt 加进 atkAdd，和卡牌等士兵伤害加成相加） */
 let TSK_ON={};
 function tskFix(m){if(!m)return;const o=v=>v&&typeof v==='object'&&!Array.isArray(v);if(!o(m.tsk))m.tsk={own:{},on:{}};if(!o(m.tsk.own))m.tsk.own={};if(!o(m.tsk.on))m.tsk.on={};
   for(const t in m.tsk.on){const id=m.tsk.on[t],S=CFG.towerSkins[id];if(!S||S.b!==t||!m.tsk.own[id])delete m.tsk.on[t]}}
@@ -79378,6 +79458,7 @@ function tskSync(){const o={};if(META&&META.tsk)for(const t in META.tsk.on)o[t]=
 const tskOwn=id=>!!(META&&META.tsk&&META.tsk.own[id]);
 const tskFx=t=>{const id=TSK_ON[t];return id?CFG.towerSkins[id].fx:null};
 const tskCap=t=>{const id=TSK_ON[t];return id?CFG.towerSkins[id].fx.cap||0:0};   // 兵营皮肤：驻军上限 +
+const tskSol=(t,k)=>{const id=t?TSK_ON[t]:'';return id?CFG.towerSkins[id].fx[k]||0:0};   // 0.13.2 兵营皮肤：士兵生命 solHp / 攻击 solAtk +（t = 训练它的兵营种类）
 function tskGive(id){const S=CFG.towerSkins[id];if(!S)return false;tskFix(META);const had=!!META.tsk.own[id];META.tsk.own[id]=1;if(!META.tsk.on[S.b])META.tsk.on[S.b]=id;tskSync();saveMeta();return!had}
 function tskBuy(id){const S=CFG.towerSkins[id];if(!S)return'没有这款皮肤';if(tskOwn(id))return'已经有了';const g=CFG.towerSkinShop.gold;if((META.wallet.金币||0)<g)return`金币不够(要 ${g})`;
   META.wallet.金币-=g;tskGive(id);return null}
@@ -85644,7 +85725,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="f7f42b3",GAME_BUILT=1794000920497,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="2aef458",GAME_BUILT=1794002577449,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
