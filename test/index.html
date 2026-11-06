@@ -16217,7 +16217,7 @@ CFG.soulSrc={easy:0, normal:0, hard:1, nightmare:1.5, inferno:2, abyss:2.5};
 CFG.sg={hp:1.5, dmg:1.25, reward:1.25, res:{银币:1.5, 建材:1.5}, drop:1.25, rounds:3,
   souls:{nightmare:3, inferno:3.5, abyss:4},
   diffs:['nightmare','inferno','abyss'], abyssName:'绝境',
-  count:1.5, killGold:0.6};   // 0.13.2（用户定）死国下怪组数量（出怪量）× count、打怪得的铜币 × killGold（「获取的金币减少 40%」，Claude 先理解成局内打怪的铜币，待用户确认）
+  count:1.5, killGold:0.6};   // 0.13.2（用户定）死国下怪组数量（出怪量）× count、打怪得的铜币 × killGold（「获取的金币减少 40%」= 局内打怪的铜币，用户 11-06 确认；精英数量不乘）
 
 // ---------- 0.12.5（用户定）道具「蓝图」：作战时用阵型蓝图建造要先消耗 1 张（一局只扣一次）；开拓地「套用布局」不消耗（机制 ui/bp_run.js）----------
 //   shop：商店「幸运商店」里买，每张 gold 金币，每 hours 小时最多买 max 张
@@ -23947,7 +23947,7 @@ CFG.elite.eg={enhTo:10, maxTry:500};   // 0.12.7a（用户定）enhTo 只是默�
 // 这五个地区原来的家族（data/el_late，0.12.0 Claude 定的那一版）全部换掉：同名的沿用老键（麦克劳德、特斯拉、葛、德雷克），老存档里的血脉、声望照旧；
 //   去掉的家族：布兰德 brand → 声望给熔岩之地的家族、血脉并进德拉贡、姓改成德拉贡；张氏 zhang → 声望给道观废墟的家族、血脉并进道观平民（道观废墟没有能通婚的家族）、姓不改（game/el_fam15.elFam15Mig）
 // 平民血脉：五个地区按附表重建（望楼拟，c 的名字、档位、波动）；家族的档位 L、波动 v、特别属性 sp：附表（望楼拟、用户让拟）；介绍：用户定；家主、面相：望楼拟；家徽：Claude 定（老家族沿用老的）
-// 葛氏不通婚、没有血脉特性（用户定）；老存档里已经有葛家血脉的人照旧，身上老的葛家特性（丹方、抱朴、金丹）照样生效，只是不会再遗传、也不会再出现（trOld，Claude 定）
+// 葛氏不通婚、没有血脉特性（用户定）；老存档里的葛家血脉并进道观平民、老的葛家特性（丹方、抱朴、金丹）去掉（用户 11-06 定，game/el_fam15.elFam15Ge；原来 Claude 先定的是老特性保留，改掉了）
 //
 // —— 给填五阶家族内容的人 ——
 //   家族特性：往 CFG.elite.famFx.<家族键> 里 push（这个数组就是这家的 tr，不要整个换掉；换掉了 game/el_fam15 读档前也会再对一次），一条 [名字, 门槛, 属性, 说明(可省，按属性自动写), 选项(可省)]；
@@ -23983,7 +23983,7 @@ CFG.elite.eg={enhTo:10, maxTry:500};   // 0.12.7a（用户定）enhTo 只是默�
   F('ge','葛','taoRuins',{hp:2,mdef:1,atk:-1},0.1,{resPoison:[0.15,0.25]},{shape:'rect',bg:'green',pat:'mountain',fg:'gold'},'葛文远',
     '道观附近的世家大族，原本是中等家族。亡灵潮席卷后因为低调、机敏得以存活，靠张道成和五神观弟子互相帮衬维持下来。拒绝通婚联姻。',
     [[0],[0],9,11],{name:'葛氏',cul:'east',noBlood:1,   // 档位、特别属性沿用 0.12.0 的（不通婚，只给老存档里已有葛家血脉的人的后代算倍率用）
-     trOld:[['丹方',0.4,{regen:0.25},'生命恢复 +25%'],['抱朴',0.6,{hp:0.1},'生命上限 +10%'],['金丹',1,{drM:0.06},'法术减伤 +6%']]}),
+    }),
   // ===== 黄沙海岸 =====
   F('canning','坎宁','sandCoast',{hp:2,atk:1,vision:1,rng:1,speed:-1},0.2,{dmgR:[0.07,0.12]},{shape:'shield',bg:'blue',pat:'ship',fg:'white'},'坎',
     '坎的家族，坎是族长。海洋联盟的第一批加入者，靠贸易航运保护、渔业和商业赚钱，有一定军事实力，海战战术先进。',
@@ -79577,7 +79577,7 @@ function elBloodBuild(){const E=CFG.elite,v=(META&&META.el&&META.el.cfv)||0;if(E
     for(const F of(Array.isArray(S.f)?S.f:S.f?[S.f]:[])){const key=F.key||E.bloodFamKey[reg],id='f_'+key,st={};
       for(const[k]of E.bloodStats){if(F.raw){st[k]=F.raw[k]||[1,1];continue}const base=cHi(k,S.c[1]),cf=E.bloodCap.f[tt(k)],lv=F.L[k]||0;   // 0.12.0 家族以同地区平民为底：正档往家族封顶靠，负档在平民上减
         const hi=r2(comp(k,lv>0?base+(cf-base)*E.bloodLV[String(lv)]:base-E.bloodNeg*(-lv)));st[k]=[r2(hi-spr(k,F.v)),hi]}
-      if(F.trOld)elBlTrKeys(F.trOld,id,T);   // trOld：0.13.2 不再出现、不再遗传的老特性（葛氏），只给老存档里已经有的人生效
+      if(F.trOld)elBlTrKeys(F.trOld,id,T);   // trOld：不再出现、不再遗传的老特性，只给老存档里已经有的人生效（0.13.2 本来给葛氏用，用户 11-06 定葛氏老特性直接去掉，现在没有家族用）
       B[id]={name:F.name||F.fam+'家族',fam:F.fam,reg,key,kind:'f',regs:F.regs||null,noBlood:F.noBlood?1:0,repRate:F.repRate||null,headHero:F.headHero||null,crest:F.key?'f_'+F.key:'f_'+reg,crestCfg:F.crest||null,cul:F.cul||null,ally:t>=(E.allyTier!=null?E.allyTier:99)?1:0,st,sp:F.sp||E.bloodSpSrc[key]||{},tr:elBlTrKeys(F.tr||[],id,T)}}}
   if(typeof elCfBuild==='function')elCfBuild(B,T)}
 const elBlood=()=>{elBloodBuild();return CFG.elite.blood};
@@ -81101,6 +81101,13 @@ function elFam15Mig(m){const M=m&&m.el;if(!M||M.f15)return;M.f15=1;const G=CFG.e
   const walk=(o,d)=>{if(!o||typeof o!=='object'||d>6)return;fix(o);if(Array.isArray(o)){for(const x of o)walk(x,d+1)}else for(const k in o){const v=o[k];if(v&&typeof v==='object')walk(v,d+1)}};
   walk(M,0);m._dirty=true}
 META_LATE.push(['elFam15Mig',m=>{try{elFam15Mig(m)}catch(e){console.error(e)}}]);
+// 0.13.2（用户 11-06 定）老存档的葛家血脉并进道观平民（c_taoRuins）、老的葛家特性（f_ge_…：丹方、抱朴、金丹）去掉；姓不改；只跑一次（META.el.f15ge）
+function elFam15Ge(m){const M=m&&m.el;if(!M||M.f15ge)return;M.f15ge=1;const id='f_ge',to='c_taoRuins';
+  const fix=o=>{if(!o||typeof o!=='object')return;if(o.bl&&typeof o.bl==='object'&&!Array.isArray(o.bl)&&o.bl[id]>0){o.bl[to]=(o.bl[to]||0)+o.bl[id];delete o.bl[id]}
+    if(Array.isArray(o.bt)&&o.bt.some(k=>String(k).startsWith(id+'_')))o.bt=o.bt.filter(k=>!String(k).startsWith(id+'_'))};
+  const walk=(o,d)=>{if(!o||typeof o!=='object'||d>6)return;fix(o);if(Array.isArray(o)){for(const x of o)walk(x,d+1)}else for(const k in o){const v=o[k];if(v&&typeof v==='object')walk(v,d+1)}};
+  walk(M,0);m._dirty=true}
+META_LATE.push(['elFam15Ge',m=>{try{elFam15Ge(m)}catch(e){console.error(e)}}]);
 // 补抽五阶家族的特性（META.el.f15t = {家族血脉: 1}）：这一批只登记了家族、特性表是空的，后面填上以后，
 //   身上有这家血脉、却一条这家特性都没有的人（老家族并进来的、填表之前出生 / 招募的）按招募的规矩（占比到门槛、按概率）抽一次；哪家的表还空着就先不记，等填上再抽（Claude 定）
 function elFam15Bt(m){const M=m&&m.el;if(!M)return;if(!M.f15t||typeof M.f15t!=='object')M.f15t={};const B=elBlood(),todo=[];
@@ -81111,7 +81118,7 @@ META_LATE.push(['elFam15Bt',m=>{try{elFam15Bt(m)}catch(e){console.error(e)}}]);
 // 新建的精英存档（game/el_core.elSt 第一次建 META.el 时调）：老家族迁移、补抽特性都当已经做过——
 //   这几个迁移在读档时跑，只认 META.el 上的标记；新玩家第一次读档时还没有 META.el，标记记不上，等有了精英以后再读档，
 //   就会把出生 / 招募时一条特性都没抽中的家族成员当成「填表之前的人」再补抽一次（elFam14Bt、elFam15Bt）
-function elFam15New(m){m.f14=1;m.f14n=1;m.f14t=1;m.f15=1;m.f15t={};for(const f of CFG.elite.fam15||[])m.f15t['f_'+f.key]=1;return m}
+function elFam15New(m){m.f14=1;m.f14n=1;m.f14t=1;m.f15=1;m.f15ge=1;m.f15t={};for(const f of CFG.elite.fam15||[])m.f15t['f_'+f.key]=1;return m}
 // 家族特性的键改名（CFG.elite.bloodTrRen {老键: 新键}，空着就什么都不做）：以后要给已经有人拿到的特性换键（比如把同门槛的一条挪成二选一里的另一条）时填这张表，
 //   每次读档都对一遍（不记标记：表是后加的也能迁上）；新键已经有的就只去掉老键
 function elBtRen(m){const R=CFG.elite.bloodTrRen,M=m&&m.el;if(!R||!M)return;const ks=Object.keys(R);if(!ks.length)return;let n=0;
@@ -81289,13 +81296,14 @@ function f5bRamStep(h,dt){const sp=Math.hypot(h.dvx,h.dvy)||1,ux=h.dvx/sp,uy=h.d
   h.dashT=0;const F=f5bS0(h),p=h.dashP;dealE(b,F.rd,{hk:h,crit:h.crit,critMul:heroCritMul(h),pen:h.ws.pen,penP:h.ws.penP,mix:{blunt:1},melee:1});if(E.alive[b])knockback(b,ux,uy,(p&&p.kb||1)*16,0.15);
   if(inViewPt(h.x,h.y)){sfx('crash',h.x,h.y);for(let k=0;k<6;k++)pp(h.x+ux*10,h.y+uy*10-4,0,vr(-30,30),vr(-30,0),vr(6,14),180,0.4,vpick(['#dff4f2','#9ac8d8','#c8b088']),1,0,1)}}
 DASH.f5bRam={step:f5bRamStep,land:h=>{if(h.d.camel)kanRamEnd(h)}};
-// —— 船员：船边 crewR 格内的远程 / 法术精英登船 ——
+// —— 船员：船边 crewR 格内的远程 / 法术精英登船；只在水里载人，船上岸就都下船（用户 11-06 定） ——
 const f5bRider=h=>!!h&&!h.dead&&h.elite&&!h.d.ship&&!h.d.camel&&!h.d.mount&&!h.mnt&&!(h.elAccT>0)&&!h.layer&&!h.retreat&&h.ws&&h.ws.cls!=='melee'&&!(h.dashT>0);
 function f5bOff(p,s){const F=f5bS0(p);F.on=null;F.offT=G.time+5;if(p.elev===11)p.elev=0;let q=null;   // 下船：在深海里就游回岸上（同 heroes083.kanDisembark）
   if(G.csOn&&G.csW&&csWAt(p.x,p.y)===2&&!p.csSw)q=csShore(p.x,p.y);else if(!friendPassPt(p.x,p.y))q=walkableNear(p.x,p.y,4);if(q){p.x=q.x;p.y=q.y}p.nav=null}
 function f5bCrewTick(s,F){const C=F.crew;
-  for(let k=C.length-1;k>=0;k--){const p=C[k];if(s.dead||!f5bRider(p)||p.f5bS.on!==s||G.phase!=='wave'){if(p.f5bS&&p.f5bS.on===s)f5bOff(p,s);C.splice(k,1)}}
-  if(!s.dead&&G.phase==='wave'&&C.length<f5bF().crew&&G.time>=F.bT){F.bT=G.time+0.5;const R=f5bF().crewR*16,H=G.heroes;
+  const wet=f5bWet(s);   // 0.13.2（用户 11-06 定）只在水里载人，船上岸就下船
+  for(let k=C.length-1;k>=0;k--){const p=C[k];if(s.dead||!wet||!f5bRider(p)||p.f5bS.on!==s||G.phase!=='wave'){if(p.f5bS&&p.f5bS.on===s)f5bOff(p,s);C.splice(k,1)}}
+  if(!s.dead&&wet&&G.phase==='wave'&&C.length<f5bF().crew&&G.time>=F.bT){F.bT=G.time+0.5;const R=f5bF().crewR*16,H=G.heroes;
     for(let k=0;k<H.length&&C.length<f5bF().crew;k++){const p=H[k];if(p===s||!f5bRider(p)||p.hp<p.maxHp*0.4)continue;const P=f5bS0(p);if(P.on||G.time<P.offT||Math.hypot(p.x-s.x,p.y-s.y)>R)continue;
       P.on=s;C.push(p);p.nav=null;p.moveTo=null;if(inViewPt(s.x,s.y))sfx('clank',s.x,s.y)}}
   const f=s.facing||1;for(let k=0;k<C.length;k++){const p=C[k];p.x=s.x+(2+k*6)*f;p.y=s.y+1;p.elev=11;p.walking=false;p.cv=0}}   // 站在甲板上（每帧在英雄移动之后摆回来）
@@ -81319,7 +81327,7 @@ Object.assign(EL_STD3,{
   raidSilver:()=>`战后结算的银币 +${Math.round(EL().f15b.raidSilver*100)}%，不可叠加`,
   f5bSwim:(v,pc)=>`不受水域浅滩的地形惩罚；可以在深海中行动，但移动速度降低 ${pc(1-v)}`,
   f5bTower:(v,pc)=>`船上额外装一座箭塔，攻击距离 ${EL().f15b.tower.range} 格，每秒攻击 1 次，每次造成 ${pc(v)} 物理攻击的伤害(需求：船只单位)`,
-  f5bShip:()=>`船只单位：无视水域惩罚；在陆地上移速 ×${Math.round(EL().f15b.land*100)}%、伤害 ×${Math.round(EL().f15b.dmg*100)}%；可以载 ${EL().f15b.crew} 人上船`,
+  f5bShip:()=>`船只单位：无视水域惩罚；在陆地上移速 ×${Math.round(EL().f15b.land*100)}%、伤害 ×${Math.round(EL().f15b.dmg*100)}%；在水里可以载 ${EL().f15b.crew} 人上船(上岸就下船)`,
   f5bHpX:v=>`生命 ×${Math.round((1+v)*100)}%`,f5bRamK:v=>`斗舰冲撞伤害 ×${Math.round((1+v)*100)}%`,
 });
 
@@ -84861,7 +84869,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2',GAME_TAG='稳定版',GAME_CODE=227,GAME_BUILD="2c2567b",GAME_BUILT=1793958370106,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2',GAME_TAG='稳定版',GAME_CODE=227,GAME_BUILD="e432384",GAME_BUILT=1793968492273,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
