@@ -16175,24 +16175,27 @@ CFG.buildings.amJet={cat:'amJet', name:'喷气平台', cost:150, hp:450, def:1, 
 /* ---------- 0.13.1 塔楼皮肤（用户定：首批六款、效果、主题；兑换码 + 商店金币购买，暂定 500 金币）----------
    b 换哪种建筑的图；theme 主题；fx 效果（用着这款皮肤时，这种建筑全部生效）：aspd 攻速 +、pierce 最大穿透数 +、aoe 爆炸半径 +格、cap 驻军上限 +、rng 射程 +（0.13.2，和别的射程加成相加）、
    dmg 塔楼伤害 +（0.13.2，和别的建筑伤害加成相加）、solHp / solAtk 这座兵营训练的士兵生命 / 攻击 +（0.13.2，和别的士兵生命 / 伤害加成相加）
+   vis 攻击画面配色（0.13.2，用户 11-06 要的；只改画面，不改伤害、命中、弹速、范围）：这座塔打出去的弹道、命中特效、爆炸、区域效果、粒子换色调（同英雄皮肤 fx：tint 主色、tint2 副色、
+     split 分界亮度——比它亮的用 tint2、暗的用 tint；white 比它亮的近白色不换，默认 0.9；灰色不换）；下面几个是换画法的颜色，不写就只换色调：body 弹体 / 箭杆 / 激光、head 箭头 / 高光 / 电弧外层、
+     trail 拖尾、edge 弩箭暗边 / 激光外沿、core 电弧 / 激光内芯、glow 塔顶晶石的光（激光塔）；机制 game/tskin 的 tskVD、画法 ui/tskin_fx.js；以后加皮肤只填 vis
    code 专属兑换码里的编号（tools/redeem_gen.html；定了就不能改）；图在 art/tskin_art.js（TSKIN_ART[皮肤](档 0～2) → canvas，同 HD_BUILD）；机制 game/tskin.js，商店 ui/shop 的「塔楼皮肤」页签 */
 CFG.towerSkins={
-  redArrow:  {name:'赤色帝国 · 箭塔',   b:'arrowTower', theme:'赤色帝国', fx:{aspd:0.1},  desc:'攻速 +10%', code:1},
-  redBallista:{name:'赤色帝国 · 弩炮塔', b:'ballista',   theme:'赤色帝国', fx:{pierce:1},  desc:'最大穿透数 +1', code:2},
-  redCannon: {name:'赤色帝国 · 火炮塔', b:'cannon',     theme:'赤色帝国', fx:{aoe:0.125}, desc:'爆炸半径 +0.125 格', code:3},
+  redArrow:  {name:'赤色帝国 · 箭塔',   b:'arrowTower', theme:'赤色帝国', fx:{aspd:0.1},  desc:'攻速 +10%', vis:{tint:'#c0302a', tint2:'#f2c54b', split:0.55, body:'#b0281e', head:'#ffd256', trail:'#f2c54b'}, code:1},
+  redBallista:{name:'赤色帝国 · 弩炮塔', b:'ballista',   theme:'赤色帝国', fx:{pierce:1},  desc:'最大穿透数 +1', vis:{tint:'#c0302a', tint2:'#f2c54b', split:0.55, body:'#b8301f', edge:'#6e1610', head:'#ffd256', trail:'#f2c54b'}, code:2},
+  redCannon: {name:'赤色帝国 · 火炮塔', b:'cannon',     theme:'赤色帝国', fx:{aoe:0.125}, desc:'爆炸半径 +0.125 格', vis:{tint:'#ff4818', tint2:'#ffb428', split:0.63, body:'#8c2018', head:'#ffd256', trail:'#f0a43a'}, code:3},
   northG:    {name:'北境联盟 · 神机营', b:'campG',      theme:'北境联盟', fx:{cap:1},     desc:'驻军数量上限 +1', code:4},
   northI:    {name:'北境联盟 · 步兵营', b:'campI',      theme:'北境联盟', fx:{cap:1},     desc:'驻军数量上限 +1', code:5},
   northC:    {name:'北境联盟 · 骑兵营', b:'campC',      theme:'北境联盟', fx:{cap:1},     desc:'驻军数量上限 +1', code:6},
   // 0.13.2（用户定）众和议会：大陆西南角的议会国，主题颜色蓝紫；四座魔法塔射程 +5%
-  cncIce:    {name:'众和议会 · 冰球塔', b:'iceTower',   theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', code:7},
-  cncFire:   {name:'众和议会 · 火球塔', b:'fireTower',  theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', code:8},
-  cncWind:   {name:'众和议会 · 旋风塔', b:'windTower',  theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', code:9},
-  cncEarth:  {name:'众和议会 · 土刺塔', b:'earthTower', theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', code:10},
+  cncIce:    {name:'众和议会 · 冰球塔', b:'iceTower',   theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', vis:{tint:'#7a74f0', tint2:'#d4d0ff', split:0.62}, code:7},
+  cncFire:   {name:'众和议会 · 火球塔', b:'fireTower',  theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', vis:{tint:'#a44ef0', tint2:'#eab0ff', split:0.6}, code:8},
+  cncWind:   {name:'众和议会 · 旋风塔', b:'windTower',  theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', vis:{tint:'#9a72f0', tint2:'#dccaff', split:0.62}, code:9},
+  cncEarth:  {name:'众和议会 · 土刺塔', b:'earthTower', theme:'众和议会', fx:{rng:0.05},  desc:'射程 +5%', vis:{tint:'#8a4ee0', tint2:'#cfa8ff', split:0.55}, code:10},
   papalChurch:{name:'教廷圣堂 · 教堂', b:'church',     theme:'教廷圣堂', fx:{cap:1},     desc:'驻军数量上限 +1', code:11},   // 0.13.2（用户 11-06 定）第三批五款：教廷圣堂（教堂）、教廷魔导（雷电塔、激光塔）是新主题「教廷」（白、金、浅蓝，Claude 定配色）；机械营另有众和议会、赤色帝国两款
   cncMech:   {name:'众和议会 · 机械营', b:'campM',      theme:'众和议会', fx:{cap:1},     desc:'驻军数量上限 +1', code:12},
   redMech:   {name:'赤色帝国 · 机械营', b:'campM',      theme:'赤色帝国', fx:{solHp:0.1, solAtk:0.1}, desc:'士兵生命、攻击 +10%', code:13},
-  papalZap:  {name:'教廷魔导 · 雷电塔', b:'lightningTower', theme:'教廷魔导', fx:{dmg:0.1},  desc:'伤害 +10%', code:14},
-  papalLaser:{name:'教廷魔导 · 激光塔', b:'laserTower', theme:'教廷魔导', fx:{dmg:0.1},   desc:'伤害 +10%', code:15},
+  papalZap:  {name:'教廷魔导 · 雷电塔', b:'lightningTower', theme:'教廷魔导', fx:{dmg:0.1},  desc:'伤害 +10%', vis:{tint:'#e8b42e', tint2:'#cfeaff', split:0.7, head:'#f4c440', core:'#d8f0ff'}, code:14},
+  papalLaser:{name:'教廷魔导 · 激光塔', b:'laserTower', theme:'教廷魔导', fx:{dmg:0.1},   desc:'伤害 +10%', vis:{tint:'#eab432', tint2:'#fff0b4', split:0.62, body:'#f2c444', edge:'#a8781a', core:'#fff8dc', head:'#ffe08a', glow:'#f4c440'}, code:15},
 };
 CFG.towerSkinShop={gold:500};
 
@@ -63212,13 +63215,13 @@ function missileLand(p){const M=p.w.mblast,x=p.x1,y=p.y1;let j=p.hj>=0&&eOk(p.hj
   if(M.core)explode(x,y,M.core*16*(1+pm.aoe),p.dmg*(1-M.mul),p.o,w2,p.tid,j>=0?E.id[j]:undefined);   // core：v0.10.1 战斗机的炸弹，落点 core 格内吃全额（这里补上全额和爆炸的差）
   explode(x,y,M.r*16*(1+pm.aoe+(p.o.aoeAdd||0)),p.dmg*M.mul,p.o,w2,p.tid,j>=0?E.id[j]:undefined);
   const P=p.o.m2Pit||p.w.pit;if(P)addFirePit(x,y,{r:P.r*(1+pm.aoe),dur:P.dur,dps:(P.dps||0)+(P.dpsP?p.dmg*P.dpsP:0),bt:P.bt||0},friendlyFire())}
-function updateProj(dt){PROJ_HIT=true;try{updateProj_(dt)}finally{PROJ_HIT=false}}   // v0.5.4 弹道带来的伤害（亡灵卡「硬皮」认它）
+function updateProj(dt){PROJ_HIT=true;try{updateProj_(dt)}finally{PROJ_HIT=false;FX_TINT=null}}   // FX_TINT：0.13.2 塔楼皮肤的弹道在 updateProj_ 里逐发设上，这里清掉（中途报错也清）   // v0.5.4 弹道带来的伤害（亡灵卡「硬皮」认它）
 let PJ_P=null,PJ_X=0,PJ_Y=0,PJ_HJ=-1,PJ_HD=1e9;   // P3 加：updateProj_ 里弹道命中查询的回调状态（距离按 eQuery 里同一个式子重算，结果一样）
 const pfProjHit=j=>{const p=PJ_P;if(p.hit&&p.hit.has(E.id[j]))return;if(E.air[j]&&!p.o.hk&&E.id[j]!==p.tid)return;const d=Math.hypot(E.x[j]-PJ_X,E.y[j]-PJ_Y)-E.r[j];if(d<PJ_HD){PJ_HD=d;PJ_HJ=j}};   // E.air：飞行单位只认主目标（英雄除外）
 function updateProj_(dt){
   const mfp=HK.proj.length>0;   // v0.5.1 地图机制（机械工厂：蒸汽让箭矢转向、爆炸物提前爆炸；齿轮挡弹道）
   const tsz=G.tsZ&&G.tsZ.length;   // v0.7.0 时空封锁：范围里的弹道停住
-  for(let i_2=0,a_2=G.proj;i_2<a_2.length;i_2++){const p=a_2[i_2];if(tsz&&tsIn(p.x,p.y))continue;DS_CUR=p.ds||null;
+  for(let i_2=0,a_2=G.proj;i_2<a_2.length;i_2++){const p=a_2[i_2];if(tsz&&tsIn(p.x,p.y))continue;DS_CUR=p.ds||null;FX_TINT=p.skd&&p.skd.tw?p.skd:null;   // FX_TINT：0.13.2 塔楼皮肤的弹道（skd.tw，game/tskin.tskVD），飞行拖尾、命中特效、爆炸同色；英雄皮肤的弹道照旧不设
     if(p.lob){if(p.w.home&&p.hj>=0){if(eOk(p.hj,p.tid)){p.x1=E.x[p.hj];p.y1=E.y[p.hj]}else p.hj=-1}   // v0.10.0 魔导阵塔「精准制导」：落点跟着目标走
       p.t+=dt;const u=Math.min(1,p.t/p.T);p.x=lerp(p.x0,p.x1,u);p.y=lerp(p.y0,p.y1,u);p.gy=lerp(p.gy0,p.y1+8,u);p.z=p.arc*4*u*(1-u);
       if(mfp&&u<1&&hkAny('proj',p,dt))continue;
@@ -63492,7 +63495,7 @@ let GV=null;   // 发光层正在画的视口（满屏闪光用）
 //   副色：亮度 > sp 的颜色用 t2（例如风见雪姬 天蓝 + 淡粉：深的地方天蓝、亮的地方淡粉）；没有 t2 的和原来一模一样；没换皮肤 = null，画面不变
 let FX_TINT=null,FX_DT=null;const FX_SKDC=new Map();
 function fxSkD(F,key){let D=FX_SKDC.get(key);if(D!==undefined)return D;
-  D=F&&F.tint?{id:key,t:F.tint,t2:F.tint2||null,sp:F.split??0.7,wl:F.white??0.9,look:F.look||null,halo:F.halo||null,h1:hdHSL(hdRGB(F.tint)),h2:F.tint2?hdHSL(hdRGB(F.tint2)):null,m:new Map(),mc:new Map()}:null;FX_SKDC.set(key,D);return D}
+  D=F&&F.tint?{id:key,t:F.tint,t2:F.tint2||null,sp:F.split??0.7,wl:F.white??0.9,look:F.look||null,halo:F.halo||null,h1:hdHSL(hdRGB(F.tint)),h2:F.tint2?hdHSL(hdRGB(F.tint2)):null,m:new Map(),mc:new Map(),tw:null}:null;FX_SKDC.set(key,D);return D}   // tw：0.13.2 塔楼皮肤换画法的颜色（game/tskin.tskVD 填；英雄皮肤一直 null）
 function fxTintD(D,c){if(!D||typeof c!=='string'||c[0]!=='#')return c;let v=D.m.get(c);if(v)return v;
   const[,s,l]=hdHSL(hdRGB(c)),T=D.h2&&l>D.sp?D.h2:D.h1,hx=a=>'#'+a.map(x=>x.toString(16).padStart(2,'0')).join('');
   v=s<0.1?(D.wl>=1&&l>0.85?hx(hdFromHSL(T[0],T[1]*0.9,0.8)):c):l>D.wl?c:hx(hdFromHSL(T[0],Math.max(T[1]*0.85,s*0.6),l));D.m.set(c,v);return v}   // wl ≥ 1：连纯白的光也染成浅的副色
@@ -74886,12 +74889,12 @@ function updateTowers(dt){
     if(w.blp){s.cd=1;continue}   // v0.11.0 血池不选目标、不开火：储存、输血、生命抽取都在 structs/bloodpool 的 blpTick 里
     if(w.lava){s.cd=lavaCast(s,T);continue}if(w.ice){s.cd=iceCast(s,T);continue}   // v0.10.2 熔岩阵塔、冰刺阵塔（structs/lavaice）   // v0.10.2 陷阱工厂（structs/trapfac）：放到了才进冷却
     if(w.heal){if(!holyCast(s,T)){s.cd=0.15;continue}s.cd=T.int;if(T.mag>0){s.ammo-=1;if(s.ammo<=0){s.ammo=0;magEmpty(s,T,w)}}continue}   // v0.9.0 光明阵塔：治疗士兵、英雄（structs/build090）   // v0.9.0 钉刺塔（structs/build090）：投到了才进冷却
-    if(t===-3){if(mk>1)T.dmg*=mk;const O=s.ord,mz=muzzle(s),vis=inViewPt(s.x,s.y);s.aim=Math.atan2(O.y-(s.y-20),O.x-s.x);s.recoil=0.15;   // 朝地点开火
+    if(t===-3){if(mk>1)T.dmg*=mk;const O=s.ord,mz=muzzle(s),vis=inViewPt(s.x,s.y);s.aim=Math.atan2(O.y-(s.y-20),O.x-s.x);s.recoil=0.15;FX_TINT=keep?null:tskVD(s.type);   // 朝地点开火   // FX_TINT：0.13.2 塔楼皮肤的攻击画面（game/tskin.tskVD，只换颜色），打完下面清掉
       if(w.proj==='spike')addZone({k:'spike',x:O.x,y:O.y,r:w.aoe*16*(1+pm.aoe+T.aoeAdd),t:0,delay:w.delay,dmg:T.dmg,maxHit:w.maxHit,root:w.root,slow:w.slow||null,spen:T.spen});
       else if(w.proj==='wind')addZone({k:'wind',x:O.x,y:O.y,r:w.aoe*16*(1+pm.aoe),t:0,dur:w.dur,tk:0,dmg:T.dmg,w});
       else{const dm=T.dmg/w.dmg,o=w.magic?{magic:true,mix:w.mix,pitMul:dm,dotMul:dm,aoeAdd:T.aoeAdd,spen:T.spen,hd:T.dmg,am:(T.am||1)*(T.mk||1),hit:T.hit,mhit:T.hit,critPt:T.critPt}:{pen:w.pen||0,crit:(w.crit||0)+T.crit,critMul:bCritMul(),mix:w.mix,aoeAdd:T.aoeAdd,pitMul:dm,dotMul:dm,hd:T.dmg,penP:T.penP,first:T.first,am:(T.am||1)*(T.mk||1),hit:T.hit,critPt:T.critPt,bx:T.bx,bxR:T.bxR,frg:T.frg},sd=(w.spread||0)/(1+T.acc)*ENV.spread*DEG,d=Math.hypot(O.x-mz.x,O.y-mz.y);
         fireAng(mz.x,mz.y,Math.atan2(O.y-mz.y,O.x-mz.x)+vr(-sd,sd),d,w,T.dmg,o,T.range,true,T.pierce||undefined)}
-      s.cd=T.int*mcd;if(T.mag>0){s.ammo-=mk;if(s.ammo<=0){s.ammo=0;magEmpty(s,T,w)}}towerHeat(s,(T.int+(T.mag>0?(w.reload||0)/T.mag:0))*mcd/bf);if(vis)sfx(w.proj==='ball'?'cannon':w.proj==='stone'?'thump':'bolt');continue}
+      FX_TINT=null;s.cd=T.int*mcd;if(T.mag>0){s.ammo-=mk;if(s.ammo<=0){s.ammo=0;magEmpty(s,T,w)}}towerHeat(s,(T.int+(T.mag>0?(w.reload||0)/T.mag:0))*mcd/bf);if(vis)sfx(w.proj==='ball'?'cannon':w.proj==='stone'?'thump':'bolt');continue}
     if(t===-2)t=keep?pickTarget(s.x,s.y-20,T.range,T.minRange):towerPick(s,s.x,s.y-8,T.range,T.minRange);   // v0.6.6 塔楼选目标
     if(t<0){s.cd=HK.towerIdle.length&&hkFirst('towerIdle',s,T)||0.15;continue}   // towerIdle：代理 1 加（0.12.2 黑曜城墙「冰淬火炼」，structs/obwall）
     if(pm.frenzy>0&&!keep)T.dmg*=(1+T.bp+fzHit(s)-1)/(1+T.bp);   // 走火入魔（主堡不算塔）；v0.10.11 和这座塔的伤害加成相加（规则 2，原来单独乘）
@@ -74901,6 +74904,7 @@ function updateTowers(dt){
     if(s.csInk>G.time)o.sa=CFG.coast.ink.spread;   // v0.8.2 黄沙海岸：被章鱼王的墨汁糊住，远程偏移 +10°
     if(ev&&ev.m2f)m2Fire(s,T,o,ev);   // M2 加：v0.10.11 魔导阵塔三阶破甲、爆燃火海、魔力震荡（structs/evo3_m2）
     if(ev&&ev.t2f)t2Fire(o,ev.t2f);   // T2 加：v0.10.11 重弩炮塔三阶「毙命炮弩」暴击、对飞行 / 重型器械加伤（structs/evo3_t2）
+    const tv=keep?null:tskVD(s.type);FX_TINT=tv;   // 0.13.2 塔楼皮肤的攻击画面：这一发的弹道、特效、区域换皮肤配色（game/tskin.tskVD；只改画面，没用皮肤 = null）
     if(w.flame){flameShot(s,T,t,mz,vis)}
     else if(w.laser){laserShot(s,T,t,mz,vis)}   // v0.3.4 激光塔
     else if(w.hf)hfShot(s,T,t,mz,o,vis);   // v0.11.0 圣焰塔：抛射圣焰瓶 / 圣焰喷射（structs/holyflame）
@@ -74908,7 +74912,7 @@ function updateTowers(dt){
     else if(w.ynX!==undefined&&typeof ynRay==='function')cyTowerRay(s,T,t,mz,o);   // C 加：0.12.5 源能工厂的闪电装置（闪电射线 ynRay，units/cy_camp）
     else if(w.proj==='lightning'){lightningShot(s,T,t,mz,vis);if(ev&&ev.multi)for(const j of extraTargets(s,t,T.range,ev.multi,true))lightningShot(s,T,j,mz,vis,ev.multiK)}   // 雷电塔「多重」；multiK：v0.10.11（用户定）额外的雷电 50% 伤害
     else if(w.proj==='spike'){addZone({k:'spike',x:E.x[t],y:E.y[t],r:w.aoe*16*(1+pm.aoe+T.aoeAdd),t:0,delay:w.delay,dmg:T.dmg,maxHit:w.maxHit,root:w.root,slow:w.slow||null,spen:T.spen,lg:w.linger||null});if(vis)for(let k=0;k<6;k++)pp(E.x[t]+vr(-10,10),E.y[t],0,0,0,vr(4,10),0,0.4,'#c8963a',2,1,1);   // lg：v0.6.1 土刺「旋转」「刺穿」
-      if(ev&&ev.stoneWall)raiseStoneWall(s,t,ev.stoneWall,ev,T)}   // 土刺塔「石壁」
+      if(ev&&ev.stoneWall){FX_TINT=null;raiseStoneWall(s,t,ev.stoneWall,ev,T);FX_TINT=tv}}   // 土刺塔「石壁」   // FX_TINT：石壁是建筑，升起的尘土不换皮肤配色
     else if(w.proj==='wind'){if(w.windBlade)windBlade(s,T,t,mz);else addZone({k:'wind',x:E.x[t],y:E.y[t],r:w.aoe*16*(1+pm.aoe),t:0,dur:w.dur,tk:0,dmg:T.dmg,w,spen:T.spen})}   // windBlade：v0.6.1 旋风塔「绞杀」
     else if(w.circle)circleCast(s,T,t,o);   // v0.9.0 烈火 / 寒冰 / 雷电阵塔（structs/build090）
     else if(w.instant)fireInstant(s,T,t,o);   // v0.6.1 火球塔「爆炎」
@@ -74917,10 +74921,10 @@ function updateTowers(dt){
       if(ev&&ev.multiLv)for(const j of extraTargets(s,t,T.range,ev.multiLv[s.level-1]))fireAt(mz.x,mz.y,j,w,T.dmg,o,T.acc,T.range,true,T.pierce||undefined);   // v0.6.1 箭塔「驻军增加」
       if(ev&&ev.fanLv)fanShot(s,T,t,mz,o,ev);   // v0.6.1 箭塔「散射箭矢」
       if(ev&&ev.scatter)fireScatter(s,T,t,mz,o,ev.scatter)}   // 火球塔「散射」
-    if(ev&&ev.ovd&&!(s.ovL>G.time)){s.ovU=G.time+ev.ovd.t;s.ovL=s.ovU+ev.ovd.cd}   // v0.9.0 速射箭塔「超能过载」：开火就过载（towerW 的 int 看 ovU），结束后冷却
+    FX_TINT=null;if(ev&&ev.ovd&&!(s.ovL>G.time)){s.ovU=G.time+ev.ovd.t;s.ovL=s.ovU+ev.ovd.cd}   // v0.9.0 速射箭塔「超能过载」：开火就过载（towerW 的 int 看 ovU），结束后冷却
     s.cd=T.int*mcd;if(T.mag>0){s.ammo-=mk;if(s.ammo<=0){s.ammo=0;magEmpty(s,T,w)}}towerHeat(s,(T.int+(T.mag>0?(w.reload||0)/T.mag:0))*mcd/bf);   // v0.6.8 开火热度（每枪按平均每枪的用时算 = 最近在开火的秒数；工程师托管找正在打的塔，heroes/heroai）
     if(vis&&!w.flame&&!w.laser&&!w.hf&&w.proj!=='lightning'){
-      if(w.proj==='bullet'||w.proj==='ball'){addFx({k:'flash',x:mz.x,y:mz.y,s:3,life:0.08});smokeAt(mz.x,mz.y,w.proj==='ball'?6:4,true);sfx(w.proj==='ball'?'cannon':'gun')}
+      if(w.proj==='bullet'||w.proj==='ball'){FX_TINT=tv;addFx({k:'flash',x:mz.x,y:mz.y,s:3,life:0.08});FX_TINT=null;smokeAt(mz.x,mz.y,w.proj==='ball'?6:4,true);sfx(w.proj==='ball'?'cannon':'gun')}
       else if(w.proj==='stone')sfx('thump');else if(w.proj==='ice'||w.proj==='fire'||w.proj==='wind')sfx('zap');else sfx('bolt');
     }
   }
@@ -74987,7 +74991,7 @@ function laserShot(s,T,t,mz,vis){const w=T.w,R=T.range;
   if(cut>=0&&hit.length<pn){ex=x0+ux*cut;ey=y0+uy*cut;hkEach('laserBack',s,dmg,w)}   // 照到屏障（没被前面的亡灵挡完）：反射回塔
   if(w.lzBlast&&w.lzBlast.sec){if(!(s.lzBN>G.time)){s.lzBN=G.time+w.lzBlast.sec;explode(ex,ey+6,w.lzBlast.r*16*(1+pm.aoe+T.aoeAdd),dmg*w.lzBlast.mul,f1LzBo(T,w,{magic:true,mix:w.mix,spen:T.spen}),LZ_W)}}   // v0.6.1「连续爆破」：每 sec 秒一次   // f1LzBo：v0.10.11 三阶元素伤害也作用在爆炸上
   else if(w.lzBlast){s.lzK=(s.lzK||0)+1;if(s.lzK%w.lzBlast.every===0)explode(ex,ey+6,w.lzBlast.r*16*(1+pm.aoe+T.aoeAdd),dmg*w.lzBlast.mul,f1LzBo(T,w,{magic:true,mix:w.mix}),LZ_W)}
-  s.beam={x0,y0,x1:ex,y1:ey,t:G.time,f:fm};
+  s.beam={x0,y0,x1:ex,y1:ey,t:G.time,f:fm,sk:FX_TINT,hx:E.x[t],hy:E.y[t]-6};   // sk：0.13.2 塔楼皮肤的攻击画面（updateTowers 开火时设的 FX_TINT；ui/tskin_fx.tskBeam 画，hx / hy 锁定的目标处画一圈金光）
   if(vis&&(s.lzN%6===1))sfx('zap')}
 // —— 地雷、燃烧地雷爆炸（v0.6.1 抽出来：跳雷、延迟聚爆、连环爆炸共用）——
 const mineR=(d,ev)=>d.aoe*16*(1+pm.aoe+TM.gunAoe)*((ev&&ev.aoeMul)||1);   // v0.10.3 地雷、燃烧地雷的爆炸半径（像素）：抽出来，选中 / 摆放时画范围也用它
@@ -79459,6 +79463,12 @@ const tskOwn=id=>!!(META&&META.tsk&&META.tsk.own[id]);
 const tskFx=t=>{const id=TSK_ON[t];return id?CFG.towerSkins[id].fx:null};
 const tskCap=t=>{const id=TSK_ON[t];return id?CFG.towerSkins[id].fx.cap||0:0};   // 兵营皮肤：驻军上限 +
 const tskSol=(t,k)=>{const id=t?TSK_ON[t]:'';return id?CFG.towerSkins[id].fx[k]||0:0};   // 0.13.2 兵营皮肤：士兵生命 solHp / 攻击 solAtk +（t = 训练它的兵营种类）
+// 0.13.2 攻击画面（data/tskins 的 vis）：塔楼开火时 FX_TINT = tskVD(建筑种类)（structs/structs.updateTowers），这一发的弹道、特效、区域、粒子记下 skd，画的时候按它换色调（engine/vfx 的皮肤色调，同英雄皮肤）；
+//   弹道飞行、命中时 engine/combat.updateProj_ 再设一次（命中特效、爆炸同色）；tw = 换画法的颜色（C() 过的，ui/tskin_fx 用；登记进 mc 原样通过，不再被换色调）。只改画面
+const TSK_VD=new Map();
+function tskVD(t){const id=TSK_ON[t];if(!id)return null;let D=TSK_VD.get(id);if(D!==undefined)return D;const V=CFG.towerSkins[id].vis;D=V?fxSkD(V,'tsk:'+id):null;
+  if(D&&!D.tw){const c=k=>V[k]?C(V[k]):null,W={body:c('body'),head:c('head'),trail:c('trail'),edge:c('edge'),core:c('core'),glow:c('glow')};for(const k in W)if(W[k])D.mc.set(W[k],W[k]);D.tw=W}
+  TSK_VD.set(id,D);return D}
 function tskGive(id){const S=CFG.towerSkins[id];if(!S)return false;tskFix(META);const had=!!META.tsk.own[id];META.tsk.own[id]=1;if(!META.tsk.on[S.b])META.tsk.on[S.b]=id;tskSync();saveMeta();return!had}
 function tskBuy(id){const S=CFG.towerSkins[id];if(!S)return'没有这款皮肤';if(tskOwn(id))return'已经有了';const g=CFG.towerSkinShop.gold;if((META.wallet.金币||0)<g)return`金币不够(要 ${g})`;
   META.wallet.金币-=g;tskGive(id);return null}
@@ -84905,7 +84915,7 @@ function drawStruct(s){
       if(on){const ex=Math.round(cx+ca*8),ey=Math.round(cy+sa*4);rectW(ex-1,ey-1,3,3,K.boomC,0.9);rectW(ex,ey,1,1,K.flW)}break}
     case'lightningTower':{const a=0.25+0.25*Math.sin(G.time*9+s.tx);rectW(s.x-3,s.y-31,6,6,K.zap,a);if(Math.floor(G.time*7+s.ty)%5===0)pline(s.x-2,s.y-27,s.x+2,s.y-21,K.flW,0.7);break}
     case'goldMine':{if(Math.floor(G.time*2+s.tx)%4===0)rectW(s.x+2,s.y-5,1,1,K.flW,0.9);break}
-    case'laserTower':{const on=s.beam&&G.time-s.beam.t<0.2,a=on?0.55+0.3*Math.sin(G.time*30):0.15+0.1*Math.sin(G.time*3+s.tx);rectW(s.x-2,s.y-30,4,5,K_LZ,a);if(on)rectW(s.x-1,s.y-28,2,2,K.glint,0.9);break}
+    case'laserTower':{const on=s.beam&&G.time-s.beam.t<0.2,a=on?0.55+0.3*Math.sin(G.time*30):0.15+0.1*Math.sin(G.time*3+s.tx);rectW(s.x-2,s.y-30,4,5,tskGlowC('laserTower')||K_LZ,a);if(on)rectW(s.x-1,s.y-28,2,2,K.glint,0.9);break}   // tskGlowC：0.13.2 塔楼皮肤的晶石光（ui/tskin_fx）
     case'warDrum':{const beat=(G.phase==='wave'||G.adv)?((G.time*1.6+s.tx*0.37)%1):1,hit=beat<0.12;if(hit){rectW(s.x-4,s.y-19,8,1,K.glint,0.7)}
       if(G.phase==='wave'&&beat<0.6){const I=drumInfo(s);dotRing(s.x,s.y-8,I.r*beat/0.6,K.brassHi,0.35*(1-beat/0.6),0,0.6)}break}
     case'iceTower':case'fireTower':case'earthTower':case'windTower':{const col={iceTower:K.ice,fireTower:K.fire,earthTower:K.brassHi,windTower:K.wind}[s.type];rectW(s.x-3,s.y-31,6,9,col,0.18+0.12*Math.sin(G.time*4+s.tx));break}
@@ -84940,6 +84950,7 @@ function drawProj(p){
     else if(p.k==='bomb'){rectW(x-2,yy-2,4,4,K.ink);rectW(x-1,yy-1,2,2,K.wood2);rectW(x,yy-3,1,1,fxr()<0.5?K.flY:K.boomC)}
     else{rectW(x-1,yy-1,3,3,K.ink);rectW(x-1,yy-1,1,1,K.stone)}return}
   const c=Math.cos(p.ang),s=Math.sin(p.ang);
+  if(FX_DT&&FX_DT.tw&&FX_DT.tw.body&&tskProj(p,x,y,c,s,FX_DT.tw))return;   // 0.13.2 塔楼皮肤的弹道换画法（ui/tskin_fx；只换色调的照下面画）
   switch(p.k){
     case'arrow':pline(p.x-c*4,p.y-s*4,p.x,p.y,K.wood);rectW(x,y,1,1,K.blade);break;
     case'tri':pline(p.x-c*9,p.y-s*9,p.x-c*2,p.y-s*2,K.wood2);pline(p.x-c*2-s*2,p.y-s*2+c*2,p.x-c*2+s*2,p.y-s*2-c*2,K.steel);pline(p.x-c*2,p.y-s*2,p.x+c,p.y+s,K.steel);rectW(Math.round(p.x-s*2+c),Math.round(p.y+c*2+s),1,1,K.steel);rectW(Math.round(p.x+s*2+c),Math.round(p.y-c*2+s),1,1,K.steel);break;   // v0.8.2 渊海三叉戟掷出的三叉戟
@@ -85079,7 +85090,7 @@ function zoneDraw_nova(z){if(!z.done)bkWarnC(z.x,z.y,z.r,z.t/z.delay,z.delay-z.t
 zoneDef('nova',{draw:zoneDraw_nova});
 // v0.3.4 激光：外层洋红 + 白色内芯，越照越粗（高能）；末端一个亮点
 const K_LZ=C('#ff4a7a'),K_LZD=C('#a01848');
-function drawBeam(b){if(b.hf){hfBeamDraw(b);return}const fl=0.75+0.25*Math.sin(G.time*40),dx=b.x1-b.x0,dy=b.y1-b.y0,l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l,thick=b.f>1.5?2:1;   // hf：v0.11.0 圣焰喷射的光束（structs/holyflame.hfBeamDraw）
+function drawBeam(b){if(b.hf){hfBeamDraw(b);return}if(b.sk&&b.sk.tw&&b.sk.tw.core){tskBeam(b,b.sk.tw);return}const fl=0.75+0.25*Math.sin(G.time*40),dx=b.x1-b.x0,dy=b.y1-b.y0,l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l,thick=b.f>1.5?2:1;   // hf：v0.11.0 圣焰喷射的光束（structs/holyflame.hfBeamDraw）   // sk：0.13.2 塔楼皮肤的激光（ui/tskin_fx.tskBeam）
   for(let k=-thick;k<=thick;k++)if(k)pline(b.x0+nx*k,b.y0+ny*k,b.x1+nx*k,b.y1+ny*k,Math.abs(k)>1?K_LZD:K_LZ,0.7*fl);
   pline(b.x0,b.y0,b.x1,b.y1,K.glint,0.95*fl);const ex=Math.round(b.x1),ey=Math.round(b.y1);rectW(ex-1,ey-1,3,3,K_LZ,0.8*fl);rectW(ex,ey,1,1,K.glint)}
 // —— v0.3.2 丛林：紫色瘴气、猎豹勇士的标枪、被藤蔓缠住的守军 ——
@@ -85132,7 +85143,7 @@ function drawFx(f){
     case'bolt':{if(f.v)break;const a=1-u;let x=f.x,y=f.y-140;   // 0.12.5 修（用户报：电能塔、闪电装置会出现天降的闪电）华丽特效 vfx('bolt') 和落雷 addFx({k:'bolt'}) 同名，原来每道 vfx 闪电都在这里多画一道从天上落下的雷；vfx 的 bolt 没有普通层
      for(let k=0;k<7;k++){const nx=f.x+(k<6?(hash2(f.seed,k,5)-0.5)*16:0),ny=f.y-140+(k+1)*20;pline(x,y,nx,ny,K.flW,a);pline(x+1,y,nx+1,ny,K.zap,a*0.7);x=nx;y=ny}
       if(u<0.5){const r=6+u*20;dotRing(f.x,f.y,r,K.zap,1-u*2,20,0.6)}break}
-    case'zap':{const a=1-u,mx=(f.x0+f.x1)/2+vr(-3,3),my=(f.y0+f.y1)/2+vr(-3,3);pline(f.x0,f.y0,mx,my,K.zap,a);pline(mx,my,f.x1,f.y1,K.zap,a);break}
+    case'zap':{const a=1-u,mx=(f.x0+f.x1)/2+vr(-3,3),my=(f.y0+f.y1)/2+vr(-3,3);if(FX_DT&&FX_DT.tw&&FX_DT.tw.core){tskZap(f,mx,my,a,FX_DT.tw);break}pline(f.x0,f.y0,mx,my,K.zap,a);pline(mx,my,f.x1,f.y1,K.zap,a);break}
     default:if(f.v&&f.v.n&&f.t>=0)f.v.n(f,f.t/f.life);   // v0.7.2 华丽特效的普通层（engine/vfx）
   }
 }
@@ -85484,6 +85495,30 @@ function drawMini(){
 }
 const heroList=()=>G.heroes||(G.hero?[G.hero]:[]);
 
+/* ---------- 0.13.2 塔楼皮肤的攻击画面：换画法（配色在 data/tskins 的 vis，描述 game/tskin.tskVD；只改画面）----------
+   颜色只换色调的（众和议会四座魔法塔、各种命中特效、爆炸）不经过这里：弹道 / 特效记着 skd，ui/draw 画的时候 FX_DT = skd，rectW 换色调。
+   这里是色调换不出来的样子：赤漆箭杆 + 金箭头 + 金色拖尾（箭、弩箭）、赤金炮弹、圣金电弧 + 浅蓝内芯、圣金激光 + 命中点一圈金光；W = skd.tw（C() 过的颜色，登记在 skd.mc 里，rectW 原样画）
+   每帧画：不新建对象、不拼颜色字符串 */
+// 直射弹道（ui/draw.drawProj 交过来，FX_DT = 这发的 skd）：画了返回 true；c / s = 飞行方向
+function tskProj(p,x,y,c,s,W){
+  switch(p.k){
+    case'arrow':if(W.trail)pline(p.x-c*9,p.y-s*9,p.x-c*4,p.y-s*4,W.trail,0.4);pline(p.x-c*4,p.y-s*4,p.x-c*2,p.y-s*2,W.body);pline(p.x-c,p.y-s,p.x,p.y,W.head||W.body);return true;
+    case'bigbolt':if(W.trail)pline(p.x-c*14,p.y-s*14,p.x-c*7,p.y-s*7,W.trail,0.4);pline(p.x-c*7,p.y-s*7,p.x,p.y,W.body);pline(p.x-c*7,p.y-s*7+1,p.x,p.y+1,W.edge||W.body);rectW(x,y,2,2,W.head||W.body);return true;
+    case'ball':if(W.trail)pline(p.x-c*8,p.y-s*8,p.x-c*2,p.y-s*2,W.trail,0.45);rectW(x-1,y-1,3,3,W.body);if(W.head)rectW(x-1,y-1,2,1,W.head);return true;
+  }
+  return false}
+// 雷电塔的电弧（ui/draw.drawFx 的 zap 交过来；mx / my 是 drawFx 里随机好的折点，随机数照原来的次数取）：外层圣金、浅蓝内芯
+function tskZap(f,mx,my,a,W){const dx=f.x1-f.x0,dy=f.y1-f.y0,l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l,H=W.head||W.core;
+  for(let k=-1;k<=1;k+=2){pline(f.x0+nx*k,f.y0+ny*k,mx+nx*k,my+ny*k,H,a*0.75);pline(mx+nx*k,my+ny*k,f.x1+nx*k,f.y1+ny*k,H,a*0.75)}
+  pline(f.x0,f.y0,mx,my,W.core,a);pline(mx,my,f.x1,f.y1,W.core,a)}
+// 激光塔的光束（ui/draw.drawBeam 交过来，b.sk = 开火时的 skd）：圣金光束、暗金外沿、白金内芯，锁定的目标处一圈金光
+function tskBeam(b,W){const fl=0.75+0.25*Math.sin(G.time*40),dx=b.x1-b.x0,dy=b.y1-b.y0,l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l,thick=b.f>1.5?2:1;
+  for(let k=-thick;k<=thick;k++)if(k)pline(b.x0+nx*k,b.y0+ny*k,b.x1+nx*k,b.y1+ny*k,Math.abs(k)>1?W.edge||W.body:W.body,0.7*fl);
+  pline(b.x0,b.y0,b.x1,b.y1,W.core||K.glint,0.95*fl);const ex=Math.round(b.x1),ey=Math.round(b.y1);rectW(ex-1,ey-1,3,3,W.head||W.body,0.85*fl);rectW(ex,ey,1,1,W.core||K.glint);
+  const hx=b.hx===undefined?ex:Math.round(b.hx),hy=b.hx===undefined?ey:Math.round(b.hy);dotRing(hx,hy,4+fl,W.body,0.8*fl,12,0.7);rectW(hx-1,hy-1,3,3,W.head||W.body,0.6*fl)}   // hx / hy：锁定的目标（光束穿过去时末端在射程尽头）
+// 塔顶晶石的光（ui/draw.drawStruct 的激光塔）：用着皮肤、皮肤写了 glow 就返回那个颜色，不然 null（亡灵阵营的假建筑 DS_TINT 不换）
+const tskGlowC=t=>{if(DS_TINT||!TSK_ON[t])return null;const D=tskVD(t);return D&&D.tw.glow};
+
 // ---------- 输入：建造（单点确认 / 连续建造 / 撤销）、地图、PC 鼠标瞄准、键位 ----------
 const keys=new Set(),input={jx:0,jy:0};
 let selUnit=null;   // v0.5.8 选中的士兵（镜头跟着它、显示攻击范围；和 selected 建筑互斥）
@@ -85728,7 +85763,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="341e203",GAME_BUILT=1794002872745,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="8f3ea65",GAME_BUILT=1794005183002,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
