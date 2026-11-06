@@ -1661,6 +1661,7 @@ let CFG={   // P3 改（0.12.2d 性能）：let——数据文件都拼完后 co
     heavyPct:0.2,
     blockStagger:0.4,     // 格挡成功时僵直 ×0.4
     meleeSwitch:1.6,      // 远程单位：敌人进入 1.6 格内改用近战武器
+    meleeBack:{t:1, lock:3},   // 0.13.2（用户定）远程兵被贴身：先往外撤拉开距离（撤的时候不出手）；连着 t 秒还拉不开才拔近战武器，之后 lock 秒内就近战，过了再试着撤
     stealthDelay:2.5,     // 忍者 2.5 秒未攻击/未受击进入隐身
     stealthMul:1.5,       // 隐身首击伤害 ×1.5（v0.10.11 用户定 ×2 → ×1.5）
     chargeNear:4,         // v0.10.0 自由出击的兵先打自己身边 4 格内（远程：射程内）的亡灵，身边没有才找离兵营最近的（Claude 定）
@@ -24556,7 +24557,8 @@ ydvG ydvGU ydvA ydvAU ydvAT
 cy
 hmFlU hmFlC hmGo hmSt hmTg hmLc
 sgk sgs sgd
-fbS`.trim().split(/\s+/);   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // bj：代理 BJ 加（0.12.4 边军大营的兵，units/bianjun）   // gwlR：GW 加（0.12.4 站在长城城墙上的射程、视野加成，structs/gwall）   // cy：C 加（0.12.5 源能工厂的兵，units/cy_camp）   // ydv*：0.12.5 代理 T（源能装置）   // fbS：0.13.1 代理 B 加（三、四阶家族的状态对象 / 召唤物的状态，game/el_fam14b）
+fbS
+kpT kpM`.trim().split(/\s+/);   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // bj：代理 BJ 加（0.12.4 边军大营的兵，units/bianjun）   // gwlR：GW 加（0.12.4 站在长城城墙上的射程、视野加成，structs/gwall）   // cy：C 加（0.12.5 源能工厂的兵，units/cy_camp）   // ydv*：0.12.5 代理 T（源能装置）   // fbS：0.13.1 代理 B 加（三、四阶家族的状态对象 / 召唤物的状态，game/el_fam14b）
 // 英雄的全部字段：前面是 makeHero 字面量、heroRecalc 写的，后面是各技能、装备、地图机制写的
 const HERO_KEYS=`
 id d mnt spr star spec slot isHero ctl x y hp maxHp def dodge block shield resist facing dx dy dir aimA weapons wi ws swapT offhand armorList accList
@@ -24674,7 +24676,7 @@ obCT obCD obRgT
 gwlCd
 foe
 ytlT ytlN ytlO ydvM ydvSh ydvShM ydvShT ydvEt ydvHt ydvRt ydvStop ydvG ydvGU ydvA ydvAU ydvAT`.trim().split(/\s+/);   // foe：0.12.5 代理 K，被骇入（structs/hack）   // isCamp：P3 加（0.12.2d 性能），见 structs/structs.makeStruct   // ytl* / ydv*：0.12.5 第二轮代理 T，电能塔的增伤叠层、源能装置（structs/yn_tdev）
-const SOLDIER_NUM='fgCd fgSt fgPd ysK ysE ysA ysT ysX ysY x y hp maxHp baseHp chp def dodge block shield stagMul taunt vision facing dir anim flash stag atkCd shotCd ammo rel think ti tid recoil thrust swing calm chg patrolT px py slot statMul lastHit slA layer elev atkAdd atkMul rgMul critAdd critMulAdd pierceN mvSp kiteK gdTile gdSeen gdV mgA mgK mgU s2Dr s2Chg cv _sx _sy shieldHp shieldMax shieldT critPt cmdU gwlR hd aim'.split(' ');   // P2 加（0.12.2d）cv…cmdU：每帧 / 每次受击都写小数、读的地方都是 ||0 或比大小的字段，先填 0 让它一直是数字（原来先装 undefined，之后每写一次小数都新建一个数字对象）   // gwlR：GW 加（0.12.4 长城城墙，structs/gwall）   // hd aim：0.12.5e 加，「还没有」用 NaN（makeSoldier 写 NaN；原来是 undefined，每帧写小数都装箱）
+const SOLDIER_NUM='kpT kpM fgCd fgSt fgPd ysK ysE ysA ysT ysX ysY x y hp maxHp baseHp chp def dodge block shield stagMul taunt vision facing dir anim flash stag atkCd shotCd ammo rel think ti tid recoil thrust swing calm chg patrolT px py slot statMul lastHit slA layer elev atkAdd atkMul rgMul critAdd critMulAdd pierceN mvSp kiteK gdTile gdSeen gdV mgA mgK mgU s2Dr s2Chg cv _sx _sy shieldHp shieldMax shieldT critPt cmdU gwlR hd aim'.split(' ');   // P2 加（0.12.2d）cv…cmdU：每帧 / 每次受击都写小数、读的地方都是 ||0 或比大小的字段，先填 0 让它一直是数字（原来先装 undefined，之后每写一次小数都新建一个数字对象）   // gwlR：GW 加（0.12.4 长城城墙，structs/gwall）   // hd aim：0.12.5e 加，「还没有」用 NaN（makeSoldier 写 NaN；原来是 undefined，每帧写小数都装箱）
 const HERO_NUM='clStK ysRT ysFin ysSy gwlL star slot x y hp maxHp def dodge block shield facing dx dy dir aimA wi swapT atkCd swing swingA thrust recoil ammo rel shieldHp shieldMax shieldT reflect whirlT whirlTk whirlA dashT dvx dvy inv flash anim respawn aiT aiTi aiTid tgtI tgtId lastHit layer elev calm vision tvNx mdef speed crit regen aspd stnU lastAtk cv gwlR hh2Rq jsHoldU jsHX jsHY jsCvU jsCvR jsGhU jsKs jsKsU elAccT elCv f4OlN f4OlU f4VisK'.split(' ');   // P2 加（0.12.2d）mdef…lastAtk：同上   // gwlR：GW 加（0.12.4 长城城墙，structs/gwall）   // hh2Rq：代理 H 加（0.12.4 胡寒，heroes/huhan）
 const STRUCT_NUM='tx ty x y level flash cd ammo rel aim recoil mgA mgK mgU stEff shcU shcF xgVn xgRgT hp maxHp def rsh gwlCd'.split(' ');   // P2 加（0.12.2d）hp maxHp def rsh：建筑每挨一下都写 hp，同上   // gwlCd：GW 加（0.12.4 长城城墙，structs/gwall）
 const Soldier=shapeCtor(SOLDIER_KEYS,SOLDIER_NUM),Hero=shapeCtor(HERO_KEYS,HERO_NUM),Struct=shapeCtor(STRUCT_KEYS,STRUCT_NUM);
@@ -24860,6 +24862,9 @@ const HOOKS={
 const FEAT={};
 function feat(k,d){FEAT[k]=d;return d}
 // 这一局有没有上过场（跟着某位英雄的全局特性用它当 on：上过场就一直算在内，和原来「这位英雄每帧设一个全局开关、离场后开关还留着」一样）
+// 0.13.2 修（界碑方案）：这一局场上出现了要某个特性的东西（没解锁、也没带进来的兵营的兵，比如测试、别的途径给的），当场把特性挂上，跑一次它的 start
+const FEAT_NEED=new Map();   // 特性名 → 要它的那一局（G）；换局 G 是新对象，不用清
+function featNeed(k){if(!G||FEAT_NEED.get(k)===G||HK_ON.includes(k))return;FEAT_NEED.set(k,G);hkBuild();const s=FEAT[k]&&FEAT[k].hooks&&FEAT[k].hooks.start;if(s)s()}
 const heroEver=id=>!!(G&&G.hjoin&&G.hjoin[id]);
 // 本局的钩子列表（hkBuild 填；开局前也都是空数组，随时可以遍历）
 const HK=Object.fromEntries(Object.keys(HOOKS).map(p=>[p,[]]));   // P3 改（0.12.2d 性能）：一次建好（原来 HK[p]=[] 逐个加 75 个键，V8 把它退化成了字典模式，每处 HK.xxx 都在查哈希表）
@@ -24867,7 +24872,7 @@ let EVIS_F=null;   // SM 加：HK.eVisF 的第一个(没有 = null，eVis 只多
 let HK_ON=[];   // 本局在场的特性（调试看：__wlwc 里没有，控制台直接读 HK_ON）
 function hkBuild(){
   const L=[];
-  for(const k in FEAT){const d=FEAT[k];if(!d.on||d.on())L.push([d.ord??500,L.length,k,d.hooks||{}])}
+  for(const k in FEAT){const d=FEAT[k];if(!d.on||d.on()||FEAT_NEED.get(k)===G)L.push([d.ord??500,L.length,k,d.hooks||{}])}
   let m=(typeof G!=='undefined'&&G&&MAP_FX[G.map])||null;if(m&&G.stMap)m=stMapFx(m);if(m)L.push([500,L.length,'map:'+G.map,m]);   // stMap：v0.10.0 开拓地自己的地图（自然生成），不用这张图自己的地形生成
   L.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
   for(const p in HOOKS)HK[p].length=0;
@@ -61699,6 +61704,14 @@ function cavMove(s,mx,my,spd,sp,gd,dt){const K_=CFG.combat,hb=s.hornU>G.time?1+s
 function cavUnstick(s){if(s.cvUnT>G.time)return;for(const d of[0.5,-0.5,1,-1,1.6,-1.6]){const a=s.hd+d;if(boxFree(s.x+Math.cos(a)*6,s.y+Math.sin(a)*6)){s.cvUnA=a;s.cvUnT=G.time+0.5;return}}}
 // v0.4.6 游击骑兵站位：每只亡灵的「危险距离」= 近战 身体半径 + 7 像素 / 远程 它的射程，再加 margin 格；最少 meleeSwitch + 0.6 格（别贴近到拔刀），最多自己射程的 95%（不然打不着）。
 //   有亡灵进了危险距离 → 往外撤；都没有 → 往目标靠到它的危险距离外半格（离得近打得准），一路边跑边射
+// 0.13.2（用户定）远程兵被贴身（亡灵进了 meleeSwitch 格）：先往外撤（避开 meleeSwitch + 0.6 格内所有地面亡灵），撤的时候不出手；
+//   连着 meleeBack.t 秒还在贴身范围里（跑不过、被堵住、被网住）就拔近战武器打 meleeBack.lock 秒，再试着撤；撤开了（回到远程那一支）计时清零
+let SB_X=0,SB_Y=0,SB_S=null,SB_R=0;
+function sbPush(k,dd){if(E.air[k])return;const s=SB_S,dx=s.x-E.x[k],dy=s.y-E.y[k],l=Math.hypot(dx,dy)||1,f=(SB_R-l)/SB_R;if(f>0){SB_X+=dx/l*f;SB_Y+=dy/l*f}}
+function solBack(s,j,dt){const B=CFG.combat.meleeBack;if(s.kpM>G.time||s.rootT>0||s.post)return false;   // post：守着驻守点的不撤，直接近战
+  s.kpT+=dt;if(s.kpT>=B.t){s.kpT=0;s.kpM=G.time+B.lock;return false}
+  SB_X=0;SB_Y=0;SB_S=s;SB_R=(CFG.combat.meleeSwitch+0.6)*16;eQuery(s.x,s.y,SB_R,sbPush,true);SB_S=null;
+  let l=Math.hypot(SB_X,SB_Y);if(l<0.05){SB_X=s.x-E.x[j];SB_Y=s.y-E.y[j];l=Math.hypot(SB_X,SB_Y)||1}SB_X/=l;SB_Y/=l;return true}
 function guerKeep(s,RR,j){const Q=s.guer,mn=(CFG.combat.meleeSwitch+0.6)*16,mxR=RR*0.95,thrOf=k=>{const c=ETC[E.t[k]];return Math.min(mxR,Math.max(mn,(c.range>0?c.range*16:E.r[k]+7)+(Q.margin||0)*16))};let rx=0,ry=0;
   eQuery(s.x,s.y,mxR,k=>{const thr=thrOf(k),dx=s.x-E.x[k],dy=s.y-E.y[k],dd=Math.hypot(dx,dy)||1;if(dd<thr){const f=(thr-dd)/thr;rx+=dx/dd*f;ry+=dy/dd*f}},true);
   const l=Math.hypot(rx,ry);if(l>0.05)return[rx/l,ry/l];
@@ -61941,7 +61954,7 @@ function updateSoldiers(DT){
     let mx=0,my=0,shooting=false,pw=false;const j=s.ti,grT=s.grg!==0&&s.grg===s.tid;let spd=0;   // grT：当前目标是按射程挑的（被指挥、阵型、冲锋换了目标就不是）   // spd：v0.6.6 要走路时才算；pw：在驻守点附近慢慢换布防（也可以休眠）
     if(j>=0){const ex=E.x[j],ey=E.y[j],dc=Math.hypot(ex-s.x,ey-s.y)||1,d=dc-E.r[j];
       s.facing=ex>=s.x?1:-1;s.aim=Math.atan2(ey-6-(s.y-7-s.elev),ex-s.x);s.dir=Math.atan2(ey-s.y,ex-s.x);
-      if(rg&&(elevated||d>K_.meleeSwitch*16||E.air[j])){   // 天上的秃鹫类：一直用远程
+      if(rg&&(elevated||d>K_.meleeSwitch*16||E.air[j])){s.kpT=0;   // 天上的秃鹫类：一直用远程
         if(d<=RR){const clear=elevated||rg.lob||shotClear(s.x,s.y-4,ex,ey-4);   // 抛射（抛射轰炸）越过建筑
           if(clear){shooting=true;if(s.guer&&!elevated){const v=guerKeep(s,RR,j);mx=v[0];my=v[1]}   // v0.4.6 游击骑兵：附近亡灵够得着自己就往外撤，够不着就站着打（边跑边射）
             else if(c.kite&&!elevated&&d<RR*s.kiteK){mx=-(ex-s.x)/dc;my=-(ey-s.y)/dc}   // kiteK：边退边射
@@ -61951,7 +61964,8 @@ function updateSoldiers(DT){
           else if(!s.post&&!wh){pfNavXY(s,ex,ey);mx=PF_NVX;my=PF_NVY}}
         else if(grT){s.ti=-1;s.think=Math.min(s.think,0)}
         else if(!s.post&&!elevated){pfNavXY(s,ex,ey);mx=PF_NVX;my=PF_NVY}
-      }else if(!elevated){
+      }else if(rg&&!s.guer&&solBack(s,j,dt)){mx=SB_X;my=SB_Y}   // 0.13.2（用户定）远程兵被贴身：先撤开，拉不开才近战（solBack）
+      else if(!elevated){
         const reach=(s.v8?v8Reach(s):c.melee.reach)*16;   // v0.8.0 赤血铁骑冲锋时用骑枪（够得更远）
         if(s.guer&&rg){const v=guerKeep(s,RR,j);mx=v[0];my=v[1]}   // v0.4.6 游击骑兵被贴近了也先跑开（跑不掉才拔刀砍）
         else if(c.cavalry&&c.hitRun){   // v0.4.8 骑兵冲锋：没进阶 = 冲锋砍一下就刹车，停稳后掉头回来接着砍（站着打）；「铁骑冲锋」= 连续冲锋：砍完不减速，绕一圈（正好回到砍的地方）回来接着冲
@@ -66132,7 +66146,7 @@ function bwTank(t){if(!BW_TANK)BW_TANK=ETYPES.map(k=>{const c=CFG.enemies[k];if(
 
 // —— soldierBt 最后调：按兵种数据 + 进化写 u.bw，改远程武器（摧城铁炮的爆炸范围）——
 const BW_E0={};
-function bwBt(u,e,rg){u.bw=null;const c=u.c,B=c.bw;if(!B)return rg;if(u.ct!==BW_CT||!e)e=BW_E0;
+function bwBt(u,e,rg){u.bw=null;const c=u.c,B=c.bw;if(!B)return rg;featNeed('bwCamp');if(u.ct!==BW_CT||!e)e=BW_E0;
   const Q={k:B.k,cut:B.cut||null,vc:B.vc||null,wk:B.wk||null,penP:B.penP||0,dr:B.dr||0,xtra:B.xtra||null,undy:B.undy||0,split:null,dash:null,moon:null,siege:null,oni:null,kiri:null};
   if(B.k==='gun'){if(e.bwSplit)Q.split=e.bwSplit;
     if(e.bwSiege){const S=e.bwSiege,K=1+S.aoe;Q.siege=S;u.rgMul*=1+S.dmg;
@@ -66221,7 +66235,7 @@ const BW_ONIC=C('#a01a22');
 function bwDraw(cx0,cy0,cx1,cy1){for(let k=0;k<G.soldiers.length;k++){const s=G.soldiers[k];const Q=s.bw;if(!Q||!Q.oni||s.dead||s.x<cx0-60||s.x>cx1+60||s.y<cy0-60||s.y>cy1+60)continue;
   vRing(s.x,s.y,Q.oni.r*16,BW_ONIC,0.18+0.06*Math.sin(G.time*4+k),VSQ,1,G.time*0.6,0.4)}}
 
-feat('bwCamp',{on:()=>designUnlocked(BW_CT),hooks:{
+feat('bwCamp',{on:()=>designUnlocked(BW_CT)||!!(G&&G.loadout&&G.loadout.includes(BW_CT)),hooks:{   // 0.13.2 修（界碑方案）：原来只看设计院解锁，没解锁带进来的不跑；兵在场但特性没挂，bwBt 里 featNeed 补挂
   start:()=>{BW_Q.length=0},
   tick:()=>{if(BW_Q.length)bwFlush()},
   dmgBaseE:bwBaseE,
@@ -66262,7 +66276,8 @@ function bjHpK(u){const cp=u&&u.camp;if(!cp||cp.type!==BJ_CT||!u.c||!u.c.bj)retu
 // —— soldierBt 最后调：按兵种数据 + 进化写 u.bj，改攻击、双防、格挡防御、移动速度、火凰射的攻击间隔 ——
 const BJ_RG=new Map();   // 火凰射：原武器 → 攻击间隔 × min 的副本（一局里不变）
 function bjPhxRg(rg,k){let r=BJ_RG.get(rg);if(!r||r.__k!==k){r=Object.assign({},rg,{int:rg.int*k,__k:k});BJ_RG.set(rg,r)}return r}
-function bjBt(u,e,rg){const c=u.c,B=c.bj;if(!B){u.bj=null;return rg}const E1=e||BJ_E0,old=u.bj,cp=u.camp;
+function bjBt(u,e,rg){const c=u.c,B=c.bj;if(!B){u.bj=null;return rg}featNeed('bjCamp');   // 0.13.2 修（界碑方案）：特性没挂时火凰射不蓄力、按最短间隔满伤害连射——有兵就补挂
+  const E1=e||BJ_E0,old=u.bj,cp=u.camp;
   let gen=!!(old&&old.gen);if(!E1.bjGen)gen=false;else if(!gen&&cp&&!bjGenOf(cp))gen=true;
   if(gen&&cp)BJ_GEN.set(cp,u);
   let K=1;if(E1.bjElite)K*=1+E1.bjElite.k;if(gen)K*=1+E1.bjGen.k;
@@ -66523,7 +66538,7 @@ const CY_RG=new Map(),CY_MGW=new Map();   // 射程 ×k 的远程武器副本；
 function cyRg(rg,k){let m=CY_RG.get(rg);if(!m)CY_RG.set(rg,m=new Map());let r=m.get(k);if(!r){r=Object.assign({},rg,{range:rg.range*k});m.set(k,r)}return r}
 function cyMgW(W){let w=CY_MGW.get(W);if(!w){w={proj:'mgun',speed:W.pspd||22,spread:W.spread||3,range:W.range,dmg:W.dmg,pen:2,mix:CY_MGM};CY_MGW.set(W,w)}return w}
 const CY_MGM={pierce:1},CY_RW={proj:'arcane',speed:16,spread:1,aoe:0,lob:false,mix:{lightning:1}};   // CY_RW：ynRay 没合进来时打一发法术弹
-function cyBt(u,e,rg){const c=u.c,C=c.cy;if(!C){u.cy=null;return rg}const E1=e||CY_E0,old=u.cy,ov=E1.cyOver,mb=E1.cyMob;
+function cyBt(u,e,rg){const c=u.c,C=c.cy;if(!C){u.cy=null;return rg}featNeed('cyCamp');const E1=e||CY_E0,old=u.cy,ov=E1.cyOver,mb=E1.cyMob;
   u.atkMul*=1+(E1.cyDmg1||0)+(E1.cyDmg2||0);   // 高能 / 超能装置：同一个独立乘区相加
   if(C.k!=='d'){u.mvK=(ov?ov.mv:1)*(mb?(ov?1/ov.mv:mb.mv):1);u.fly=!!mb}   // 装备超载 ×0.6、源能机动 ×1.5（带着超载 = 恢复 ×1）；无人机生成时就是飞的
   const rk=mb?1+mb.rng:1;if(rg&&rk!==1)rg=cyRg(rg,rk);
@@ -82544,7 +82559,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.1.4',GAME_TAG='稳定版',GAME_CODE=224,GAME_BUILD="915c55c",GAME_BUILT=1793939148030,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.1.4',GAME_TAG='稳定版',GAME_CODE=224,GAME_BUILD="4d35454",GAME_BUILT=1793940409077,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
