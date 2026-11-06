@@ -15843,7 +15843,7 @@ Object.assign(CFG.skills,{
 });
 // 空中打击 I / II / III：数值一样（用户定），各自冷却。施法距离 range 格内选一处，半径 r 格；dur 秒内 n 轮扫射，范围内所有亡灵合计受到 b(+ad×AD)
 {const AS=nm=>({name:'空中打击 '+nm, cd:15, aim:'area', dur:3, n:6, ad:0.5, byStar:{range:[10,12.5,15,17.5,20], r:[10,12.5,15,17.5,20], b:[400,480,560,680,800]},
-    desc:p=>`呼叫战机对施法距离 ${p.range} 格内的一处进行扫射：${p.dur} 秒内分 ${p.n} 轮扫过半径 ${p.r} 格的范围，范围内所有亡灵合计受到 ${sv_(p.b,p.ad)} 伤害；冷却 ${p.cd} 秒`});
+    desc:p=>`呼叫战机对施法距离 ${p.range} 格内的一处进行扫射：${p.dur} 秒内分 ${p.n} 轮扫过半径 ${p.r} 格的范围，范围内看得见的亡灵合计受到 ${sv_(p.b,p.ad)} 伤害(要有视野)；冷却 ${p.cd} 秒`});
   Object.assign(CFG.skills,{amStrike1:AS('I'), amStrike2:AS('II'), amStrike3:AS('III')})}
 CFG.heroes.airMarshal={name:'帕恩', title:'航空司令', quality:'red', look:'airMarshal', recruit:true, allSkills:true, soulDrop:{map:'scourgeSea', minDiff:'hard', chance:0.3},
   hp:460, def:3, dodge:0.06, crit:0.1, speed:4.6, vision:10, tough:108,
@@ -72038,7 +72038,8 @@ function amStrikeCast(h,p,a){const c=clampAim(h,a,p.range*16),R=p.r*16*(1+pm.aoe
   addZone({k:'amStrike',x:c.x,y:c.y,R,h,d:skD(h,p)/p.n,n:p.n,q:0,iv:p.dur/p.n,dur:p.dur,dir:c.x>=h.x?1:-1,t:0});
   if(inViewPt(c.x,c.y))sfx('horn',c.x,c.y);return true}
 const amPush=j=>{AM_L.push(j,E.id[j])};
-function amPass(z){AM_L.length=0;eQuery(z.x,z.y,z.R,amPush,false);if(!AM_L.length)return;const h=z.h&&!z.h.dead?z.h:null,o={hk:h,crit:h?h.crit:0,pen:5,mix:{pierce:0.5,impact:0.5}};
+function amPass(z){AM_L.length=0;eQuery(z.x,z.y,z.R,amPush,true);   // vis：0.13.2（用户定）必须有视野才造成伤害（玩家自己控制视野）
+ if(!AM_L.length)return;const h=z.h&&!z.h.dead?z.h:null,o={hk:h,crit:h?h.crit:0,pen:5,mix:{pierce:0.5,impact:0.5}};
   for(let q=0;q<AM_L.length;q+=2){const j=AM_L[q];if(E.alive[j]&&E.id[j]===AM_L[q+1])dealE(j,z.d,o)}
   if(inViewPt(z.x,z.y))sfx('gunS',z.x,z.y)}
 // 第 q 轮的航线：从上到下排开，方向一轮一换；飞机穿过整个圈用 AM_FLY 秒，正好在圈中间时结算
@@ -82701,7 +82702,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.1.4',GAME_TAG='稳定版',GAME_CODE=224,GAME_BUILD="8166ccb",GAME_BUILT=1793942243048,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.1.4',GAME_TAG='稳定版',GAME_CODE=224,GAME_BUILD="e28d4a5",GAME_BUILT=1793943463226,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
