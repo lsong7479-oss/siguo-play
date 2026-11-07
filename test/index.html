@@ -11976,8 +11976,13 @@ CFG.drops.randBoss={hp:0.5, gear:0.25};
                          新的塔热度超过当前最热的 × heatSwap 才算换了最热的塔（免得两座差不多的塔来回换）
    healR：治疗 / 护盾 / 统御类技能好了，去多少格内的伤员 / 正在打的友军那里放
    terrK：身边 9 格没有亡灵时，领地里选哪只：离主堡的路程（格）+ 离自己的距离（格）× terrK
-   seekR：v0.10.0 出击的英雄身边 9 格、领地里都没有亡灵时，再找自己 seekR 格内看得见的（Claude 定 18 格），找不到才 linger */
-CFG.heroAI={seekR:18, lock:1.5, ratio:0.6, leash:1.3, linger:3, engT:0.6, goalLead:0.5, goalT:8, goalRest:3, crowdN:4, heatTau:4, heatMin:2, heatSwap:1.25, healR:10, terrK:0.3, chanMax:4};   // chanMax：v0.9.4 托管按住一个技能最多 4 秒，别的按住技能有地方放就松手换（Claude 定，进阶罗宾汉原来一直按着满天箭雨）
+   seekR：v0.10.0 出击的英雄身边 9 格、领地里都没有亡灵时，再找自己 seekR 格内看得见的（Claude 定 18 格），找不到才 linger
+   swap：0.13.2.x（用户定，换掉原来的 ratio 0.6）咬住时间过了以后，新目标的分数 × swap 仍然小于当前目标的才换
+   w：0.13.2.x（用户定方向，Claude 定数值）索敌打分（heroes/heroai.heroTgtK）：分数 = (距离 + d0 格) × 各项倍率，小 = 优先；
+     hitT 秒内拆过建筑 struct、打过这名英雄 me、打过别的友军 ally；远程 / 施法亡灵 ranged；估算普攻伤害 < 武器伤害 × lowEff → × lowK；
+     单体英雄：精英 / 首领 elite、finN 下打得死 fin；范围英雄：crowdR 格内每多一只 × (1 − crowd)，最低 crowdMin；别的英雄在打、血量 < takenHp → × taken */
+CFG.heroAI={seekR:18, lock:1.5, swap:1.5, leash:1.3, linger:3, engT:0.6, goalLead:0.5, goalT:8, goalRest:3, crowdN:4, heatTau:4, heatMin:2, heatSwap:1.25, healR:10, terrK:0.3, chanMax:4,
+  w:{d0:1, hitT:2, struct:0.6, me:0.6, ally:0.8, ranged:0.8, lowEff:0.3, lowK:4, elite:0.75, finN:2, fin:0.7, crowdR:1.5, crowd:0.1, crowdMin:0.6, takenHp:0.25, taken:2}};   // chanMax：v0.9.4 托管按住一个技能最多 4 秒，别的按住技能有地方放就松手换（Claude 定，进阶罗宾汉原来一直按着满天箭雨）
 
 // v0.6.8 问题报告（设置里「问题报告」）：战斗中一次逻辑更新超过 min 毫秒才记；载入后前 warm 秒（浏览器还在编译优化代码）不记
 CFG.perfRep={min:16, warm:3};
@@ -25785,7 +25790,8 @@ cy
 hmFlU hmFlC hmGo hmSt hmTg hmLc
 sgk sgs sgd
 fbS
-kpT kpM`.trim().split(/\s+/);   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // bj：代理 BJ 加（0.12.4 边军大营的兵，units/bianjun）   // gwlR：GW 加（0.12.4 站在长城城墙上的射程、视野加成，structs/gwall）   // cy：C 加（0.12.5 源能工厂的兵，units/cy_camp）   // ydv*：0.12.5 代理 T（源能装置）   // fbS：0.13.1 代理 B 加（三、四阶家族的状态对象 / 召唤物的状态，game/el_fam14b）
+kpT kpM
+spS`.trim().split(/\s+/);   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // bj：代理 BJ 加（0.12.4 边军大营的兵，units/bianjun）   // gwlR：GW 加（0.12.4 站在长城城墙上的射程、视野加成，structs/gwall）   // cy：C 加（0.12.5 源能工厂的兵，units/cy_camp）   // ydv*：0.12.5 代理 T（源能装置）   // fbS：0.13.1 代理 B 加（三、四阶家族的状态对象 / 召唤物的状态，game/el_fam14b）
 // 英雄的全部字段：前面是 makeHero 字面量、heroRecalc 写的，后面是各技能、装备、地图机制写的
 const HERO_KEYS=`
 id d mnt spr star spec slot isHero ctl x y hp maxHp def dodge block shield resist facing dx dy dir aimA weapons wi ws swapT offhand armorList accList
@@ -25824,6 +25830,7 @@ loM loMT loRT loS loST loSv loWind loAmp loMt loF pshHp loOut scrCcU scrCdT
 wnFS wnAceU wnAceK wnAceA wnCast wnLT caGdU caDwU caDwN caDsU caVwU caVwP caVwS caVuU caVuN caVdU caVdR caOaU caOaP caDaU caDaP caDaN caDaT caTk caUT xgVn xgSDR xgSdW xgExe xgHc xgSDm xgSDmW xgSDmP xgHpDmg xgCcP xgBnL xgBnT xgBnW
 
 aiNx tvNx
+aiKp aiKpM
 mgA mgK mgU
 mdDU mdDP skKbI skOrbT skVoU skVoT skHp skHpRT skFrT
 laFdV laEgT laEgU laAkD laBdV laBlT
@@ -47842,7 +47849,7 @@ const E=fastObj(Object.assign({n:0,count:0,nextId:1,alive:new Uint8Array(ECAP),i
   stun:F32(),adv:F32(),shootT:F32(),frz:F32(),slowT:F32(),slowF:F32(),root:F32(),burnT:F32(),burnD:F32(),buffS:F32(),buffL:F32(),chg:F32(),ab1:F32(),ab2:F32(),rev:new Uint8Array(ECAP),
   kbx:F32(),kby:F32(),kbT:F32(),cap:new Uint8Array(ECAP),vuln:new Uint16Array(ECAP),tbk:F32(),rvT:F32(),
   // v0.3.0 荒漠：沙虫钻地（状态 0 地面 / 1 地下移动 / 2 蓄力 / 3 破土后不动、计时、再钻冷却）、石像（是否 / 剩余时间 / 第几次）、旋风斩（剩余 / 下一跳）
-  wtgt:new Array(ECAP).fill(null),wu:F32(),wuO:new Array(ECAP).fill(null),rtr:new Uint8Array(ECAP),flk:new Uint8Array(ECAP),gd:new Uint8Array(ECAP),fwx:F32(),fwy:F32(),ftm:F32(),bw:new Uint8Array(ECAP),bwT:F32(),bcd:F32(),stn:new Uint8Array(ECAP),stnT:F32(),stnN:new Uint8Array(ECAP),wlT:F32(),wlK:F32(),ugT:F32(),ich:new Uint8Array(ECAP),
+  wtgt:new Array(ECAP).fill(null),aiS:new Float32Array(ECAP),aiF:new Float32Array(ECAP),aiU:new Array(ECAP).fill(null),wu:F32(),wuO:new Array(ECAP).fill(null),rtr:new Uint8Array(ECAP),flk:new Uint8Array(ECAP),gd:new Uint8Array(ECAP),fwx:F32(),fwy:F32(),ftm:F32(),bw:new Uint8Array(ECAP),bwT:F32(),bcd:F32(),stn:new Uint8Array(ECAP),stnT:F32(),stnN:new Uint8Array(ECAP),wlT:F32(),wlK:F32(),ugT:F32(),ich:new Uint8Array(ECAP),
   // v0.3.2 丛林：跳跃 / 冲刺 / 被扔（剩余、总时长、种类、起点、终点、弧高、当前高度）、毒蜂的主人、蜂巢（已挂 / 宿主 / 宿主 id / 已放 / 枯萎计时）、蟒蛇（目标 / 连咬 / 消化）、猿王转圈
   lpT:F32(),lpD:F32(),lpK:new Uint8Array(ECAP),lpx0:F32(),lpy0:F32(),lpx1:F32(),lpy1:F32(),lpH:F32(),lz:F32(),own:new Int32Array(ECAP),
   hsT:new Uint8Array(ECAP),hst:new Int32Array(ECAP),hstId:new Int32Array(ECAP),hvN:new Uint8Array(ECAP),hvL:F32(),ptg:new Array(ECAP).fill(null),pyN:new Uint8Array(ECAP),dgT:F32(),spT:F32(),spK:F32(),
@@ -47987,6 +47994,7 @@ function eSpawn(ti,x,y,st){
   E.tile[i]=-1;E.nxt[i]=-1;E.fv[i]=-1;E.ft[i]=null;E.st[i]=null;E.hdv[i]=0;E.cv[i]=0;E.stT[i]=-9;E.bTk[i]=0;E.iceK[i]=0;E.alt[i]=0;E.bnT[i]=0;E.pA[i]=0;E.pB[i]=0;E.pC[i]=0;E.pD[i]=0;E.sld[i]=0;E.rvN[i]=0;E.rvM[i]=1;E.gdN[i]=0;
   E.gr[i]=0;E.pa[i]=0;E.pab[i]=0;E.ab3[i]=c.parry?c.parry.cd*0.6:0;E.psn[i]=0;E.psnT[i]=0;E.psnD[i]=0;E.bld[i]=0;E.bldT[i]=0;E.bldD[i]=0;E.exd[i]=0;
   E.aslT[i]=0;E.aslF[i]=0;E.ddT[i]=0;E.ddv[i]=0;E.vol[i]=0;E.volT[i]=0;E.rcd[i]=c.rider?c.rider.int:0;E.ug[i]=0;E.dgS[i]=0;E.tl[i]=0;E.tlI[i]=-1;E.tcd[i]=0;E.tgo[i]=-1;
+  E.aiS[i]=-99;E.aiF[i]=-99;E.aiU[i]=null;   // 0.13.2.x 托管英雄索敌用：最近一次打我方建筑 / 我方单位的时刻、打的是谁（engine/combat.hurtF / hurtS 记，heroes/heroai.heroTgtK 读）
   E.tsU[i]=0;E.nu[i]=0;E.nrv[i]=0;E.clk[i]=0;E.mrv[i]=0;E.nrU[i]=0;E.cbf[i]=0;E.yI[i]=0;E.yJ[i]=-1;E.yA[i]=0;E.yB[i]=0;E.yC[i]=0;E.yD[i]=0;E.rvU[i]=0;E.yT[i]=0;E.yN[i]=0;E.hwT[i]=0;E.hwF[i]=0;EHM[i]=0;E.tbk[i]=0;E.rvT[i]=0;E.hrT[i]=0;E.bw[i]=0;E.bwT[i]=0;E.wtgt[i]=null;E.wu[i]=0;E.wuO[i]=null;E.rtr[i]=0;E.flk[i]=0;E.gd[i]=0;E.bcd[i]=c.burrow?1.5:0;E.stn[i]=0;E.stnT[i]=0;E.stnN[i]=0;E.wlT[i]=0;E.wlK[i]=0;E.ugT[i]=0;E.ich[i]=0;E.lpT[i]=0;E.lz[i]=0;E.own[i]=0;E.hsT[i]=0;E.hst[i]=-1;E.hstId[i]=0;E.hvN[i]=0;E.hvL[i]=0;E.ptg[i]=null;E.pyN[i]=0;E.dgT[i]=0;E.spT[i]=0;E.spK[i]=0;E.stun[i]=0;E.adv[i]=0;E.shootT[i]=0;E.frz[i]=0;E.slowT[i]=0;E.slowF[i]=0;E.root[i]=0;E.burnT[i]=0;E.burnD[i]=0;E.buffS[i]=0;E.buffL[i]=0;E.chg[i]=0;
   E.ab1[i]=c.summon?c.summon.cd*0.5:c.blade?c.blade.cd*0.5:0;E.ab2[i]=c.nova?c.nova.cd*0.6:c.pulse?c.pulse.cd*0.5:c.dash?c.dash.cd*0.7:c.heal?c.heal.cd*0.5:(c.rain||c.spikes)?(c.rain||c.spikes).cd*0.5:0;E.rev[i]=0;E.kbT[i]=0;E.cap[i]=0;E.vuln[i]=0;E.count++;ccReset(i);
   E.wkU[i]=0;E.wkF[i]=0;E.glT[i]=0;E.sjU[i]=0;E.sjF[i]=0;E.sup[i]=0;   // v0.8.0
@@ -63269,7 +63277,7 @@ function ufDrS(s,o,mD){let dr=s.bfV?s.bfV[4]:0;if(mD&&s.cfg&&s.cfg.mdr)dr+=s.cfg
   if((pm.wallDR>0||pm.wallLink>0)&&isWallT(s.type))dr+=(pm.wallDR||0)+(pm.wallLink>0?CFG.cardFx.wallLinkDR:0);if(mc2D.on&&!o.dot)dr+=mD?mc2D.bm:ufMg(o)?0:mc2D.bp;return dr}   // mc2D：v0.10.11 商人的神圣屏障 / 玄钢壁垒（建筑法术 / 物理减伤，只算直接伤害）
 // min(1, a 挨这一下的估算 ÷ b 挨这一下的估算)：b 那边已经实际算出来的伤害乘它，就是两边取小（整次转走：a = 被保护者、b = 替伤者；按比例分走：a = 替伤者、b = 被保护者）；a、b 可以是建筑（v0.10.11）
 function fShK(a,b,raw,o){if(!(raw>0))return 1;const eb=fEst(b,raw,o);if(!(eb>0))return 1;return Math.min(1,fEst(a,raw,o)/eb)}
-function hurtF(u,raw,o){eRevealHit(o);
+function hurtF(u,raw,o){eRevealHit(o);{const j=o.src;if(j>=0&&!o.dot&&(o.sid===undefined||E.id[j]===o.sid)){E.aiF[j]=G.time;E.aiU[j]=u}}   // 0.13.2.x 托管英雄索敌：这只亡灵正在打我方单位（heroes/heroai.heroTgtK）
   if(u.dead||u.hp<=0||u.npc)return 0;if(HK.immF.length&&hkAny('immF',u,o))return 0;   // npc：v0.7.0 道观废墟的张道成免疫伤害
   if(u.isHero&&(u.inv>0||u.reviveT>0))return 0;if(u.v8&&u.v8.unyT>G.time)return 0;   // unyT：v0.8.0 圣堂骑士「不屈意志」   // stImm：v0.6.3 剧情「卷土重来」全盛毒师在场，免疫中毒、爆炸；reviveT：v0.4.2 复活保护
   // v0.4.0 圣骑士「圣光屏障」：屏障范围内友军受到的伤害整次转给圣骑士（heroes/holy）；「圣光护盾」/ 教堂圣骑士「圣佑」：免疫接下来几次伤害（持续伤害不算；v0.4.1 斩杀是清除单位，也挡不住）
@@ -63380,7 +63388,7 @@ function friendCcRate(u,dt){const f=(1+(pm.ccRes||0)+(u.isHero&&!u.elite?0:TM.uC
   if(u.stag>0)u.stag=Math.max(0,u.stag-k);if(u.frzT>0)u.frzT=Math.max(0,u.frzT-k);if(u.rootT>0)u.rootT=Math.max(0,u.rootT-k);if(u.fearT>0)u.fearT=Math.max(0,u.fearT-k);if(u.blT>0)u.blT=Math.max(0,u.blT-k);
   if(u.chillU>T)u.chillU-=k;if(u.gsU>T)u.gsU-=k;if(u.sandU>T)u.sandU-=k;if(u.atFU>T)u.atFU-=k;if(u.zsCf>T)u.zsCf-=k}
 feat('friendCcRate',{hooks:{friend:(u,dt)=>{if(pm.ccRes>0||em.ccUp>0||(TM.uCcRes>0&&(!u.isHero||u.elite)))friendCcRate(u,dt)}}});
-function hurtS(s,raw,o){eRevealHit(o);
+function hurtS(s,raw,o){eRevealHit(o);{const j=o.src;if(j>=0&&!o.dot&&(o.sid===undefined||E.id[j]===o.sid))E.aiS[j]=G.time}   // 0.13.2.x 托管英雄索敌：这只亡灵正在拆我方建筑
   if(s.dead||s.hp<=0)return 0;if(HK.immS.length&&hkAny('immS',s,o))return 0;if(!o.rd&&!o.dot&&G.hbUntil>G.time&&!s.trap){const p=fbFor(s);if(p)return hurtF(p,raw,Object.assign({},o,{rd:1,shK:fShK(s,p,raw,o)}))}   // v0.6.0 惩戒骑士「信仰屏障」：护盾还在时，5 格内建筑受到的伤害转给他（heroes/heroes060）；v0.10.11 替伤取较小（fShK，规则 8）
   if(ufMg(o)&&!o.rd&&!o.dot){const g=taoGuardFor(s);if(g)return hurtS(g,raw,Object.assign({},o,{rd:1,shK:fShK(s,g,raw,o)}))}   // v0.10.0 符墙护法 / 御魔：周围建筑受到的法术伤害转给符墙（structs/walls）；v0.10.11 替伤取较小
   const tru=!!o.tru,nr=ufNoRed(o),mg=ufMg(o),mD=mg&&!o.dot&&!(o.mix&&o.mix.acid),ufD0=UF_DR,ufV0=UF_VN;UF_DR=0;UF_VN=0;let dmg=tru?raw:raw*envRes(o);{const L=HK.dmgInS;for(let k=0;k<L.length;k++)dmg=L[k](s,dmg,o)}if(s.cfg&&s.cfg.regenCut)s.hitU=G.time+s.cfg.regenCut.t;   // v0.10.11 规则 1 / 5：建筑也是一个减伤池子、一个易伤池子（同 hurtF；dmgInS 里可以加 UF_DR / UF_VN）   // v0.6.0 神圣墙：受到伤害后 t 秒内回复变慢
@@ -64369,7 +64377,7 @@ function rescaleUnits(){for(let i_1=0,a_1=G.soldiers;i_1<a_1.length;i_1++){const
 // v0.6.1 后排：射程 > 0 的亡灵；在 (x, y) 的 R 内找离士兵最近的后排（近战兵不选天上的；助战不追出拴绳）
 const EBACK=ETYPES.map(k=>CFG.enemies[k].range>0?1:0);
 function backlineTarget(s,mo,x,y,R,lsh,LR){let b=-1,bd=1e9;eQuery(x,y,R,j=>{if(!EBACK[E.t[j]]||(mo&&E.air[j]))return;if(lsh&&Math.hypot(E.x[j]-lsh.x,E.y[j]-lsh.y)>LR)return;const d=Math.hypot(E.x[j]-s.x,E.y[j]-s.y);if(d<bd){bd=d;b=j}},true);return b}
-function soldierMode(s){if(s.summon)return s.owner&&!s.owner.dead?'follow':'guard';const b=s.camp&&!s.camp.dead?s.camp:null,cm=b?b.mode:'guard';return cm==='follow'&&campFollowHero(b).dead?'guard':cm}   // campFollowHero：v0.8.18 指挥面板选的跟随英雄
+function soldierMode(s){if(s.summon)return s.owner&&!s.owner.dead?'follow':'guard';const b=s.camp&&!s.camp.dead?s.camp:null,cm=b?b.mode:'guard';return cm==='follow'&&campFollowHero(b).dead?'guard':cm==='spread'?'charge':cm}   // campFollowHero：v0.8.18 指挥面板选的跟随英雄
 // —— 驻防点：瞭望塔每座 2 个；与城门相连的城墙每格 1 个 ——
 let POSTS=[],postT=0,postVer=-1,POSTC=null,POSTG=[];const POSTK=new Map(),PST_Q=new Int32Array(NT_MAX),PST_T=new Int32Array(NT_MAX);   // POSTC：每格属于哪段城墙（-1 = 不是城墙）；POSTG[段] = 这段城墙上的城门（v0.5.2 AI 英雄登墙 / 下墙用）
 function rebuildPosts(){
@@ -64531,6 +64539,7 @@ function updateSoldiers(DT){
   G.sqT=(G.sqT||0)-DT;if(G.sqT<=0){G.sqT=0.25;campAuraTick(alive)}   // v0.3.4 步兵营进阶
   churchPre(alive);   // v0.4.1 教堂：列出僧侣（替伤用）
   formUpdate(alive,DT);   // v0.6.1 兵营二阶：阵型
+  spreadTick(alive);   // 0.13.2.x 分散出击：给分散出击的兵分刷新点（units/cmd）
   let nf=0;for(let i_3=0,a_3=alive;i_3<a_3.length;i_3++){const s=a_3[i_3];s.fk=soldierMode(s)==='follow'?nf++:-1;}
   const slN=G.tick&3,pmR1=postMulR(PM_L1,'range'),pmR2=postMulR(PM_L2,'range');   // 0.12.6a 改成没折算的（下面 RR 合起来折算）   // pmR：驻防射程加成只看在墙上还是塔上，每帧算一次
   for(let i_4=0,a_4=alive;i_4<a_4.length;i_4++){const s=a_4[i_4];DS_CUR=s;   // v0.8.13 数据详情
@@ -64549,7 +64558,7 @@ function updateSoldiers(DT){
     else if(mode==='guard'){const gh=campGuardPt(home)||home.gdP||home;   // campGuardPt：v0.8.18 指挥面板指定的驻守点
      s.patrolT-=dt;if(s.patrolT<=0){const t=!s.post&&!s.layer?gdSpot(s,gh):-1;if(t>=0){s.px=(t%MAP_W)*16+8;s.py=((t/MAP_W)|0)*16+8}else{const P=guardPts(gh);if(P.length){if(s.gHome!==gh){s.gHome=gh;s.gq=gh.gq=(gh.gq||0)+1}const p=P[(s.gq+(c.cavalry?0:G.gdK*CFG.garrison.guard.step))%P.length];s.px=p.x;s.py=p.y}}}   // gdSpot：v0.10.0 一人一格（下面），格子分完了才退回原来的共用点   // v0.8.0（用户定）骑兵待命时站着不动，不跟着换布防   // v0.6.3 共用驻守点图（patrolT > 0 = 阵型临时指定的站位）；v0.6.6 gh：兵营被派去热点 / 破口时，驻守那个点（units/guard）
       ax=s.px;ay=s.py;cx=gh.x;cy=gh.y;R_=s.c.noWall&&s.rg?Math.max(6*16,s.rg.range*16):6*16}   // noWall：v0.5.3 加农炮、投石车驻守时按射程打
-    else{const cp=elevated?null:campChargePt(home);ax=home.x;ay=home.y+10;cx=home.x;cy=home.y;R_=1e9;if(cp){ax=cp.x;ay=cp.y;cx=s.x;cy=s.y;R_=10*16}   // cp：v0.8.18 指挥面板选的出击方向（刷新点），路上打 10 格内的
+    else{const cp=elevated?null:home.mode==='spread'?spreadPt(s):campChargePt(home);ax=home.x;ay=home.y+10;cx=home.x;cy=home.y;R_=1e9;if(cp){ax=cp.x;ay=cp.y;cx=s.x;cy=s.y;R_=10*16}   // cp：v0.8.18 指挥面板选的出击方向（刷新点），路上打 10 格内的
       else if(s.guer&&G.phase==='wave'&&!elevated){s.sgT=(s.sgT||0)-dt;if(s.sgT<=0){s.sgT=1;s.sgo=cavSortie(s)}if(s.sgo){ax=s.sgo.x;ay=s.sgo.y}cx=s.x;cy=s.y}   // v0.4.6 游击骑兵「出击」：像 AI 英雄一样去堵刷新点（cavSortie），目标按离自己最近的挑
       else if(!elevated&&G.ynm&&!s.ordP&&(YNM_PT=ynmSortiePt())){ax=YNM_PT.x;ay=YNM_PT.y;cx=s.x;cy=s.y;R_=6*16}   // 0.13（玩家反馈，用户定）源能王城进攻战：没选出击方向就往亡灵主堡打，先拆路上挡着的亡灵建筑（maps/ynm_city.ynmSortiePt）
       else if(!elevated&&G.phase==='wave'&&!s.ordP){s.sgT=(s.sgT||0)-dt;if(s.sgT<=0){s.sgT=1+Math.random()*0.5;s.sgo=chgSeek(s,home)}if(s.sgo){ax=s.sgo.x;ay=s.sgo.y}}}   // 0.12.6f（用户定）自由出击：视野里没有亡灵时出去巡逻刷新点（chgSeek，不透视），不在兵营边干等
@@ -64750,7 +64759,7 @@ function updateCamps(dt){
       if(inViewPt(b.x,b.y))for(let i=0;i<5;i++)pp(b.x+vr(-5,5),b.y+4,0,vr(-10,10),0,vr(4,10),0,0.5,'#9a8a6a',2,0,1)}}
 }
 let YNM_PT=null;   // 出击时 ynmSortiePt 的结果（同一帧里借用）
-const SOLD_NAMES={guard:'驻守',charge:'出击',follow:'跟随'},SOLD_MODES=['guard','charge','follow'];
+const SOLD_NAMES={guard:'驻守',charge:'集中出击',spread:'分散出击',follow:'跟随'},SOLD_MODES=['guard','charge','spread','follow'];   // spread：0.13.2.x（用户定）分散出击（units/cmd.spreadTick）；士兵的行为照出击（soldierMode 返回 charge），只是出击方向按分配的刷新点
 function setGlobalMode(m){G.globalMode=m;let n=0;for(let i_12=0,a_12=G.structs;i_12<a_12.length;i_12++){const b=a_12[i_12];if(isCampT(b.type)&&!b.locked){b.mode=m;n++}}refreshCtl();refreshSel(true);
   toast(`士兵指令：${SOLD_NAMES[m]}${n?`(${n} 座兵营)`:''}`)}   // v0.5.2 起 AI 英雄改由主堡的「英雄指令」管（setHeroMode）
 // v0.5.2 英雄指令（选中主堡时设置，管 AI 操控的英雄）：guard 驻守 = 远程英雄登上城墙守城、近战英雄在主堡附近迎敌；sortie 出击 = 去堵刷新点
@@ -64797,7 +64806,7 @@ function shipHome(s){const b=s.camp,C=b?cmdOf(b):null;if(C&&C.g)return C.g;if(!b
   return b._shp}
 function shipGoal(s){const b=s.camp&&!s.camp.dead?s.camp:null,md=b?b.mode:'guard';
   if(md==='follow'){const h=campFollowHero(b);if(h&&!h.dead)return{x:h.x,y:h.y,sd:40}}
-  if(md==='charge'){const C=b?cmdOf(b):null;let k=C&&C.c!=null?C.c:-1;if(k<0&&G.spawns&&G.spawns.length){let bd=1e9;for(let q=0;q<G.spawns.length;q++){const p=spawnPt(q);if(!p)continue;const d=Math.hypot(p.x-s.x,p.y-s.y);if(d<bd){bd=d;k=q}}}const p=k>=0?spawnPt(k):null;if(p)return{x:p.x,y:p.y,sd:48}}
+  if(md==='charge'||md==='spread'){const C=b?cmdOf(b):null;let k=md==='spread'?(s.spS>=0?s.spS:-1):C&&C.c!=null?C.c:-1;if(k<0&&G.spawns&&G.spawns.length){let bd=1e9;for(let q=0;q<G.spawns.length;q++){const p=spawnPt(q);if(!p)continue;const d=Math.hypot(p.x-s.x,p.y-s.y);if(d<bd){bd=d;k=q}}}const p=k>=0?spawnPt(k):null;if(p)return{x:p.x,y:p.y,sd:48}}
   const H=shipHome(s);if(s.shPT<=G.time||!s.shPP){s.shPT=G.time+SHIP_PATROL;let p=null;for(let t=0;t<6&&!p;t++){const a=Math.random()*6.283,r=vr(8,40),x=H.x+Math.cos(a)*r,y=H.y+Math.sin(a)*r;if(shipPassPt(x,y)&&(!G.csW||shipWet(x,y)===shipWet(H.x,H.y)))p={x,y}}s.shPP=p||H}
   return{x:s.shPP.x,y:s.shPP.y,sd:8,home:H}}
 // 挑目标：视野里最近的亡灵（斗舰不打飞的）；驻守时离驻守点超过 12 格的不追
@@ -65097,6 +65106,20 @@ function spawnNames(){const S=G.spawns||[],bx=G.base.x/16,by=G.base.y/16,raw=S.m
   for(const n of raw)cnt[n]=(cnt[n]||0)+1;return raw.map(n=>cnt[n]>1?n+(seen[n]=(seen[n]||0)+1):n)}
 // 兵营出击：指定了方向就朝那个刷新点去，路上打附近的亡灵
 function campChargePt(b){const C=cmdOf(b);if(!C||C.c===undefined||C.c===null||G.phase!=='wave')return null;if(b._cpk!==C.c||!b._cp){b._cpk=C.c;b._cp=spawnPt(C.c)}return b._cp}
+// 0.13.2.x（用户定）分散出击：分散出击兵营的兵，每个兵种平均分到这一波还在出怪的刷新点（s.spS = 刷新点下标）；
+//   分到的点这一波出完了（或新练出来的兵）就换到还在出怪的点里这个兵种人最少的那个（一样少挑离自己近的）；都出完了 s.spS = -1，照集中出击自由找怪
+//   不强行重新平均（死了几个不把别处的兵调过来，免得满地图跑）；指挥面板的出击方向只管集中出击；每 0.5 秒分一次
+let SPR_T=-1,SPR_G=null;const SPR_A=[],SPR_P=[],SPR_C=new Map();
+const spreadOn=s=>!s.summon&&!s.repairer&&s.camp&&!s.camp.dead&&s.camp.mode==='spread';
+function spreadTick(alive){if(G.phase!=='wave'||(SPR_G===G&&G.time<SPR_T&&G.time>SPR_T-1))return;SPR_G=G;SPR_T=G.time+0.5;
+  const A=SPR_A;A.length=0;SPR_P.length=0;for(let q=0,Q=G.queue;q<Q.length;q++){const k=Q[q].side;if(A.indexOf(k)<0&&G.spawns[k]){const p=spawnPt(k);if(p){A.push(k);SPR_P[k]=p}}}
+  const C=SPR_C;C.clear();const cnt=(t,k)=>{let r=C.get(t);if(!r){r={};C.set(t,r)}return r[k]=(r[k]||0)};
+  for(let i=0;i<alive.length;i++){const s=alive[i];if(!spreadOn(s))continue;if(A.indexOf(s.spS)>=0){const r=C.get(s.type)||{};r[s.spS]=(r[s.spS]||0)+1;C.set(s.type,r)}else s.spS=-2}
+  for(let i=0;i<alive.length;i++){const s=alive[i];if(!spreadOn(s)||s.spS!==-2)continue;if(!A.length){s.spS=-1;continue}
+    let bk=-1,bn=1e9,bd=1e9;for(let q=0;q<A.length;q++){const k=A[q],n=cnt(s.type,k),p=SPR_P[k],d=Math.hypot(p.x-s.x,p.y-s.y);if(n<bn||n===bn&&d<bd){bk=k;bn=n;bd=d}}
+    s.spS=bk;C.get(s.type)[bk]=bn+1}}
+// 分散出击的兵这一刻往哪个刷新点去（没分到 / 不在战斗中 = null）
+function spreadPt(s){return G.phase==='wave'&&SPR_G===G&&s.spS>=0?SPR_P[s.spS]||null:null}
 const heroCmd=h=>G.heroCmd&&G.heroCmd[h.id]||null;
 function heroGuardPt(h){if(SV_ON&&h.svSq>0)return svSqPt(h);const C=heroCmd(h);   // SV_ON：0.12.7b 幸存者模式的队员守在队长身边的站位（game/sv_squad）
   return C&&C.g&&heroModeOf(h)==='guard'?C.g:null}
@@ -65827,7 +65850,7 @@ function heroAI(h,dt){if(!h.aiNx)h.aiNx=[0,0,0];
   if(G.phase==='wave'){const g=heroGoal(h);if(g){if(!heroGoalAt(h,g))return h.layer===1?heroLeaveWall(h):aiNav(h,g.x,g.y);heroGoalWait(h);return MV_ZERO}}   // 到了就站住等技能好（普攻照打），不被索敌拉走又走回来；好了 1 秒还放不出来就算了（heroGoalWait）
   if(SV_ON&&h.svSq>0&&h.layer!==1){const P=svSqPt(h),R=(svSqCmd()==='follow'?CFG.survivor.squad.cmd.follow.leash:CFG.survivor.squad.leash)*16;if(P&&Math.abs(P.x-h.x)+Math.abs(P.y-h.y)>R&&Math.hypot(P.x-h.x,P.y-h.y)>R){h.aiTi=-1;h.tgtI=-1;return aiNav(h,P.x,P.y)}}   // 0.12.7b 幸存者模式的队员离队长太远先回来（game/sv_squad）
   h.aiT-=dt;
-  const mel=h.ws.cls==='melee',near=mel?nearGround:nearestEnemy,HA=CFG.heroAI,cur=heroTgtOk(h,mel)?h.aiTi:-1;
+  const mel=h.ws.cls==='melee',HA=CFG.heroAI,cur=heroTgtOk(h,mel)?h.aiTi:-1;
   // v0.6.02：近战英雄的目标飞上天了（秃鹫俯冲完）马上换
   if(h.aiT<=0||(h.aiTi>=0&&cur<0)){h.aiT=0.25;
     // v0.4.2 顺序：身边 9 格看得见的亡灵 → 领地附近看得见的（保护主堡）→ 出击去刷新点（商人不出击，回主堡）
@@ -65835,11 +65858,11 @@ function heroAI(h,dt){if(!h.aiNx)h.aiNx=[0,0,0];
     const ns=h.d.noSortie,sf=SV_ON&&h.svSq>0&&svSqCmd()==='follow'?svHero():null,ox=ns?bx:sf?sf.x:h.x,oy=ns?by:sf?sf.y:h.y,LR=(ns?4:sf?CFG.survivor.squad.cmd.follow.r:9)*16,terr=(terrR()+CFG.heroBase.aiLeash)*16;   // 商人只打到主堡 4 格内的亡灵
     const cw=mel&&G.phase==='wave'?heroCrowd(h):null;let best=-1,pick=-1;
     if(cw){pick=cw.j;best=cur>=0&&heroCrowdKeep(h,cur,cw)?cur:cw.j}   // 手上这只就在堆里（或自己也在一堆里、还在咬住时间里）：接着打
-    else{let sc=null,lr=LR;best=near(ox,oy,LR,true);if(best>=0)sc=j=>Math.hypot(E.x[j]-ox,E.y[j]-oy);
-      else if(!ns&&!gp&&!heroAnchor(h)){let bs=Infinity;lr=0;sc=j=>G.dist[tidx(E.x[j],E.y[j])]+Math.hypot(E.x[j]-h.x,E.y[j]-h.y)/16*HA.terrK;
+    else{let sc=null,lr=LR;best=heroNearK(h,ox,oy,LR,mel);if(best>=0)sc=j=>heroScK(h,j,ox,oy);   // 0.13.2.x（用户定）按分数挑（heroes/heroai.heroTgtK）：原来只挑最近的
+      else if(!ns&&!gp&&!heroAnchor(h)){let bs=Infinity;lr=0;sc=j=>(G.dist[tidx(E.x[j],E.y[j])]+Math.hypot(E.x[j]-h.x,E.y[j]-h.y)/16*HA.terrK+HA.w.d0)*heroTgtK(h,j);
         for(let j=0;j<E.n;j++){if(!E.alive[j]||(mel&&E.air[j]))continue;const x=E.x[j],y=E.y[j];if(Math.abs(x-G.base.x)>terr||Math.abs(y-G.base.y)>terr||!eVis(j))continue;
           const v=sc(j);if(v<bs){bs=v;best=j}}}
-      if(best<0&&!ns&&!gp&&G.phase==='wave'&&heroModeOf(h)==='sortie'){lr=HA.seekR*16;best=near(h.x,h.y,lr,true);if(best>=0)sc=j=>Math.hypot(E.x[j]-h.x,E.y[j]-h.y)}   // v0.10.0 修（玩家反馈：出击的托管英雄杀完一只要等 1～2 秒才打下一只）：身边 9 格、领地里都没有时，再看自己 seekR 格内看得见的；原来直接原地等 linger 秒，下一只就在 10 格外也不动
+      if(best<0&&!ns&&!gp&&G.phase==='wave'&&heroModeOf(h)==='sortie'){lr=HA.seekR*16;best=heroNearK(h,h.x,h.y,lr,mel);if(best>=0)sc=j=>heroScK(h,j,h.x,h.y)}   // v0.10.0 修（玩家反馈：出击的托管英雄杀完一只要等 1～2 秒才打下一只）：身边 9 格、领地里都没有时，再看自己 seekR 格内看得见的；原来直接原地等 linger 秒，下一只就在 10 格外也不动
       pick=best;if(cur>=0&&best!==cur&&heroKeepTgt(h,cur,best,sc,ox,oy,lr,terr))best=cur}
     if(SV_ON&&h.svSq>0&&svSqCmd()==='focus'){const f=svSqFocus(h,mel);if(f>=0){best=f;pick=f}}   // 0.13.0h 后：队员「集火」打队长正在打的那只（game/sv_squad）
     if(best>=0&&(best!==h.aiTi||E.id[best]!==h.aiTid))h.aiLk=G.time+HA.lock;   // 换了目标：至少咬住 lock 秒
@@ -65857,7 +65880,8 @@ function heroAI(h,dt){if(!h.aiNx)h.aiNx=[0,0,0];
     const R=heroRange(h);
     if(guard&&!gp&&(d>R*0.85||!shotClear(h.x,h.y-4,ex,ey-4))){const P=heroWallGoal(h,ex,ey);if(P)return heroToPost(h,P)}   // v0.5.2 驻守的远程英雄：打不着就上城墙打
     if(d>R*0.85||!shotClear(h.x,h.y-4,ex,ey-4))return aiNav(h,ex,ey);
-    h.aiEng=G.time;if(d<R*0.4){const ax=h.x-(ex-h.x)/d*24,ay=h.y-(ey-h.y)/d*24;if(friendPassPt(ax,ay))return[-(ex-h.x)/d,-(ey-h.y)/d]}
+    h.aiEng=G.time;{const bk=heroBack(h,dt);if(bk)return bk;if(h.aiKpM>G.time)return MV_ZERO}   // 0.13.2.x（用户定）被贴身先撤开，拉不开原地打（heroes/heroai.heroBack）
+    if(d<R*0.4){const ax=h.x-(ex-h.x)/d*24,ay=h.y-(ey-h.y)/d*24;if(friendPassPt(ax,ay))return[-(ex-h.x)/d,-(ey-h.y)/d]}
     return MV_ZERO}
   if(G.phase==='wave'&&G.time<(h.aiLg||0))return MV_ZERO;   // v0.6.8 刚打完一只、附近暂时没有：原地等一会儿（多半还会来），不马上往回跑
   {const A=heroAnchor(h);if(A)return Math.hypot(A.x-h.x,A.y-h.y)<=A.r?MV_ZERO:h.layer===1?heroLeaveWall(h):navVec(h,A.gx,A.gy)}   // v0.6.8 达·芬奇：守在开火最多的塔旁边（heroes/heroai）
@@ -67223,7 +67247,7 @@ const hotTower=()=>{const s=G.hotS;return heatOf(s)>=CFG.heroAI.heatMin?s:null};
 // —— 当前目标还能不能接着打 ——
 const heroTgtOk=(h,mel)=>eOk(h.aiTi,h.aiTid)&&!(mel&&E.air[h.aiTi]);
 // 已经有目标 cur、这次挑出来 best（sc = 这次挑选用的分数，小 = 好）：要不要留着 cur
-//   新的那只现在就打得到、手上这只够不着：换；否则咬住 lock 秒，之后新的要明显更好（分数 < 当前 × ratio）才换
+//   新的那只现在就打得到、手上这只够不着：换；否则咬住 lock 秒，之后新的要明显更好才换：0.13.2.x（用户定）新的分数 × swap（1.5）仍然小于当前的才换（原来 < 当前 × 0.6）
 //   LR：这次是身边索敌的范围（cur 离 (ox,oy) 超过 LR × leash 就不留）；LR=0：领地里挑的（cur 出了领地框就不留）
 function heroKeepTgt(h,cur,best,sc,ox,oy,LR,terr){const HA=CFG.heroAI;if(!eVis(cur))return false;
   if(LR){if(Math.hypot(E.x[cur]-ox,E.y[cur]-oy)>LR*HA.leash)return false}
@@ -67232,7 +67256,36 @@ function heroKeepTgt(h,cur,best,sc,ox,oy,LR,terr){const HA=CFG.heroAI;if(!eVis(c
   const R=h.ws.cls==='melee'?h.ws.reach*16+8:heroRange(h)*0.85,dc=Math.hypot(E.x[cur]-h.x,E.y[cur]-h.y),db=Math.hypot(E.x[best]-h.x,E.y[best]-h.y);
   if(dc>R&&db<=R)return false;   // 手上这只够不着、新的这只现在就打得到：换（不为了「咬住」多走路）
   if(G.time<(h.aiLk||0))return true;
-  return sc(best)>=sc(cur)*HA.ratio}
+  return sc(best)*HA.swap>=sc(cur)}
+
+// —— 0.13.2.x（用户定）托管英雄索敌打分：分数 = (距离 + d0 格) × heroTgtK（小 = 优先），身边、领地里、出击找怪三步都乘（参数 CFG.heroAI.w）——
+//   hitT 秒内拆过我方建筑 / 主堡的 ×struct；打过这名英雄的 ×me，打过别的友军的 ×ally；远程、施法的亡灵 ×ranged；
+//   估算普攻打它的伤害（抗性、免疫、防御，engine/enemy.eEstPre × eEstImm）不到武器伤害的 lowEff：×lowK（周围没别的照样打）；
+//   单体英雄：精英、首领 ×elite，估算 finN 下内打得死的 ×fin（补刀）；范围英雄（溅射 ≥ 0.5 格的远程、一次砍 ≥ 3 个的近战）：它 crowdR 格内每多一只 ×(1 − crowd)，最低 crowdMin；
+//   别的英雄正在打、血量不到 takenHp 的：×taken（快死了，不用再多一个人去追）
+const HTK_O={mix:null,magic:false,pen:0};let HTK_RG=null,HTK_N=0,HTK_H=null,HTK_X=0,HTK_Y=0,HTK_B=-1,HTK_BS=1e9,HTK_M=false;
+const htkCnt=()=>{HTK_N++};
+const heroAoe=h=>{const w=h.ws;return(w.aoe||0)>=0.5||w.cls==='melee'&&w.maxHit>=3};
+function heroTgtK(h,j){const W=CFG.heroAI.w,T=G.time,t=E.t[j],c=ETC[t];let k=1;
+  if(!HTK_RG)HTK_RG=ETYPES.map(q=>{const d=CFG.enemies[q];return d.range>0||d.magic||d.rain||d.spikes||d.heal||d.summon?1:0});
+  if(T-E.aiS[j]<W.hitT)k*=W.struct;
+  if(T-E.aiF[j]<W.hitT)k*=E.aiU[j]===h?W.me:W.ally;
+  if(HTK_RG[t])k*=W.ranged;
+  const w=h.ws;let est=0;if(w.dmg>0){const O=HTK_O;O.mix=w.mix||null;O.magic=!!w.magic;O.pen=w.pen||0;est=eEstPre(j,w.dmg,O)*eEstImm(j);if(est<w.dmg*W.lowEff)k*=W.lowK}
+  if(heroAoe(h)){HTK_N=0;eQuery(E.x[j],E.y[j],W.crowdR*16,htkCnt,true);if(HTK_N>1)k*=Math.max(W.crowdMin,1-W.crowd*(HTK_N-1))}
+  else{if(c.tier>=4||c.mini)k*=W.elite;if(est>0&&E.hp[j]<=est*W.finN)k*=W.fin}
+  if(E.hp[j]<E.mhp[j]*W.takenHp)for(let q=0,HS=G.heroes;q<HS.length;q++){const o=HS[q];if(o!==h&&!o.dead&&o.aiTi===j&&o.aiTid===E.id[j]){k*=W.taken;break}}
+  return k}
+// 身边 R 内看得见的亡灵里分数最小的（近战不选天上的）；同 nearestEnemy / nearGround，只是按分数挑
+const htkPick=(j,d)=>{if(HTK_M&&E.air[j])return;const v=(Math.hypot(E.x[j]-HTK_X,E.y[j]-HTK_Y)+CFG.heroAI.w.d0*16)*heroTgtK(HTK_H,j);if(v<HTK_BS){HTK_BS=v;HTK_B=j}};
+function heroNearK(h,x,y,R,mel){if(mel&&h.hitAir)mel=false;HTK_H=h;HTK_X=x;HTK_Y=y;HTK_B=-1;HTK_BS=1e9;HTK_M=mel;eQuery(x,y,R,htkPick,true);HTK_H=null;return HTK_B}
+const heroScK=(h,j,x,y)=>(Math.hypot(E.x[j]-x,E.y[j]-y)+CFG.heroAI.w.d0*16)*heroTgtK(h,j);
+// —— 0.13.2.x（用户定）托管的远程英雄被贴身：先往外撤（同士兵 units/soldiers.solBack，CFG.combat.meleeBack）；连着 t 秒还拉不开就原地打 lock 秒，再试着撤 ——
+function heroBack(h,dt){const B=CFG.combat.meleeBack;if(h.aiKpM>G.time||h.rootT>0||h.layer)return null;
+  SB_X=0;SB_Y=0;SB_S=h;SB_R=(CFG.combat.meleeSwitch+0.6)*16;eQuery(h.x,h.y,SB_R,sbPush,true);SB_S=null;
+  const l=Math.hypot(SB_X,SB_Y);if(l<0.05){h.aiKp=0;return null}
+  h.aiKp=(h.aiKp||0)+dt;if(h.aiKp>=B.t){h.aiKp=0;h.aiKpM=G.time+B.lock;return null}
+  return[SB_X/l,SB_Y/l]}
 
 // —— 近战英雄的范围技能好了（或快好了）：9 格内最扎堆的地方，返回堆里离中心最近的地面亡灵 ——
 function heroCrowd(h){const HA=CFG.heroAI;let rd=false;for(let k=0;k<3;k++){if(SK[h.skills[k]].crowd&&h.unl[k]&&h.cds[k]<=HA.goalLead){rd=true;break}}
@@ -86379,7 +86432,7 @@ addEventListener('keydown',e=>{
   if(k===K.pause)openPause();
   else if(k===K.wave||k==='n')startWave();
   else if(k===K.heroAI)toggleHeroAI();
-  else if(k===K.army){const i=SOLD_MODES.indexOf(G.globalMode);setGlobalMode(SOLD_MODES[(i+1)%3])}
+  else if(k===K.army){const i=SOLD_MODES.indexOf(G.globalMode);setGlobalMode(SOLD_MODES[(i+1)%SOLD_MODES.length])}
   else if(k===K.follow)followHero();
   else if(k===K.batch&&G.phase==='prep')toggleBatch();
   else if(k===K.undo&&G.phase==='prep')setTool(tool==='undo'?null:'undo');
@@ -86406,7 +86459,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="fcfe39a",GAME_BUILT=1794022827638,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="1141653",GAME_BUILT=1794028544341,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -86563,7 +86616,7 @@ function slotVis(el,on){el.hidden=false;el.classList.toggle('vh',!on)}
 function unitSelPanel(u,force){if(selShown!==u){selShown=u;sellArmT=0}selEl.hidden=false;
   setT(selName,'sn',`${u.hbJyN||u.c.name}${u.summon?'(召唤)':''}`);   // hbJyN：HB 加，锦衣卫 / 锦衣亲卫（heroes/dilong）
   setT(selHp,'sh',`生命 ${Math.ceil(u.hp)} / ${Math.round(u.maxHp)} · 防御 ${u.def||0}`);
-  setT(selNote,'sno',unitSel(u).join(' · ')+` · 指令：${SOLD_NAMES[soldierMode(u)]||'驻守'}${u.layer===1?' · 在城墙上':u.layer===2?' · 在瞭望塔上':''}`);
+  setT(selNote,'sno',unitSel(u).join(' · ')+` · 指令：${SOLD_NAMES[u.camp&&!u.camp.dead&&u.camp.mode==='spread'&&!u.summon?'spread':soldierMode(u)]||'驻守'}${u.layer===1?' · 在城墙上':u.layer===2?' · 在瞭望塔上':''}`);
   for(const b of[selUp,selSell,selRep,selGU,selGR,selSU,selSR,selBatch,selUnits,selModes])b.hidden=true;f1SelBuf(u,force)}   // f1SelBuf：v0.10.11 士兵身上的统一 buff（ui/f1_fbuf）
 function refreshSel(force){
   if(selUnit&&(selUnit.dead||!G.soldiers.includes(selUnit))){selUnit=null;if(cam.follow)btnFollow.hidden=true}
@@ -86887,6 +86940,7 @@ function cmdBody(){const SN=spawnNames(),spB=(act,id,cur)=>`<span class="cmsp">$
     return all+C.map((b,i)=>{const id=G.structs.indexOf(b),M=cmdOf(b)||{};let sub='';
       if(b.mode==='guard')sub=`<span class="meta">驻守点：${M.g?'指定'+ptTxt(M.g):'兵营附近(自动支援热点)'}</span>${cmdBtn(false,'cpick',id,'选择驻守点')}${M.g?cmdBtn(false,'cg0',id,'回兵营附近'):''}`;
       else if(b.mode==='follow'){const fh=G.heroes.find(h=>h.id===(M.f||G.hero.id))||G.hero;sub=`<span class="meta">跟随：${fh.d.name}${fh.dead?'(倒下，先驻守)':''}</span>`+cmdBtn(false,'cfp',id,'换英雄')}
+      else if(b.mode==='spread')sub='<span class="meta">每个兵种平均分到这一波还在出怪的刷新点，那边出完了换到别的点；都出完了自由找怪</span>';
       else sub=`<span class="meta">出击方向：</span>`+spB('cc',id,M.c);
       return`<div class="cmrow"><b>${cmdIco(iconOf(b.type))}${BDEF[b.type].name} #${i+1}${b.locked?'<i>锁定</i>':''}<i>${b.unit&&CFG.units[b.unit]?CFG.units[b.unit].name:''}${b.uLock?'(兵种锁定)':''}</i></b><div class="cmb">${SOLD_MODES.map(m=>cmdBtn(b.mode===m,'cm',id+':'+m,SOLD_NAMES[m])).join('')}</div><div class="cmb cms">${sub}</div></div>`}).join('')}
   const hrow=h=>{const md=heroModeOf(h),C=heroCmd(h)||{},man=h.ctl&&!h.ai;
