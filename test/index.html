@@ -1938,7 +1938,7 @@ const noteFill=(t,c)=>typeof t==='string'?t.replace(/\{([A-Za-z_][\w.]*)(?:\*([\
 CFG.rvFold=[[0.5,0.8],[1,0.65],[1.5,0.5],[2,0.3]];
 
 /* ---------- 伤害类型 · 武器 · 护甲 · 熟练度 ----------
-   每次攻击带 mix（伤害类型占比），目标按 resist（各类型抗性）减免：伤害 × Σ 占比 × (1 − 抗性)
+   每次攻击带 mix（伤害类型占比），目标按 resist（各类型抗性）减免：伤害 × Σ 占比 ÷ (1 + 抗性)（负的抗性 = 弱点，× (1 + |抗性|)）；亡灵的 dmgImm（免疫 X% 某类伤害）再 × (1 − X)（2026-11-07 用户定，core/core.mixMul）
    抗性先全部为 0，作为后续护甲/亡灵抗性的接口（例：板甲减刺击） */
 Object.assign(CFG,{
   dmgTypes:{
@@ -3050,7 +3050,7 @@ CFG.heroes.hunter={name:'范海辛', title:'猎魔人', quality:'green', look:'h
                                      之后每次石化，复活时间再 +add 秒 */
 CFG.desert={qsN:[7,10], qsR:[1.6,2.6], qsPull:1.0, qsDist:[9,27]};   // 流沙：片数、半径（格）、牵引速度（格/秒）、离主堡的距离（格）
 CFG.weather.sandstorm={name:'沙尘暴', vis:0.6, spread:2, tint:'#b08a50', a:0.22, sand:1};
-// 木乃伊抗性：resist 是「减免」（伤害 × (1 − 抗性)，见 data/items 开头）；火焰 −0.4 = 受到 140%
+// 木乃伊抗性：resist 是抗性（伤害 ÷ (1 + 抗性)，2026-11-07 用户定；原来是 × (1 − 抗性) 的「减免」，见 data/items 开头）；火焰 −0.4 = 受到 140%
 const MUMMY_RES={slash:0.3, pierce:0.4, blunt:0.25, impact:0.25, arcane:0.25, frost:0.25, earth:0.25, wind:0.25, lightning:0.25, shadow:0.4, poison:0.5, acid:0.25, fire:-0.4};
 Object.assign(CFG.enemies,{
   desertZombie:{name:'荒漠僵尸',     tier:1, sand:true, hp:100, def:1, dmg:11, int:1.2, range:0,   speed:0.85, dodge:0,    aggro:1.8, bounty:4,  cost:1.6, size:4, mix:{blunt:1}, note:'血厚；不受流沙牵引'},
@@ -4200,7 +4200,7 @@ CFG.eWeap=Object.assign(CFG.eWeap||{},{cdShieldSkel:'rusty',cdSkelWarrior:'rusty
   cdPaladin:'longsword',cdTemplar:'longsword',cdMonk:'club',cdBishop:'staff',cdCmdKnight:'longsword',cdConqKnight:'lance',cdApocKnight:'longsword',cdCardinal:'staff',
   phKains:'longsword',phMer:'lance',phAnt:'longsword',phSet:'longsword',popeJon:'staff'});
 // 地图：通关任意一张三阶地图开放
-CFG.maps.cathedral={name:'腐化圣堂', req:['sanctum','temple','polar','factory'], theme:'cathedral', size:96, resNote:'亡灵抗法：都有法术防御(约为防御的 80%)，法术伤害另外 −15%',
+CFG.maps.cathedral={name:'腐化圣堂', req:['sanctum','temple','polar','factory'], theme:'cathedral', size:96, resNote:'亡灵抗法：都有法术防御(约为防御的 80%)，另外法术抗性 +15%(法术伤害 ÷ 1.15)',
   desc:'腐化骑士团的大教堂：25 波一轮；士兵死后会腐化成亡灵，新出场的亡灵 30 秒内快速回血，墓碑不断冒出骷髅；每 5 波一位骑士幻影，第 25 波教皇约恩',
   trees:'cathTrees', gen:{church:true, forest:0.72, scatter:0.006, graves:0.01},
   round:25,   // 25 波一轮（用户定）：常规模式 25 波（噩梦及以上 2 轮 50 波），无尽每 25 波一轮、出大首领
@@ -4349,7 +4349,7 @@ Object.assign(CFG.enemies,{
                 segs:{n:15, hp:360, defPer:0.6}, summon:undefined, burrow:{seek:16, ahead:10, charge:1.6, r:2.6, mul:2.2, cd:0, speed:1.7, walls:false, cycle:true, rest:3},
                 note:'小首领：15 节长的巨型蠕虫，总生命平分到每节，每节 {hp*0.0667} 生命，碎一节就分裂成两条；不停地钻地、破土而出，破土时 2.6 格内造成 2.2 倍攻击的伤害；钻地时穿不过建筑；整条打完才算击败'}),
   sdGriffinLord:sdC('griffin',{name:'腐化狮鹫首领', tier:4, mini:true, smart:true, hp:4600, def:6, dmg:60, int:1.4, speed:3.2, aggro:7, bounty:90, cost:30, size:13, heavy:true,
-                vult:{dive:1, airDodge:0}, airPhys:true, resist:{arcane:0.9, frost:0.9, fire:0.9, earth:0.9, wind:0.9, lightning:0.9, shadow:0.9, poison:0.9, acid:0.9},
+                vult:{dive:1, airDodge:0}, airPhys:true, dmgImm:{arcane:0.9, frost:0.9, fire:0.9, earth:0.9, wind:0.9, lightning:0.9, shadow:0.9, poison:0.9, acid:0.9},
                 dive:{cd:9, mul:3, win:1}, plume:{cd:16, dur:5, n:100, burst:100, mul:0.3, range:10}, callGriff:{cd:30, n:3, type:'sdGriffin'},
                 note:'小首领：飞在天上时闪避所有物理攻击；任何时候法术伤害 −90%；俯冲掠杀，选一个守军俯冲造成 3 倍攻击的伤害，出手的 1 秒内可以打到；飞羽激射，落地旋转 5 秒，这时可以打到，朝目标射出 100 道飞羽，然后向四面八方射出 100 道；召唤狮鹫，从地图边上召来 3 只狮鹫'}),
   // —— 大首领 ——
@@ -4526,7 +4526,7 @@ Object.assign(CFG.enemies,{
 {const S=CFG.enemies;for(const k in S)if(/^ef[A-Z]/.test(k)){const c=S[k];c.ef=true;c.hdOnly=true;delete c.jungle;delete c.polar;c.mdef=Math.max(2,Math.round(c.def*0.9));c.resist=Object.assign(magicRes(0.2),c.resist||{})}}   // 抗法（用户定）
 CFG.eWeap=Object.assign(CFG.eWeap||{},{efCorruptDruid:'staff',efTreeDruid:'staff',efRanger:'bow',efElfArcher:'longbow',efElfMage:'staff',efElfAssassin:'dagger',
   efDarkArcher:'longbow',efDarkBlade:'longsword',efDarkMage:'staff',efIra:'staff',efIra2:'longbow'});
-CFG.maps.elemForest={name:'元素森林', req:['sanctum','temple','polar','factory'], theme:'elemForest', size:96, resNote:'亡灵抗法：都有法术防御(约为防御的 90%)，法术伤害另外 −20%',
+CFG.maps.elemForest={name:'元素森林', req:['sanctum','temple','polar','factory'], theme:'elemForest', size:96, resNote:'亡灵抗法：都有法术防御(约为防御的 90%)，另外法术抗性 +20%(法术伤害 ÷ 1.2)',
   desc:'古老的精灵森林：每波随机进入风、地、水、火四种状态；小首领三位暗黑精灵，大首领暗黑大德鲁伊伊拉，倒下后变成暗黑元素魔弓手',
   trees:'trees', gen:{forest:0.66, scatter:0.012},
   elites:['efElfArcher','efElfMage','efElfAssassin'], boss:['efIra'],
@@ -4676,7 +4676,7 @@ CFG.eWeap=Object.assign(CFG.eWeap||{},{irBigShield:'shortsword',irShieldXbow:'cr
 // 地图：通关任意一张三阶地图开放
 CFG.maps.ironFort={name:'铁血要塞', req:['sanctum','temple','polar','factory'], theme:'ironFort', size:112, center:[56,84], countMul:1.5,
   desc:'纯粹的战场：你守在南边一座 48×24 的要塞里，亡灵大军从北、西、东六个方向压过来，数量出奇地多；亡灵穿重甲，抗物理、抗爆炸；小首领冠军先锋、冠军重炮、王牌弩手，大首领铁血统帅·威廉',
-  resNote:'亡灵抗物理、抗爆炸：防御高，另外挥砍伤害 −10%、穿刺 −15%、钝击 −5%、爆炸 −35%',
+  resNote:'亡灵抗物理、抗爆炸：防御高，另外挥砍抗性 +10%、穿刺 +15%、钝击 +5%、爆炸 +35%(伤害 ÷ (1 + 抗性))',
   trees:'trees', gen:{forest:0.74, scatter:0.003},
   start:{fort:{w:48, h:24, lv:2, gates:{n:[-14,0,14], s:[0], w:[0], e:[0]}}},   // 要塞：主堡在正中，2 级石墙，城门 2 格宽（北面 3 个、南西东各 1 个）
   elites:['irWarrior','irCavalier','irArtyChief'], boss:['irWilliam'],
@@ -6057,35 +6057,35 @@ CFG.endlessDesert={
   fx:{base:[0.3,0.3], nightmare:[0.4,0.2], inferno:[0.5,0.1], abyss:[0.6,0]},   // [亡灵, 我方]（用户定；深渊我方 Claude 定）
   queen:{heal:{win:10, pct:0.1, heal:0.08, cd:10}, mirage:{cd:22, max:150, copyMax:20}, city:{cd:30, k:0.1}, nine:{cd:20, n:9, swap:0.9, hp:0.1}, real:{at:0.5}},   // 蜃楼女王（用户定；冷却 Claude 定）
 };
-const ED_RES={slash:0.4, pierce:0.5, blunt:0.35, impact:0.35, frost:-0.5};   // 木乃伊（用户定：高额物理免伤、怕冰 / 水；数值 Claude 定）：物理伤害 −35～50%，冰霜伤害 ×1.5；游戏里没有单独的水伤害，按冰霜算
+const ED_RES={frost:-0.5},ED_IMM={slash:0.4, pierce:0.5, blunt:0.35, impact:0.35};   // 木乃伊（用户定：高额物理免伤、怕冰 / 水；数值 Claude 定）：物理伤害 −35～50%（免伤，dmgImm × (1 − X)；2026-11-07 从 resist 分出来，数值不变），冰霜伤害 ×1.5；游戏里没有单独的水伤害，按冰霜算
 const edC=(base,o)=>Object.assign({},CFG.enemies[base],{note:'',elite:undefined,temple:undefined,summon:undefined,heal:undefined,rot:undefined},o);   // 沿用老亡灵的行为字段，名字、数值、说明重写
 Object.assign(CFG.enemies,{
   // —— 一阶 ——
-  edMummy:     edC('mummy',{name:'木乃伊', tier:1, hp:220, def:4, dmg:24, int:1.3, speed:0.85, aggro:2, bounty:6, cost:3, size:5, resist:ED_RES, note:'物理伤害 −35～50%，怕冰：受到的冰霜伤害 ×1.5'}),
+  edMummy:     edC('mummy',{name:'木乃伊', tier:1, hp:220, def:4, dmg:24, int:1.3, speed:0.85, aggro:2, bounty:6, cost:3, size:5, resist:ED_RES, dmgImm:ED_IMM, note:'物理伤害 −35～50%，怕冰：受到的冰霜伤害 ×1.5'}),
   edVulture:   edC('vulture',{name:'沙漠秃鹫', tier:1, hp:110, dmg:24, int:1.8, speed:2.4, bounty:5, cost:2, vult:{dive:1, airDodge:0.3}, note:'飞行：近战打不到，远程 30% 落空；每次出手俯冲 1 秒，这时近战够得着'}),
   edMiner:     edC('desertZombie',{name:'矿工僵尸', tier:1, hp:240, def:3, dmg:25, int:1.3, speed:0.9, aggro:2.5, bounty:6, cost:3.4, size:5, noLegion:true,
                 burrow:{idle:4, seek:9, ahead:8, charge:1.5, r:1.3, mul:1.8, cd:6, speed:1.4}, mix:{pierce:0.5, blunt:0.5},
                 note:'周围 4 格没有守军就钻进沙里，无敌、看不见，钻到附近的守军或建筑下面，蓄力 1.5 秒后破土，1.3 格内造成 1.8 倍攻击的伤害；钻不过城墙'}),
-  edGiantMummy:edC('mummy',{name:'巨型木乃伊', tier:1, hp:520, def:6, dmg:34, int:1.6, speed:0.65, aggro:2, bounty:8, cost:5, size:8, structMul:1.4, resist:ED_RES, note:'个子大、血厚；物理伤害 −35～50%，怕冰；拆建筑 ×1.4'}),
-  edMummyMage: edC('mummyPriest',{name:'木乃伊法师', tier:1, smart:true, magic:true, hp:160, def:2, dmg:22, int:1.8, range:6.5, aggro:7, speed:0.85, bounty:6, cost:3.6, size:5, resist:ED_RES, proj:'eorb',
+  edGiantMummy:edC('mummy',{name:'巨型木乃伊', tier:1, hp:520, def:6, dmg:34, int:1.6, speed:0.65, aggro:2, bounty:8, cost:5, size:8, structMul:1.4, resist:ED_RES, dmgImm:ED_IMM, note:'个子大、血厚；物理伤害 −35～50%，怕冰；拆建筑 ×1.4'}),
+  edMummyMage: edC('mummyPriest',{name:'木乃伊法师', tier:1, smart:true, magic:true, hp:160, def:2, dmg:22, int:1.8, range:6.5, aggro:7, speed:0.85, bounty:6, cost:3.6, size:5, resist:ED_RES, dmgImm:ED_IMM, proj:'eorb',
                 petriHit:{slow:0.1, t:3, n:5, stone:1}, mix:{earth:1}, note:'远程单体法术；命中叠一层石化，每层减速 10%，3 秒，叠满 5 层石化 1 秒；物理伤害 −35～50%，怕冰'}),
   // —— 二阶 ——
-  edCamelLancer:edC('camelRider',{name:'木乃伊枪骑兵', tier:2, hp:420, def:6, dmg:32, int:1.2, speed:2.0, aggro:3, bounty:9, cost:5, charge:2, resist:ED_RES, note:'骑兵：冲锋首击 ×2；物理伤害 −35～50%，怕冰'}),
-  edCamelArcher:edC('camelArcher',{name:'木乃伊弓骑兵', tier:2, smart:true, hp:300, def:4, dmg:28, int:1.6, range:7, aggro:7, speed:1.9, bounty:9, cost:5, resist:ED_RES, note:'骑兵；远程 7 格；物理伤害 −35～50%，怕冰'}),
-  edCamelMage: edC('camelArcher',{name:'木乃伊法骑兵', tier:2, smart:true, magic:true, hp:300, def:3, dmg:32, int:2.0, range:6.5, aggro:7, speed:1.9, bounty:9, cost:5, proj:'eorb', resist:ED_RES, mix:{earth:1},
+  edCamelLancer:edC('camelRider',{name:'木乃伊枪骑兵', tier:2, hp:420, def:6, dmg:32, int:1.2, speed:2.0, aggro:3, bounty:9, cost:5, charge:2, resist:ED_RES, dmgImm:ED_IMM, note:'骑兵：冲锋首击 ×2；物理伤害 −35～50%，怕冰'}),
+  edCamelArcher:edC('camelArcher',{name:'木乃伊弓骑兵', tier:2, smart:true, hp:300, def:4, dmg:28, int:1.6, range:7, aggro:7, speed:1.9, bounty:9, cost:5, resist:ED_RES, dmgImm:ED_IMM, note:'骑兵；远程 7 格；物理伤害 −35～50%，怕冰'}),
+  edCamelMage: edC('camelArcher',{name:'木乃伊法骑兵', tier:2, smart:true, magic:true, hp:300, def:3, dmg:32, int:2.0, range:6.5, aggro:7, speed:1.9, bounty:9, cost:5, proj:'eorb', resist:ED_RES, dmgImm:ED_IMM, mix:{earth:1},
                 note:'骑兵；远程法术 6.5 格；物理伤害 −35～50%，怕冰'}),
   edDevourer6: edC('devourer',{name:'沙漠吞噬者', tier:2, hp:820, def:3, dmg:32, speed:1.2, bounty:12, cost:8, size:9, heavy:false,
                 segs:{n:6, hp:140, defPer:0.5}, burrow:{seek:12, ahead:9, charge:1.6, r:1.8, mul:1.8, cd:0, speed:1.5, walls:true, cycle:true, rest:3},
                 note:'6 节长的蠕虫，总生命平分到每节，每节 {hp*0.1667} 生命，碎一节就分裂成两条；不停地钻地破土，破土时 1.8 格内造成 1.8 倍攻击的伤害，能从城墙下钻过去'}),
-  edArmGiant:  edC('mummy',{name:'重甲巨型木乃伊', tier:2, armor:'plate', hp:760, def:14, dmg:40, int:1.7, speed:0.6, aggro:2, bounty:10, cost:7, size:9, structMul:1.5, block:0.2, shield:10, resist:ED_RES,
+  edArmGiant:  edC('mummy',{name:'重甲巨型木乃伊', tier:2, armor:'plate', hp:760, def:14, dmg:40, int:1.7, speed:0.6, aggro:2, bounty:10, cost:7, size:9, structMul:1.5, block:0.2, shield:10, resist:ED_RES, dmgImm:ED_IMM,
                 note:'板甲：防御很高，格挡 20%；物理伤害 −35～50%，怕冰；拆建筑 ×1.5'}),
   edDeathVulture:edC('vulture',{name:'夺命秃鹫', tier:2, hp:240, def:1, dmg:34, int:1.6, speed:2.6, aggro:6, bounty:9, cost:5, size:6, vult:{dive:1, airDodge:0.35}, reap:{p:0.1},
                 note:'飞行：近战打不到，远程 35% 落空；先找士兵打，打中士兵 10% 概率直接击杀'}),
   // —— 三阶 ——
-  edPriest:    edC('mummyPriest',{name:'木乃伊祭祀', tier:3, smart:true, magic:true, hp:620, def:6, dmg:30, int:2.0, range:6.5, aggro:7.5, speed:0.85, bounty:14, cost:9, size:6, resist:ED_RES,
+  edPriest:    edC('mummyPriest',{name:'木乃伊祭祀', tier:3, smart:true, magic:true, hp:620, def:6, dmg:30, int:2.0, range:6.5, aggro:7.5, speed:0.85, bounty:14, cost:9, size:6, resist:ED_RES, dmgImm:ED_IMM,
                 heal:{cd:4, r:5, pct:0.05, flat:20}, petriCast:{cd:9, range:7, t:2}, mix:{earth:1},
                 note:'每 4 秒为 5 格内的亡灵回复 5% 最大生命 + 20；每 9 秒对 7 格内一名守军施放石化术，石化 2 秒；物理伤害 −35～50%，怕冰'}),
-  edPriestGuard:edC('heavyZombie',{name:'木乃伊祭祀侍从', tier:3, armor:'plate', hp:900, def:16, dmg:42, int:1.3, speed:0.8, aggro:3, bounty:14, cost:9, size:7, block:0.35, shield:14, structMul:1.2, resist:ED_RES,
+  edPriestGuard:edC('heavyZombie',{name:'木乃伊祭祀侍从', tier:3, armor:'plate', hp:900, def:16, dmg:42, int:1.3, speed:0.8, aggro:3, bounty:14, cost:9, size:7, block:0.35, shield:14, structMul:1.2, resist:ED_RES, dmgImm:ED_IMM,
                 mix:{slash:1}, note:'重甲剑盾：防御很高，格挡 35%；物理伤害 −35～50%，怕冰'}),
   edAssassin:  edC('desertBlade',{name:'沙漠刺杀者', tier:3, smart:true, hp:520, def:5, dmg:46, int:0.9, speed:2.1, aggro:5, bounty:15, cost:9, size:6, crit:0.2, block:0, shield:0,
                 dash:{range:4, cd:10, heroPct:0.12}, whirl:undefined, ghost:0.01, ghostStrong:true, edStealth:{show:0.5}, mix:{slash:1},
@@ -6094,19 +6094,19 @@ Object.assign(CFG.enemies,{
   edHvyMiner:  edC('desertZombie',{name:'重装矿工僵尸', tier:4, smart:true, armor:'plate', hp:3300, def:14, dmg:62, int:1.4, speed:0.8, aggro:3, bounty:60, cost:30, size:10, heavy:true, noLegion:true, structMul:1.6,
                 burrow:{idle:4, seek:12, ahead:10, charge:1.6, r:1.8, mul:2, cd:8, speed:1.4}, carry:{type:'edMummy', n:4}, mix:{pierce:0.5, blunt:0.5},
                 note:'精英：钻地破土，破土时 1.8 格内造成 2 倍攻击的伤害，并带出 4 只木乃伊一起进攻；钻不过城墙'}),
-  edHighPriest:edC('mummyPriest',{name:'木乃伊大祭司', tier:4, smart:true, magic:true, hp:3000, def:8, dmg:44, int:2.0, range:7, aggro:8, speed:0.85, bounty:60, cost:30, size:9, resist:ED_RES,
+  edHighPriest:edC('mummyPriest',{name:'木乃伊大祭司', tier:4, smart:true, magic:true, hp:3000, def:8, dmg:44, int:2.0, range:7, aggro:8, speed:0.85, bounty:60, cost:30, size:9, resist:ED_RES, dmgImm:ED_IMM,
                 heal:{cd:4, r:6, pct:0.06, flat:40}, petrify:{cd:10, r:2.2, range:8, delay:1, dur:2.5, hpPct:0, convert:0}, mix:{earth:1},
                 note:'精英：每 4 秒为 6 格内的亡灵回复 6% 最大生命 + 40；每 10 秒在 8 格内守军最密处施放群体石化，1 秒后 2.2 格内的士兵石化 2.5 秒；物理伤害 −35～50%，怕冰'}),
   edCamelKnight:edC('camelRider',{name:'重装骆驼骑士', tier:4, smart:true, armor:'plate', hp:3400, def:14, dmg:60, int:1.2, speed:2.0, aggro:7.5, bounty:60, cost:30, size:10, charge:2.5, block:0.2, shield:12,
-                bowMode:{range:7, int:1.5, mul:0.7, min:2.5}, resist:ED_RES, note:'精英，骑兵：带弓和骑枪——目标在 2.5～7 格时用弓射，70% 攻击，近了冲锋用枪，首击 ×2.5；格挡 20%；物理伤害 −35～50%，怕冰'}),
-  edGoldGiant: edC('mummy',{name:'金铠巨型木乃伊', tier:4, smart:true, armor:'plate', hp:4800, def:20, dmg:72, int:1.8, speed:0.6, aggro:3, bounty:60, cost:30, size:13, heavy:true, structMul:1.8, block:0.25, shield:16, resist:ED_RES,
+                bowMode:{range:7, int:1.5, mul:0.7, min:2.5}, resist:ED_RES, dmgImm:ED_IMM, note:'精英，骑兵：带弓和骑枪——目标在 2.5～7 格时用弓射，70% 攻击，近了冲锋用枪，首击 ×2.5；格挡 20%；物理伤害 −35～50%，怕冰'}),
+  edGoldGiant: edC('mummy',{name:'金铠巨型木乃伊', tier:4, smart:true, armor:'plate', hp:4800, def:20, dmg:72, int:1.8, speed:0.6, aggro:3, bounty:60, cost:30, size:13, heavy:true, structMul:1.8, block:0.25, shield:16, resist:ED_RES, dmgImm:ED_IMM,
                 note:'精英：金色重铠，巨大、血极厚、防御极高，格挡 25%；物理伤害 −35～50%，怕冰；拆建筑 ×1.8'}),
   // —— 召唤 ——
   edBeetle:    {name:'飞行甲壳虫', tier:1, minion:true, hp:70, def:3, dmg:12, int:1.0, range:0, speed:2.6, dodge:0, aggro:5, bounty:0, cost:0, size:4, noLegion:true, noLoot:true, vult:{dive:1, airDodge:0.2}, mix:{pierce:1},
                 note:'圣甲壳虫放出来的甲壳虫：飞行，近战打不到，远程 20% 落空'},
   // —— 小首领 ——
   edScarab:    {name:'圣甲壳虫', tier:4, mini:true, smart:true, hp:12000, def:22, dmg:72, int:1.4, range:0, speed:0.8, dodge:0, aggro:4, bounty:80, cost:30, size:14, heavy:true, noLegion:true, structMul:1.5,
-                resist:{slash:0.6, pierce:0.6, blunt:0.5, impact:0.5}, share:{r:5, cut:0.9}, drill:{cd:12, mul:2.5, bMul:2.5, kb:1.5}, burrow:{idle:0, seek:14, ahead:10, charge:0.8, r:1, mul:2.5, cd:12, speed:2.2, walls:true}, shell:{cd:16, dur:5, pdr:5, reflect:0.2, bHalf:true}, swarm:{cd:22, n:20, type:'edBeetle'}, mix:{pierce:1},
+                dmgImm:{slash:0.6, pierce:0.6, blunt:0.5, impact:0.5}, share:{r:5, cut:0.9}, drill:{cd:12, mul:2.5, bMul:2.5, kb:1.5}, burrow:{idle:0, seek:14, ahead:10, charge:0.8, r:1, mul:2.5, cd:12, speed:2.2, walls:true}, shell:{cd:16, dur:5, pdr:5, reflect:0.2, bHalf:true}, swarm:{cd:22, n:20, type:'edBeetle'}, mix:{pierce:1},
                 note:'小首领：物理伤害 −50～60%；5 格内的亡灵受到的伤害全部转给它，转过来的伤害 −90%；钻地突破——钻到目标处破土，那一格受到 250% 伤害，建筑被弹开；甲壳钢化——原地不动 5 秒，物理减伤 +500%，反弹 20% 受到的法术伤害，对建筑减半；甲虫集群——放出 20 只飞行甲壳虫'},
   edCamelSir:  {name:'骆驼爵士', tier:4, mini:true, smart:true, cavalry:true, hp:9500, def:12, dmg:66, int:1.5, range:8, speed:2.0, dodge:0, aggro:9, bounty:80, cost:30, size:12, heavy:true, noLegion:true, proj:'ebullet', spread:3,
                 rangedDodge:0.2, kite:{near:5, far:7.5}, ghost:0.01, ghostStrong:true, cannon:{every:3, mul:1.6, aoe:1.6}, net:{cd:14, range:10, r:3.5, dur:3, mul:0.5}, caravan:{cd:35, groups:2, list:[['edCamelKnight',1],['edCamelArcher',4],['edCamelLancer',4]]},
@@ -7839,7 +7839,7 @@ CFG.drops.items=Object.assign(CFG.drops.items||{},{gsCrimson:[{w:'gsOrbital', p:
      laBurn {p, t}        攻击附带灼烧：每秒为这一下的 p，持续 t 秒
      laBurnBack {p, t}    受到守军（英雄、士兵）的攻击时让攻击者灼烧：每秒为这一下的 p，持续 t 秒
      laFireHeal / laBoomHeal  受到的火焰伤害（混合伤害里火焰那一部分）/ 爆炸伤害转化为治疗
-     laBoomImm            免疫爆炸伤害（resist 里的 fire:1 管火焰免疫）
+     laBoomImm            免疫爆炸伤害（dmgImm 里的 fire:1 管火焰免疫；dmgImm = 免疫 X% 某类伤害，× (1 − X)，2026-11-07 起和抗性 resist 分开存）
      laTrail d            行走时留下伤害 d 的火焰踪迹
      laDeath {r, dmg, trail}  死亡时爆炸：r 格内 dmg 爆炸伤害（守军、建筑），并留下 r 格、伤害 trail 的火焰踪迹
      laSplit {to, k}      死亡时分解成 2 个 to（继承 k 的生命、攻击）
@@ -7864,24 +7864,24 @@ CFG.lavaAbyss={
 const LA_FI={fire:1},LA_FB={fire:1, impact:1};
 Object.assign(CFG.enemies,{
   // —— 一阶 ——
-  laAshZombie:  {name:'灰烬僵尸', tier:1, hp:800, def:8, mdef:0, dmg:60, int:1, range:0, speed:1.2, dodge:0, aggro:3, bounty:5, cost:3.5, size:6, resist:LA_FI, laFireAtk:0.2,
+  laAshZombie:  {name:'灰烬僵尸', tier:1, hp:800, def:8, mdef:0, dmg:60, int:1, range:0, speed:1.2, dodge:0, aggro:3, bounty:5, cost:3.5, size:6, dmgImm:LA_FI, laFireAtk:0.2,
                  mix:{blunt:1}, note:'免疫火焰伤害；攻击时另外造成 20% 的火焰伤害'},
-  laFireZombie: {name:'火焰僵尸', tier:1, smart:true, magic:true, hp:600, def:4, mdef:6, dmg:75, int:1.25, range:7, speed:0.9, dodge:0, aggro:8, bounty:6, cost:4, size:6, resist:LA_FI,
+  laFireZombie: {name:'火焰僵尸', tier:1, smart:true, magic:true, hp:600, def:4, mdef:6, dmg:75, int:1.25, range:7, speed:0.9, dodge:0, aggro:8, bounty:6, cost:4, size:6, dmgImm:LA_FI,
                  proj:'efire', pspd:10, spread:2, laBurnBack:{p:0.2, t:3}, laTrail:20, mix:{fire:1}, note:'免疫火焰伤害；放火焰弹，攻击距离 7 格；受到攻击时让攻击者灼烧 3 秒，每秒为这一下的 20%；走过的地方留下伤害 20 的火焰踪迹'},
-  laBurstZombie:{name:'爆裂僵尸', tier:1, hp:450, def:8, mdef:2, dmg:80, int:1, range:0, speed:2, dodge:0, aggro:3, bounty:6, cost:4, size:5, resist:LA_FB, laBoomImm:true,
+  laBurstZombie:{name:'爆裂僵尸', tier:1, hp:450, def:8, mdef:2, dmg:80, int:1, range:0, speed:2, dodge:0, aggro:3, bounty:6, cost:4, size:5, dmgImm:LA_FB, laBoomImm:true,
                  laDeath:{r:3, dmg:250, trail:50}, mix:{blunt:1}, note:'个子小、跑得快；免疫火焰和爆炸伤害；死亡时爆炸，3 格内 250 爆炸伤害，并留下 3 格、伤害 50 的火焰踪迹'},
   // —— 二阶 ——
-  laSlime:      {name:'熔岩史莱姆', tier:2, hp:1200, def:4, mdef:4, dmg:48, int:0.5, range:0, speed:2, dodge:0, aggro:3, bounty:9, cost:6, size:8, resist:LA_FB, laBoomImm:true, hop:true,
+  laSlime:      {name:'熔岩史莱姆', tier:2, hp:1200, def:4, mdef:4, dmg:48, int:0.5, range:0, speed:2, dodge:0, aggro:3, bounty:9, cost:6, size:8, dmgImm:LA_FB, laBoomImm:true, hop:true,
                  laSplit:{to:'laSlime2', k:0.5}, laBurn:{p:0.3, t:3}, mix:{blunt:0.5, fire:0.5}, note:'免疫火焰和爆炸伤害；一跳一跳地走；攻击附带灼烧 3 秒，每秒 30%；死亡时分解成 2 个次级史莱姆，各继承 50% 生命、攻击，次级再分解一次'},
-  laSlime2:     {name:'次级熔岩史莱姆', tier:2, hp:600, def:4, mdef:4, dmg:24, int:0.5, range:0, speed:2, dodge:0, aggro:3, bounty:0, cost:3, size:6, resist:LA_FB, laBoomImm:true, hop:true,
+  laSlime2:     {name:'次级熔岩史莱姆', tier:2, hp:600, def:4, mdef:4, dmg:24, int:0.5, range:0, speed:2, dodge:0, aggro:3, bounty:0, cost:3, size:6, dmgImm:LA_FB, laBoomImm:true, hop:true,
                  laSplit:{to:'laSlime3', k:0.5}, laBurn:{p:0.3, t:3}, mix:{blunt:0.5, fire:0.5}, note:'熔岩史莱姆分解出来的；死亡时再分解成 2 个次次级史莱姆'},
-  laSlime3:     {name:'次次级熔岩史莱姆', tier:2, hp:300, def:4, mdef:4, dmg:12, int:0.5, range:0, speed:2, dodge:0, aggro:3, bounty:0, cost:1.5, size:5, resist:LA_FB, laBoomImm:true, hop:true,
+  laSlime3:     {name:'次次级熔岩史莱姆', tier:2, hp:300, def:4, mdef:4, dmg:12, int:0.5, range:0, speed:2, dodge:0, aggro:3, bounty:0, cost:1.5, size:5, dmgImm:LA_FB, laBoomImm:true, hop:true,
                  laBurn:{p:0.3, t:3}, mix:{blunt:0.5, fire:0.5}, note:'次级熔岩史莱姆分解出来的，不再分解'},
   laFlameSkel:  {laTrail:20, name:'烈焰骷髅', tier:2, hp:875, def:6, mdef:4, dmg:80, int:1, range:0, speed:1.2, dodge:0, aggro:3, bounty:9, cost:6, size:6, laFireHeal:true,
                  laBurn:{p:0.3, t:3}, mix:{slash:0.7, fire:0.3}, note:'受到的火焰伤害转化为治疗；攻击附带灼烧 3 秒，每秒 30%；走过的地方留下伤害 20 的火焰踪迹'},
   laFlameMage:  {laTrail:20, name:'烈焰法师', tier:2, smart:true, magic:true, hp:625, def:2, mdef:6, dmg:120, int:1.667, range:7.5, speed:0.8, dodge:0, aggro:8.5, bounty:10, cost:6.5, size:6, laFireHeal:true,
                  proj:'efire', pspd:11, spread:2, laBurn:{p:0.3, t:3}, mix:{fire:1}, note:'受到的火焰伤害转化为治疗；火焰魔法攻击，攻击距离 7.5 格，附带灼烧 3 秒，每秒 30%；走过的地方留下伤害 20 的火焰踪迹'},
-  laHellhound:  {laTrail:10, name:'地狱犬', tier:2, hp:600, def:3, mdef:2, dmg:60, int:0.667, range:0, speed:2.5, dodge:0, aggro:4, bounty:9, cost:6, size:6, resist:LA_FI, animal:true, laFireAtk:0.3,
+  laHellhound:  {laTrail:10, name:'地狱犬', tier:2, hp:600, def:3, mdef:2, dmg:60, int:0.667, range:0, speed:2.5, dodge:0, aggro:4, bounty:9, cost:6, size:6, dmgImm:LA_FI, animal:true, laFireAtk:0.3,
                  mix:{slash:1}, note:'免疫火焰伤害；跑得快；攻击时另外造成 30% 的火焰伤害；走过的地方留下伤害 10 的火焰踪迹'},
   // —— 三阶 ——
   laBeast:      {laTrail:30, name:'地狱蛮兽', tier:3, hp:2500, def:18, mdef:12, dmg:120, int:1.667, range:0, speed:1, dodge:0, aggro:3.5, bounty:15, cost:11, size:10, heavy:true, animal:true, laFireHeal:true,
@@ -7909,7 +7909,7 @@ Object.assign(CFG.enemies,{
                  laFireAtk:0.5, laHead2:{arc:90, len:3, mul:0.667, int:0.5}, mix:{slash:1}, note:'地狱三头犬在场时地狱犬进化成的；受到的火焰和爆炸伤害转化为治疗；咬的时候另外造成 50% 的火焰伤害；第二个头朝 3 格内的守军持续喷火，前方 90°，每秒 2 次，每次 60'},
   // —— 小首领（第 5 / 10 / 15 波轮流；技能在 maps/abyss_boss）——
   laCerberus:   {name:'地狱三头犬', tier:4, mini:true, smart:true, hp:24000, def:32, mdef:32, dmg:250, int:0.667, range:0, speed:3, dodge:0, aggro:8, bounty:80, cost:30, size:16, heavy:true, noLegion:true, unstop:true, animal:true,
-                 resist:LA_FI, mix:{slash:1}, laCerbSk:{
+                 dmgImm:LA_FI, mix:{slash:1}, laCerbSk:{
                    heads:{hp:0.3333, share:0.25, regrow:30, burn:{p:0.3, t:3}, bite:{range:1, mul:2, int:0.667}, flame:{range:5, arc:75, len:5, mul:0.8, int:0.5}},
                    sweep:{cd:10, range:5, arc:135, len:5, mul:1, tick:0.5, seq:[[1,-45],[2,45],[1,0]]},
                    charge:{cd:10, dist:7.5, t:1.5, mul:1.6, hell:0.4, min:2},
@@ -7928,7 +7928,7 @@ Object.assign(CFG.enemies,{
   laWernerEgg:  {name:'维尔纳的龙蛋', tier:4, mini:true, hp:20000, def:32, mdef:32, dmg:0, int:99, range:0, speed:0, dodge:0, aggro:0, bounty:0, cost:0, size:12, heavy:true, noLegion:true, unstop:true, noAttack:true,
                  laEgg:true, mix:{blunt:1}, note:'地狱飞龙·维尔纳死后留下的龙蛋：有它 50% 最大生命，5 秒后孵出新的维尔纳，继承龙蛋剩下的生命；在孵出来之前打碎才算击败维尔纳'},
   laBomber:     {name:'地狱轰炸机·恶魂', tier:4, mini:true, smart:true, magic:true, hp:32000, def:20, mdef:40, dmg:400, int:2.5, range:8, speed:1.5, dodge:0, aggro:10, bounty:80, cost:30, size:18, heavy:true, noLegion:true, unstop:true,
-                 hover:{h:40, dodge:0}, keepAway:{r:5}, resist:LA_FI, proj:'efire', pspd:9, spread:1, aoe:1.5, mix:{fire:0.5, impact:0.5}, laBomberSk:{
+                 hover:{h:40, dodge:0}, keepAway:{r:5}, dmgImm:LA_FI, proj:'efire', pspd:9, spread:1, aoe:1.5, mix:{fire:0.5, impact:0.5}, laBomberSk:{
                    aura:{burn:2, boom:2},
                    bomb:{cd:12, range:15, n:10, dur:2, spread:5, fly:1, r:2.5, mul:1, pit:{r:5, t:10, burn:0.3, bt:3}},
                    meteor:{cd:20, n:10, waves:3, gap:1, warn:1, r:1.5, mul:2, pit:{r:3, t:5, burn:0.8, bt:3}},
@@ -7952,7 +7952,7 @@ Object.assign(CFG.enemies,{
                       '高爆魔弹——向前放出一颗每秒 1 格的魔弹，魔弹有 {hp*0.2} 生命，碰到第一个守军或建筑就爆炸：它吃 {dmg*16.67}，5 格内 {dmg*8.33} 随距离降到 {dmg*1.667}；提前打碎的话伤害和范围减半，冷却 15 秒；'+
                       '地狱核弹——消耗当前生命的 10%，原地 5 格内爆炸，伤害等于消耗的生命，随距离降到 20%，冷却 30 秒'},
   laAkOrb:      {name:'高爆魔弹', tier:3, minion:true, noLoot:true, hp:30000, def:0, mdef:0, dmg:0, int:99, range:0, speed:1, dodge:0, aggro:0, bounty:0, cost:0, size:8, heavy:true, noLegion:true, unstop:true, noAttack:true,
-                 resist:LA_FI, laOrb:true, mix:{impact:1}, note:'赤木正一放出的高爆魔弹：每秒 1 格往前飘，碰到第一个守军或建筑就爆炸；提前打碎的话伤害和范围减半'},
+                 dmgImm:LA_FI, laOrb:true, mix:{impact:1}, note:'赤木正一放出的高爆魔弹：每秒 1 格往前飘，碰到第一个守军或建筑就爆炸；提前打碎的话伤害和范围减半'},
 });
 {const S=CFG.enemies;for(const k in S)if(/^la[A-Z]/.test(k)){S[k].abyss=true;S[k].hdOnly=true}}
 CFG.eWeap=Object.assign(CFG.eWeap||{},{laFlameSkel:'longsword',laFlameMage:'staff',laKnightM:'staff',laKnightP:'greatsword'});
@@ -10379,7 +10379,7 @@ Object.assign(CFG.enemies,{
                noLegion:true, lyDr:0.5, mix:{pierce:0.6, blunt:0.4}, note:'龙系，大型。血高防厚、攻击高、移速快的近战物理单位；减伤 +50%。无法使用地道'},
   // —— 三阶 ——
   lyFireDrake:{name:'火焰地龙', tier:3, cls:'inf', lyU:true, lyDrg:true, hp:15500, def:30, mdef:20, dmg:145, int:0.5, range:4, speed:0.9, dodge:0, aggro:5, bounty:16, cost:12, size:11, noLegion:true, magic:true,
-               resist:{fire:1}, lyGndDr:1, lyK:{breath:{arc:90, len:5, int:0.5, mul:0.5}}, mix:{fire:1},
+               dmgImm:{fire:1}, lyGndDr:1, lyK:{breath:{arc:90, len:5, int:0.5, mul:0.5}}, mix:{fire:1},
                note:'龙系。持续喷火：朝前方 90° 扇形、5 格长喷火，每 0.5 秒一次 50% 火焰伤害(扇形里的守军、建筑都烧)；免疫火焰伤害；受到非飞行单位的伤害减伤 +100%(英雄、士兵、建筑都算；只有飞行单位打它不减)'},
   lyWindPtero:{name:'风刃翼龙', tier:3, cls:'air', lyU:true, lyDrg:true, lyNoTun:true, fly:true, hp:5000, def:10, mdef:12, dmg:150, int:2, range:0, speed:2.2, dodge:0, aggro:8, bounty:16, cost:12, size:10, noLegion:true,
                lyDodge:{p:0.6, melee:0.5}, lyK:{wallFirst:1, blade:{len:7.5, w:1, int:1, mul:1}}, mix:{slash:1},   // 0.12.7f（用户定）闪避 75% → 60%
@@ -25591,10 +25591,12 @@ const EM_KEYS=['hp','dmg','speed','def','atkSpd','count','lifesteal','elites','r
 // v0.6.02 英雄当前朝向的角度：dx、dy 都是 0 才按左右朝向（原来 dx 为 0 就当成 1，纯上下移动时变成斜 45°）
 const heroAng=h=>(h.dx||h.dy)?Math.atan2(h.dy||0,h.dx||0):(h.facing<0?Math.PI:0);
 function zeroMods(keys){const o=fastObj(Object.fromEntries(keys.map(k=>[k,0.5])));for(let i=0;i<keys.length;i++)o[keys[i]]=0;return o}   // P3 改（0.12.2d 性能）：先用小数 0.5 建、再逐个写回 0，让每个字段一出生就是「小数」表示——拿卡第一次把某项从 0 改成 0.12 时不再换形状（原来每换一次，读 pm.xxx 的几十个函数整批作废重编，见 索引-机制备忘「对象形状」）；「先建成 0 再改小数」会把整条转换链重建 175 次，第一局开局要几毫秒
-// 伤害类型：mix = {类型: 占比}，res = {类型: 抗性}
-function mixMul(res,mix){if(!res||!mix)return 1;let m=0;for(const k in mix)m+=mix[k]*(1-(res[k]||0));return m}
-// v0.6.1 无视部分抗性：抗性（正数）减 cut[k] 个百分点，最低到 0；弱点（负数）不变
-function mixMulCut(res,mix,cut){let m=0;for(const k in mix){let r=res[k]||0;if(r>0&&cut[k])r=Math.max(0,r-cut[k]);m+=mix[k]*(1-r)}return m}
+// 伤害类型：mix = {类型: 占比}，res = {类型: 抗性}，imm = {类型: 免疫比例}（亡灵数据的 dmgImm，可以不传）
+// 2026-11-07（用户定）：抗性 X > 0 → 这类伤害 ÷ (1 + X)，不封顶；弱点（负的抗性）→ × (1 + |X|)（同原来）；「免疫 X% 某类伤害」→ × (1 − X)，最低 0；两种都有时相乘
+const resKOf=r=>r>0?1/(1+r):r<0?1-r:1;
+function mixMul(res,mix,imm){if(!mix)return 1;let m=0;for(const k in mix){let f=mix[k];if(res){const r=res[k];if(r>0)f/=1+r;else if(r<0)f*=1-r}if(imm){const v=imm[k];if(v>0)f*=v<1?1-v:0}m+=f}return m}
+// v0.6.1 无视部分抗性：抗性（正数）减 cut[k] 个百分点，最低到 0；弱点（负数）、免疫不变
+function mixMulCut(res,mix,cut,imm){let m=0;for(const k in mix){let r=res?res[k]||0:0;if(r>0&&cut[k])r=Math.max(0,r-cut[k]);let f=mix[k]*resKOf(r);if(imm){const v=imm[k];if(v>0)f*=v<1?1-v:0}m+=f}return m}
 function angDiff(a,b){let d=a-b;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;return Math.abs(d)}
 const mixOf=k=>CFG.drawMix[k]||null;
 const HIDS=Object.keys(CFG.heroes);
@@ -48520,7 +48522,7 @@ const dmgAllK=()=>pm.allDmg;   // v0.8.23 破军之星改到 dealE（物理、�
 // v0.10.3 用户定：「移除 / 无视减伤」统一——以前各处减伤各写各的，魏德曼「无坚不摧」只移除得了赤血关隘的减伤、萝拉「侵略如火」只认三四种
 //   DRK = 这一下亡灵的减伤还剩几成（1 = 全算，0 = 全部移除）：dealE 进来时按攻击方（萝拉架势 loF.red、o.igRed 无视减伤）和目标身上的「移除减伤」（魏德曼 BPW.rm、E.drmF）连乘算好
 //   移除 X% = 减伤数值 × (1 − X)：「减伤」类 dmg / (1 + drK(X))；「免伤」类 dmg × (1 − imK(X))（不受移除减伤影响）；移除 100% = 全部移除（不是 −100 个百分点，用户定）
-//   伤害类型的抗性（resist / mixMul）、护盾、替伤、招架、免疫不算减伤，不受影响（Claude 定）
+//   伤害类型的抗性 / 免疫（resist / dmgImm，mixMul）、护盾、替伤、招架、免疫不算减伤，不受影响（Claude 定）
 //   v0.10.3（用户定）「免伤」（× (1 − X) 一类）和「减伤」分开：移除 / 无视减伤不碰免伤；免伤只认 IMK（o.igImm 无视免伤，目前没有英雄带）
 let DRK=1,IMK=1;
 const drK=x=>x*DRK,imK=x=>x*IMK;
@@ -48550,7 +48552,7 @@ let XZ_ON=false,XZK=1,XZV=0;
 //   SH_I / SH_RAW / SH_O：dealE_ 走到替伤那一步时记下被保护者、这一下的原始伤害、选项（嵌套的 dealE 进出时存回）；SH_EI 被保护者的估算（-1 = 还没算）
 let SH_I=-1,SH_RAW=0,SH_O=null,SH_EI=-1;
 function eEstPre(j,raw,o){const t=E.t[j];let d=raw;if(o.tru)return d;
-  if(o.mix){const rs=ETC[t].resist;if(rs)d*=mixMul(rs,o.mix)}
+  if(o.mix){const c_=ETC[t],rs=c_.resist,im=c_.dmgImm;if(rs||im)d*=mixMul(rs,o.mix,im)}
   {const g=UE_G,s_=UE_S,n=UE_N;UE_G=UE_S=UE_N=0;{const L=HK.dmgPreE;for(let k=0;k<L.length;k++)d=L[k](j,d,o)}d*=eResMul(o,E.fsNc[j]);if(!(UE_NODR&&UE_NODR(j)))d/=ueDen(j,o,false,ueBV(j));UE_G=g;UE_S=s_;UE_N=n}   // v0.11.0 减伤池子（含地图的）也估进去
   {const V=ueBV(j);if(V!==null&&V[6])d*=Math.max(0.1,1+V[6])}
   if(!o.dot&&d>0){let a;if(!o.magic)a=Math.max(0,E.def[j]*(E.xDt[j]>0?1+E.xD[j]:1)*(G.eDefK||1)-(o.pen||0));else a=Math.max(0,(EMDEF[t]+(E.fsNc[j]?0:em.mdef))*(E.fsNc[j]?1:1+em.mdefP)*(G.eMdefK||1)-(o.spen||0));
@@ -48570,7 +48572,7 @@ function dealE_(i,raw,o){
   let xu=1,xz0=0;   // v0.11.1 唯识无境：xu = 吃到的减伤类倍率连乘（XZK < 1 时才记）；xz0 = 防御把伤害减成 0 时，减防御之前的转化基数
   if(!E.alive[i]||(E.ug[i]>0&&!o.ugHit)||E.bnT[i]>0||(o.hk&&o.hk.reviveT>0)||(E.dv[i]===1&&!G.csOn))return 0;let dmg=raw;{const L=HK.dmgBaseE;for(let k=0;k<L.length;k++)dmg=L[k](i,dmg,o)}   // sdPow：v0.6.0 绝影沙漠棺材的「蚀化之力」   // v0.4.2：英雄复活保护期间不造成伤害（死前打出去的弹道、留下的区域也算）   // starDmg：破军之星 +77%（单独乘，不受血祭的上限影响）   // dv 1 在黄沙海岸以外：v0.8.2 蒸汽重工开出地图的列车、附着在巨像身上的芯片（看不见、打不到）   // ugHit：v0.9.0 钻地地雷能炸到钻在地下的
   dmg*=m1WkF(o);   // M1 加：v0.10.11 虚弱，出手的英雄 / 士兵 / 建筑身上的（engine/m1_weak）
-  if(o.mix&&!o.tru){const rs=ETC[E.t[i]].resist;if(rs){const m_=o.resCut?mixMulCut(rs,o.mix,o.resCut):mixMul(rs,o.mix);dmg*=m_}}   // v0.10.10（用户定）唯识无境的转化部分照吃伤害类型抗性（原来不吃）   // resCut：v0.6.1 喷火塔「单点喷射」无视部分抗性
+  if(o.mix&&!o.tru){const c_=ETC[E.t[i]],rs=c_.resist,im=c_.dmgImm;if(rs||im){const m_=o.resCut?mixMulCut(rs,o.mix,o.resCut,im):mixMul(rs,o.mix,im);dmg*=m_}}   // v0.10.10（用户定）唯识无境的转化部分照吃伤害类型抗性（原来不吃）   // resCut：v0.6.1 喷火塔「单点喷射」无视部分抗性
   UE_G=UE_S=UE_N=0;{const L=HK.dmgPreE;for(let k=0;k<L.length;k++)dmg=L[k](i,dmg,o)}   // v0.6.0 元素森林「水之相」：火焰伤害清零；v0.8.7 堕落圣堂「灾雨」：我方不能造成火焰伤害   // v0.11.0 地图、亡灵技能的减伤也在 dmgPreE 里加进池子（ueDr / ueDrP / ueDrM，不改伤害）
   const lf=G.ltFU>G.time&&!o.tru&&ltLife(o);   // lf：v0.9.1 蕾忒「遗忘领域」生命流失（heroes/lethe）——不吃物理 / 法术减伤（亡灵卡和地图的）和防御、法术防御；伤害类型的抗性、通用减伤、免伤照算
   const BV=ueBV(i);   // 统一 buff 的合计（减伤进池子、易伤进易伤池子、免伤在后面乘）
@@ -52515,7 +52517,7 @@ function facProjE(p){const j=p.fe,ok=eOk(j,p.feId)&&!(E.ug[j]>0);let hit=false;
   p.dead=true}
 // 亡灵打亡灵的伤害：防御、法防、抗性、闪避、格挡、减伤、护盾照算；我方的卡牌、科技、装备效果都不算；打死不给赏金、不掉落
 function dealEE(j,raw,o){if(!E.alive[j]||E.ug[j]>0||E.bnT[j]>0)return 0;const t=E.t[j],c=ETC[t],K_=CFG.combat,x=E.x[j],y=E.y[j];let d=raw;
-  if(o.mix&&c.resist)d*=mixMul(c.resist,o.mix);
+  if(o.mix&&(c.resist||c.dmgImm))d*=mixMul(c.resist,o.mix,c.dmgImm);
   let hk=1;if(!o.magic&&!o.blast&&E.dodge[j]>0&&Math.random()<E.dodge[j]){hk=K_.deflK;if(inViewPt(x,y))addFx({k:'miss',x,y:y-16,life:0.35})}   // v0.8.14 闪避改偏斜：伤害 × 50%
   else if(o.crit&&Math.random()<o.crit)hk=K_.critMul;
   if(!o.magic)d=defF(d,E.def[j]);else{const md=EMDEF[t];if(md>0)d=defF(d,md)}   // defF：v0.8.24 防御公式
@@ -63199,7 +63201,7 @@ let HVA=null;const hvArm=u=>{if(!u||u.isHero||!u.type)return false;if(!HVA)HVA=n
 function nanNote(u,kind,info){try{const L=META.nanLog||(META.nanLog=[]);if(L.length>=8)return;L.push({v:GAME_VER,at:Date.now(),kind,who:u.isHero?'英雄 '+u.id:(u.type||'?'),map:G&&G.map,wave:G&&G.wave,hp:u.hp,maxHp:u.maxHp,info});saveMeta();console.warn('NaN',L[L.length-1])}catch(e){}}
 function nanFix(u,kind,info){nanNote(u,kind,info);if(!(u.maxHp>0)){if(u.isHero&&typeof heroRecalc==='function')heroRecalc(u,true);else u.maxHp=u.baseHp>0?u.baseHp*uHpMul(u):1;if(!(u.maxHp>0))u.maxHp=1}u.hp=u.maxHp}
 function healF(u,amt){if(u.dead||!(amt>0))return;const h0=u.hp;if(HK.healInF.length){const L=HK.healInF;for(let k=0;k<L.length;k++)amt=L[k](u,amt,DS_CUR)}u.hp=Math.min(u.maxHp,u.hp+amt*healMul(u)*((pm.healAmp>0||pm.heroHeal>0)&&DS_CUR?healSrcK(DS_CUR):1)*(pm.starHeal>0?1+pm.starHeal:1)*(G.sdPow?1-CFG.shadowDesert.powers.rot:1)*(1+(u.healIn||0))*(G.fHealK||1));if(u.hp!==u.hp){nanFix(u,'heal',{amt,h0,healIn:u.healIn,rotF:u.rotF});return}if(DS_ON&&u.hp>h0)dsHeal(DS_CUR,u.hp-h0)}   // v0.6.0 绝影沙漠「腐化之力」；healIn：黄沙套装   // fHealK：v0.9.0 我方受到的治疗的整体倍率（无尽沙漠的水之碑）
-const chillMul=u=>(u.chillU>G.time?1-u.chillF*(1-Math.min(0.9,(TM.coldRes||0)+(u.elSlowR||0))):1)*(u.sandU>G.time?0.6:1)*(u.gsU>G.time?1-u.gsF:1)*(1+(u.iceK||0));   // elSlowR：0.12.0 精英家族特性「寒冰减速抗性」   // iceK：v0.5.1 冰湖加速   // sandU：荒漠法老的沙漠风暴减速 40%；gsU：腐化王室近卫的减速（v0.4.0）
+const chillMul=u=>(u.chillU>G.time?1-u.chillF*(1-Math.min(0.9,TM.coldRes||0))/(1+(u.elSlowR||0)):1)*(u.sandU>G.time?0.6:1)*(u.gsU>G.time?1-u.gsF:1)*(1+(u.iceK||0));   // elSlowR：0.12.0 精英家族特性「寒冰减速抗性」；2026-11-07（用户定抗性 ÷ (1 + X)）减速效果 ÷ (1 + 抗性)，原来和科技「保暖衣物」相加按 × (1 − 合计) 算   // iceK：v0.5.1 冰湖加速   // sandU：荒漠法老的沙漠风暴减速 40%；gsU：腐化王室近卫的减速（v0.4.0）
 const iceAt=(x,y)=>G.terrain[tidx(clamp(x,0,MW-1),clamp(y,0,MH-1))]===T_ICE,iceTurn=u=>iceAt(u.x,u.y)||(G.atRd&&G.atRd[tidx(clamp(u.x,0,MW-1),clamp(u.y,0,MH-1))]>0)?CFG.polar.lake.turn:1;   // v0.5.1 冰湖上转向变慢；v0.9.0 北极苔原的冰道也是
 // v0.8.11（用户定：临时加成都相加）英雄、士兵的临时移速加成：统一 buff 的 mspd、先登之志、傀儡核心、隐身、疾风斩击——和卡牌、科技的移速加成相加（uSpd / 英雄移速）；friendMv 只剩减速和地图倍率
 const mvT=u=>POT.spd+(u.bfV?u.bfV[3]:0)+(u.bpSpU>G.time?u.bpSp:0)+(u.gcU>G.time?u.gcV.spd:0)+(u.stealthT>0&&u.stealthSpd?u.stealthSpd:0)+(u.galeU>G.time?u.gsSpd:0);
@@ -80904,7 +80906,7 @@ function elDef(e){const J=elJobD(e),S=elStatSum(e),R=EL().regions[e.reg]||{},M=e
     dodge:Math.max(0,(1+J.dodge+(S.dodge||0)/100)*(1+(S.dodgeK||0))-1+(S.dodgeR||0)+(S.eva||0)),crit:Math.max(0,(1+J.crit+(S.crit||0)/100)*(1+(S.critK||0))-1+(S.critR||0)),
     tough:Math.max(1,(100+(S.tough||0))*(1+(S.toughK||0))+100*(S.toughR||0)),prof:{weapon:elWAll(e)?elWTypes():J.weapon.slice(),armor:J.armor.slice()},backstab:!!S.backstab,noWall:!!S.noWall,elS:S,elRes:elResOf(R.res,S),ship:!!S.f5bShip,camel:S.f5bShip?EL().f15b.camel:null,shipLand:S.f5bShip?EL().f15b.land:0,fly:!!S.f17Bal,balloon:!!S.f17Bal}}   // noWall：0.13 重炮手不上城墙   // elWAll：0.13.2 萝拉「百般兵器」所有武器都熟练；fly / balloon：0.13.2 气球射手（game/el_fam17、el_fam17a）
 // 抗性：地区的 + 血脉特别属性的毒抗、冰抗、火抗（0.12.0）
-function elResOf(r,S){const o=Object.assign({},r||{});let any=!!r;for(const[a,b]of[['resPoison','poison'],['resFrost','frost'],['resFire','fire']])if(S[a]){o[b]=Math.min(1,(o[b]||0)+S[a]);any=true}return any?o:null}   // min 1：0.13.2 七阶代理加，抗性加到 100% 为止（赤木血脉 + 特性 + 炎武士会超过 100%，engine/core.mixMul 按 1 − 抗性 乘，超了会变成负的）
+function elResOf(r,S){const o=Object.assign({},r||{});let any=!!r;for(const[a,b]of[['resPoison','poison'],['resFrost','frost'],['resFire','fire']])if(S[a]){o[b]=(o[b]||0)+S[a];any=true}return any?o:null}   // 2026-11-07（用户定）抗性 ÷ (1 + 合计)，可以超过 100%（原来 mixMul 按 1 − 抗性 乘，七阶代理加过「到 100% 为止」，已去掉）
 // 小人：职业的图（art 里 el_<职业>）；还没画的先借一位英雄的
 const EL_SPR_FB={recruit:'arthur',assassin:'assassin',berserker:'arthur',spearman:'arthur',shieldGuard:'paladin',marksman:'robin',cannoneer:'gunslinger',musketeer:'gunslinger',lightCav:'camelKnight',heavyCav:'camelKnight',horseArcher:'robin',gunCav:'gunslinger',mage:'merlin',priest:'priest',engineer:'engineer',druid:'archDruid',alchemist:'poisoner',bard:'arthur',paladin:'paladin'};
 const elSpr=(job,sex)=>sex==='f'&&SPR.heroes['elf_'+job]?'elf_'+job:SPR.heroes['el_'+job]?'el_'+job:EL_SPR_FB[job]||'arthur';   // sex：0.11.4 女性小人 elf_<职业>（art/ef_elite）
@@ -86402,7 +86404,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="13fc956",GAME_BUILT=1794014853733,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="bbeede2",GAME_BUILT=1794018411661,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -86773,6 +86775,7 @@ function eStatLine(i){const c=ETC[E.t[i]],f1=v=>String(Math.round(v*10)/10),P=[]
   if(E.dodge[i])P.push('闪避 '+Math.round(E.dodge[i]*100)+'%');if(E.blk[i])P.push('格挡 '+f1(E.blk[i]));
   P.push('韧性 '+f1(G.eTough+(c.tough||0)),'偏斜 '+f1(100*(1+E.dodge[i]+(G.eDflD?G.eDflD[E.t[i]]:0))+G.eDefl));if(c.resi)P.push('法抗 '+c.resi);
   if(c.resist){for(const k in c.resist){const v=c.resist[k];if(v){const dn=(CFG.dmgTypes[k]||{}).name||k,pv=Math.round(Math.abs(v)*100);P.push(v>0?`${dn}抗 ${pv}%`:`${dn}弱 ${pv}%`)}}}
+  if(c.dmgImm){for(const k in c.dmgImm){const v=c.dmgImm[k];if(v>0){const dn=(CFG.dmgTypes[k]||{}).name||k;P.push(v>=1?`免疫${dn}`:`免疫${dn} ${Math.round(v*100)}%`)}}}   // dmgImm：2026-11-07 免疫 X% 某类伤害（× (1 − X)），和抗性（÷ (1 + 抗性)）分开显示
   return P.join(' · ')}
 function eSelPanel(force){const i=selE.i,c=ETC[E.t[i]];selEl.hidden=false;if(selShown!==selE){selShown=selE;sellArmT=0}
   if(selSettle)selSettle.hidden=true;
@@ -86853,6 +86856,7 @@ Object.assign(F1_BN,{
 for(let b=1;b<=6;b++)BF_NAME['lyRich'+b]='宝物·'+LYU_RN[b];   // 龙神遗迹氪金战士的宝物光环（原来第一次打开亡灵面板才登记，头一下会显示 id）
 Object.assign(F1_BN,{f4Cannon:'火炮机械(伤害)',pp2Ward:'绝命毒爆(减伤)'});   // 家族第二批的大地棱刺、沙漠商人火炮机械、进阶-帕拉塞尔苏斯绝命毒爆（t_bfn 查出来没起名字）
 Object.assign(BF_NAME,{rdMark:'雷达标记(易伤)',rdDef:'防御勘破(减伤降低)'});   // 0.13.2.1 雷达基地（structs/radar）
+Object.assign(BF_NAME,{f16Mech:'精械之魂',f16MechS:'精械之魂(建筑)',f16bSurf:'乘海破浪',f17Eye:'深海之眼(易伤)',f17Sky:'空中压制',f17St:'风林火山·风'});   // 0.13.2.x 六、七阶家族（game/el_fam16a、el_fam16b、el_fam17a；t_bfn 查出来没起名字）
 
 // ---------- v0.8.18 局内指挥面板（用户定）：点「指令」打开，塔楼 / 兵营 / 英雄三个页签，上下滑动 ----------
 // 塔楼：按种类分，切换选目标的方式（锁定的塔不变）；兵营：跟随（选英雄）、驻守（选驻守点）、出击（选刷新点或自由）；英雄：驻守（选驻守点）、出击（选刷新点或自由）
@@ -89137,7 +89141,8 @@ function formulaHTML(){
     `判定顺序：闪避(整下无效，少数亡灵才有)→ 偏斜(物理)/ 抵抗(法术)→ 暴击，三者互斥，偏斜了就不会暴击`,
     `偏斜率 = (偏斜 − 命中) ÷ 命中(点数，基础 100)；偏斜时伤害 × ${pc(C.deflK)}(偏斜效果 E：÷ (1 + E))`,
     `暴击率 = (暴击 − 韧性) ÷ 韧性(点数，基础 100；原来的暴击率 p 按 100 + 100p 点算)；暴击伤害 = max(100%, 暴击倍率 − 守护)，默认 ${pc(C.critMul)}；偏斜、暴击都在减完防御之后乘`,
-    `某类伤害受到的伤害降低，如铁血要塞挥砍伤害 −10%、木乃伊火焰伤害 +40%：伤害 × Σ 类型占比 × (1 − 降低的比例)；为负就是弱点`,
+    `伤害类型抗性(2026-11-07 起)，如铁血要塞挥砍抗性 +10%、北极苔原亡灵冰霜抗性 +50%：这类伤害 ÷ (1 + 抗性)，可以超过 100%；弱点(负的抗性，如木乃伊火焰 −40%)：× (1 + 弱点)；按这一下的类型占比加权`,
+    `免疫某类伤害 X%，如熔岩深渊的亡灵免疫火焰、无尽沙漠的木乃伊物理伤害 −35～50%：这类伤害 × (1 − X)，最低 0；和抗性都有时相乘`,
     `亡灵的减伤：所有减伤相加，伤害 ÷ (1 + 合计)(写明独立的单独除)；减速、冰冻减免：持续时间 ÷ (1 + 减免)`,
     `亡灵的免伤(受到的伤害降低 X%)，如腐化皇家禁卫、教皇的十二主教、剧情首领：伤害 × (1 − X)，最低 0`,
     `易伤，如十字架、弱点暴露、制裁、猎魔标记、震波打击：伤害 × (1 + 几项相加)；背刺 × 2`,
