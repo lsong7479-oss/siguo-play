@@ -2132,7 +2132,7 @@ Object.assign(CFG,{
                desc:p=>`以自身为中心爆发火环：${p.radius} 格内亡灵受到 ${sv_(p.b,p.ad,'AP')} 火焰伤害并被推开至火环边缘；灼烧每秒造成 ${sv_(p.bb,p.bad,'AP')} 伤害，持续 ${p.burnT} 秒`+(p.wall?`；【火墙】火环边缘留下持续 ${p.wall} 秒的火墙，接触到火墙的亡灵受到相同的灼烧`:'')},
     tornado:  {name:'龙卷风', cd:16, aim:'line', range:8, speed:7, count:1, spreadA:0, mag:true,
                byStar:{b:[72,72,72,80,95], ad:[0.4,0.4,0.4,0.45,0.55], width:[1.4,1.4,1.4,1.6,2.1], stun:[0.6,0.6,0.6,0.8,1]},
-               desc:p=>(p.count>1?`同时向前方释放 ${p.count} 道`:'沿直线释放')+` ${p.range} 格、宽 ${Math.round(p.width*10)/10} 格的龙卷风${p.count>1?`，两侧两道各偏转 ${p.spreadA}°`:''}：卷起沿途除首领、重型以外的亡灵，带至终点后抛出，造成 ${sv_(p.b,p.ad,'AP')} 风伤害并眩晕 ${p.stun} 秒`+
+               desc:p=>(p.count>1?`同时向前方释放 ${p.count} 道`:'沿直线释放')+` ${p.range} 格、宽 ${Math.round(p.width*10)/10} 格的龙卷风${p.count>1?`，两侧两道各偏转 ${p.spreadA}°`:''}：卷起沿途除大 BOSS、重型以外的亡灵，带至终点后抛出，造成 ${sv_(p.b,p.ad,'AP')} 风伤害并眩晕 ${p.stun} 秒`+
                  (p.vortex?`；终点各留下持续 ${p.vortex} 秒的旋涡：将 ${p.vr} 格内的亡灵向中心牵引，每秒造成 ${sv_(p.vb,p.vad,'AP')} 伤害`:'')},
     // —— 工程师 ——
     hemine:   {name:'高爆地雷', cd:5, aim:'area', range:4, trig:0.9, aoe:2.5, arm:0.6, clusterMul:0.5, byStar:{maxN:[3,4,4,5,6], b:[80,100,120,140,170], ad:[0.3,0.35,0.4,0.45,0.5], cluster:[0,0,2,3,5]},
@@ -2147,7 +2147,7 @@ Object.assign(CFG,{
     darts:    {name:'三叶矢',   aim:'fan', range:6, n:3, fan:18, speed:16, byStar:{cd:[3,3,2,2,1], pierce:[1,2,2,3,3], b:[12,14,17,21,26], ad:[0.5,0.65,0.8,1,1.25]},
                desc:p=>`向前方 ${p.fan}° 扇形范围投掷 ${p.n} 枚飞镖，每枚造成 ${sv_(p.b,p.ad)} 刺击伤害，贯穿 ${p.pierce} 个目标；背刺时伤害加倍`},
     blink:    {name:'瞬杀',     cd:12, aim:'target', range:7, pct:0.08, elitePct:0.03, byStar:{b:[15,15,15,25,40], ad:[2.5,2.5,2.5,2.7,3]},
-               desc:p=>`瞬移至 ${p.range} 格内目标亡灵身后，未指定目标时选择最近的亡灵：造成 ${sv_(p.b,p.ad)} + 目标最大生命 ${pc_(p.pct)} 的伤害，对精英、首领为 ${pc_(p.elitePct)}；背刺时伤害加倍；击杀目标后刷新冷却`+(p.chain?`；【影舞】击杀后自动连斩 4 格内的下一个亡灵，最多连斩 ${p.chain} 次`:'')},
+               desc:p=>`瞬移至 ${p.range} 格内目标亡灵身后，未指定目标时选择最近的亡灵：造成 ${sv_(p.b,p.ad)} + 目标最大生命 ${pc_(p.pct)} 的伤害，对精英、小 BOSS、大 BOSS 为 ${pc_(p.elitePct)}；背刺时伤害加倍；击杀目标后刷新冷却`+(p.chain?`；【影舞】击杀后自动连斩 4 格内的下一个亡灵，最多连斩 ${p.chain} 次`:'')},
     // —— 绝命毒师 ——
     acidPool: {name:'酸液池',   cd:9,  aim:'area', range:6, tick:0.5, mag:true, slowPer:0.15, slowMax:0.75,
                byStar:{radius:[1.5,1.75,2,2.4,3], dur:[3,3.5,4,5,6], b:[6,8,11,15,20], ad:[0.3,0.35,0.45,0.6,0.8], stacks:[1,1,3,3,3]},
@@ -2344,7 +2344,7 @@ Object.assign(CFG,{
     {id:'luckVault', name:'幸运宝库', q:'epic',   eff:{}, flat:true, unique:true, special:'vault', avail:()=>!(vaultTier()>0), desc:'幸运 +20；此后每波结束有 10% 概率额外抽一次卡(只出数值卡，效果 −50%)'},   // v0.8.23（用户定）宝库链：幸运宝库 → 王之宝库 → 神王宝库 / 龙之财宝，后一张顶替前一张（幸运是合计，cardFx.vaults）
     {id:'vault',     name:'王之宝库', q:'legend', eff:{}, flat:true, replaces:'luckVault', unique:true, special:'vault', avail:()=>vaultTier()===1, req:'luckVault', desc:'顶替幸运宝库：幸运合计 +50；此后每波结束有 20% 概率额外抽一次卡(只出数值卡，效果 −50%)', help:'要先拿到「幸运宝库」才会出现。'},
     {id:'ace',       name:'王牌部队', q:'legend', eff:{unitHp:0.5, unitDmg:0.5, trainSlow:0.5}, flat:true, unique:true, desc:'士兵生命、伤害 +50%，训练速度 −50%'},
-    {id:'winter',    name:'凛风刺骨', q:'epic', eff:{winter:1}, flat:true, unique:true, seen:'frost', desc:'亡灵每次解冻时受到当前生命 10% 的寒冰伤害；精英 5%、小首领 2%、首领 1%', help:'这一局我方造成过寒冰伤害才会出现。'},   // v0.9.3（用户定）冰控流派：传说 → 史诗，去掉持续时间 ×2，每次解冻都掉当前生命（CFG.cardFx.winter）；v0.8.23（用户定）原「凛冬将至」
+    {id:'winter',    name:'凛风刺骨', q:'epic', eff:{winter:1}, flat:true, unique:true, seen:'frost', desc:'亡灵每次解冻时受到当前生命 10% 的寒冰伤害；精英 5%、小 BOSS 2%、大 BOSS 1%', help:'这一局我方造成过寒冰伤害才会出现。'},   // v0.9.3（用户定）冰控流派：传说 → 史诗，去掉持续时间 ×2，每次解冻都掉当前生命（CFG.cardFx.winter）；v0.8.23（用户定）原「凛冬将至」
     // —— v0.3.1 ——
     {id:'mobilize',  name:'战争动员', q:'legend', eff:{campCapP:0.3}, flat:true, cap:['campCapP',1], desc:'兵营最大士兵数量 +30%，和「征兵令」「募兵令」合计最多 +100%', help:'每座兵营的上限 × (1 + 合计)，四舍五入。'},
     {id:'thrift',    name:'精打细算', q:'epic',   eff:{thrift:0.1}, flat:true, unique:true, desc:'所有铜币花费 −10%(独立乘区)', help:'建造、升级、主堡升级、修理主堡、清理障碍都算。'},   // v0.8.23（用户定）原来只算建造、升级，和别的折扣相加
@@ -3519,7 +3519,7 @@ Object.assign(CFG.weapons,{
   sandStab:   {name:'砂刺',     type:'dagger', dmg:14, int:0.42, reach:0.95, arc:70, maxHit:1, sideMul:1, crit:0.2, draw:'dagger', special:true, q:'rare', cat:'dagger',
                fx:{blindHit:{t:3}}, note:'匕首强化版：攻击 10 → 14；命中让亡灵失明 3 秒，失明时远程偏移 +10°、索敌范围 −50%'},
   pilgrimStaff:{name:'朝圣法杖', type:'staff', hands:1, dmg:14, int:0.8, range:6.5, spread:2, speed:12, proj:'holy', mix:{holy:1}, aoe:0.3, mag:0, draw:'staff', special:true, q:'rare', cat:'staff1',
-               fx:{sapHit:{pct:0.03, cap:0.3}}, note:'单手牧师杖；每次命中削减目标 3% 最大生命，每只最多 30%，首领减半'},
+               fx:{sapHit:{pct:0.03, cap:0.3}}, note:'单手牧师杖；每次命中削减目标 3% 最大生命，每只最多 30%，大 BOSS 减半'},
 });
 Object.assign(CFG.armors,{
   // 数值是一整套的总和，data/gear.js 拆成三件；特效是套装效果（set 键，2 件一半、3 件全部）
@@ -3541,7 +3541,7 @@ CFG.xSets=Object.assign(CFG.xSets||{},{
 // 装备特效的文字（逻辑在 gear/fx.js 的 GEAR_FX，键名相同）
 CFG.fxText=Object.assign(CFG.fxText||{},{
   blindHit:v=>`命中让亡灵失明 ${v.t} 秒，失明时远程偏移 +${CFG.temple.eBlind.spread}°、索敌范围 −${Math.round((1-CFG.temple.eBlind.aggro)*100)}%`,
-  sapHit:v=>`每次命中削减目标 ${pcG(v.pct)} 最大生命，最多 ${pcG(v.cap)}，首领减半`,
+  sapHit:v=>`每次命中削减目标 ${pcG(v.pct)} 最大生命，最多 ${pcG(v.cap)}，大 BOSS 减半`,
   hitDR:v=>`受到伤害后 ${v.t} 秒内受到的伤害 −${pcG(v.f)}`,
   stealthOut:v=>`${v.t} 秒没出手、没挨打，${v.r} 格内也没有亡灵：进入隐身，亡灵不会把你当目标，出手或挨打现身`,
   dreadPulse:v=>`每 ${v.cd} 秒震慑 ${v.r} 格内的亡灵：恐惧 ${v.t} 秒，不能攻击并远离你`,
@@ -3891,7 +3891,7 @@ Object.assign(CFG.drops.books,{
    用户（Song）2026-10-04 的策划：蓝色，擅长火枪；神秘黑市、幸运商店（英雄商店）都有概率直接出现（不用先解锁），没招募也当作已拥有（同商人 shopOnly），但能出战 */
 Object.assign(CFG.skills,{
   deadShot:{name:'致命狙击', cd:5, aim:'target', req:'ranged', range:15, kill:{normal:0.1, elite:0.01, boss:0.001}, byStar:{b:[120,160,210,270,350], ad:[2,2.1,2.2,2.4,2.6]},
-    desc:p=>`锁定 ${p.range} 格内一个亡灵进行一次射击，造成 ${sv_(p.b,p.ad)} 伤害；若未击杀目标，普通亡灵有 ${pc_(p.kill.normal)}、精英有 ${pc_(p.kill.elite)}、首领有 ${pcG(p.kill.boss)} 概率被直接击杀`},
+    desc:p=>`锁定 ${p.range} 格内一个亡灵进行一次射击，造成 ${sv_(p.b,p.ad)} 伤害；若未击杀目标，普通亡灵有 ${pc_(p.kill.normal)}、精英和小 BOSS 有 ${pc_(p.kill.elite)}、大 BOSS 有 ${pcG(p.kill.boss)} 概率被直接击杀`},
   pierceShot:{name:'贯穿射击', cd:5, aim:'line', req:'ranged', range:15, w:0.55, byStar:{len:[7,8,10,12,15], b:[10,18,28,42,60], ad:[1,1.1,1.25,1.4,1.6]},
     desc:p=>`向目标方向进行一次射击，贯穿 ${p.len} 格直线上的所有亡灵，造成 ${sv_(p.b,p.ad)} 伤害，无视物理防御`},
   frenzySnipe:{name:'狂热狙杀', cd:3, aim:'target', req:'ranged', range:10, killCd:1, byStar:{b:[200,200,200,260,340], ad:[2.6,2.6,2.6,2.8,3.2]},
@@ -4391,7 +4391,7 @@ CFG.mapPages[3].maps.push('shadowDesert');
 // —— 绝影沙漠的装备（打造书由小首领 / 大首领掉落；同一个亡灵最多掉一本）——
 Object.assign(CFG.weapons,{
   sdErodeBow:  {name:'风蚀弓',     type:'bow', dmg:30, int:1.0, range:8.5, spread:3, speed:18, proj:'arrow', mag:6, reload:2.4, pen:3, draw:'longbow', special:true, q:'epic',
-                fx:{erodeHit:{pct:0.05, elite:0.03, boss:0.01, t:3}}, note:'命中后目标 3 秒内每秒损失 5% 当前生命，精英 3%、首领 1%'},
+                fx:{erodeHit:{pct:0.05, elite:0.03, boss:0.01, t:3}}, note:'命中后目标 3 秒内每秒损失 5% 当前生命，精英、小 BOSS 3%、大 BOSS 1%'},
   sdSandSword: {name:'黄沙长剑',   type:'sword', dmg:21, int:0.6, reach:1.4, arc:120, maxHit:3, sideMul:0.6, crit:0.05, draw:'longsword', special:true, q:'rare', fx:{healCutHit:{p:0.5, t:3}}, note:'攻击 50% 概率让目标禁疗 3 秒'},
   sdSandSpear: {name:'黄沙长枪',   type:'spear', dmg:25, int:0.85, reach:2.3, arc:30, maxHit:3, sideMul:0.8, pen:4, draw:'spear', special:true, q:'rare', fx:{healCutHit:{p:0.5, t:3}}, note:'攻击 50% 概率让目标禁疗 3 秒'},
   sdSandAxe:   {name:'黄沙战斧',   type:'axe', dmg:40, int:1.05, reach:1.4, arc:130, maxHit:4, sideMul:0.7, draw:'axe', special:true, q:'rare', fx:{healCutHit:{p:0.5, t:3}}, note:'攻击 50% 概率让目标禁疗 3 秒'},
@@ -4422,7 +4422,7 @@ CFG.xTrinkets=Object.assign(CFG.xTrinkets||{},{
 });
 CFG.units.griffinAlly={name:'狮鹫', tier:3, hp:900, def:4, speed:3.6, melee:{dmg:44, int:1.3, reach:1.1}, stagMul:0.3, weapon:null, look:'griffinAlly', noWind:true, summoned:true, note:'狮鹫之羽召来的狮鹫'};   // summoned：v0.9.0 修（同白熊）
 CFG.fxText=Object.assign(CFG.fxText||{},{
-  erodeHit:v=>`命中后目标 ${v.t} 秒内每秒损失 ${pcG(v.pct)} 当前生命，精英 ${pcG(v.elite)}、首领 ${pcG(v.boss)}`,
+  erodeHit:v=>`命中后目标 ${v.t} 秒内每秒损失 ${pcG(v.pct)} 当前生命，精英、小 BOSS ${pcG(v.elite)}、大 BOSS ${pcG(v.boss)}`,
   healCutHit:v=>`攻击 ${pcG(v.p)} 概率让目标禁疗 ${v.t} 秒`,
   featherShot:v=>`攻击时向前方射出 ${v.n} 道飞羽，每道造成这一击 ${pcG(v.mul)} 的伤害，冷却 ${v.cd} 秒`,
   featherHurt:v=>`受到伤害时向四面八方射出 ${v.n} 道飞羽，每道造成 ${pcG(v.mul)} 物攻的伤害，冷却 ${v.cd} 秒`,
@@ -8654,7 +8654,7 @@ if(CFG.maps.buddhaCave)Object.assign(CFG.maps.buddhaCave,{boss:['foBuddha'], min
 const FO_GT=8;   // 八阶
 Object.assign(CFG.weapons,{
   foStaff:{name:'众生禅杖', type:'staff', hands:2, dmg:40, int:1.05, range:7.5, spread:2, speed:12, proj:'holy', aoe:0.5, mag:0, magic:true, draw:'staff', special:true, q:'red', tier:FO_GT, mix:{arcane:1},
-           fx:{foConvert:{cd:5}}, note:'双手杖：攻击非首领目标时使目标转化为我方阵营(一～三阶亡灵)，冷却 5 秒'},
+           fx:{foConvert:{cd:5}}, note:'双手杖：攻击小 BOSS、大 BOSS 以外的目标时使目标转化为我方阵营(一～三阶亡灵)，冷却 5 秒'},
 });
 Object.assign(CFG.armors,{
   foDharmaRobe:{name:'正法袈裟', type:'cloth', def:4.5, dodge:0.04, speed:1, special:true, q:'legend', tier:FO_GT, fx:{foDharmaAura:{r:5, ad:0.3, ap:0.3}}, note:'为周围 5 格的士兵提高(30% 物攻 + 30% 法攻)的攻击力'},
@@ -8670,7 +8670,7 @@ CFG.xTrinkets=Object.assign(CFG.xTrinkets||{},{
   foBeads:    {name:'轮回佛珠', kind:'spc', q:'ancient', tier:FO_GT, fx:{foBeads:{n:8}}, note:'死亡后立刻复活，每波至多 8 次'},
 });
 CFG.fxText=Object.assign(CFG.fxText||{},{
-  foConvert:v=>`攻击非首领目标时使目标转化为我方阵营(一～三阶亡灵)，冷却 ${v.cd} 秒`,
+  foConvert:v=>`攻击小 BOSS、大 BOSS 以外的目标时使目标转化为我方阵营(一～三阶亡灵)，冷却 ${v.cd} 秒`,
   foDharmaAura:v=>`周围 ${v.r} 格的士兵攻击力 +(${pcG(v.ad)} 物攻 + ${pcG(v.ap)} 法攻)`,
   foSufferRes:v=>`异常状态持续时间 −${pcG(v.k)}`,
   foWisdomCyc:v=>`物理减伤 +${pcG(v.dr)} 持续 ${v.t1} 秒，然后法术减伤 +${pcG(v.dr)} 持续 ${v.t2} 秒，然后冷却 ${v.cd} 秒`,
@@ -9028,7 +9028,7 @@ CFG.xSets=Object.assign(CFG.xSets||{},{
 CFG.xTrinkets=Object.assign(CFG.xTrinkets||{},{
   jtCScroll: {name:'宰执万卷', kind:'spc', q:'red', tier:JTC_GT, fx:{jtCScroll:{every:3, n:1}}, note:'只能生效一个：每 3 波额外获得 1 次卡牌刷新次数'},
   jtCTally:  {name:'统军符印', kind:'spc', q:'red', tier:JTC_GT, fx:{jtCTally:{n:1}}, note:'最多生效一个：抽卡时可选的卡牌 +1，多出的这张必定是士兵类卡牌'},
-  jtCImpSeal:{name:'皇帝印玺', kind:'spc', q:'ancient', tier:JTC_GT, fx:{jtCImpSeal:{r:10, t:5, cd:15}}, note:'攻击时使 10 格内的非首领亡灵无法移动、攻击，持续 5 秒，冷却 15 秒'},
+  jtCImpSeal:{name:'皇帝印玺', kind:'spc', q:'ancient', tier:JTC_GT, fx:{jtCImpSeal:{r:10, t:5, cd:15}}, note:'攻击时使 10 格内小 BOSS、大 BOSS 以外的亡灵无法移动、攻击，持续 5 秒，冷却 15 秒'},
 });
 CFG.fxText=Object.assign(CFG.fxText||{},{
   jtCSetNone:()=>'没有效果(三件齐才生效)',
@@ -9037,7 +9037,7 @@ CFG.fxText=Object.assign(CFG.fxText||{},{
   jtCImpRobe:v=>`自身受到伤害时，由 ${v.r} 格内生命最高的其它士兵承受`,
   jtCScroll:v=>`只能生效一个：每 ${v.every} 波额外获得 ${v.n} 次卡牌刷新次数`,
   jtCTally:v=>`最多生效一个：抽卡时可选的卡牌 +${v.n}，多出的必定是士兵类卡牌`,
-  jtCImpSeal:v=>`攻击时使 ${v.r} 格内的非首领亡灵无法移动、攻击，持续 ${v.t} 秒，冷却 ${v.cd} 秒`,
+  jtCImpSeal:v=>`攻击时使 ${v.r} 格内小 BOSS、大 BOSS 以外的亡灵无法移动、攻击，持续 ${v.t} 秒，冷却 ${v.cd} 秒`,
 });
 // 掉率（用户定）
 CFG.drops.books=Object.assign(CFG.drops.books,{
@@ -12063,7 +12063,7 @@ Object.assign(CFG.skills,{
   vineAll:{name:'禁咒•森罗万象', cd:5, aim:'area', range:10, dur:5, mag:true, byStar:{radius:[8,8.5,9,9.5,10], b:[50,75,100,125,150], ad:[1,1.25,1.5,1.75,2], heal:[5,5.5,6,6.5,7.5]},   // 代理 OP（用户 2026-10-22）：AP 加成 100 / 125 / 150 / 175 / 200%（原来 75～130%）
     desc:p=>`在 ${p.range} 格内指定一处，${p.radius} 格内所有亡灵脚下长出藤蔓：受到 ${sv_(p.b,p.ad,'AP')} 大地伤害，并被禁锢 ${p.dur} 秒，直到技能结束；造成的伤害平均分配给自身 ${p.heal} 格内所有未满生命的友军和建筑，为其回复等量生命`},
   timeLock:{name:'禁咒•时空封锁', cd:5, aim:'area', range:10, dur:5, mag:true, boss:0.5, byStar:{radius:[3,3,3,4,5], b:[300,400,500,600,750], ad:[3,3,3,3,3], pct:[0.1,0.15,0.2,0.25,0.3]},
-    desc:p=>`在 ${p.range} 格内指定一处，${p.radius} 格内除自身以外的时间停止 ${p.dur} 秒：亡灵、友军单位及双方的弹道均静止；结束时对范围内的亡灵造成 ${sv_(p.b,p.ad,'AP')} + 目标最大生命 ${pc_(p.pct)} 的伤害。对首领仅有 ${pc_(p.boss)} 效果：攻击速度、移动速度、技能冷却各自减慢 ${pc_(p.boss)}，按最大生命计算的部分伤害减半`},
+    desc:p=>`在 ${p.range} 格内指定一处，${p.radius} 格内除自身以外的时间停止 ${p.dur} 秒：亡灵、友军单位及双方的弹道均静止；结束时对范围内的亡灵造成 ${sv_(p.b,p.ad,'AP')} + 目标最大生命 ${pc_(p.pct)} 的伤害。对大 BOSS 仅有 ${pc_(p.boss)} 效果：攻击速度、移动速度、技能冷却各自减慢 ${pc_(p.boss)}，按最大生命计算的部分伤害减半`},
   // —— 奥术阵座•冷 ——（四条龙的数值是用户给的；施法前摇 windup 秒、两条龙之间 gap 秒是 Claude 定的）
   arcaneSeat:{name:'奥术阵座', cd:10, aim:'area', range:10, mag:true, windup:0.5, gap:0.5,
     wSlow:0.5, wDur:3, eDelay:1, eRoot:3, fDelay:1, fBurn:0.3, fBurnT:3, aSlow:0.2, aSlowT:1, aDur:5,
@@ -12112,7 +12112,7 @@ Object.assign(CFG.skills,{
     desc:p=>`在 ${p.range} 格内指定一处落下闪电，${p.r} 格内的亡灵受到 ${sv_(p.b,p.ad,'AP')} 雷电伤害；随后连锁最近的 ${p.br} 个亡灵，每一道分支再连锁最近的 ${p.br} 个亡灵，最多连锁 ${p.depth} 次，每一道分支的伤害为上一道的 ${pc_(p.decay)}，不会重复连锁同一个目标`},
   stormTornado:{name:'暴风龙卷', cd:16, aim:'area', range:8, pull:1, mag:true, n:3, spreadA:30, len:5, speed:7,
     byStar:{r:[3,3.5,4,4.5,5], b:[72,72,72,80,95], ad:[0.4,0.4,0.4,0.45,0.55], width:[1.4,1.4,1.4,1.6,2.1], stun:[0.6,0.6,0.6,0.8,1]},
-    desc:p=>`在 ${p.range} 格内指定一处放出龙卷风：${p.pull} 秒内将 ${p.r} 格内除首领、重型以外的亡灵卷至中心，随后化作 ${p.n} 道旋风向前方推进 ${p.len} 格，卷起沿途的亡灵带至终点后甩出，造成 ${sv_(p.b,p.ad,'AP')} 风伤害并眩晕 ${p.stun} 秒`},
+    desc:p=>`在 ${p.range} 格内指定一处放出龙卷风：${p.pull} 秒内将 ${p.r} 格内除大 BOSS、重型以外的亡灵卷至中心，随后化作 ${p.n} 道旋风向前方推进 ${p.len} 格，卷起沿途的亡灵带至终点后甩出，造成 ${sv_(p.b,p.ad,'AP')} 风伤害并眩晕 ${p.stun} 秒`},
 });
 Object.assign(CFG.heroes,{
   lilian:{name:'莉莲', title:'魔界君主', quality:'red', look:'lilian', recruit:true, codeOnly:true,
@@ -13790,7 +13790,7 @@ Object.assign(CFG.skills,{
     desc:p=>`舰船立即向船头方向冲锋 ${p.dist} 格，沿途的亡灵受到 ${sv_(p.b,p.ad,'AD')} 伤害、被击退 ${p.kb} 格并眩晕 ${p.stun} 秒；冲锋结束后保持满速`},
   deathHook:{name:'死亡勾锚', cd:15, aim:'dir', pull:1, speed:24,
     byStar:{range:[6,6,6,8,10], b:[150,150,150,250,400], ad:[5,5,5,5,5]},
-    desc:p=>`向指定方向投掷射程 ${p.range} 格的勾锚，勾住命中的第一个亡灵，造成 ${sv_(p.b,p.ad,'AD')} 伤害，并在 ${p.pull} 秒内将其拖回船边；首领、列车无法被拖动，仅受到伤害`},
+    desc:p=>`向指定方向投掷射程 ${p.range} 格的勾锚，勾住命中的第一个亡灵，造成 ${sv_(p.b,p.ad,'AD')} 伤害，并在 ${p.pull} 秒内将其拖回船边；大 BOSS、列车无法被拖动，仅受到伤害`},
   // —— 重工总督 瓦特 ——
   mechMaster:{name:'精械重工', passive:true, cd:0, aim:'self', byStar:{r:[5,10,15,20,999], spd:[0.05,0.1,0.15,0.2,0.25], emp:[0.1,0.2,0.3,0.4,0.5]},
     desc:p=>`被动：在场时，${p.r>=999?'全场':'自身周围 '+p.r+' 格内'}友军的机械单位——机械类建筑、机械士兵、无人机——攻击速度、装填速度 +${pc_(p.spd)}，受到的电磁干扰时间 −${pc_(p.emp)}`},
@@ -13851,7 +13851,7 @@ Object.assign(CFG.skills,{
   wdFar:{name:'御敌千里', cd:15, aim:'area', dur:10, focus:3, byStar:{r:[5,7.5,10,12.5,15], vis:[0.1,0.2,0.3,0.4,0.5], rng:[0.1,0.2,0.3,0.4,0.5]},
     desc:p=>`自身周围 ${p.r} 格内的所有友军视野 +${pc_(p.vis)}、攻击距离 +${pc_(p.rng)}，持续 ${p.dur} 秒；同时其中的物理远程士兵向 ${p.r} 格内选中的地点集火打击一次`},
   wdBreak:{name:'无坚不摧', cd:15, aim:'area', dur:10, boss:0.8, mini:0.5, byStar:{range:[7,8,10,12.5,15], r:[2,2.5,3,3.5,4], def:[0.2,0.4,0.6,0.8,1], rm:[0.2,0.4,0.6,0.8,1]},
-    desc:p=>`对 ${p.range} 格内选中的地点：${p.r} 格内的亡灵防御降低 ${pc_(p.def)}，移除 ${pc_(p.rm)} 的减伤，不移除免伤，持续 ${p.dur} 秒；对大首领效果降低 ${pc_(p.boss)}、小首领降低 ${pc_(p.mini)}。自身周围 ${p.range} 格内的骑兵集火该处距中心最近的亡灵，立即转向并全速冲锋`},
+    desc:p=>`对 ${p.range} 格内选中的地点：${p.r} 格内的亡灵防御降低 ${pc_(p.def)}，移除 ${pc_(p.rm)} 的减伤，不移除免伤，持续 ${p.dur} 秒；对大 BOSS 效果降低 ${pc_(p.boss)}、小 BOSS 降低 ${pc_(p.mini)}。自身周围 ${p.range} 格内的骑兵集火该处距中心最近的亡灵，立即转向并全速冲锋`},
   // v0.9.0（用户定）改：不再按选中地点 r 格算，身边 range 格内的步兵士兵直接获得效果，然后去选中的地点列阵（gap 格间距，Claude 定）、集火那里离中心最近的亡灵
   wdGuard:{name:'无懈可击', cd:15, aim:'area', dur:10, gap:1, byStar:{range:[10,10,10,12.5,15], def:[0.6,0.6,0.6,0.8,1], dr:[0.6,0.6,0.6,0.8,1]},
     desc:p=>`自身周围 ${p.range} 格内的步兵防御 +${pc_(p.def)}、独立减伤 +${pc_(p.dr)}，持续 ${p.dur} 秒；这些步兵向 ${p.range} 格内选中的地点集火并列阵`},
@@ -14018,7 +14018,7 @@ Object.assign(CFG.heroes.scribe,CFG.heroStats.scribe);
 Object.assign(CFG.skills,{
   // —— 恐惧骑士·佛伯亚 ——
   dkPower:{name:'恐惧之力', passive:true, cd:0, aim:'self', amp:0.3, byStar:{killR:[0,0,3,4,5], killT:[0,0,2,3,5], hitT:[1,2,3,4,5]},
-    desc:p=>`被动：每次造成伤害时，使非首领目标恐惧 ${p.hitT} 秒；攻击恐惧中的亡灵时伤害 +${pc_(p.amp)}`+(p.killR?`；每次击杀亡灵时，自身周围 ${p.killR} 格内三阶及以下的亡灵恐惧 ${p.killT} 秒`:'；3★ 起每次击杀使自身周围三阶及以下的亡灵恐惧')},
+    desc:p=>`被动：每次造成伤害时，使小 BOSS、大 BOSS 以外的目标恐惧 ${p.hitT} 秒；攻击恐惧中的亡灵时伤害 +${pc_(p.amp)}`+(p.killR?`；每次击杀亡灵时，自身周围 ${p.killR} 格内三阶及以下的亡灵恐惧 ${p.killT} 秒`:'；3★ 起每次击杀使自身周围三阶及以下的亡灵恐惧')},
   dkShriek:{name:'恐惧尖啸', cd:15, aim:'self', min:0.5,
     byStar:{r:[4,5,6,8,10], b:[10,20,30,40,50], ad:[0.5,0.5,0.5,0.5,0.5], t3:[0,0,2,3,5], t4:[0,0,0,0,3]},
     desc:p=>`对自身周围 ${p.r} 格内的亡灵造成 ${sv_(p.b,p.ad,'AD')} 伤害，距离越远伤害越低，最低 ${pc_(p.min)}`+(p.t3?`；三阶及以下的亡灵恐惧 ${p.t3} 秒`:'')+(p.t4?`，四阶亡灵恐惧 ${p.t4} 秒`:'')},
@@ -14026,7 +14026,7 @@ Object.assign(CFG.skills,{
     desc:p=>`冲锋至 ${p.range} 格内的目标面前，沿途的亡灵受到 ${pc_(p.pad)}AD 的伤害，目标受到 ${sv_(p.b,p.ad,'AD')} 伤害；击杀目标后立即刷新冷却`},
   dkDomain:{name:'恐惧领域', cd:30, aim:'self', dur:3,
     byStar:{split:[400,400,400,600,1000], splitAd:[4,4,4,5,6.5], n4:[8,8,8,10,15], b4:[50,50,50,80,150], ad4:[0.8,0.8,0.8,0.8,0.8]},
-    desc:p=>`${p.dur} 秒内恐惧之力扩散至全图：全图非首领亡灵受到恐惧之力的恐惧效果；每秒对所有恐惧中的亡灵均摊 ${sv_(p.split,p.splitAd,'AD')} 伤害，并对至多 ${p.n4} 个四阶以上的单位各造成 ${sv_(p.b4,p.ad4,'AD')} 伤害`},
+    desc:p=>`${p.dur} 秒内恐惧之力扩散至全图：全图小 BOSS、大 BOSS 以外的亡灵受到恐惧之力的恐惧效果；每秒对所有恐惧中的亡灵均摊 ${sv_(p.split,p.splitAd,'AD')} 伤害，并对至多 ${p.n4} 个四阶以上的单位各造成 ${sv_(p.b4,p.ad4,'AD')} 伤害`},
   // —— 天启骑士·安东尼奥 ——
   akPower:{name:'天启之力', passive:true, cd:0, aim:'self', every:15,
     byStar:{r:[5,7.5,10,15,20], slow:[0.1,0.15,0.2,0.25,0.3], wind:[0.2,0.4,0.6,0.8,1], fog:[0.02,0.04,0.06,0.08,0.1], rain:[0.02,0.04,0.06,0.08,0.1]},
@@ -14270,9 +14270,9 @@ Object.assign(CFG.skills,{
     desc:p=>`被动：普通攻击命中时，${p.p>=1?'':pc_(p.p)+' 概率'}为主目标施加「银月」标记，持续 ${p.dur} 秒`},
   // 破暗之矢：瞄准 aimT 秒（不能移动、普攻、放别的技能；被控制就打断）后，向瞄准方向和 range 格内每个带「银月」标记的亡灵各射一支（Claude 定：标记的最多 8 支，近的先）
   //   箭飞 range 格；穿透 pierce 只；同一次施放里第二支起打同一只只造成 decay 的伤害；命中带标记的减少 cdr 秒冷却（Claude 定：每次施放最多减到 0），然后打上 mkT 秒标记
-  //   主箭（朝瞄准方向那支）沿途消掉非首领亡灵的弹道（Claude 定：箭身左右 0.6 格）
+  //   主箭（朝瞄准方向那支）沿途消掉大 BOSS 以外的亡灵的弹道（2026-11-07 用户定：小 BOSS 的也消；Claude 定：箭身左右 0.6 格）
   ashArrow:{name:'破暗之矢', aim:'line', w:0.6, range:8, aimT:1, mag:false, decay:0.2, mkT:10, maxN:8, byStar:{cd:[10,9,8,7,6], pierce:[2,2,3,3,5], b:[35,60,85,120,150], ad:[1,1,1,1,1], cdr:[0,0,0.25,0.25,1]},
-    desc:p=>`瞄准 ${p.aimT} 秒后，向指定方向及 ${p.range} 格内每个带有「银月」标记的亡灵各射出一支破暗之矢，飞行 ${p.range} 格，穿透 ${p.pierce} 个目标，造成 ${sv_(p.b,p.ad)} 法术伤害；同一次施放中多支命中同一目标时，第二支起只造成 ${pc_(p.decay)} 的伤害${p.cdr?'；打中带标记的亡灵冷却 −'+p.cdr+' 秒':''}；随后施加「银月」标记 ${p.mkT} 秒。射向指定方向的一支会消除沿途非首领亡灵的弹道`},
+    desc:p=>`瞄准 ${p.aimT} 秒后，向指定方向及 ${p.range} 格内每个带有「银月」标记的亡灵各射出一支破暗之矢，飞行 ${p.range} 格，穿透 ${p.pierce} 个目标，造成 ${sv_(p.b,p.ad)} 法术伤害；同一次施放中多支命中同一目标时，第二支起只造成 ${pc_(p.decay)} 的伤害${p.cdr?'；打中带标记的亡灵冷却 −'+p.cdr+' 秒':''}；随后施加「银月」标记 ${p.mkT} 秒。射向指定方向的一支会消除沿途大 BOSS 以外的亡灵的弹道`},
   // 银月箭雨：range 格内一处半径 r 的箭雨，每 tick 秒对里面的亡灵造成伤害并打上「银月」标记（标记时长 = 被动的 5 秒，Claude 定），持续 dur 秒
   ashRain:{name:'银月箭雨', cd:10, aim:'area', range:7.5, dur:3, tick:0.5, byStar:{r:[2.5,2.75,3,3.25,3.5], b:[30,45,60,90,120], ad:[0.4,0.4,0.4,0.4,0.4]},
     desc:p=>`在 ${p.range} 格内指定一处降下半径 ${p.r} 格的箭雨，持续 ${p.dur} 秒：每 ${p.tick} 秒对范围内的亡灵造成 ${sv_(p.b,p.ad)} 伤害，并施加「银月」标记`},
@@ -14306,7 +14306,7 @@ Object.assign(CFG.skills,{
   // 灵魂引渡：r 格内死掉的士兵、亡灵各 +1 个灵魂（最多 max 个；跨波保留、存档，Claude 定）；r 格内死掉的亡灵不会因卡牌和地图机制复活（同格拉掘墓，heroes070b.graveNear）
   //   斩杀：exR 格内、生命低于 exHp 的亡灵（四阶及以下；小首领、首领不算，Claude 定）静止 1 秒（不吃控制抗性，Claude 定），然后一定被斩杀（中途离开范围、她倒下也照样斩）
   ltSoul:{name:'灵魂引渡', passive:true, cd:0, aim:'self', max:100, still:1, byStar:{r:[5,7.5,10,12.5,15], exR:[5,5.5,6,6.5,7], exHp:[0.04,0.05,0.06,0.07,0.08]},
-    desc:p=>`被动：自身周围 ${p.r} 格内死亡的士兵和亡灵各提供 1 个「灵魂」，最多储存 ${p.max} 个，跨波次保留；这些亡灵不会因卡牌和地图机制复活。自身周围 ${p.exR} 格内生命低于 ${pc_(p.exHp)} 的四阶及以下亡灵静止 ${p.still} 秒后被斩杀，小首领除外`},
+    desc:p=>`被动：自身周围 ${p.r} 格内死亡的士兵和亡灵各提供 1 个「灵魂」，最多储存 ${p.max} 个，跨波次保留；这些亡灵不会因卡牌和地图机制复活。自身周围 ${p.exR} 格内生命低于 ${pc_(p.exHp)} 的四阶及以下亡灵静止 ${p.still} 秒后被斩杀，小 BOSS、大 BOSS 除外`},
   // 引渡之桥：从脚下朝瞄准方向铺一座宽 w、长 len 格的桥，持续 dur 秒（Claude 定：桥盖住的格子 = 格子中心到桥中线不超过半宽 + 1/4 格，斜着铺也连得上）
   //   我方单位在桥上能穿过城墙、建筑、树、障碍（地图守军通行表 engine/map.fpTab）；亡灵照样被城墙挡住，在桥上移速 × (1 − slow)（独立乘区，当作地形惩罚：首领也吃）
   //   放出时对桥上的亡灵造成 b(+ad×AP) 暗影法术伤害（Claude 定：暗影）
@@ -14533,10 +14533,10 @@ Object.assign(CFG.skills,{
   // 吹风为寒：朝瞄准方向 arc° 扇形、len 格内的敌人受到 b(+ad×AP) 冰霜伤害并冰冻 frz 秒
   kzWind:{name:'吹风为寒', cd:8, aim:'line', ad:1, mag:true, byStar:{arc:[75,90,105,120,135], len:[5,6,7,8,9], b:[50,80,120,180,250], frz:[3,3.5,4,4.5,5]},
     desc:p=>`对前方 ${p.arc}° 扇形、${p.len} 格内的亡灵造成 ${sv_(p.b,p.ad,'AP')} 冰霜伤害并使其冰冻 ${p.frz} 秒；冷却 ${p.cd} 秒`},
-  // 化雨为雪：range 格内放下半径 r 格的法阵，持续 dur 秒：每 0.5 秒范围里的敌人受到 b(+ad×AP) 冰霜伤害，同一只挨满 hits 下冰冻 3 秒（每次施放每只最多冻一次，无视控制抗性，首领除外），
+  // 化雨为雪：range 格内放下半径 r 格的法阵，持续 dur 秒：每 0.5 秒范围里的敌人受到 b(+ad×AP) 冰霜伤害，同一只挨满 hits 下冰冻 3 秒（每次施放每只最多冻一次，无视控制抗性，大 BOSS 除外；2026-11-07 用户定：前三阶段地区的五阶首领算小 BOSS，照冻），
   //   范围里的敌人攻速、移速、技能冷却速度 −slow（亡灵没有装填，Claude 定）
   kzSnow:{name:'化雨为雪', cd:12, aim:'area', ad:1, mag:true, tick:0.5, frz:3, byStar:{range:[8,9,10,11,12], r:[2.5,3,3.5,4,5], b:[60,100,150,210,300], hits:[5,5,4,4,3], slow:[0.3,0.4,0.5,0.6,0.7], dur:[3,3,4,4,5]},
-    desc:p=>`在 ${p.range} 格内放置半径 ${p.r} 格的法阵，持续 ${p.dur} 秒：每 ${p.tick} 秒对范围内的亡灵造成 ${sv_(p.b,p.ad,'AP')} 冰霜伤害，同一个亡灵受到 ${p.hits} 次伤害后冰冻 ${p.frz} 秒(每次施放至多一次，无视控制抗性，首领除外)；`+
+    desc:p=>`在 ${p.range} 格内放置半径 ${p.r} 格的法阵，持续 ${p.dur} 秒：每 ${p.tick} 秒对范围内的亡灵造成 ${sv_(p.b,p.ad,'AP')} 冰霜伤害，同一个亡灵受到 ${p.hits} 次伤害后冰冻 ${p.frz} 秒(每次施放至多一次，无视控制抗性，大 BOSS 除外)；`+
       `范围内的亡灵攻击速度、移动速度、冷却速度 −${pc_(p.slow)}；冷却 ${p.cd} 秒`},
   // 冰花雪月（3★）：r 格内（≥ 999 = 全场）我方所有单位（含建筑）获得最大生命 × sh 的特殊护盾，持续 5 秒，期间每秒回复 reg(+regAd×AP) 生命；
   //   护盾被打破时对身边 br 格内的敌人造成 bd(+bdAd×AP) 冰霜伤害并冰冻 frz 秒；冷却不受缩减和加速（noCdr）
@@ -14699,9 +14699,9 @@ Object.assign(CFG.skills,{
   // 主动（用户定 1★ 40：原稿 60 是笔误，11-04 确认）：朝一个方向 fan° 扇形、len 格射出丝线网，最先碰到的 n 个亡灵受到 b(+ad×AD) 伤害，定身并缴械 t 秒
   ysBind:{name:'牵丝缠缚', cd:12, aim:'fan', fan:60, ad:0.8, byStar:{range:[5,5.5,6,6.5,7], n:[3,4,5,6,7], b:[40,50,70,100,140], t:[3,3.5,4,4.5,5]},
     desc:p=>`向 ${p.fan}° 扇形、长 ${p.range} 格射出丝线网，对最先碰到的 ${p.n} 个亡灵造成 ${sv_(p.b,p.ad)} 伤害，并使其无法移动和普通攻击 ${p.t} 秒；冷却 ${p.cd} 秒`},
-  // 主动：施法距离 range 格，半径 r 格内至多 n 个三阶及以下的亡灵转为我方 t 秒；四阶及以上的无法移动和攻击 t 秒（首领 −50%、大首领 −80%）
+  // 主动：施法距离 range 格，半径 r 格内至多 n 个三阶及以下的亡灵转为我方 t 秒；四阶及以上的无法移动和攻击 t 秒（小 BOSS −50%、大 BOSS −80%；2026-11-07 用户定：前三阶段地区的五阶首领算小 BOSS）
   ysDance:{name:'牵丝起舞', cd:12, aim:'area', range:10, r:2.5, maxTier:3, boss:0.5, big:0.2, byStar:{n:[2,3,4,5,6], t:[3,3.5,4,4.5,5]},
-    desc:p=>`施法距离 ${p.range} 格，使半径 ${p.r} 格内至多 ${p.n} 个三阶及以下的亡灵转为我方单位；四阶及以上的无法移动和攻击(首领 −50%、大首领 −80%)，持续 ${p.t} 秒；冷却 ${p.cd} 秒`},
+    desc:p=>`施法距离 ${p.range} 格，使半径 ${p.r} 格内至多 ${p.n} 个三阶及以下的亡灵转为我方单位；四阶及以上的无法移动和攻击(小 BOSS −50%、大 BOSS −80%)，持续 ${p.t} 秒；冷却 ${p.cd} 秒`},
   // 主动（3★）：额外召唤 n 具傀儡，持续 t 秒，继承傀儡技能；冷却不受缩减
   ysMaster:{name:'偃师傀儡', aim:'self', noCdr:true, byStar:{n:[1,1,1,2,3], t:[10,10,10,12.5,15], cd:[30,30,30,27.5,25]},
     desc:p=>`额外召唤 ${p.n} 具牵丝傀儡作战，持续 ${p.t} 秒，继承傀儡技能；冷却 ${p.cd} 秒(不受缩减)`},
@@ -14895,7 +14895,7 @@ Object.assign(CFG.heroes.marshall,CFG.heroStats.marshall);
 Object.assign(CFG.skills,{
   // 被动：在场（没阵亡）时每 every 秒，r 格内（r ≥ 999 = 全场）的亡灵受到 k × 当前生命的火焰法术伤害；首领单位（首领、小首领、随机首领）× boss
   spSun:{name:'神光曜日', passive:true, cd:0, aim:'self', every:1, boss:0.2, byStar:{r:[0,0,20,30,999], k:[0,0,0.01,0.015,0.025]},
-    desc:p=>p.k>0?`被动：在场时，${p.r>=999?'全场':'周围 '+p.r+' 格内'}的亡灵每秒受到 ${pc_(p.k)} 当前生命的火焰法术伤害(首领单位受到的这部分伤害 ×${pc_(p.boss)})`:
+    desc:p=>p.k>0?`被动：在场时，${p.r>=999?'全场':'周围 '+p.r+' 格内'}的亡灵每秒受到 ${pc_(p.k)} 当前生命的火焰法术伤害(小 BOSS、大 BOSS 受到的这部分伤害 ×${pc_(p.boss)})`:
       '被动：3★ 起生效——在场时，周围的亡灵每秒受到按当前生命计算的火焰法术伤害'},
   // 被动：每次命中（普通攻击、技能，神光曜日的灼烧不算）带「日轮」印记的亡灵 +1 层；每层生命上限、攻击 +v；层数在获得的那一波起共 waves 波内有效（下一波开始时检查）；
   //   折算：前 seg[0] 层按 segK[0]，seg[0]～seg[1] 层按 segK[1]，seg[1]～seg[2] 层按 segK[2]，之后按 segK[3]；至多 cap 层（满了以后新的一层顶掉最早的一层）
@@ -14958,7 +14958,7 @@ Object.assign(CFG.skills,{
   //   r 格内三阶及以下（maxTier；不含精英以上、小首领、首领）的亡灵 dur 秒内生命低于 th 时转为我方 cvT 秒
   npFaith:{name:'信仰之歌', cd:10, noCdr:true, aim:'self', as:2, cvT:5, maxTier:3, byStar:{r:[10,15,20,25,30], dur:[3,3.5,4,4.5,5], asT:[1,1.25,1.5,1.75,2], back:[0.5,0.6,0.7,0.85,1], th:[0.1,0.2,0.3,0.4,0.5]},
     desc:p=>`自身 ${p.r} 格内的友军单位(不含建筑)获得效果：${p.dur} 秒内受到致命伤害时免于阵亡，攻击速度 +${pc_(p.as)}，持续 ${p.asT} 秒(期间不会阵亡)，然后恢复至 ${pc_(p.back)} 生命；`+
-      `范围内三阶及以下的亡灵(不含精英以上、小首领、首领)获得效果：${p.dur} 秒内生命低于 ${pc_(p.th)} 时转为我方阵营，持续 ${p.cvT} 秒。冷却 ${p.cd} 秒，不受冷却速度和冷却缩减影响`},
+      `范围内三阶及以下的亡灵(不含精英以上、小 BOSS、大 BOSS)获得效果：${p.dur} 秒内生命低于 ${pc_(p.th)} 时转为我方阵营，持续 ${p.cvT} 秒。冷却 ${p.cd} 秒，不受冷却速度和冷却缩减影响`},
 });
 CFG.heroes.nightPrincess={name:'堇', title:'冥夜公主', quality:'gold', look:'nightPrincess', recruit:true, allSkills:true, soulDrop:{map:'obsidianFort', minDiff:'hard', chance:0.3},
   hp:380, def:1.4, dodge:0.05, crit:0.05, speed:4.4, vision:9,
@@ -15306,7 +15306,7 @@ Object.assign(CFG.skills,{
   // 被动：命中时 p 概率额外造成目标 pct 最大生命的物理伤害（tier 4 精英 elitePct、首领 / 小首领 bossPct）+ ad × AD；每次暴击所有技能冷却 −crd 秒，这个效果冷却 icd 秒
   as2Throat:{name:'断喉之刃', passive:true, cd:0, aim:'self', pct:0.1, elitePct:0.05, bossPct:0.01, crd:1, icd:1,
     byStar:{p:[0.1,0.15,0.2,0.25,0.3], ad:[1,1.25,1.5,1.75,2]},
-    desc:p=>`被动：命中时 ${pc_(p.p)} 概率额外造成目标 ${pc_(p.pct)} 最大生命的物理伤害(对精英 ${pc_(p.elitePct)}、对首领 ${pc_(p.bossPct)})，并附带 ${pc_(p.ad)}AD 额外伤害；每次暴击使所有技能冷却 −${p.crd} 秒(这个效果冷却 ${p.icd} 秒)`},
+    desc:p=>`被动：命中时 ${pc_(p.p)} 概率额外造成目标 ${pc_(p.pct)} 最大生命的物理伤害(对精英 ${pc_(p.elitePct)}、对小 BOSS、大 BOSS ${pc_(p.bossPct)})，并附带 ${pc_(p.ad)}AD 额外伤害；每次暴击使所有技能冷却 −${p.crd} 秒(这个效果冷却 ${p.icd} 秒)`},
   // 瞬移到 range 格内的落点，r 格内的亡灵受到 b(+ad × AD)，然后强隐身 hideT 秒（出手、挨打都不现身；隐身期间必定暴击）
   as2Ambush:{name:'匿影潜袭', cd:15, aim:'area', r:1.5, hideT:6,
     byStar:{range:[5,6,7,8.5,10], b:[150,180,240,300,400], ad:[1,1.05,1.1,1.15,1.2]},
@@ -15434,7 +15434,7 @@ Object.assign(CFG.skills,{
   // 朝目标方向扔出 range 格的诱捕网、自己往反方向后撤 back 格；网碰到第一个亡灵（或飞满距离）就在那里展开：半径 r 格内 b(+ad×AD)，
   //   之后 dur 秒内网里的亡灵被禁锢（首领、小首领改为减速 slow），并且不能攻击、不能放技能
   gs2Net:{name:'天罗地网', cd:8, aim:'target', range:7.5, back:3, ad:1.5, slow:0.75, miniCc:0.8, byStar:{r:[4,4.25,4.5,4.75,5], b:[50,65,80,100,125], dur:[4,4.5,5,5.5,6]},
-    desc:p=>`向指定方向 ${p.range} 格释放诱捕网，自身向反方向后撤 ${p.back} 格；诱捕网命中首个亡灵后展开半径 ${p.r} 格，造成 ${sv_(p.b,p.ad)} 伤害并禁锢其中的亡灵 ${p.dur} 秒(首领、小首领改为减速 ${pc_(p.slow)})，期间诱捕网内的亡灵无法攻击和释放技能(小首领时间 −${pc_(p.miniCc)}、首领免疫)；冷却 ${p.cd} 秒`},
+    desc:p=>`向指定方向 ${p.range} 格释放诱捕网，自身向反方向后撤 ${p.back} 格；诱捕网命中首个亡灵后展开半径 ${p.r} 格，造成 ${sv_(p.b,p.ad)} 伤害并禁锢其中的亡灵 ${p.dur} 秒(小 BOSS、大 BOSS 改为减速 ${pc_(p.slow)})，期间诱捕网内的亡灵无法攻击和释放技能(小 BOSS 时间 −${pc_(p.miniCc)}、大 BOSS 免疫)；冷却 ${p.cd} 秒`},
   // 按住：以自身为中心、跟着走的半径 r 格弹幕，每秒对其中所有亡灵 b(+ad×AD)（每 tick 秒结算一次）；期间无法普通攻击；无冷却
   gs2Bar:{name:'弹幕覆盖', cd:0, noCdr:true, aim:'self', chan:true, chMv:0.6, r:8, tick:0.25, byStar:{b:[40,50,60,75,100], ad:[0.4,0.425,0.45,0.475,0.5]},
     desc:p=>`按住持续释放：展开随自身移动、半径 ${p.r} 格的弹幕，每秒对其中所有亡灵造成 ${sv_(p.b,p.ad)} 伤害；期间无法普通攻击，无冷却`},
@@ -15502,7 +15502,7 @@ Object.assign(CFG.heroes.merchant2,CFG.heroStats.merchant2);
 // 城防、英雄：同一类（CFG.cardCat 的塔楼 / 英雄）的卡拿满 3 张以后才出现（schoolN）
 // 毒疫：这一局亡灵中过毒才出现（seen:'poison'）
 Object.assign(CFG.cardFx,{
-  winter:{base:0.1, elite:0.05, mini:0.02, boss:0.01},   // 凛风刺骨：解冻时掉当前生命的比例（普通 / 精英 / 小首领 / 首领，用户定）
+  winter:{base:0.1, elite:0.05, mini:0.02, boss:0.01},   // 凛风刺骨：解冻时掉当前生命的比例（普通 / 精英 / 小首领 / 首领，用户定）；boss 只给大 BOSS，前三阶段地区的五阶首领用 mini（2026-11-07 用户定，engine/enemy）
   absZero:{res:0.6, frz:1},   // 绝对零度：亡灵的寒冰抗性对减速、冰冻计时只算 60%；我方冰冻时间 +100%（用户同意 Claude 的数）
   frostShock:{pct:0.1, slow:0.1, t:1, cd:1},   // 冰霜冲击：追加命中伤害 10% 的寒冰伤害、减速 10% 1 秒，每个出手单位 1 秒一次（用户定）；减速不同单位之间不叠加（取最大，最多 10%）
 });
@@ -22539,7 +22539,7 @@ CFG.elite.train={
   t4xz:   {name:'陷阵之志', lv:4, line:'xz', st:{ss:[5,0.05,10]}, desc:'5 格内每有 1 个敌人，增伤、减伤 +5%，至多 10 层'},
   t4xd:   {name:'先登之志', lv:4, line:'xd', st:{xd:[0.05,5,0.5]}, desc:'免疫控制；每次受到伤害减伤 +5%，持续 5 秒，至多 50%'},
   t4bb:   {name:'不败铁血', lv:4, line:'bb', st:{und:[3,15]}, desc:'濒死时免死 3 秒，冷却 15 秒'},
-  t4cc:   {name:'摧城之志', lv:4, line:'cc', st:{boss:0.35}, desc:'对精英、首领、重型单位造成伤害 +35%'},
+  t4cc:   {name:'摧城之志', lv:4, line:'cc', st:{boss:0.35}, desc:'对精英、小 BOSS、大 BOSS、重型单位造成伤害 +35%'},
   t4cr:   {name:'致残技巧', lv:4, line:'cr', st:{weak:[0.3,3]}, desc:'命中时赋予 30% 虚弱，持续 3 秒'},
   t4ball: {name:'王牌弹道', lv:4, line:'ball', st:{rng:0.25}, desc:'射程 +25%'},
   t4shoot:{name:'王牌狙击', lv:4, line:'shoot', st:{dmgR:0.25}, desc:'物理远程伤害 +25%'},
@@ -23324,7 +23324,7 @@ CFG.elite.skV={
   el_heal:     {add:{range:2}, t:'治疗范围 +2 格'},
   el_guard:    {add:{dur:1.5}, t:'持续 +1.5 秒'},
   el_sprint:   {add:{dur:1.5}, t:'持续 +1.5 秒'},
-  el_blink:    {set:{elitePct:0.05}, t:'对精英、首领的比例伤害提高到 5%'},
+  el_blink:    {set:{elitePct:0.05}, t:'对精英、小 BOSS、大 BOSS 的比例伤害提高到 5%'},
   el_repair:   {add:{radius:1}, t:'范围 +1 格'},
   el_faith:    {add:{dur:1}, t:'护盾持续 +1 秒'},
   el_song:     {add:{r:1, dur:2}, t:'范围 +1 格、持续 +2 秒'},
@@ -23355,7 +23355,7 @@ Object.assign(CFG.elite.skills,{
   el_natural: {name:'自然亲和', pas:true, fam:['druid'], ico:'wolfPack', st1:{natA:0.1}},
 });
 Object.assign(CFG.skills,{
-  elLullaby:{name:'安眠曲', cd:16, aim:'self', r:4, slow:0.4, t:3, desc:p=>`吟唱安眠曲：自身周围 ${p.r} 格内的亡灵减速 ${Math.round(p.slow*100)}%，持续 ${p.t} 秒(首领、精英、重型减半)`},
+  elLullaby:{name:'安眠曲', cd:16, aim:'self', r:4, slow:0.4, t:3, desc:p=>`吟唱安眠曲：自身周围 ${p.r} 格内的亡灵减速 ${Math.round(p.slow*100)}%，持续 ${p.t} 秒(精英、小 BOSS、大 BOSS、重型减半)`},
   elWarsong:{name:'战歌', cd:20, aim:'self', r:6, dur:6, mspd:0.2, dr:0.1, desc:p=>`吟唱战歌：自身周围 ${p.r} 格内的士兵移动速度 +${Math.round(p.mspd*100)}%、受到的伤害 −${Math.round(p.dr*100)}%，持续 ${p.dur} 秒`},
   elMolotov:{name:'燃烧瓶', cd:12, aim:'area', range:6, r:1.5, dur:4, tick:0.5, b:8, ad:0.25, mag:true, desc:p=>`向 ${p.range} 格内投掷燃烧瓶，形成 ${p.r} 格火海，持续 ${p.dur} 秒：每秒造成 ${sv_(p.b,p.ad,'AP')} 火焰伤害`},
   elElixir: {name:'强化药剂', cd:14, aim:'self', r:5, dur:8, atk:0.15, desc:p=>`为 ${p.r} 格内攻击最高的友军施用药剂：${p.dur} 秒内攻击 +${Math.round(p.atk*100)}%`},
@@ -23411,7 +23411,7 @@ Object.assign(CFG.skills,{
   es2Fort:   {name:'加固', cd:20, aim:'self', r:5, dur:8, imm:0.15, pct:0.04,
     desc:p=>`加固自身 ${p.r} 格内的建筑和陷阱(不含主堡)：立即修复 ${pc_(p.pct)} 生命，${p.dur} 秒内受到的伤害 −${pc_(p.imm)}`},
   es2Frost:  {name:'冰霜药剂', cd:14, aim:'area', range:6, r:1.5, mag:true, b:16, ad:0.5, slow:0.5, t:3,
-    desc:p=>`向 ${p.range} 格内投掷冰霜药剂：${p.r} 格内的亡灵受到 ${sv_(p.b,p.ad,'AP')} 冰霜伤害，并减速 ${pc_(p.slow)}，持续 ${p.t} 秒(首领、精英、重型减半)`},
+    desc:p=>`向 ${p.range} 格内投掷冰霜药剂：${p.r} 格内的亡灵受到 ${sv_(p.b,p.ad,'AP')} 冰霜伤害，并减速 ${pc_(p.slow)}，持续 ${p.t} 秒(精英、小 BOSS、大 BOSS、重型减半)`},
   es2Discord:{name:'刺耳音波', cd:12, aim:'line', len:5, w:1.5, b:30, ad:1, weak:0.15, t:4,
     desc:p=>`向前方 ${p.len} 格发出刺耳的音波：路径上的亡灵受到 ${sv_(p.b,p.ad)} 伤害，并虚弱 ${pc_(p.weak)}(造成的伤害降低)，持续 ${p.t} 秒`},
 });
@@ -24358,7 +24358,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
   vanguardInf: J('先登步兵','heavy',['warrior','shield'],'plate',['sword','spear','shield'],{hp:550, def:12},'weidmann',['先登','全控制抗性 +60%，减伤 +25%'],{ccR:0.6, dr:0.25},{ser:'步兵'}),
   xianzhenCav: J('陷阵骑兵','cav',['cav','shield'],'plate',['spear','shield'],{hp:450, atk:20},'weidmann',
     ['陷阵','骑兵单位，冲锋伤害 ×180%(同重骑兵)；自身半径 3 格内每有 1 个敌人，增伤、减伤 +4%，至多 6 层'],{chg:[1.8,2.5], courage:[3,0.04,6]},{ser:'重骑兵', mount:true}),
-  siegeCannon: J('摧城重炮','ranged',['archer'],'chain',['gun','ammobox'],{hp:200, atk:32},'weidmann',['摧城','无法登上城墙；对精英亡灵、首领和重型(巨型、重械)亡灵造成的伤害 ×180%'],{noWall:1, f16Siege:0.8},{ser:'火炮手'}),
+  siegeCannon: J('摧城重炮','ranged',['archer'],'chain',['gun','ammobox'],{hp:200, atk:32},'weidmann',['摧城','无法登上城墙；对精英亡灵、小 BOSS、大 BOSS 和重型(巨型、重械)亡灵造成的伤害 ×180%'],{noWall:1, f16Siege:0.8},{ser:'火炮手'}),
   redCardinal: J('红衣主教','magic',['mage'],'cloth',['staff','tome'],{hp:220, ap:26},'jorn',['冕下之仆','治疗时额外给目标一层护盾，吸收量为这次治疗量的 30%'],{f16HealSh:0.3},{ser:'牧师'}),
   camelBowCav: J('骆驼弓骑兵','cav',['cav','archer'],'leather',['bow','crossbow','gun','quiver','ammobox'],{hp:380, atk:24},'alibaba',
     ['驼铃','骑兵单位，移动精准 +50%(同弓弩骑兵)；无视沙漠地形惩罚和沙尘暴效果'],{movePrec:0.5, desertOk:1, dsMount:1},{ser:'弓弩骑兵', mount:true}),
@@ -48722,7 +48722,7 @@ function updateEnemies(dt){
     if(!E.alive[i])continue;
     E.acc[i]+=dt;const x=E.x[i],y=E.y[i];
     if(((i+tick)%ev)!==0&&offView(x,y))continue;
-    let d=E.acc[i];E.acc[i]=0;if(E.tsU[i]>G.time){if(!ETBOSS[E.t[i]])continue;d*=CFG.skills.timeLock.boss}   // v0.7.0 时空封锁：普通亡灵不走，首领按一半的时间走（攻速、移速、冷却都慢一半）
+    let d=E.acc[i];E.acc[i]=0;if(E.tsU[i]>G.time){if(!ETBOSS[E.t[i]]||!eBigBoss(ETC[E.t[i]]))continue;d*=CFG.skills.timeLock.boss}   // v0.7.0 时空封锁：普通亡灵不走，首领按一半的时间走（攻速、移速、冷却都慢一半）   // eBigBoss：2026-11-07（用户定）只有大 BOSS 按一半走，前三阶段地区的五阶首领算小 BOSS、和小首领一样不走（engine/cc.eBigBoss）
     if(FAC_EE){EQF=E.fac[i];stepEnemy(i,d,FR);EQF=-1}else stepEnemy(i,d,FR);   // v0.8.6 场上有互相敌对的亡灵（engine/faction）：行动时的光环、治疗这类查询只作用于不敌对的
   }
   separate();
@@ -48796,8 +48796,8 @@ function eTick(i,c,dt){
   if(E.fl[i]>0)E.fl[i]-=dt;if(E.lu[i]>0)E.lu[i]-=dt;if(E.blT[i]>0)E.blT[i]-=dt;   // blT：v0.5.0 失明
   // v0.5.4 亡灵卡「坚韧」：减速、冰冻的计时走得快 (1 + rCtrl) 倍 = 持续时间 ÷ (1 + rCtrl)；顺带记下这一局出现过减速 / 冰冻、中毒（亡灵减伤卡的出现条件）
   const fz=E.frz[i]>0,kc=1+em.rCtrl+em.rFrost*(pm.absZero>0?CFG.cardFx.absZero.res:1)+(G.afElem||0);EFZ=fz;EKC=kc;if(fz||E.slowT[i]>0)G.seen.ctrl=1;if(E.psn[i]>0||E.vn[i]>0)G.seen.poison=1;
-  // 卡「凛风刺骨」：v0.9.3（用户定）每次解冻受到当前生命 X% 的寒冰伤害（普通 10%、精英 5%、小首领 2%、首领 1%；原来只有第一次、最大生命 10%、精英首领没有）
-  if(E.frz[i]>0){E.frz[i]-=dt*kc;if(E.frz[i]<=0&&pm.winter>0){const W=CFG.cardFx.winter;dealE(i,E.hp[i]*(c.mini?W.mini:c.tier>=5?W.boss:c.tier===4?W.elite:W.base),THAW_HIT);if(!E.alive[i])return false;if(inViewPt(E.x[i],E.y[i]))for(let k=0;k<5;k++)pp(E.x[i]+vr(-4,4),E.y[i]-6,4,vr(-20,20),vr(-10,10),vr(10,20),160,0.4,'#bfefff',1,0,0)}}
+  // 卡「凛风刺骨」：v0.9.3（用户定）每次解冻受到当前生命 X% 的寒冰伤害（普通 10%、精英 5%、小首领 2%、首领 1%；原来只有第一次、最大生命 10%、精英首领没有）；2026-11-07（用户定）首领 1% 只算大 BOSS，前三阶段地区的五阶首领按小 BOSS 2%（eBigBoss）
+  if(E.frz[i]>0){E.frz[i]-=dt*kc;if(E.frz[i]<=0&&pm.winter>0){const W=CFG.cardFx.winter;dealE(i,E.hp[i]*(c.mini?W.mini:c.tier>=5?(eBigBoss(c)?W.boss:W.mini):c.tier===4?W.elite:W.base),THAW_HIT);if(!E.alive[i])return false;if(inViewPt(E.x[i],E.y[i]))for(let k=0;k<5;k++)pp(E.x[i]+vr(-4,4),E.y[i]-6,4,vr(-20,20),vr(-10,10),vr(10,20),160,0.4,'#bfefff',1,0,0)}}
   // v0.4.2 持续伤害：每帧只累积，每 dotTick 秒（状态都结束了就马上）结算一次
   let dotOn=false;
   if(PZ_ON&&!pzTick(i))return false;   // v0.9.3 流派卡「毒素蔓延」「猛毒骤发」（game/school093）
@@ -52346,6 +52346,10 @@ function ccMul(i,k){if(HK.eCC.length&&E.alive[i])hkEach('eCC',i,k);if(!E.alive[i
 function ccPeek(i,k){if(ccSA(i))return 0;const q=i*6+k,m=E.crU[q]<G.time?1:1/(1+E.cr[q]);return CC_K?m*CC_K(i):m}
 // 持续区域：同一个区域对同一只亡灵只算第一次（倍率记在区域上；之后有了霸体照样挡住）
 function ccZone(z,i,k){const M=z.ccm||(z.ccm=new Map()),id=E.id[i];if(!M.has(id)){const m=ccMul(i,k);M.set(id,m);return m}return ccSA(i)?0:M.get(id)}
+// 大 BOSS（大首领）：2026-11-07 用户定叫法——四阶精英、五阶小 BOSS、六阶大 BOSS；代码里 tier 5 是首领，但前三阶段地区（mapPages 第 0～2 页）的 tier 5 首领其实是小 BOSS
+let EBB_G=null,EBB_M='',EBB_T=false;   // eBigBoss 的缓存：同一局（G）、同一张图（G.map）只查一次地区的阶（mapTierOf 是 findIndex，热路径上每次伤害都会问；别给 G 加表外字段）
+function ebbRe(){EBB_G=G;EBB_M=G.map;return EBB_T=mapTierOf(G.map)>=3}
+const eBigBoss=c=>c.tier>=5&&(EBB_G===G&&EBB_M===G.map?EBB_T:ebbRe());
 function eStun(i,t,m){m=m===undefined?ccMul(i,CCK.stun):m;if(m>0&&t>0){const o0=E.stun[i];E.stun[i]=Math.max(o0,t*m);if(DS_ON)dsCC(E.stun[i]-Math.max(0,o0))}return m}
 function eFrz(i,t,m){m=m===undefined?ccMul(i,CCK.frz):m;if(m>0&&t>0){const v=t*m*frostKX()*(pm.absZero>0?1+CFG.cardFx.absZero.frz:1);if(DS_ON)dsCC(v-Math.max(0,E.stun[i]));E.stun[i]=Math.max(E.stun[i],v);E.frz[i]=Math.max(E.frz[i],v)}return m}   // absZero：v0.9.3 流派卡「绝对零度」我方造成的冰冻时间 ×2
 function eRoot(i,t,m){m=m===undefined?ccMul(i,CCK.root):m;if(m>0&&t>0){const o0=E.root[i];E.root[i]=Math.max(o0,t*m);if(DS_ON)dsCC(E.root[i]-Math.max(0,o0))}return m}
@@ -64356,12 +64360,12 @@ zoneDef('swave',{tick:zoneTick_swave});
 function mineBoom(z){z.dead=true;disbandNear(z.x,z.y,z.r);eQuery(z.x,z.y,z.r,(j,d)=>dealE(j,z.dmg*blastF(d,z.r),z.o));
   if(inViewPt(z.x,z.y)){addFx({k:'boom',x:Math.round(z.x),y:Math.round(z.y),r:z.r,life:0.45});G.shake=Math.max(G.shake,z.k==='hmine'?1.6:0.8);sfx('boom');smokeAt(z.x,z.y,6,true)}
   for(let k=0;k<(z.cluster||0);k++){const a=k/z.cluster*Math.PI*2+vr(-0.3,0.3),r=z.r*vr(0.7,1.1);addZone({k:'hmini',x:z.x+Math.cos(a)*r,y:z.y+Math.sin(a)*r*0.8,delay:0.25+k*0.07,r:z.r*0.7,dmg:z.dmg*z.clusterMul,o:z.o})}}
-// 龙卷风：沿直线移动，卷起半径内的亡灵（首领除外）带到终点后甩出
+// 龙卷风：沿直线移动，卷起半径内的亡灵（大 BOSS、重型除外）带到终点后甩出
 function updateTornado(z,dt){
   const step=Math.min(z.sp*dt,z.len-z.d);z.d+=step;z.x=z.x0+z.ux*z.d;z.y=z.y0+z.uy*z.d;
   disbandNear(z.x,z.y,z.r);
   eQuery(z.x,z.y,z.r,j=>{const id=E.id[j];if(z.seen.has(id))return;z.seen.add(id);
-    if(ETC[E.t[j]].tier>=5||ETC[E.t[j]].heavy){dealE(j,z.dmg,z.o);return}
+    if(eBigBoss(ETC[E.t[j]])||ETC[E.t[j]].heavy){dealE(j,z.dmg,z.o);return}   // eBigBoss：2026-11-07（用户定）只有大 BOSS 不被卷走，前三阶段地区的五阶首领算小 BOSS、和小首领一样卷（不是重型的才卷：亡灵大法师、赶尸人）
     if(E.cap[j])return;E.cap[j]=1;z.caught.push({j,id,a:vr(0,6.28),r:vr(2,z.r*0.5)});dealE(j,z.grab,z.o)});
   for(const c of z.caught){if(!eOk(c.j,c.id))continue;c.a+=dt*9;E.x[c.j]=clamp(z.x+Math.cos(c.a)*c.r,3,MW-3);E.y[c.j]=clamp(z.y+Math.sin(c.a)*c.r*0.6,3,MH-3);E.lu[c.j]=0}
   if(inViewPt(z.x,z.y))for(let k=0;k<4;k++){const a=vr(0,6.28),h=vr(0,26),r=3+h*0.35;pp(z.x+Math.cos(a)*r,z.y+Math.sin(a)*r*0.4,h,-Math.sin(a)*30,Math.cos(a)*12,vr(6,16),0,0.45,vpick(['#d6efe6','#9fd8c8','#e8fff8','#8a9a9a']),1,0,1)}
@@ -66841,7 +66845,7 @@ const camelDist=(h,p)=>(h.cvPct||0)*100*p.per;   // 每 1% 速度 per 格
 function camelAIGoal(h){if(G.phase!=='wave'||h.retreat)return null;let rdy=false;for(let k=0;k<3;k++)if((h.skills[k]==='camelRush'||h.skills[k]==='camelStomp')&&h.unl[k]&&h.cds[k]<=0)rdy=true;
   if(!rdy||!eOk(h.aiTi,h.aiTid))return null;const c=densest(E.x[h.aiTi],E.y[h.aiTi],6*16);return c&&c.n>=3?c:null}
 const camelHead=h=>h.hd!==undefined?h.hd:heroAng(h);
-const tierK=j=>{const t=ETC[E.t[j]].tier;return t>=5?0.3:t>=4?0.6:1};
+const tierK=j=>{const c=ETC[E.t[j]];return eBigBoss(c)?0.3:c.tier>=4?0.6:1};   // 全局：engine/enemy.gateChill（寒冰城门）、structs/walls 也用；2026-11-07（用户定）精英、小 BOSS × 0.6，大 BOSS × 0.3（前三阶段地区的五阶首领算小 BOSS，engine/cc.eBigBoss）
 Object.assign(SK,{
   camelRush:{cast(h,p){if(h.layer===1)return false;const d=Math.max(p.min,camelDist(h,p)),a=camelHead(h);h.cdK=skD(h,p)*Math.max(p.minK,h.cvPct||0);h.cdN=0;startDash(h,'rush',a,d*16,0.12+d*0.045,p);h.hd=a;h.facing=Math.cos(a)>=0?1:-1;return true},   // v0.5.7 cdK：伤害 × 速度比例（施放时定下）
     // 托管：速度过半、前面冲撞的路线上有 ≥3 只亡灵（或精英 / 首领）
@@ -66890,7 +66894,7 @@ DASH.rush={step:camelDash};DASH.stomp={step:camelDash,land:(h,p)=>{camelLand(h,p
 const GEAR_FX={
   // —— 武器 ——
   blindHit:{hit(h,i,dmg,o,v){E.blT[i]=Math.max(E.blT[i],v.t)}},   // 砂刺
-  sapHit:{hit(h,i,dmg,o,v){const boss=ETC[E.t[i]].tier>=5?0.5:1,cap=v.cap*boss;if(E.sap[i]>=cap-1e-6)return;   // 朝圣法杖：按「原来的最大生命」削
+  sapHit:{hit(h,i,dmg,o,v){const boss=eBigBoss(ETC[E.t[i]])?0.5:1,cap=v.cap*boss;if(E.sap[i]>=cap-1e-6)return;   // 朝圣法杖：按「原来的最大生命」削；2026-11-07（用户定）只有大 BOSS 减半（小 BOSS 不减），前三阶段地区的五阶首领算小 BOSS（engine/cc.eBigBoss）
       const base=E.mhp[i]/(1-E.sap[i]),ns=Math.min(cap,E.sap[i]+v.pct*boss);E.sap[i]=ns;E.mhp[i]=base*(1-ns);if(E.hp[i]>E.mhp[i])E.hp[i]=E.mhp[i]}},
   // —— 套装 ——
   hitDR:{hurt(h,dmg,o,v){if(o.dot||!(dmg>0))return dmg;const r=h.hdrU>G.time?dmg*(1-v.f):dmg;h.hdrU=G.time+v.t;return r}},   // 沙鳞：受伤后 t 秒内减伤
@@ -67069,7 +67073,7 @@ Object.assign(SK,{
     goal:(h,p)=>fightGoal(h,'cmd',G.soldiers,p.r*16,4),gp:2},   // v0.6.8 托管：好了去正在打的士兵那里放（heroes/heroai）
   // —— 狙击手 ——
   deadShot:{cast(h,p,a){const j=snipeTarget(h,p,a);if(j<0){if(h.ctl)toast('附近没有目标');return false}const tr=ETC[E.t[j]].tier,nm=ETC[E.t[j]].name;snipeHit(h,j,skD(h,p));
-      if(E.alive[j]){const K=p.kill,ch=tr>=5?K.boss:tr>=4?K.elite:K.normal;if(Math.random()<ch){const x=E.x[j],y=E.y[j];E.shp[j]=0;dealE(j,E.hp[j]*10+1e6,{magic:true,dot:true,noFx:true,hk:h});
+      if(E.alive[j]){const K=p.kill,ch=eBigBoss(ETC[E.t[j]])?K.boss:tr>=4?K.elite:K.normal;if(Math.random()<ch){const x=E.x[j],y=E.y[j];E.shp[j]=0;dealE(j,E.hp[j]*10+1e6,{magic:true,dot:true,noFx:true,hk:h});   // 2026-11-07（用户定）精英、小 BOSS 按 elite，大 BOSS 按 boss，前三阶段地区的五阶首领算小 BOSS（engine/cc.eBigBoss）
         if(inViewPt(x,y)){addFx({k:'crit',x,y:y-22,life:0.6});for(let k=0;k<10;k++)pp(x+vr(-4,4),y-vr(2,12),2,vr(-40,40),vr(-30,10),vr(10,24),200,vr(0.4,0.8),'#c4483a',1,0,0)}if(tr>=4)sayT(`致命狙击：一枪秒杀了${nm}`)}}
       return true},
     ai(h,p){return snipeAI(h,p,j=>(ETC[E.t[j]].tier>=4?5:1)*E.hp[j])}},
@@ -67203,7 +67207,7 @@ function axText(x,it){const r=axLV(x,it);return r?r[0]+' '+r[1]:''}
 function axRows(it){const T=CFG.gearAffix.tiers;return((it&&it.ax)||AX_EMPTY).slice().sort((a,b)=>axOrd(a.k)-axOrd(b.k)||(a.kind||'').localeCompare(b.kind||'')).map(x=>{const r=axLV(x,it);return r&&[r[0],r[1],T[x.t].color]}).filter(Boolean)}
 function axHTML(it){const R=axRows(it);return R.length?statRows(R,'axl'):''}
 // —— 战斗：英雄普攻命中（engine/enemy.dealE：o.atk + o.hk）——
-const eTierK=i=>{const t=ETC[E.t[i]].tier;return t>=5?0.3:t>=4?0.6:1};
+const eTierK=i=>{const c=ETC[E.t[i]];return eBigBoss(c)?0.3:c.tier>=4?0.6:1};   // 2026-11-07（用户定）精英、小 BOSS × 0.6，大 BOSS × 0.3（前三阶段地区的五阶首领算小 BOSS，engine/cc.eBigBoss）
 function axHit(h,i,dmg,o){const X=h.ax;
   if(X.ls&&dmg>0)lsHeal(h,dmg*X.ls);
   if(X.shock>0)afxHit(h,i,dmg,o);   // 0.12.6 代理 AF 改：震荡波挪到 gear/afx（半径按词条、目标打死了也产生、特效节流），原来在下面、目标死了就没有
@@ -67576,7 +67580,7 @@ const FEATHER_W={proj:'feather',speed:16,spread:0,mix:{pierce:1}};
 // 飞羽：从 (x,y) 朝 a0 方向 ±arc/2 扇形（arc = 2π 时四面八方）射出 n 道，打中第一个亡灵
 function featherFan(h,x,y,a0,arc,n,dmg,R){for(let k=0;k<n;k++){const a=arc>=6.28?a0+k/n*Math.PI*2:a0+(n>1?(k/(n-1)-0.5)*arc:0);fireAng(x,y,a,R,FEATHER_W,dmg,{hk:h,crit:h.crit,pen:2,mix:{pierce:1}},R,true,1)}}
 Object.assign(GEAR_FX,{
-  erodeHit:{hit(h,i,dmg,o,v){if(o.dot)return;const t=ETC[E.t[i]].tier,p=t>=5?v.boss:t>=4?v.elite:v.pct;E.erP[i]=Math.max(E.erT[i]>0?E.erP[i]:0,p);E.erT[i]=v.t}},   // 风蚀弓
+  erodeHit:{hit(h,i,dmg,o,v){if(o.dot)return;const c=ETC[E.t[i]],p=eBigBoss(c)?v.boss:c.tier>=4?v.elite:v.pct;E.erP[i]=Math.max(E.erT[i]>0?E.erP[i]:0,p);E.erT[i]=v.t}},   // 风蚀弓；2026-11-07（用户定）精英、小 BOSS 按 elite，大 BOSS 按 boss，前三阶段地区的五阶首领算小 BOSS（engine/cc.eBigBoss）
   healCutHit:{hit(h,i,dmg,o,v){if(o.dot||!o.atk||Math.random()>=v.p)return;E.hcT[i]=Math.max(E.hcT[i]||0,v.t)}},   // 黄沙近战武器
   featherShot:{hit(h,i,dmg,o,v){if(!o.atk||o.dot||h.fsU>G.time)return;h.fsU=G.time+v.cd;const a=Math.atan2(E.y[i]-h.y,E.x[i]-h.x);   // 风羽远程武器
     featherFan(h,h.x,h.y-8,a,v.arc*DEG,v.n,dmg*v.mul,Math.max(6*16,heroRange(h)));if(inViewPt(h.x,h.y))sfx('bow',h.x,h.y)}},
@@ -68272,9 +68276,9 @@ function chainLightning(h,p,c){const R=p.r*16*(1+pm.aoe),dmg=skD(h,p),o={magic:t
       for(let q=0;q<Math.min(p.br,L.length);q++){const j=L[q][1],x=E.x[j],y=E.y[j],d=f.d*p.decay;hit.add(E.id[j]);dealE(j,d,o);N.push({x,y,d});
         if(vis)addFx({k:'zap',x0:Math.round(f.x),y0:Math.round(f.y-6),x1:Math.round(x),y1:Math.round(y-6),life:0.2})}}
     F=N}}
-// —— 进阶-梅林 · 暴风龙卷：pull 秒把 r 格内的亡灵卷到中心（霸体、重型不卷），然后放出 n 道 tornado 往前推 len 格 ——
+// —— 进阶-梅林 · 暴风龙卷：pull 秒把 r 格内的亡灵卷到中心（霸体、重型不卷；2026-11-07 用户定：大 BOSS 不卷，前三阶段地区的五阶首领算小 BOSS，虽有霸体照样卷，同 engine 的龙卷风），然后放出 n 道 tornado 往前推 len 格 ——
 ZONE_FX.h7vort={tick(z,dt){const sp=z.r/z.dur*1.3;disbandNear(z.x,z.y,z.r);
-    eQuery(z.x,z.y,z.r+8,j=>{const c=ETC[E.t[j]],q=ccPeek(j,CCK.kb);if(!(q>0)||c.heavy||ETUN[E.t[j]]||E.air[j]||E.cap[j])return;const dx=z.x-E.x[j],dy=z.y-E.y[j],d=Math.hypot(dx,dy);if(d<3)return;const k=Math.min(d,sp*dt*Math.max(0.3,EKBK[E.t[j]])*q);eNudge(j,dx/d*k,dy/d*k)});
+    eQuery(z.x,z.y,z.r+8,j=>{const c=ETC[E.t[j]],q=eBigBoss(c)?0:c.tier>=5?1:ccPeek(j,CCK.kb);if(!(q>0)||c.heavy||ETUN[E.t[j]]||E.air[j]||E.cap[j])return;const dx=z.x-E.x[j],dy=z.y-E.y[j],d=Math.hypot(dx,dy);if(d<3)return;const k=Math.min(d,sp*dt*Math.max(0.3,EKBK[E.t[j]])*q);eNudge(j,dx/d*k,dy/d*k)});
     if(inViewPt(z.x,z.y))for(let k=0;k<4;k++){const a=vr(0,6.28),r=vr(4,z.r);pp(z.x+Math.cos(a)*r,z.y+Math.sin(a)*r*0.6,vr(0,14),-Math.sin(a)*50,Math.cos(a)*30,vr(4,12),0,0.5,vpick(['#d6efe6','#9fd8c8','#e8fff8']),1,0,1)}
     if(z.t<z.dur)return;z.dead=true;const P=z.p;
     for(let k=0;k<P.n;k++){const ang=z.a0+(P.n>1?(k/(P.n-1)-0.5)*2*P.spreadA*DEG:0);
@@ -68293,7 +68297,7 @@ ZONE_FX.h7vine={tick(z){if(z.t>=z.dur)z.dead=true},
 const tsIn=(x,y)=>{for(const z of G.tsZ)if(!z.dead&&Math.hypot(x-z.x,y-z.y)<z.r)return true;return false};
 const ETBOSS=ETYPES.map(k=>CFG.enemies[k].tier>=5?1:0);
 ZONE_FX.h7time={tick(z){const until=G.time+0.15;if(!(z.db>G.time)){z.db=G.time+0.25;disbandNear(z.x,z.y,z.r)}eQuery(z.x,z.y,z.r,j=>{E.tsU[j]=until});for(let i_3=0,a_3=G.friends;i_3<a_3.length;i_3++){const u=a_3[i_3];if(u!==z.h&&!u.dead&&Math.hypot(u.x-z.x,u.y-z.y)<z.r)u.tsU=until;}
-    if(z.t<z.dur)return;z.dead=true;G.tsZ=G.tsZ.filter(q=>q!==z);eQuery(z.x,z.y,z.r,j=>{E.tsU[j]=0;dealE(j,z.dmg+E.mhp[j]*z.pct*(ETBOSS[E.t[j]]?z.boss:1),z.o)});
+    if(z.t<z.dur)return;z.dead=true;G.tsZ=G.tsZ.filter(q=>q!==z);eQuery(z.x,z.y,z.r,j=>{E.tsU[j]=0;dealE(j,z.dmg+E.mhp[j]*z.pct*(eBigBoss(ETC[E.t[j]])?z.boss:1),z.o)});   // 2026-11-07（用户定）只有大 BOSS 减半；前三阶段地区的五阶首领算小 BOSS，同小首领吃满（engine/cc.eBigBoss）。走得慢一半那部分在 engine/enemy.updateEnemies 用 ETBOSS
     if(inViewPt(z.x,z.y)){tlFx(z);G.shake=Math.max(G.shake,2.4);sfx('boom')}},   // tlFx：v0.7.2 像玻璃一样碎开
   draw(z){const u=z.t/z.dur;fillEll(z.x,z.y,z.r,C('#3a2a5a'),0.22);dotRing(z.x,z.y,z.r,C('#c9a8ff'),0.7,0,0.6);
     for(let k=0;k<12;k++){const a=k/12*6.28;rectW(Math.round(z.x+Math.cos(a)*(z.r-3)),Math.round(z.y+Math.sin(a)*(z.r-3)*0.6),2,2,C('#e8dcff'),0.7)}
@@ -71323,7 +71327,7 @@ function kanRamEnd(h){h.cv=camelSpd(h);h.cvPct=1}
 ZONE_FX.kanHook={tick(z,dt){const h=z.h;if(!h||h.dead){z.dead=true;return}const ox=h.x,oy=h.y-8;
     if(z.st===0){z.d+=z.sp*dt;const tx=ox+z.ux*z.d,ty=oy+z.uy*z.d;let best=-1,bd=11;eQuery(tx,ty+6,11,(j,d)=>{if(d<bd){bd=d;best=j}},true);
       if(best>=0){z.j=best;z.id=E.id[best];dealE(best,z.dmg,{crit:h.crit,pen:h.ws.pen,mix:{pierce:1},hk:h});const c=ETC[E.t[best]];
-        if(E.alive[best]&&c.tier<5&&!ESWRT[E.t[best]]&&!c.unstop&&!c.tunnel&&!c.hive&&!c.tomb&&!(E.ug[best]>0)){z.st=1;z.pt=0;z.fx=E.x[best];z.fy=E.y[best]}else z.st=2;
+        if(E.alive[best]&&!eBigBoss(c)&&!ESWRT[E.t[best]]&&!c.unstop&&!c.tunnel&&!c.hive&&!c.tomb&&!(E.ug[best]>0)){z.st=1;z.pt=0;z.fx=E.x[best];z.fy=E.y[best]}else z.st=2;   // 2026-11-07（用户定）大 BOSS 拖不动，小 BOSS 能拖，前三阶段地区的五阶首领算小 BOSS（engine/cc.eBigBoss）
         if(inViewPt(tx,ty))sfx('clank',tx,ty)}
       else if(z.d>=z.L)z.st=2}
     else if(z.st===1){const j=z.j;if(!eOk(j,z.id)){z.st=2;return}z.pt+=dt;const u=Math.min(1,z.pt/z.pull),dx=z.fx-h.x,dy=z.fy-h.y,l=Math.hypot(dx,dy)||1,gx=h.x+dx/l*18,gy=h.y+dy/l*14;
@@ -71345,7 +71349,7 @@ Object.assign(SK,{
       addZone({k:'kanHook',h,x:h.x,y:h.y-8,ux:Math.cos(ang),uy:Math.sin(ang),L:p.range*16*kanRng(h),sp:p.speed*16,d:0,st:0,j:-1,id:0,dmg:skD(h,p),pull:p.pull,pt:0,t:0});
       h.facing=Math.cos(ang)>=0?1:-1;h.recoil=0.3;sfx('swing',h.x,h.y);return true},
     ai(h,p){if(!(p.range>0))return null;const R=p.range*16;let best=-1,bs=0;
-      eQuery(h.x,h.y,R,j=>{const c=ETC[E.t[j]];if(c.tier>=5||ESWRT[E.t[j]]||c.unstop)return;const sc=(c.tier>=4?10:c.tier)+(c.range>0?2:0);if(sc>bs&&shotClear(h.x,h.y-8,E.x[j],E.y[j]-6)){bs=sc;best=j}},true);
+      eQuery(h.x,h.y,R,j=>{const c=ETC[E.t[j]];if(eBigBoss(c)||ESWRT[E.t[j]]||c.unstop)return;const sc=(c.tier>=4?10:c.tier)+(c.range>0?2:0);if(sc>bs&&shotClear(h.x,h.y-8,E.x[j],E.y[j]-6)){bs=sc;best=j}},true);   // 同上：大 BOSS 拖不动
       return best>=0&&(bs>=4||countNear(h.x,h.y,4*16)>=4)?{x:E.x[best],y:E.y[best]}:null}},
   // ================= 重工总督 瓦特 =================
   droneSwarm:{cast(h,p){const mine=G.soldiers.filter(u=>!u.dead&&u.owner===h&&u.v8&&u.v8.k==='dr').length,n=Math.min(p.n,p.max-mine);if(n<=0){if(h.ctl)toast(`无人机已经有 ${mine} 架，最多 ${p.max} 架`);return false}
@@ -71448,7 +71452,7 @@ Object.assign(SK,{
       return c&&c.n>=6?{x:c.x,y:c.y}:null},
     prevR:(h,p)=>p.focus},
   wdBreak:{cast(h,p,a){const R=p.r*16,U=G.time+p.dur;let n=0;a=clampAim(h,a,p.range*16);   // v0.10.3 修复（用户同意）：落点限制在施法距离内（原来破防、集火、标记都按没限制的瞄准点）
-      eQuery(a.x,a.y,R,j=>{const c=ETC[E.t[j]],k=c.tier>=5?1-p.boss:c.mini?1-p.mini:1,on=BPW.U[j]>G.time;BPW.df[j]=Math.max(on?BPW.df[j]:0,p.def*k);BPW.rm[j]=Math.max(on?BPW.rm[j]:0,p.rm*k);BPW.U[j]=U;n++});
+      eQuery(a.x,a.y,R,j=>{const c=ETC[E.t[j]],k=eBigBoss(c)?1-p.boss:c.mini||c.tier>=5?1-p.mini:1,on=BPW.U[j]>G.time;BPW.df[j]=Math.max(on?BPW.df[j]:0,p.def*k);BPW.rm[j]=Math.max(on?BPW.rm[j]:0,p.rm*k);BPW.U[j]=U;n++});   // 2026-11-07（用户定）大 BOSS × (1 − boss)、小 BOSS × (1 − mini)，前三阶段地区的五阶首领算小 BOSS（engine/cc.eBigBoss）
       const j=wdFocus(a.x,a.y,R),m=j>=0?wdCavCharge(h,p.range*16,j,p.dur):0;if(h.ctl&&m)sayT(`无坚不摧：${m} 名骑兵冲锋`);   // v0.9.0 骑兵冲锋
       addZone({k:'wdMark',x:a.x,y:a.y,r:R,t:0,dur:0.6,c:K_BP});h.swing=0.25;sfx('clank',h.x,h.y);if(h.ctl&&!n)toast('那里没有亡灵');return true},
     ai(h,p){const R=p.range*16,cav=wdNearN(h,R,u=>u.c.cavalry&&!u.layer),b=wdElite(h,R),c=densest(h.x,h.y,R);   // v0.9.4 托管（Claude 定）：身边有骑兵时先破精英 / 首领、再破扎堆的；没有骑兵只在亡灵很扎堆或有精英时放（只剩破防）
@@ -72125,7 +72129,7 @@ zoneDef('ashBolt',{tick(z,dt){const C_=z.C,h=C_.h,p=C_.p,w=p.w*16;let st=z.sp*dt
         const k=C_.hit.get(id)||0;C_.hit.set(id,k+1);const mk=ashIsMk(j);dealE(j,C_.d*(k?p.decay:1),{magic:true,mix:{arcane:1},hk:h&&!h.dead?h:null,crit:h.crit});
         if(mk&&p.cdr>0&&C_.slot>=0&&h.cds[C_.slot]>0)h.cds[C_.slot]=Math.max(0,h.cds[C_.slot]-p.cdr);if(E.alive[j]&&E.id[j]===id)ashMkE(j,p.mkT)});
       if(z.n<=0){z.dead=true;return}
-      if(z.main){const R=w+4,P=G.eproj;for(let q=0;q<P.length;q++){const e=P[q];if(e.dead||ETBOSS[e.kt]||Math.abs(e.x-z.x)>R||Math.abs(e.y-z.y)>R)continue;e.dead=true;if(inViewPt(e.x,e.y))addFx({k:'ring',x:Math.round(e.x),y:Math.round(e.y),r:4,life:0.2,c:'#e8eef8'})}}}},
+      if(z.main){const R=w+4,P=G.eproj;for(let q=0;q<P.length;q++){const e=P[q];if(e.dead||eBigBoss(ETC[e.kt])||Math.abs(e.x-z.x)>R||Math.abs(e.y-z.y)>R)continue;e.dead=true;if(inViewPt(e.x,e.y))addFx({k:'ring',x:Math.round(e.x),y:Math.round(e.y),r:4,life:0.2,c:'#e8eef8'})}}}},   // 2026-11-07（用户定）只有大 BOSS 的弹道消不掉，前三阶段地区的五阶首领算小 BOSS（engine/cc.eBigBoss）
   draw(z){const X=Math.round(z.x),Y=Math.round(z.y);for(let k=0;k<7;k++)rectW(Math.round(z.x-z.ux*k),Math.round(z.y-z.uy*k),1,1,k<2?K_ASH:k<5?K_ASHD:K_ASHG,1-k*0.1);
     if(z.main)fillCirc(X,Y,2,K_ASH,0.35)}});
 // ================= 银月箭雨 =================
@@ -72605,7 +72609,7 @@ function kzWindCast(h,p,a){const ang=Math.atan2(a.y-h.y,a.x-h.x),L=p.len*16,half
 // v0.10.3 积木的持续区域：每 tick 秒打一次、减攻速 / 移速 / 冷却；同一只挨满 hits 下冻住（每次施放每只最多一次，首领除外，不吃控制递减）
 function kzSnowCast(h,p,a){const c=clampAim(h,a,p.range*16),slow={aspd:-p.slow,mspd:-p.slow,cdSpd:-p.slow},cnt=new Map(),fz=new Set();
   bkZone({k:'c',r:p.r,aoe:1},{who:'E',magic:1,mix:{frost:1},noFx:1,fx:'frost',on:j=>{if(!E.alive[j])return;bfAddE(j,'kzSnow',slow,p.tick+0.1,BC_DEB);const id=E.id[j],n=(cnt.get(id)||0)+1;cnt.set(id,n);
-      if(n>=p.hits&&!fz.has(id)&&ETC[E.t[j]].tier<5){fz.add(id);eFrz(j,p.frz,1);if(inViewPt(E.x[j],E.y[j]))addFx({k:'ring',x:Math.round(E.x[j]),y:Math.round(E.y[j]-8),r:10,life:0.35,c:'#bfefff'})}}},
+      if(n>=p.hits&&!fz.has(id)&&!eBigBoss(ETC[E.t[j]])){fz.add(id);eFrz(j,p.frz,1);if(inViewPt(E.x[j],E.y[j]))addFx({k:'ring',x:Math.round(E.x[j]),y:Math.round(E.y[j]-8),r:10,life:0.35,c:'#bfefff'})}}},   // 2026-11-07（用户定）大 BOSS 不冻，小 BOSS 照冻（倍率 1，霸体也冻），前三阶段地区的五阶首领算小 BOSS（engine/cc.eBigBoss）
     bkCH(h,skD(h,p),c.x,c.y,0),{dur:p.dur,tick:p.tick,endFirst:1,draw:kzSnowDraw,onTick:kzSnowFx});
   h.facing=c.x>=h.x?1:-1;h.recoil=0.2;if(inViewPt(c.x,c.y))sfx('bell',c.x,c.y);return true}
 function kzSnowFx(z){if(z.tk!==z.tick)return;const r0=z.sh.r*16*(1+pm.aoe);if(inViewPt(z.x,z.y))for(let k=0;k<8;k++){const a=vr(0,6.283),r=Math.sqrt(Math.random())*r0;pp(z.x+Math.cos(a)*r,z.y+Math.sin(a)*r*0.7-20,6,vr(-4,4),vr(10,24),0,0,vr(0.5,0.9),vpick(['#ffffff','#dff4ff']),1,0,1)}}
@@ -73106,7 +73110,7 @@ SKFX.dlDragon=h=>{const o=hbHand(h);vfx('flare',{x:o.x,y:o.y-4,r:10,c:'#ff8a2a',
 //   放技能的时候（冲锋、狂舞）傀儡不走也不普攻：friend 钩子在士兵 AI 前跑，这期间每帧给一点 stag（士兵 AI 看到 stag 就跳过这一帧）。
 // 牵丝缠缚：扇形 fan°、range 格内按离李偃的距离排，最先碰到的 n 只吃 b(+ad×AD)（物理劈砍），定身 + 缴械 t 秒（同一下的两种控制只算一次控制次数）。
 // 牵丝起舞：落点 r 格内，按离落点的距离排，至多 n 只三阶及以下、能换阵营的转为我方 t 秒（engine/faction.facTurnE，跟着李偃）；
-//   四阶及以上的（和换不了的：机械等）定身 + 缴械 t 秒：小首领 × boss（0.5）、大首领 × big（0.2）；大首领平时一直有霸体，这个技能写明了对大首领 −80%，所以照样生效（Claude 定，不计控制次数）。
+//   四阶及以上的（和换不了的：机械等）定身 + 缴械 t 秒：小 BOSS × boss（0.5）、大 BOSS × big（0.2）（2026-11-07 用户定叫法：前三阶段地区的五阶首领算小 BOSS，engine/cc.eBigBoss）；五阶首领平时一直有霸体，这个技能写明了打折多少，所以照样生效（Claude 定，不计控制次数）。
 // 偃师傀儡（3★）：在李偃身边额外召 n 具傀儡（u.ysK = 2），t 秒后散掉；属性、技能同主傀儡（各自的冷却）。
 const YS_HIT={k:'c',r:0.8},YS_CMIX={slash:0.6,pierce:0.4},YS_SL={slash:1},YS_FIRE={fire:0.5,impact:0.5},YS_BIND=[];
 function ysHold(u,dt){u.stag=Math.max(u.stag,dt+0.001)}   // 傀儡放技能（冲锋、狂舞）时这一帧接管：士兵 AI 看到 stag 就跳过（不是控制，tools/cccheck 放过）
@@ -73173,7 +73177,7 @@ function ysDanceCast(h,p,a){const c=clampAim(h,a,p.range*16),R=p.r*16,L=YS_BIND;
   for(let q=0;q<J.length;q++){const j=J[q];if(!E.alive[j]||E.id[j]!==ids[q])continue;const c0=ETC[E.t[j]];
     if(c0.tier<=p.maxTier&&!c0.mini&&cv<p.n&&facCanE(j,p.maxTier)){if(facTurnE(j,FAC_P,{dur:p.t,owner:h,maxTier:p.maxTier}))cv++;continue}
     if(c0.tier<=p.maxTier&&!c0.mini&&facCanE(j,p.maxTier))continue;   // 超出个数的低阶亡灵不受影响
-    const big=c0.tier>=5,t=p.t*(big?p.big:c0.mini?p.boss:1);if(big){E.root[j]=Math.max(E.root[j],t);E.disT[j]=Math.max(E.disT[j],t)}else{eRoot(j,t);eDis(j,t)}
+    const big=eBigBoss(c0),t=p.t*(big?p.big:c0.mini||c0.tier>=5?p.boss:1);if(c0.tier>=5){E.root[j]=Math.max(E.root[j],t);E.disT[j]=Math.max(E.disT[j],t)}else{eRoot(j,t);eDis(j,t)}   // 2026-11-07（用户定）小 BOSS × boss、大 BOSS × big；五阶首领都有霸体，直接写（不计控制次数），前三阶段地区的五阶首领算小 BOSS（engine/cc.eBigBoss）
     if(inViewPt(E.x[j],E.y[j]))vfx('beam',{x0:c.x,y0:c.y-40,x1:E.x[j],y1:E.y[j]-8,c:'#c8b4e8',c2:'#ffffff',w:1,life:0.45})}
   if(inViewPt(c.x,c.y)){addFx({k:'ring',x:Math.round(c.x),y:Math.round(c.y-4),r:R,life:0.5,c:'#c8b4e8'});for(let k=0;k<10;k++){const a0=k/10*6.283;vfx('beam',{x0:c.x,y0:c.y-48,x1:c.x+Math.cos(a0)*R*0.8,y1:c.y+Math.sin(a0)*R*0.5,c:'#e8dcff',c2:'#ffffff',w:1,life:0.35})}}
   h.facing=c.x>=h.x?1:-1;h.swing=0.25;sfx('summon',c.x,c.y);return true}
@@ -75379,9 +75383,9 @@ function gs2NetCast(h,p,a){const sx=h.x,sy=h.y-6,ang=Math.atan2(a.y-sy,a.x-sx);
   if(h.layer!==1)startDash(h,'gsback',ang+Math.PI,p.back*16,0.22,p);   // 扔网的同时后撤（城墙上不撤，同原版）
   h.facing=Math.cos(ang)>=0?1:-1;h.swing=0.15;h.swingA=ang;sfx('swing',h.x,h.y);return true}
 let GS2_Z=null,GS2_T=0;const GS2_L=[],GS2_SP={dmg:0,st:{sil:0}},GS2_C={h:null,atk:0,x:0,y:0,a:0};
-const gs2NetHold=j=>{const z=GS2_Z,t=GS2_T,c=ETC[E.t[j]],bk=c.tier>=5?0:c.mini?1-CFG.skills.gs2Net.miniCc:1;   // bk：2026-11-07（用户定）缴械、沉默吃首领免控：小首领 −80%、大首领 −100%
+const gs2NetHold=j=>{const z=GS2_Z,t=GS2_T,c=ETC[E.t[j]],bk=eBigBoss(c)?0:c.mini||c.tier>=5?1-CFG.skills.gs2Net.miniCc:1;   // bk：2026-11-07（用户定）缴械、沉默吃首领免控：小 BOSS −80%、大 BOSS −100%（前三阶段地区的五阶首领算小 BOSS，engine/cc.eBigBoss）
   if(c.tier>=5||c.mini){E.slowF[j]=Math.max(E.slowF[j],z.slow);E.slowT[j]=slowMx(j,t)}else eRoot(j,t,ccZone(z,j,CCK.root));
-  const tc=bk>=1?t:Math.min(t,z.dur*bk-(z.t-z.t0));if(tc>0){eDis(j,tc,ccZone(z.dz,j,CCK.dis));GS2_SP.st.sil=tc;bkHitE(j,GS2_SP,GS2_C,0)}};   // 小首领：网展开后的前 dur × 0.2 秒才缴械、沉默（总时长 −80%）
+  const tc=bk>=1?t:Math.min(t,z.dur*bk-(z.t-z.t0));if(tc>0){eDis(j,tc,c.tier>=5?1:ccZone(z.dz,j,CCK.dis));GS2_SP.st.sil=tc;bkHitE(j,GS2_SP,GS2_C,0)}};   // 小首领：网展开后的前 dur × 0.2 秒才缴械、沉默（总时长 −80%）；前三阶段地区的五阶首领（小 BOSS）有霸体，用户定照小 BOSS 吃 −80%，所以不走霸体判定（倍率 1）
 function gs2NetOpen(z){const h=z.h,o={crit:h&&!h.dead?h.crit:0,pen:5,mix:{impact:1},hk:h&&!h.dead?h:null};GS2_L.length=0;eQuery(z.x,z.y,z.r,j=>{GS2_L.push(j,E.id[j])},true);
   for(let q=0;q<GS2_L.length;q+=2){const j=GS2_L[q];if(E.alive[j]&&E.id[j]===GS2_L[q+1])dealE(j,z.dmg,o)}}
 function gs2NetTick(z,dt){
@@ -81251,7 +81255,7 @@ function dbgResAll(n){for(const id in(META.settle&&META.settle.R)||{}){if(!stReg
 // 特性说明（0.12.0）：按属性自动写（data/el_famfx 的家族特性、自建家族的选项都不写说明）
 const EL_STD={hp:'生命上限',atk:'物理攻击',ap:'法术攻击',def:'物理防御',mdef:'法术防御',speed:'移动速度',aspd:'攻击速度',vision:'视野',rng:'射程',rngP:'物理远程射程',reloadK:'装填速度',regen:'生命恢复',prec:'精准',
   dmg:'造成伤害',dmgM:'近战物理伤害',dmgR:'远程物理伤害',dmgS:'法术伤害',critR:'暴击率',critDmg:'暴击伤害',cd:'冷却速度',dodgeR:'偏斜率',dodgeK:'偏斜值',hitK:'命中值',toughK:'坚韧值',drP:'物理减伤',drM:'法术减伤',
-  exp:'经验获取',penP:'远程物理攻击无视护甲',dr:'减伤',marry:'提亲成功率',resPoison:'毒抗',resFrost:'冰抗',resFire:'火抗',slowRes:'寒冰减速抗性',kbA:'击退抗性',eva:'闪避率',boss:'对精英、首领、重型单位造成伤害'};
+  exp:'经验获取',penP:'远程物理攻击无视护甲',dr:'减伤',marry:'提亲成功率',resPoison:'毒抗',resFrost:'冰抗',resFire:'火抗',slowRes:'寒冰减速抗性',kbA:'击退抗性',eva:'闪避率',boss:'对精英、小 BOSS、大 BOSS、重型单位造成伤害'};
 // 0.12.2 家族特性：独立乘区、100% 档的独特效果（game/el_fam3）
 const EL_STDX={hpX:'生命上限',atkX:'物理攻击',apX:'法术攻击',defX:'物理防御',mdefX:'法术防御'};
 const EL_STD3={dist:(v,pc)=>`目标每远 1 格，造成的伤害 +${pc(v[0])}，至多 +${pc(v[1])}`,cap:(v,pc)=>`每秒受到的伤害至多为生命上限的 ${pc(v)}`,
@@ -82544,7 +82548,7 @@ function f4Recalc(h,S,w){if(S.desertOk)h.desertRes=1;
 const f4NoBack=h=>f4Mad(h);
 // —— 每帧 / 每 0.25 秒 ——
 let F4_PH=null,F4_PV=0;   // 盾墙推人、重盾屏障减速的回调借用（不新建闭包）
-function f4WallQ(j){const h=F4_PH;if(E.air[j]||ETC[E.t[j]].esb||ETBOSS[E.t[j]])return;const R=EL().f14a.shR*16+E.r[j],dx=E.x[j]-h.x,dy=E.y[j]-h.y,d=Math.hypot(dx,dy);
+function f4WallQ(j){const h=F4_PH;if(E.air[j]||ETC[E.t[j]].esb||eBigBoss(ETC[E.t[j]]))return;const R=EL().f14a.shR*16+E.r[j],dx=E.x[j]-h.x,dy=E.y[j]-h.y,d=Math.hypot(dx,dy);   // 2026-11-07（用户定）大 BOSS 推不动；小 BOSS、精英照样推，前三阶段地区的五阶首领算小 BOSS（engine/cc.eBigBoss）
   if(d<R){const ux=d>0.5?dx/d:h.facing,uy=d>0.5?dy/d:0;E.x[j]=h.x+ux*R;E.y[j]=h.y+uy*R}
   const id=E.id[j],t=F4_WD.get(id);if(t!==undefined&&t>G.time)return;F4_WD.set(id,G.time+1);const p=h.f4SwP;dealE(j,skV(h,p.b,0,false)+h.shield*p.k,{hk:h,mix:{blunt:1},melee:true,crit:h.crit})}
 function f4ShQ(j){E.slowF[j]=Math.max(E.slowF[j]||0,F4_PV);E.slowT[j]=slowMx(j,0.4)}
@@ -87922,7 +87926,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.3',GAME_TAG='测试版',GAME_CODE=234,GAME_BUILD="b6ba92a",GAME_BUILT=1794059234933,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.3',GAME_TAG='稳定版',GAME_CODE=233,GAME_BUILD="3aaf772",GAME_BUILT=1794066413773,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -90729,7 +90733,7 @@ function formulaHTML(){
     `守军格挡率 = 盾的格挡率 × (1 + 格挡卡加成)，最多 95%；格挡时盾的减伤值加进防御`,
     `建筑：物理伤害按防御，用上面的防御公式；骑兵、箭矢、弩矢打建筑 × ${pc(C.structCut.mul)}；攻城、建筑特攻的亡灵另乘自己的建筑倍率`])}
   ${sec('控制与击退',[
-    `眩晕、冰冻的时间：精英 × 0.6、首领 × 0.3；暴雪冻结和部分技能的眩晕是 × 0.7 / × 0.4；武器、饰品、雷电塔、电墙的眩晕和冰球塔的概率冻结不打折`,
+    `眩晕、冰冻的时间：精英、小 BOSS × 0.6，大 BOSS × 0.3；暴雪冻结和部分技能的眩晕是 × 0.7 / × 0.4；武器、饰品、雷电塔、电墙的眩晕和冰球塔的概率冻结不打折`,
     `减速最多 85%，持续时间 × (1 + 减速持续时间加成)`,
     `击退距离：首领 × (1 − ${pc(KR.boss)})，直接减免；精英、大型亡灵、其他体型较大的 ÷ (1 + 击退抗性)，击退抗性 ${pc(KR.elite)} / ${pc(KR.big)} / ${pc(KR.size)}；重型亡灵不会被击退；爆炸推开体型较大的亡灵最多 30%`])}
   ${sec('英雄',[
@@ -90756,7 +90760,7 @@ function formulaHTML(){
     `异常抗性、晕眩抗性：持续时间 ÷ (1 + 抗性)，同类相加`,
     `致命一击：额外伤害 × (1 + ${pc(AF.list.exec.grow)} × (波次 − 1))，无视防御、偏斜、格挡`,
     afxRule(),   // 0.12.6 代理 AF 加：震荡波各档的伤害 / 半径区间（gear/afx）
-    `武器词条的晕眩、沉默、定身、缴械：精英 × 0.6、首领 × 0.3`,
+    `武器词条的晕眩、沉默、定身、缴械：精英、小 BOSS × 0.6，大 BOSS × 0.3`,
     `武器词条只在拿着这把武器时生效；盾牌词条只在单手武器配盾时生效；护甲词条一直生效`])}
   ${sec('士兵',[
     `生命 = 基础 × 兵营等级倍率 × 兵营基础加成「体魄」 × (1 + 卡牌、科技)；没有每波成长(v0.8.14)`,
