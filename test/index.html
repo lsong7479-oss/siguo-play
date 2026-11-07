@@ -77381,17 +77381,20 @@ function newGame(opts){if(typeof pickReset==='function')pickReset();if(META&&hlk
 }
 // v0.4.2 地图开局套件（maps.xxx.start）：圣堂墓园送一圈有缺口的城墙 + 城门、一座教堂（invested 0：卖掉不退钱；读档时不再送，存档里已有）
 function startKit(){const S=mapDef().start;if(!S&&!HK.kit.length)return;
+  // 0.13.2 修（用户报）开拓地里拆掉的开局城墙（圣堂墓园的一圈墙、铁血要塞的要塞墙）退出再进去又回来了：开拓地每次进场景都重跑开局套件；
+  //   改成这个地区第一次进开拓地时送一次（R.kit），之后城墙在不在以存档的布局为准（老存档：布局里已经有建筑就当送过了）
+  const stR=G.stMap&&META.settle&&META.settle.R?META.settle.R[G.map]:null,kitDone=!!(stR&&(stR.kit||(stR.b&&stR.b.length)));if(stR)stR.kit=1;
   const put=(type,tx,ty)=>{if(tx<1||ty<1||tx>=MAP_W-1||ty>=MAP_H-1)return null;const i=ty*MAP_W+tx;if(G.structAt[i]||G.trapAt[i])return null;if(!buildableT(G.terrain[i])){clearTileRaw(i);G.cleared.push(i)}
     const s=makeStruct(type,tx,ty);s.invested=0;s.pid=-1;s.maxHp=structMax(s);s.hp=s.maxHp;s.def=structDef(s);G.structAt[i]=s;G.structs.push(s);return s};
   // v0.4.4（用户定）：围一整圈（含四角），每边正中 2 格城门；再在圈上随机开 gaps 个缺口（各 gap 格，不碰城门，缺口之间至少隔 3 格）
-  if(S&&S.ring){const R=S.ring.r,g=S.ring.gap,x0=BASE_TX-R,x1=BASE_TX+1+R,y0=BASE_TY-R,y1=BASE_TY+1+R,n=x1-x0+1,ring=[],gate=new Set();
+  if(S&&S.ring&&!kitDone){const R=S.ring.r,g=S.ring.gap,x0=BASE_TX-R,x1=BASE_TX+1+R,y0=BASE_TY-R,y1=BASE_TY+1+R,n=x1-x0+1,ring=[],gate=new Set();
     for(let k=0;k<n-1;k++)ring.push([x0+k,y0]);for(let k=0;k<n-1;k++)ring.push([x1,y0+k]);for(let k=0;k<n-1;k++)ring.push([x1-k,y1]);for(let k=0;k<n-1;k++)ring.push([x0,y1-k]);   // 顺时针一圈
     const P=ring.length,mid=(n>>1)-1;for(let s=0;s<4;s++){gate.add(s*(n-1)+mid);gate.add(s*(n-1)+mid+1)}
     const gap=new Set(),starts=[],far=i=>starts.every(s=>{const d=Math.abs(i-s)%P;return Math.min(d,P-d)>=g+3});
     for(let t=0;t<400&&starts.length<(S.ring.gaps||4);t++){const s=Math.floor(rng()*P);let ok=far(s);for(let k=0;k<g&&ok;k++)if(gate.has((s+k)%P))ok=false;if(ok){starts.push(s);for(let k=0;k<g;k++)gap.add((s+k)%P)}}
     ring.forEach(([tx,ty],i)=>{if(!gap.has(i))put(gate.has(i)?'gate':'wall',tx,ty)})}
   // v0.6.0 铁血要塞：开局自带一座 w × h 的要塞（城墙一圈，主堡在正中）；gates = 各面城门的位置（相对正中的偏移，每个 2 格宽）
-  if(S&&S.fort){const F=S.fort,x0=TERR_CX-(F.w>>1),x1=x0+F.w-1,y0=TERR_CY-(F.h>>1),y1=y0+F.h-1,gate=new Set(),gk=(x,y)=>y*MAP_W+x,g=F.gates||{};
+  if(S&&S.fort&&!kitDone){const F=S.fort,x0=TERR_CX-(F.w>>1),x1=x0+F.w-1,y0=TERR_CY-(F.h>>1),y1=y0+F.h-1,gate=new Set(),gk=(x,y)=>y*MAP_W+x,g=F.gates||{};
     for(const o of g.n||[])for(const d of[0,1])gate.add(gk(TERR_CX-1+o+d,y0));for(const o of g.s||[])for(const d of[0,1])gate.add(gk(TERR_CX-1+o+d,y1));
     for(const o of g.w||[])for(const d of[0,1])gate.add(gk(x0,TERR_CY-1+o+d));for(const o of g.e||[])for(const d of[0,1])gate.add(gk(x1,TERR_CY-1+o+d));
     const pw=(x,y)=>{const s=put(gate.has(gk(x,y))?'gate':'wall',x,y);if(s&&F.lv>1){s.level=F.lv;s.maxHp=structMax(s);s.hp=s.maxHp;s.def=structDef(s)}};   // lv：开局就是几级的墙（石墙）
@@ -81206,7 +81209,7 @@ function elFx2Hit(h,i,dmg,o,S){
 // —— elRecalc 末尾：要按技能设的英雄字段 ——
 function elRecalc2(h,S){h.h60T=h.skills.some(k=>k==='galeSlash'||k==='faithBarrier'||k==='holyCharge');   // 这三个技能的计时在 heroes/heroes060.h60Tick
   if(h.h60T&&!h.gsHit)h.gsHit=new Set();
-  h.nEye0=!!S.nightEye;h.elVis0=h.vision;if(S.blockR)h.block=(h.block||0)+S.blockR;
+  h.nEye0=!!S.nightEye;h.elVis0=h.vision;if(S.blockR&&h.shieldOn)h.block=(h.block||0)+S.blockR;   // shieldOn：0.13.2（用户定）格挡率 +X 要持盾才加（说明一直写着「需要持盾」，原来没查）
   h.fnMR=S.mbar?S.mbar[0]:0;h.fnSh=S.mbar?{sh:S.mbar[1],gap:S.mbar[2],cap:S.mbar[3]}:null;h.nEye=h.nEye0}
 // —— 精英专用的新主动 ——
 function elStompLand(h,p){const R=p.r*16;disbandNear(h.x,h.y,R);bkCast({k:'c',r:p.r},{who:'E',gnd:1,crit:h.crit,pen:h.ws.pen,mix:{blunt:1},fx:null,st:{stun:p.stun,kb:1}},bkCH(h,skD(h,p),h.x,h.y,0));
@@ -86399,7 +86402,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="2230744",GAME_BUILT=1794013486576,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="13fc956",GAME_BUILT=1794014853733,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
