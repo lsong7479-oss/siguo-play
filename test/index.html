@@ -24540,7 +24540,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
 // 用户《0.13策划-家族重置》九节「黑幽灵船：戴肯」：特性、秘传用户定；特殊技能望楼拟、用户改；没有特色兵种（用户定）
 // 新属性键（局内效果和中文说明在 game/el_fam17b）：
 //   f17bLoot [地区材料, 建材] 劫掠之手：战后结算的地区木、矿(石)、皮、布 ×(1 + 前者)，建材 ×(1 + 后者)
-//   f17bSea [暴击率, 暴击伤害, 闪避率] 海之眷顾：自身在水域中、或打中在水域中的亡灵时暴击率 / 暴击伤害加成（engine/enemy.dealE 的暴击那步调 f17bSea）；自身在水域中闪避率 +
+//   f17bSea [暴击率（固定概率，不看韧性和暴击值，用户 11-07 定）, 暴击伤害, 闪避率] 海之眷顾：自身在水域中、或打中在水域中的亡灵时暴击率 / 暴击伤害加成（engine/enemy.dealE 的暴击那步调 f17bSea）；自身在水域中闪避率 +
 //   f17bLone [闪避率, 减伤, 增伤] 孤舰深入（秘传被动，需求：船只单位）
 //   已有的键：dodgeK 偏斜值 ×(1 + X)（用户定：戴肯的直觉是偏斜值 +20%，不是 +20 个百分点）、deflE 偏斜效果（game/el_fam17a）、rng 射程、hitK 命中值、atkX / hpX 独立乘区（game/el_fam3）
 // Claude 定（策划没写细的，回报里列了）：
@@ -48501,9 +48501,9 @@ function dealE_(i,raw,o){
   if(o.hk&&o.hk.hf&&o.hk.hf.landE&&!o.dot)o.hk.hf.landE(o.hk,i,o);   // v0.8.10 英雄打中了（闪避之后；HERO_FX[id].landE：凡恩「魔法屏障」）   // v0.7.0 凡恩「魔法屏障」：打中就加魔法护盾（每秒最多一次；v0.7.0 修复：落空、闪避掉的不算）
   if(ETG[E.t[i]]||E.clk[i]>0)eReveal(i);   // 弱隐身：挨打就显形（闪避掉的不算；燃烧、中毒这类持续伤害算）
   // bcF：0.13 精英职业刺客、影杀者「从背后攻击时必定暴击」（o.bc = 出手的精英）
-  // sea：0.13.2 七阶代理加，戴肯「海之眷顾」自身或目标在水里：暴击点数 +100 × sea[0]、暴击伤害 +sea[1]（game/el_fam17b.f17bSea；只看精英身上 f17bS.sea，别的出手不多读）
+  // sea：0.13.2 七阶代理加，戴肯「海之眷顾」自身或目标在水里：暴击率固定 +sea[0]（用户 11-07 定：固定 25% 概率，不看韧性和暴击值，直接加在算好的暴击率上）、暴击伤害 +sea[1]（game/el_fam17b.f17bSea；只看精英身上 f17bS.sea，别的出手不多读）
   // 暴击：暴击点数 = 100 + 100 × 暴击率（老数据的暴击率换成点数，对韧性 100 时概率不变）；暴击率 = (暴击 − 韧性) ÷ 韧性；o.crit ≥ 1 = 必定暴击（隐身首击、隐秘之术）；暴击伤害 = max(100%, 暴击倍率 − 守护)
-  const bcF=!!(o.bc&&isBehind(i,o.bc.x,o.bc.y)),sea=o.hk&&o.hk.f17bS&&o.hk.f17bS.sea?f17bSea(o.hk,i):null,pc_=1+(POT_ON&&(o.hk||o.fu||o.su)?POT.crit:0)+(o.critK||0);if((o.crit||o.critPt||pm.critPt||pc_>1||bcF||sea)&&!defl&&!o.dot){const T=G.eTough+(c_.tough||0),pc=o.crit>=1||bcF||T<=0?1:((100+100*(o.crit||0)+(o.critPt||0)+pm.critPt+(sea?100*sea[0]:0))*pc_-T)/T;if(pc>0&&Math.random()<pc){dmg*=Math.max(1,((o.critMul||CFG.combat.critMul)+pm.critDmg+(sea?sea[1]:0)-(c_.critGuard||0))*(E.fsNc[i]?1:1-em.critRes));crit=true;if(o.s2Vc)o.s2C=1}}   // hitPt / critPt / critDmg：v0.8.22 卡「精确瞄准」「弱点瞄准」全体单位的命中、暴击、暴击伤害   // critGuard：亡灵的「守护」（暴击伤害 − 守护，《数值策划案》）；v0.9.0 修——原来字段叫 guard，跟圣堂墓园 / 腐化圣堂 / 机械工厂替伤亡灵的 guard 技能（对象）撞名，数字减对象得 NaN，替伤亡灵挨一次暴击生命就变 NaN，空血不死   // s2C：S2 加，v0.10.11 弱点洞悉记下这一下暴击了（units/s2_camps.s2Hit 读）
+  const bcF=!!(o.bc&&isBehind(i,o.bc.x,o.bc.y)),sea=o.hk&&o.hk.f17bS&&o.hk.f17bS.sea?f17bSea(o.hk,i):null,pc_=1+(POT_ON&&(o.hk||o.fu||o.su)?POT.crit:0)+(o.critK||0);if((o.crit||o.critPt||pm.critPt||pc_>1||bcF||sea)&&!defl&&!o.dot){const T=G.eTough+(c_.tough||0),pc0=o.crit>=1||bcF||T<=0?1:((100+100*(o.crit||0)+(o.critPt||0)+pm.critPt)*pc_-T)/T,pc=sea?Math.max(0,pc0)+sea[0]:pc0;if(pc>0&&Math.random()<pc){dmg*=Math.max(1,((o.critMul||CFG.combat.critMul)+pm.critDmg+(sea?sea[1]:0)-(c_.critGuard||0))*(E.fsNc[i]?1:1-em.critRes));crit=true;if(o.s2Vc)o.s2C=1}}   // hitPt / critPt / critDmg：v0.8.22 卡「精确瞄准」「弱点瞄准」全体单位的命中、暴击、暴击伤害   // critGuard：亡灵的「守护」（暴击伤害 − 守护，《数值策划案》）；v0.9.0 修——原来字段叫 guard，跟圣堂墓园 / 腐化圣堂 / 机械工厂替伤亡灵的 guard 技能（对象）撞名，数字减对象得 NaN，替伤亡灵挨一次暴击生命就变 NaN，空血不死   // s2C：S2 加，v0.10.11 弱点洞悉记下这一下暴击了（units/s2_camps.s2Hit 读）
   if(crit&&o.hk&&o.hk.hf&&o.hk.hf.critE)o.hk.hf.critE(o.hk,i,o);   // 0.12.6 代理 N 加：英雄打出暴击时的钩子 HERO_FX[英雄].critE（进阶-夜鸦「断喉之刃」暴击减冷却，heroes/assassin2）
   // 防御最先扣（用户定）、不保底：有效防御 = max(0, (防御 + 格挡防御〔格挡时〕 − 固定穿透) × Π(1 − 穿透比例))；持续伤害不算防御、格挡
   //   o.am：攻击方的增伤倍率（塔、士兵、英雄普攻带上）——raw ÷ am 是「攻击」，先减防御再乘回去；没带 am 的老调用按 raw 整个减防御
@@ -86173,7 +86173,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="6441b3c",GAME_BUILT=1794010981218,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="032a798",GAME_BUILT=1794011610165,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
