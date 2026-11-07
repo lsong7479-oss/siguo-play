@@ -24458,6 +24458,39 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
  E.famJobCost7={silver:30000, lv:60};
  if(!E.jobTierName[5])E.jobTierName[5]='五阶';if(!E.jobTierName[6])E.jobTierName[6]='六阶';E.jobTierName[7]='七阶';
 }
+// ---------- 七阶第三批（七阶代理加，2026-11-07）：玄钢山城：凡斯 vance；熔岩深渊：赤木 akagi；冰刺之地：风见 kazami（特性、技能、兵种在 data/el_fam17c、game/el_fam17c）----------
+// 倍率（fam17L 这三条）：策划九节「七阶的血脉属性倍率、特别属性」的正式表（望楼拟），不是暂定的（没有 tmp7）；算出来的上下限以同地区的七阶平民血脉为底（平民血脉另外重建）
+// 介绍：凡斯、风见用户定；赤木策划只写了草拟依据（日升的火焰武士家族，用户认可），介绍和三家的局面是 Claude 按草拟依据补的；家主、面相：望楼拟（用户认可）；家徽：凡斯 Claude 定，赤木、风见沿用老的
+// 这三个地区原来的家族（data/el_late，0.12.0 Claude 定的那一版）：
+//   赤木 akagi、风见 kazami：同名，沿用老键（声望、血脉照旧，老特性 f_akagi_20 / 40 / 80 / 100、f_kazami_40 / 80 / 100 按门槛对上新特性，同尼莫）
+//   韦兰 ouye（玄钢山城）、伊米尔 ymir（冰刺之地）：去掉；声望均摊给同地区的新家族，血脉并进凡斯 / 风见（fam17cTo），老特性去掉，身上有这家血脉的人改姓凡斯 / 风见（同菲尔并蒙哥菲尔；game/el_fam17c.elFam17cMig）
+{const E=CFG.elite,BD=h=>[Math.max(0,10-h),3,Math.max(0,h-10)],SK=n=>n<=3?0:n<=7?1:n<=11?2:n<=15?3:4;   // BD、SK 同上面那一段
+ Object.assign(E.fam17L,{
+  vance:{L:{def:3,mdef:1,hp:1,speed:-1}, v:0.1, sp:{drP:[0.09,0.16]}},    // 物理减伤 9～16%
+  akagi:{L:{atk:3,aspd:1,mdef:-1}, v:0.2, sp:{resFire:[0.4,0.5]}},        // 火抗 40～50%
+  kazami:{L:{ap:3,mdef:1,hp:-1}, v:0.1, sp:{resFrost:[0.4,0.5]}},         // 冰抗 40～50%
+ });
+ const F=(key,fam,reg,crest,head,desc,sit,look,o)=>{const T=E.fam17L[key];return Object.assign({key,fam,reg,L:T.L,v:T.v,sp:T.sp,crest,head,desc,sit,look:{hr:look[0],ey:look[1],sk:[SK(look[2])],b:BD(look[3])},tr0:[]},o||{})};
+ const L=[
+  F('vance','凡斯','steelCity',{shape:'shield',bg:'black',pat:'mountain',fg:'silver'},'鲁道夫·凡斯',
+    '玄钢山城世代在这里经营的大族，以矿石开采、冶炼、装备锻造闻名，是赤色帝国有名的边境家族。',
+    '玄钢山城好几片街区成了废墟，只剩正中王城的玄钢城墙还立着；凡斯家族的铸甲坊还在城里开工，家主鲁道夫是王城卫队的老队长。',
+    [[6,0],[4],4,17]),   // 鲁道夫：五十八岁，王城卫队的老队长，家里的铸甲坊也归他管；铁灰色短发，方下巴，肩膀很宽，两只手背上都是烫伤的旧疤
+  F('akagi','赤木','lavaAbyss',{shape:'rect',bg:'red',pat:'sword',fg:'white'},'赤木千代',
+    '赤木家族是日升王国的火焰武士家族。英雄赤木二郎(赤焰行者)是赤木家的人，熔岩深渊的地狱征服者赤木正一是他的哥哥。',
+    '熔岩深渊南边的火山向北伸出九条深渊裂谷；赤木家的本家在日升，由正一和二郎的母亲千代主持家业。',
+    [[0,6],[1],8,10],{cul:'japan'}),   // 千代：女，六十岁；黑发挽成髻，夹着银丝，穿暗红色的衣服，腰间别一把短刀，坐得很直
+  F('kazami','风见','iceSpike',{shape:'rectArc',bg:'white',pat:'tornado',fg:'green'},'风见千鹤',
+    '风见家族从日升王国来，在冰刺之地定居，信仰雪神；一直与外界隔绝，在这里世代做神巫。',
+    '风见家族在冰刺之地守着一座神社，在神社学成的人都随神社姓风见。',
+    [[7,6],[4],2,8],{cul:'japan'}),   // 千鹤：女，七十岁，神社的大巫女，雪姬的祖母；白发及腰，用红绳束着，穿白衣红裙，手腕上挂一串小铃，走路时铃响得很轻
+ ];
+ const R=['steelCity','lavaAbyss','iceSpike'];
+ for(const r of R){const S=E.bloodSrc[r];for(const f of(S?(Array.isArray(S.f)?S.f:S.f?[S.f]:[]):[]))if(f.key)E.fam17OldFam[f.key]=f.fam;S.f=[]}   // 老家族的姓（迁移改姓用）；平民血脉不动
+ for(const f of L){f.tr=f.tr0;E.famFx[f.key]=f.tr0;E.bloodSrc[f.reg].f.push(f);E.famInfo[f.key]={head:f.head,desc:f.desc,sit:f.sit};E.look.fam[f.key]=f.look;if(f.name===undefined)f.name=f.fam+'家族';E.fam17.push(f)}   // 进 fam17：补抽（elFam17Bt）、新档（elFam17New）照七阶的做
+ E.fam17Regs.push(...R);
+ E.fam17cGone={steelCity:['ouye'], iceSpike:['ymir']};E.fam17cTo={ouye:'vance', ymir:'kazami'};   // 老家族 → 存档迁移（game/el_fam17c.elFam17cMig）
+}
 
 // ---------- 0.13.2 家族重置第五批 · 七阶：尼莫（迷海遗迹）、萝拉（斗神大殿）、菲尔（浮空之城）的特性、技能、特色兵种（逻辑 game/el_fam17a.js；家族本身在 data/el_fam17.js）----------
 // 用户《0.13策划-家族重置》九节：特性、技能、兵种都是望楼草拟、用户改定 / 认可；七阶家族兵种 30000 银币、精英 60 级（famJobCost7）；萝拉家族没有特色兵种（用户定）
@@ -24568,6 +24601,78 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
   f17bHook:{name:'勾锁', cd:10, aim:'target', range:8, b:80, ad:1.2, stun:1,
     desc:p=>`向施法距离 ${p.range} 格内的一个敌人甩出勾锁，把自己拉到它身边，造成 ${sv_(p.b,p.ad)} 伤害，并眩晕 ${Math.round(p.stun*10)/10} 秒`},
  });
+ for(const k in E.skills)E.skills[k].id=k;
+}
+
+// ---------- 0.13.2 家族重置第五批 · 七阶第三批：凡斯（玄钢山城）、赤木（熔岩深渊）、风见（冰刺之地）的特性、技能、特色兵种（七阶代理加；逻辑 game/el_fam17c.js；家族本身在 data/el_fam17.js 末尾）----------
+// 用户《0.13策划-家族重置》九节：特性、技能、兵种是望楼草拟、用户改定 / 认可；七阶家族兵种 30000 银币、精英 60 级；减伤叠得高不设上限（用户定，减伤池子本来就是 ÷(1 + 合计)，没有上限）
+// 新属性键（局内效果和中文说明在 game/el_fam17c）：
+//   凡斯：f17cArm 护甲提供的物理防御 +X；f17cHund [每层减伤, 秒, 层数] 百炼（秘传被动）；f17cRefl 法术反伤（职业）
+//   赤木：f17cBurn [秒, 物理攻击的比例] 炎刃（普攻附带灼烧）；f17cBody [格, 物理攻击的比例] 焚身的周身灼烧；f17cIai [秒, 物理攻击的倍数] 居合（秘传被动）
+//   风见：f17cBell [格, 控制抗性, 秒] 铃音；f17cKag [概率, 冰冻秒, 同一目标的冷却秒, 增伤] 冰霜神乐；f17cBellA [格, 控制抗性] 神乐铃（职业光环）；f17cFrost 冰霜伤害 +X（职业）
+//   已有的键：defF / atkF / apF 固定值、blockR 格挡率、shieldK 格挡值(格挡防御)、defX / mdefX / atkX / apX / aspdX 独立乘区、cap 每秒受到的伤害封顶（game/el_fam3）、
+//     resFire 火抗、cd 冷却速度、lowDmg 生命低时增伤（game/el_sk2）、drP 物理减伤（game/el_battle）
+// Claude 定（策划没写细的，回报里列了）：
+//   玄钢锻甲：「护甲」= 身上的三件护甲（头、身、脚）；盾的防御、精英自己的物理防御不算；加在物理防御的独立乘区（凡斯的坚毅）之后
+//   铸甲：施法距离 5 格内(含自己)挑一名最近 1.5 秒内挨过打的友军(英雄、精英、士兵)，生命比例低的优先；没人挨打就不放；已经有玄钢甲、还剩 1 秒以上的不重复给
+//   玄钢甲的法术反伤 / 玄钢卫士的法术反伤：受到亡灵的直接伤害(持续伤害不算)后，按这次实际受到的伤害 × 比例，以法术伤害打回出手的亡灵；两个来源相加；反伤不会再被反伤
+//   百炼：每受到一次直接伤害(持续伤害不算)叠一层，这一下就按叠完的层数算(同老特性「每次受伤叠减伤」)
+//   炎刃：灼烧走游戏里的灼烧（同一个亡灵身上只留每秒伤害最高的一个）；物理攻击 = 技能里的「物理攻击」(AD)
+//   焚身：每秒结算一次，算持续伤害(不暴击、不触发命中效果)，天上的亡灵也烧；火焰伤害 = 带火焰属性的法术伤害(同元素之力)
+//   炎径：冲刺 0.3 秒；沿途 1 格内的亡灵每只打一次，伤害一半斩击、一半火焰(物理)；火焰路径从起点到停下的地方，每 0.5 秒结算一次，只烧地面的亡灵
+//   居合：每波开始重新计时，到点后下一次普通攻击是拔刀斩(远程武器同样，射程 +1 格)；伤害 = 这一下普攻按「倍数 × 物理攻击 ÷ 普攻伤害」放大(副目标照样按比例)；
+//     附带的灼烧同炎刃 3 秒 30%，自己的炎刃更强就用炎刃的
+//   铃音：主动技能进入冷却就算放了一次；给自己和周围 4 格内的英雄、士兵；控制抗性 = 被冰冻 / 眩晕 / 减速等控制的时间 ×(1 − X)；同一个来源不叠加(刷新)，和巫女的神乐铃相加
+//   冰霜神乐：「主目标」= 每次出手打中的第一个亡灵(同一帧里只算一个)；冰冻吃亡灵的控制抗性；「3 秒内只触发一次」按冰冻成功算；对冰冻亡灵的增伤是全部伤害
+//   吹雪：减速只减移速；雪结界：每 0.5 秒结算一次，打得到天上的亡灵；友军回血每 0.5 秒一次，结界里的英雄、士兵都回
+//   神乐铃：每 0.25 秒刷新一次 0.4 秒；几名巫女只算一份；冰霜伤害 +15% 按这一下里冰霜的占比加进增伤池子
+//   技能图标先借英雄卡罗琳、赤木二郎、风见雪姬的；小人先借同系列的（大盾卫、大剑士、法师）
+{const LV=(a,b)=>[a,a+(b-a)*0.1,a+(b-a)*0.2,a+(b-a)*0.3,a+(b-a)*0.5,a+(b-a)*0.6,a+(b-a)*0.7,a+(b-a)*0.8,a+(b-a)*0.9,b].map(v=>Math.round(v*1000)/1000);
+ const E=CFG.elite,FX=E.famFx;
+ // —— 局内参数（Claude 定）——
+ E.f17c={armHit:1.5, armKeep:1, rfMix:{arcane:1}, bodyInt:1, pathT:0.3, pathTick:0.5, iaiBurn:[3,0.3], bellAInt:0.25, bellADur:0.4, wardTick:0.5};   // armHit 铸甲挑「最近几秒挨过打」的；armKeep 还剩几秒以上的不重复给；bodyInt 焚身几秒结算一次；pathT 炎径冲刺秒数；iaiBurn 拔刀斩的灼烧 [秒, 比例]
+ // —— 家族特性（望楼拟、用户改）：[名字, 门槛, 属性]，说明按属性自动写（game/el_blood 的 EL_STD3）——
+ FX.vance.push(['凡斯的筋骨',0.2,{defF:20}],['凡斯的盾术',0.4,{blockR:0.1, shieldK:0.25}],['玄钢锻甲',0.6,{f17cArm:0.2}],['凡斯的坚毅',0.8,{defX:0.18, mdefX:0.12}],['玄钢壁垒',1,{cap:0.25}]);
+ FX.akagi.push(['赤木的臂力',0.2,{atkF:32}],['赤木的炎血',0.4,{resFire:0.3}],['炎刃',0.6,{f17cBurn:[3,0.3]}],['赤木的剑意',0.8,{atkX:0.15, aspdX:0.08}],['焚身',1,{f17cBody:[2,0.1], lowDmg:[0.5,0.2]}]);
+ FX.kazami.push(['风见的灵力',0.2,{apF:32}],['风见的专注',0.4,{cd:0.1}],['铃音',0.6,{f17cBell:[4,0.2,4]}],['风见的灵性',0.8,{apX:0.15, mdefX:0.1}],['冰霜神乐',1,{f17cKag:[0.5,1,3,0.25]}]);
+ // —— 家族技能：fsk 家族、fr 要到的声望（尊敬 = 特殊技能，狂热 = 秘传）；「A～B」= 1～10 级的表 ——
+ const IA=LV(2.5,3.5);
+ Object.assign(E.skills,{
+  el_f17cArm: {name:'铸甲', fsk:'vance', fr:'尊敬', sk:'f17cArm', raw:true, sc:[], lvT:{dr:LV(0.2,0.4), rf:LV(0.2,0.4)}, ico:'caVow'},
+  el_f17cHund:{name:'百炼', pas:true, fsk:'vance', fr:'狂热', st1:{f17cHund:[0.01,15,20]}, lvT:{f17cHund:LV(0.01,0.015).map(v=>[v,15,20])}, ico:'caOath'},
+  el_f17cPath:{name:'炎径', fsk:'akagi', fr:'尊敬', sk:'f17cPath', raw:true, sc:['b','fb'], lvT:{ad:LV(1.2,1.5), fad:LV(0.3,0.5)}, ico:'ajDash'},
+  el_f17cIai: {name:'居合', pas:true, fsk:'akagi', fr:'狂热', st1:{f17cIai:[8,2.5]}, lvT:{f17cIai:LV(8,6).map((v,i)=>[v,IA[i]])}, ico:'ajBlaze'},
+  el_f17cBliz:{name:'吹雪', fsk:'kazami', fr:'尊敬', sk:'f17cBliz', raw:true, sc:['b'], lvT:{ad:LV(1.5,2)}, ico:'kzWind'},
+  el_f17cWard:{name:'雪结界', fsk:'kazami', fr:'狂热', sk:'f17cWard', raw:true, sc:['b'], lvT:{r:LV(2.5,3), ad:LV(0.4,0.6)}, ico:'kzSnow'},
+ });
+ const pcF=v=>Math.round(v*1000)/10+'%';
+ Object.assign(CFG.skills,{
+  f17cArm:{name:'铸甲', cd:12, aim:'self', range:5, dr:0.2, rf:0.2, dur:10,
+    desc:p=>`给施法距离 ${p.range} 格内的一名友军加一层玄钢甲：物理减伤 +${pcF(p.dr)}，法术反伤 +${pcF(p.rf)}(按受到的伤害以法术伤害反弹)，持续 ${p.dur} 秒`},
+  f17cPath:{name:'炎径', cd:12, aim:'point', dist:5, b:80, ad:1.2, fb:20, fad:0.3, fw:1, fdur:4,
+    desc:p=>`向前冲刺 ${p.dist} 格，对沿途的亡灵造成 ${sv_(p.b,p.ad)} 伤害，并留下一条宽 ${p.fw} 格的火焰路径，持续 ${p.fdur} 秒，每秒造成 ${sv_(p.fb,p.fad)} 火焰伤害`},
+  f17cBliz:{name:'吹雪', cd:12, aim:'fan', fan:60, range:6, b:100, ad:1.5, mag:true, slow:0.4, slowT:3,
+    desc:p=>`对前方 ${p.fan}° 扇形、${p.range} 格内的亡灵造成 ${sv_(p.b,p.ad,'AP')} 冰霜伤害，并减速 ${pcF(p.slow)}，持续 ${p.slowT} 秒`},
+  f17cWard:{name:'雪结界', cd:20, aim:'point', range:8, r:2.5, dur:6, heal:0.02, slow:0.3, b:30, ad:0.4, mag:true,
+    desc:p=>`在施法距离 ${p.range} 格内布下半径 ${Math.round(p.r*100)/100} 格的冰雪结界，持续 ${p.dur} 秒；结界里的友军每秒回复 ${pcF(p.heal)} 最大生命，结界里的亡灵移速 −${pcF(p.slow)}，每秒受到 ${sv_(p.b,p.ad,'AP')} 冰霜伤害`},
+ });
+ // —— 特色兵种（望楼拟、用户改 / 认可；七阶：30000 银币、精英 60 级、家族声望「忠诚」；数同 CFG.elite.famJobCost7，直接写数）——
+ const J0=E.jobs.recruit,AR=['cloth','leather','chain','plate'];
+ const J=(name,tier,cat,fam,armor,weapon,x,cost,jsk,st,o)=>{const j=Object.assign({hp:J0.hp,atk:J0.atk,ap:J0.ap,def:J0.def,mdef:J0.mdef,dodge:J0.dodge,crit:J0.crit,speed:J0.speed,vision:J0.vision,aspd:J0.aspd,prec:J0.prec},{name,tier,cat,fam,armor:AR.slice(0,AR.indexOf(armor)+1),weapon,x,cost,jsk,st:st||{}},o||{});
+   j.hp+=x.hp||0;j.atk+=x.atk||0;j.ap+=x.ap||0;j.def+=x.def||0;j.mdef+=x.mdef||0;j.speed+=x.speed||0;return j};   // 同 data/el_jobs3 的 J()
+ Object.assign(E.jobs,{
+  vanceGuard:J('玄钢卫士',7,'heavy',['warrior','shield'],'plate',['sword','club','shield'],{hp:700, def:24, atk:6},{silver:30000, lv:60, fam:'vance'},
+    ['玄钢甲','物理减伤 +25%，法术反伤 +25%(以法术伤害反弹)'],{drP:0.25, f17cRefl:0.25},{ser:'大盾卫'}),
+  flameSamurai:J('炎武士',7,'light',['warrior'],'chain',['sword'],{hp:500, atk:32},{silver:30000, lv:60, fam:'akagi'},
+    ['炎刃','普通攻击附带灼烧，3 秒内造成 25% 物理攻击的火焰伤害；火抗 +30%'],{f17cBurn:[3,0.25], resFire:0.3},{ser:'大剑士'}),
+  shrineMaiden:J('巫女',7,'magic',['mage'],'cloth',['staff'],{hp:260, ap:32},{silver:30000, lv:60, fam:'kazami'},
+    ['神乐铃','周围 4 格内友军的控制抗性 +20%，不可叠加；造成的冰霜伤害 +15%'],{f17cBellA:[4,0.2], f17cFrost:0.15},{ser:'法师'}),
+ });
+ // 能学的技能：同系列职业的（家族兵种另外升级学本家族的特殊技能，game/el_core.elLvSk）
+ const JB=E.jobs,SKS=(k,from)=>{const L=[];for(const f of from)for(const s of(JB[f]&&JB[f].sks)||[])if(!L.includes(s))L.push(s);JB[k].sks=L};
+ SKS('vanceGuard',['shieldGuard']);SKS('flameSamurai',['greatsword']);SKS('shrineMaiden',['mage']);
+ const cat=(c,L)=>{const x=E.jobCat.find(r=>r[0]===c);if(x)for(const k of L)if(!x[2].includes(k))x[2].push(k)};
+ cat('heavy',['vanceGuard']);cat('light',['flameSamurai']);cat('magic',['shrineMaiden']);
  for(const k in E.skills)E.skills[k].id=k;
 }
 
@@ -25757,7 +25862,7 @@ f4OlN f4OlU f4RollU f4RollV f4SwU f4SwV f4SwP f4LsU f4LhU f4LhV f4PsU f4PsCd f4P
 svSq elBC elMvP elGun elChg elMvT elChgOn elRepT elHealT visFix elHealF elHealK jsHoldU jsHX jsHY jsCvU jsCvR jsGhU jsKs jsKsU elAccT elCv
 fbS f5bS
 f15S f15IdU f15Fg
-f16bS f17S f17bS`.trim().split(/\s+/);   // elBC…elHealK：0.13 精英职业技能（game/el_jobfx）；jsHoldU…jsKsU：0.13 精英新技能（game/el_jsk）；elAccT / elCv：骑兵加速（game/el_jobfx）   // svSq：0.12.7b 幸存者模式的队员位置（game/sv_squad）   // es2Rd es2Bn es2ArcN：0.12.7 代理 ES 加（精英技能第三批，game/el_skills3）   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）   // ydv*：0.12.5 第二轮代理 T，源能装置给的护盾、攻击加成（structs/yn_tdev）
+f16bS f17S f17bS f17cS`.trim().split(/\s+/);   // elBC…elHealK：0.13 精英职业技能（game/el_jobfx）；jsHoldU…jsKsU：0.13 精英新技能（game/el_jsk）；elAccT / elCv：骑兵加速（game/el_jobfx）   // svSq：0.12.7b 幸存者模式的队员位置（game/sv_squad）   // es2Rd es2Bn es2ArcN：0.12.7 代理 ES 加（精英技能第三批，game/el_skills3）   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）   // ydv*：0.12.5 第二轮代理 T，源能装置给的护盾、攻击加成（structs/yn_tdev）
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -80796,7 +80901,7 @@ function elDef(e){const J=elJobD(e),S=elStatSum(e),R=EL().regions[e.reg]||{},M=e
     dodge:Math.max(0,(1+J.dodge+(S.dodge||0)/100)*(1+(S.dodgeK||0))-1+(S.dodgeR||0)+(S.eva||0)),crit:Math.max(0,(1+J.crit+(S.crit||0)/100)*(1+(S.critK||0))-1+(S.critR||0)),
     tough:Math.max(1,(100+(S.tough||0))*(1+(S.toughK||0))+100*(S.toughR||0)),prof:{weapon:elWAll(e)?elWTypes():J.weapon.slice(),armor:J.armor.slice()},backstab:!!S.backstab,noWall:!!S.noWall,elS:S,elRes:elResOf(R.res,S),ship:!!S.f5bShip,camel:S.f5bShip?EL().f15b.camel:null,shipLand:S.f5bShip?EL().f15b.land:0,fly:!!S.f17Bal,balloon:!!S.f17Bal}}   // noWall：0.13 重炮手不上城墙   // elWAll：0.13.2 萝拉「百般兵器」所有武器都熟练；fly / balloon：0.13.2 气球射手（game/el_fam17、el_fam17a）
 // 抗性：地区的 + 血脉特别属性的毒抗、冰抗、火抗（0.12.0）
-function elResOf(r,S){const o=Object.assign({},r||{});let any=!!r;for(const[a,b]of[['resPoison','poison'],['resFrost','frost'],['resFire','fire']])if(S[a]){o[b]=(o[b]||0)+S[a];any=true}return any?o:null}
+function elResOf(r,S){const o=Object.assign({},r||{});let any=!!r;for(const[a,b]of[['resPoison','poison'],['resFrost','frost'],['resFire','fire']])if(S[a]){o[b]=Math.min(1,(o[b]||0)+S[a]);any=true}return any?o:null}   // min 1：0.13.2 七阶代理加，抗性加到 100% 为止（赤木血脉 + 特性 + 炎武士会超过 100%，engine/core.mixMul 按 1 − 抗性 乘，超了会变成负的）
 // 小人：职业的图（art 里 el_<职业>）；还没画的先借一位英雄的
 const EL_SPR_FB={recruit:'arthur',assassin:'assassin',berserker:'arthur',spearman:'arthur',shieldGuard:'paladin',marksman:'robin',cannoneer:'gunslinger',musketeer:'gunslinger',lightCav:'camelKnight',heavyCav:'camelKnight',horseArcher:'robin',gunCav:'gunslinger',mage:'merlin',priest:'priest',engineer:'engineer',druid:'archDruid',alchemist:'poisoner',bard:'arthur',paladin:'paladin'};
 const elSpr=(job,sex)=>sex==='f'&&SPR.heroes['elf_'+job]?'elf_'+job:SPR.heroes['el_'+job]?'el_'+job:EL_SPR_FB[job]||'arthur';   // sex：0.11.4 女性小人 elf_<职业>（art/ef_elite）
@@ -80819,7 +80924,7 @@ function elRecalc(h){const e=elById(h.elite);if(!e)return;const S=h.d.elS||{},w=
     h.speed*=1+(t.uMove||0)+(pm.moveSpd||0);h.gDmg+=w.cls==='melee'?(t.uMelee||0):rg?(t.uRanged||0):0;h.aspd+=w.cls==='melee'?(t.uMeleeSpd||0):rg?(t.uRgSpd||0):0;
     h.def+=t.uDef||0;h.mdef+=t.uMDef||0;h.dodge+=t.uDodge||0;obFElRecalc(h,w,t,mag,rg)}   // obFElRecalc：0.12.2 代理 4，补齐其余士兵的卡和科技（game/obf_elite）
   elXApply(h,S);elHallApply(h,e);f4Recalc(h,S,w);fbRecalc(h,S,w,mag,rg);f5bRecalc(h,S,w,mag,rg);f16bRecalc(h,S,w,mag,rg);   // f16bRecalc：0.13.2 代理 16b 加（雪步、毒沼、海豚、掷弹……，game/el_fam16b）   // f5bRecalc：0.13.2 代理 15b 加（船只单位、守护、斗舰生命，game/el_fam15b）   // f4Recalc：0.13.1 代理 A 加（沙漠适应、古老之咒、翻滚 / 盾墙期间的加成，game/el_fam14a）   // 0.12.2 家族特性的独立乘区：生命、物防、法防（game/el_fam3）；0.13.1 英灵碑的庇护（game/el_hall）
-  f16aRecalc(h,S,w,mag,rg);f17Recalc(h,S,w,mag,rg);f17bRecalc(h,S);   // f17bRecalc：0.13.2 七阶代理加，戴肯的海之眷顾、孤舰深入的闪避（game/el_fam17b）   // f17Recalc：0.13.2 第五批（七阶）加：命中、射程 ×、风林火山的闪避、热气球（game/el_fam17a）   // 0.13.2 第四批代理 16a 加：装填 ×、远程物理暴击率、骑乘时移速（瓦特、阿里巴巴家族，game/el_fam16a）
+  f16aRecalc(h,S,w,mag,rg);f17Recalc(h,S,w,mag,rg);f17bRecalc(h,S);f17cRecalc(h,S);   // f17cRecalc：0.13.2 七阶代理加，凡斯的玄钢锻甲、赤木的居合射程等（game/el_fam17c）   // f17bRecalc：0.13.2 七阶代理加，戴肯的海之眷顾、孤舰深入的闪避（game/el_fam17b）   // f17Recalc：0.13.2 第五批（七阶）加：命中、射程 ×、风林火山的闪避、热气球（game/el_fam17a）   // 0.13.2 第四批代理 16a 加：装填 ×、远程物理暴击率、骑乘时移速（瓦特、阿里巴巴家族，game/el_fam16a）
   if(h.elGrief){const B=EL().bond,gx=1+(S.griefX||0);h.def*=1-Math.min(0.9,B.griefDef*gx);h.mdef*=1-Math.min(0.9,B.griefDef*gx)}}   // griefX：0.12.0 特性「护短」   // 0.12.0（用户定）亲人倒下：双防 −10%
 // 亲人同队的双攻倍率（heroRecalc 开头算，武器伤害要用）：亲人倒下过 +20%，否则有活着的亲人同队 +10%
 function elBondCalc(h){const B=EL().bond,gx=1+((h.d.elS&&h.d.elS.griefX)||0);h.elAtkK=(1+(h.elGrief?B.griefAtk*gx:h.elRel&&h.elRel.length&&G&&G.heroes&&G.heroes.some(o=>o.elite&&!o.dead&&h.elRel.includes(o.elite))?B.atk:0))*(1+elHallOf(elById(h.elite)))*f4MadAtk(h)}   // 0.13.1 英灵碑庇护：双攻（game/el_hall）
@@ -82399,7 +82504,7 @@ function elFam17Bt(m){const M=m&&m.el;if(!M)return;if(!M.f17t||typeof M.f17t!=='
   for(const L of[M.list,M.kids,M.roll,M.fam,M.staff])if(Array.isArray(L))L.forEach(one);for(const id of todo)M.f17t[id]=1;m._dirty=true;if(n)console.log('elFam17Bt',n)}
 META_LATE.push(['elFam17Bt',m=>{try{elFam17Bt(m)}catch(e){console.error(e)}}]);
 // 新建的精英存档（game/el_core.elSt 第一次建 META.el 时调，接在 elFam16New 后面）：七阶的老家族迁移、补抽特性都当已经做过（原因见 game/el_fam15.elFam15New）
-function elFam17New(m){m.f17=1;m.f17d=1;m.f17t={};for(const f of CFG.elite.fam17||[])m.f17t['f_'+f.key]=1;return m}
+function elFam17New(m){m.f17=1;m.f17d=1;m.f17c=1;m.f17t={};for(const f of CFG.elite.fam17||[])m.f17t['f_'+f.key]=1;return m}
 // 填特性的人如果把 CFG.elite.famFx.<键> 整个换成了新数组，家族的 tr 跟着对上（elBloodBuild 读 tr）
 for(const f of CFG.elite.fam17||[])if(Array.isArray(CFG.elite.famFx[f.key])&&CFG.elite.famFx[f.key]!==f.tr)f.tr=CFG.elite.famFx[f.key];
 // —— 只有女性的家族（用户定：萝拉，CFG.elite.famFem）——
@@ -82607,6 +82712,127 @@ Object.assign(EL_STD3,{
   f17bLoot:(v,pc)=>`战后获得的地区木、石、皮、布材料 +${pc(v[0])}，建材 +${pc(v[1])}，不可叠加`,
   f17bSea:(v,pc)=>`自身在水域中，或命中在水域中的目标时，暴击率 +${pc(v[0])}、暴击伤害 +${pc(v[1])}；自身在水域中时，闪避率 +${pc(v[2])}`,
   f17bLone:(v,pc)=>`(需求：船只单位)周围 ${EL().f17b.loneR} 格内没有队友时，闪避率 +${pc(v[0])}，减伤 +${pc(v[1])}，增伤 +${pc(v[2])}`,
+});
+
+// ---------- 0.13.2 家族重置第五批 · 七阶第三批：凡斯、赤木、风见的特性、家族技能、特色兵种的效果（七阶代理加；数据 data/el_fam17c.js，Claude 定的细节写在那边开头）----------
+// 每个精英身上的状态放在 h.f17cS（f17cNewS 建好全部字段；core/shape 登记了 f17cS）；属性合计在 h.d.elS
+// 属性（el_battle.elRecalc 末尾调 f17cRecalc）：玄钢锻甲的物理防御；居合准备好了的攻击距离 +1（h.ws 每次重算都是新的，这里再加回去）
+// 钩子（feat elFam17c）：dmgBaseE（冰霜神乐对冰冻亡灵、神乐铃的冰霜伤害、拔刀斩的伤害）、afterHitE（炎刃、拔刀斩的灼烧、冰霜神乐的冰冻）、
+//   dmgInF（玄钢甲的物理减伤、百炼）、afterHurtF（法术反伤）、ccInF（铃音、神乐铃的控制抗性）、tick（焚身、铃音、神乐铃、居合计时）
+// 别人身上的状态（玄钢甲、控制抗性：英雄、士兵都能有）放在 F17C.arm / F17C.cc（单位 → 数据），不往士兵身上加字段
+const F17C={kg:new Map(),arm:new Map(),cc:new Map(),rf:0,ccT:0};   // kg：冰霜神乐（亡灵 id → 冷却到的时刻）；arm：玄钢甲（单位 → {u 到期, d 物理减伤, r 反伤}）；cc：控制抗性（单位 → {b, bv 铃音, a, av 神乐铃}）；rf：正在反伤（不再反）
+const F17C_FIRE={fire:1},F17C_FROST={frost:1},F17C_SF={slash:0.5,fire:0.5};
+function f17cNewS(){return{on:0,arm:0,burn:null,body:null,bdT:0,bell:null,pc:[0,0,0],bellA:null,baT:0,frost:0,kag:null,kgAt:-1,hund:null,hN:0,hU:0,iai:null,iaT:0,iaR:0,iaD:0,iaAt:-1,refl:0,rd:0,rP:null,px:0,py:0,pp:null}}
+const f17cS0=h=>h.f17cS||(h.f17cS=f17cNewS());
+const f17cF=()=>EL().f17c;
+// —— 属性（el_battle.elRecalc 末尾调）——
+function f17cRecalc(h,S){const F=f17cS0(h);F.arm=S.f17cArm||0;F.burn=S.f17cBurn||null;F.body=S.f17cBody||null;F.bell=S.f17cBell||null;F.bellA=S.f17cBellA||null;F.frost=S.f17cFrost||0;
+  F.kag=S.f17cKag||null;F.hund=S.f17cHund||null;F.iai=S.f17cIai||null;F.refl=S.f17cRefl||0;
+  if(F.arm){let a=0;for(const p of h.armorList||[])if(CFG.armors[p.base])a+=armorPiece(p).def;h.def+=a*F.arm}   // 玄钢锻甲：护甲三件的防御（gear/gear.gearAgg 同样的算法）
+  F.iaD=0;if(!F.iai)F.iaR=0;else if(F.iaR)f17cIaiOn(h,F);
+  F.on=F.arm||F.burn||F.body||F.bell||F.bellA||F.frost||F.kag||F.hund||F.iai||F.refl?1:0}
+// —— 居合：准备好了攻击距离 +1 格（近战 reach，远程 range）——
+function f17cIaiOn(h,F){if(F.iaD)return;const w=h.ws;if(w.cls==='melee'){w.reach+=1;F.iaD=1}else if(w.range>0){w.range+=1;F.iaD=2}}
+function f17cIaiOff(h,F){const w=h.ws;if(F.iaD===1)w.reach-=1;else if(F.iaD===2)w.range-=1;F.iaD=0}
+function f17cIaiUse(h,F){F.iaR=0;F.iaAt=G.time;F.iaT=F.iai[0];f17cIaiOff(h,F);
+  if(inViewPt(h.x,h.y)){addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-6),r:14,life:0.25,c:'#ff7a3a'});sfx('swing',h.x,h.y)}}
+// —— 焚身：周身每秒灼烧（固定函数 + 模块变量，不每次新建闭包）——
+let F17C_BD=0,F17C_BO=null;
+const f17cBodyHit=j=>{dealE(j,F17C_BD,F17C_BO)};
+function f17cBody(h,F){F17C_BD=skV(h,0,F.body[1]);F17C_BO={hk:h,magic:1,mix:F17C_FIRE,dot:1,noFx:1};eQuery(h.x,h.y,F.body[0]*16,f17cBodyHit);F17C_BO=null;
+  if(inViewPt(h.x,h.y))for(let k=0;k<4;k++)pp(h.x+vr(-12,12),h.y+vr(-6,4),0,vr(-6,6),vr(-20,-8),vr(3,7),0,vr(0.3,0.5),vpick(['#ff7a3a','#ffb040','#ffd25a']),1,0,1)}
+// —— 控制抗性（铃音 b、神乐铃 a）——
+function f17cCc(u,k,v,t){let c=F17C.cc.get(u);if(!c){c={b:0,bv:0,a:0,av:0};F17C.cc.set(u,c)}const U=G.time+t;
+  if(k==='b'){if(!(c.b>G.time)||v>=c.bv){c.bv=v}c.b=Math.max(c.b,U)}else{if(!(c.a>G.time)||v>=c.av){c.av=v}c.a=Math.max(c.a,U)}}
+function f17cCcOf(u){const c=F17C.cc.get(u);if(!c)return 0;const n=G.time;return(c.b>n?c.bv:0)+(c.a>n?c.av:0)}
+function f17cNear(h,R,k,v,t){const L=G.friends,R2=R*R;for(let q=0;q<L.length;q++){const u=L[q];if(u.dead)continue;const dx=u.x-h.x,dy=u.y-h.y;if(dx*dx+dy*dy<=R2)f17cCc(u,k,v,t)}}
+function f17cBellCast(h,F){const P=F.bell;f17cNear(h,P[0]*16,'b',P[1],P[2]);if(inViewPt(h.x,h.y)){addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-6),r:P[0]*16,life:0.4,c:'#f0e6a0'});sfx('bell',h.x,h.y)}}
+// —— 玄钢甲：挑一名友军（最近挨过打的、生命比例低的优先）——
+function f17cArmPick(h,R,any){const L=G.friends,R2=R*R,T=f17cF();let b=null,bs=-1e9;
+  for(let q=0;q<L.length;q++){const u=L[q];if(u.dead||!(u.maxHp>0))continue;const dx=u.x-h.x,dy=u.y-h.y;if(dx*dx+dy*dy>R2)continue;const a=F17C.arm.get(u);if(a&&a.u>G.time+T.armKeep)continue;
+    const hit=G.time-(u.lastHit>-1e9?u.lastHit:-1e9)<T.armHit;if(!any&&!hit)continue;const s=(hit?1:0)+(1-u.hp/u.maxHp)+(u.isHero?0.1:0);if(s>bs){bs=s;b=u}}
+  return b}
+SK.f17cArm={cast(h,p){const u=f17cArmPick(h,p.range*16,true);if(!u)return false;F17C.arm.set(u,{u:G.time+p.dur,d:p.dr,r:p.rf});
+    if(inViewPt(u.x,u.y)){addFx({k:'ring',x:Math.round(u.x),y:Math.round(u.y-6),r:12,life:0.4,c:'#a9b0bb'});healFx(u.x,u.y-12,'#c3cad6');sfx('clank',u.x,u.y)}return true},
+  ai(h,p){return f17cArmPick(h,p.range*16,false)?{}:null}};
+// —— 炎径：冲刺，沿途的亡灵每只打一次；停下后留一条火焰路径 ——
+SK.f17cPath={cast(h,p,a){if(h.layer===1)return false;const t=a&&a.x!==undefined?a:null;if(!t)return false;const ang=Math.atan2(t.y-h.y,t.x-h.x),F=f17cS0(h);
+    F.rd=skD(h,p);F.rP={who:'E',gnd:1,crit:h.crit,critMul:heroCritMul(h),pen:h.ws.pen,penP:h.ws.penP,mix:F17C_SF,melee:1};F.px=h.x;F.py=h.y;F.pp=p;
+    startDash(h,'f17cPath',ang,p.dist*16,f17cF().pathT,p);h.facing=Math.cos(ang)>=0?1:-1;return true},
+  ai(h,p){if(h.layer===1)return null;const c=densest(h.x,h.y,p.dist*16*0.9);return c&&c.n>=2?{x:c.x,y:c.y}:null}};
+DASH.f17cPath={step(h,dt){const F=h.f17cS;if(!F||!F.rP)return;bkCastOnce({k:'c',r:1},F.rP,bkCH(h,F.rd,h.x,h.y,0),h.dashHit);
+    if(inViewPt(h.x,h.y))pp(h.x+vr(-4,4),h.y+vr(-2,2),0,vr(-8,8),vr(-18,-6),vr(3,7),0,vr(0.3,0.5),vpick(['#ff7a3a','#ffb040','#ffd25a']),1,0,1)},
+  land(h){const F=h.f17cS;if(!F||!F.pp)return;const P=F.pp;F.pp=null;F.rP=null;if(h.dead)return;const dx=h.x-F.px,dy=h.y-F.py,L=Math.hypot(dx,dy);if(L<4)return;const tk=f17cF().pathTick;
+    bkZone({k:'rect',len:L/16,w:P.fw},{who:'E',gnd:1,magic:1,mix:F17C_FIRE,noFx:1,fx:'fire'},bkCH(h,skV(h,P.fb,P.fad)*tk,F.px,F.py,Math.atan2(dy,dx)),{dur:P.fdur,tick:tk,endFirst:1})}};
+// —— 吹雪：前方扇形 ——
+SK.f17cBliz={cast(h,p,a){const t=a&&a.x!==undefined?a:null;if(!t)return false;const ang=Math.atan2(t.y-h.y,t.x-h.x),L=p.range*16,half=p.fan/2*DEG;h.facing=Math.cos(ang)>=0?1:-1;h.recoil=0.25;
+    bkCast({k:'cone',arc:p.fan,len:p.range},{who:'E',magic:1,mix:F17C_FROST,crit:h.crit,critMul:heroCritMul(h),st:{slow:{f:p.slow,t:p.slowT}},fx:null},bkCH(h,skD(h,p),h.x,h.y,ang));disbandNear(h.x,h.y,L);
+    if(inViewPt(h.x,h.y)){for(let k=0;k<20;k++){const aa=ang+vr(-half,half),r=vr(8,L);pp(h.x+Math.cos(aa)*8,h.y-6+Math.sin(aa)*6,3,Math.cos(aa)*r*1.4,Math.sin(aa)*r*1.1,vr(2,6),0,vr(0.4,0.7),vpick(['#ffffff','#dff4ff','#9fd8f4']),vpick([1,2]),0,1)}sfx('bell',h.x,h.y)}
+    return true},
+  ai(h,p){const c=densest(h.x,h.y,p.range*16*0.9);return c&&c.n>=1?{x:c.x,y:c.y}:null}};
+// —— 雪结界：区域伤害 + 减速（积木的持续区域），友军回血 ——
+function f17cWardHeal(z,h,p){const R=p.r*16,R2=R*R,L=G.friends,v=p.heal*f17cF().wardTick;for(let q=0;q<L.length;q++){const u=L[q];if(u.dead)continue;const dx=u.x-z.x,dy=u.y-z.y;if(dx*dx+dy*dy<=R2)healF(u,u.maxHp*v)}}
+SK.f17cWard={cast(h,p,a){const t=a&&a.x!==undefined?a:null;if(!t)return false;const c=clampAim(h,t,p.range*16),tk=f17cF().wardTick;let acc=tk;
+    bkZone({k:'c',r:p.r},{who:'E',magic:1,mix:F17C_FROST,noFx:1,fx:'frost',st:{slow:{f:p.slow,t:tk+0.1}}},bkCH(h,skD(h,p)*tk,c.x,c.y,0),
+      {dur:p.dur,tick:tk,endFirst:1,onTick:(z,dt)=>{acc+=dt;if(acc>=tk-1e-6){acc-=tk;f17cWardHeal(z,h,p)}}});   // 一次施放建一个回调（不是每帧）
+    if(inViewPt(c.x,c.y)){addFx({k:'ring',x:Math.round(c.x),y:Math.round(c.y-2),r:p.r*16,life:0.5,c:'#dff4ff'});sfx('bell',c.x,c.y)}return true},
+  ai(h,p){const c=densest(h.x,h.y,p.range*16*0.95);return c&&c.n>=2?{x:c.x,y:c.y}:null}};
+// —— 每帧 ——
+function f17cTick(dt){const H=G.heroes;if(G.phase!=='wave')return;const T=f17cF();
+  for(let k=0;k<H.length;k++){const h=H[k];const F=h.f17cS;if(!F||!F.on||h.dead)continue;
+    if(F.body){F.bdT-=dt;if(F.bdT<=0){F.bdT+=T.bodyInt;if(F.bdT<0)F.bdT=T.bodyInt;f17cBody(h,F)}}
+    if(F.bell){let cast=false;for(let q=0;q<3;q++){const c=h.cds[q];if(c>F.pc[q]+0.05&&h.unl[q]&&h.skills[q]!==EL_NONE)cast=true;F.pc[q]=c}if(cast)f17cBellCast(h,F)}   // 主动技能进入冷却 = 放了一次
+    if(F.bellA){F.baT-=dt;if(F.baT<=0){F.baT=T.bellAInt;f17cNear(h,F.bellA[0]*16,'a',F.bellA[1],T.bellADur)}}
+    if(F.iai&&!F.iaR){F.iaT-=dt;if(F.iaT<=0){F.iaR=1;f17cIaiOn(h,F)}}}
+  F17C.ccT-=dt;if(F17C.ccT<=0){F17C.ccT=2;const n=G.time;for(const[u,c]of F17C.cc)if(!(c.a>n)&&!(c.b>n))F17C.cc.delete(u);for(const[u,a]of F17C.arm)if(!(a.u>n))F17C.arm.delete(u)}}   // 隔 2 秒清掉过期的
+function f17cWaveStart(){for(const h of G.heroes){const F=h.f17cS;if(!F)continue;F.bdT=0;F.baT=0;F.hN=0;F.hU=0;F.pc[0]=F.pc[1]=F.pc[2]=0;F.iaR=0;F.iaT=F.iai?F.iai[0]:0;if(h.ws)f17cIaiOff(h,F)}}   // 居合：每波开始重新计时
+function f17cWaveEnd(){F17C.kg.clear();F17C.arm.clear();F17C.cc.clear();for(const h of G.heroes){const F=h.f17cS;if(!F)continue;F.iaR=0;F.hN=0;F.pp=null;F.rP=null;if(h.ws)f17cIaiOff(h,F)}}
+function f17cStart(){F17C.kg.clear();F17C.arm.clear();F17C.cc.clear();F17C.rf=0;F17C.ccT=0}
+const f17cElS=h=>h&&h.elite&&h.f17cS&&h.f17cS.on?h.f17cS:null;
+feat('elFam17c',{ord:533,on:()=>!!(G&&G.heroes&&G.heroes.some(h=>h.elite)),hooks:{
+  start:f17cStart,waveStart:f17cWaveStart,waveEnd:f17cWaveEnd,tick:f17cTick,
+  dmgBaseE:(i,d,o)=>{const F=f17cElS(o&&o.hk);if(!F)return d;
+    if(F.kag&&E.frz[i]>0)UF_AX+=F.kag[3];   // 冰霜神乐：对冰冻状态的亡灵
+    if(F.frost&&o.mix&&o.mix.frost)UF_AX+=F.frost*o.mix.frost;   // 神乐铃：冰霜伤害
+    if(F.iai&&o.atk&&(F.iaR||F.iaAt===G.time)){const h=o.hk;if(F.iaR)f17cIaiUse(h,F);d*=F.iai[1]*heroAD(h)/Math.max(1,h.ws.dmg)}   // 拔刀斩：同一帧里打中的几个都算
+    return d},
+  afterHitE:(i,dmg,o)=>{const F=f17cElS(o&&o.hk);if(!F||!E.alive[i]||o.dot)return;const h=o.hk;
+    if(o.atk){const ia=F.iai&&F.iaAt===G.time,b=F.burn;if(b||ia){let t=b?b[0]:0,k=b?b[1]/b[0]:0;if(ia){const B=f17cF().iaiBurn;if(B[1]/B[0]>k){t=B[0];k=B[1]/B[0]}}burnE(i,heroAD(h)*k,t)}}   // 炎刃、拔刀斩的灼烧
+    if(F.kag&&o.mix&&o.mix.frost&&F.kgAt!==G.time){F.kgAt=G.time;const id=E.id[i],u=F17C.kg.get(id);if(!(u>G.time)&&Math.random()<F.kag[0]){eFrz(i,F.kag[1]);F17C.kg.set(id,G.time+F.kag[2]);
+      if(inViewPt(E.x[i],E.y[i]))addFx({k:'ring',x:Math.round(E.x[i]),y:Math.round(E.y[i]-6),r:10,life:0.3,c:'#bfefff'})}}},   // 冰霜神乐：每次出手的第一个目标
+  dmgInF:(u,dmg,o)=>{if(!o||o.dot)return dmg;if(F17C.arm.size){const a=F17C.arm.get(u);if(a&&a.u>G.time&&!ufMg(o))UF_DR+=a.d}   // 玄钢甲：物理减伤
+    const F=u.elite?u.f17cS:null;if(F&&F.hund&&dmg>0){if(!(F.hU>G.time))F.hN=0;F.hN=Math.min(F.hund[2],F.hN+1);F.hU=G.time+F.hund[1];UF_DR+=F.hN*F.hund[0]}return dmg},   // 百炼
+  afterHurtF:(u,dmg,o)=>{if(F17C.rf||!(dmg>0)||!o||o.dot||!(o.src>=0)||!E.alive[o.src]||(o.sid!==undefined&&E.id[o.src]!==o.sid))return;
+    let k=u.elite&&u.f17cS?u.f17cS.refl:0;if(F17C.arm.size){const a=F17C.arm.get(u);if(a&&a.u>G.time)k+=a.r}if(!(k>0))return;
+    F17C.rf=1;try{dealE(o.src,dmg*k,{hk:u.isHero?u:null,magic:1,mix:f17cF().rfMix,thorn:1,noFx:1})}finally{F17C.rf=0}},   // 法术反伤（反伤打回来的不再反）
+  ccInF:(u,t)=>{if(!F17C.cc.size)return t;const v=f17cCcOf(u);return v>0?t*Math.max(0,1-v):t}}});
+// 特色兵种的小人（美术代理之后画）：借同系列的
+Object.assign(EL_SPR_FB,{vanceGuard:'el_shieldGuard',flameSamurai:'el_greatsword',shrineMaiden:'el_mage'});
+// —— 老存档迁移（一次，META.el.f17c）：data/el_fam17 的 fam17cGone（韦兰、伊米尔）——声望均摊给同地区（elRegFamsAll）的家族；
+//   精英、候选人身上的血脉份数并进 fam17cTo 指定的家族（凡斯、风见），身上有那家血脉、姓老家族的人改姓；老家族的特性去掉（同 game/el_fam17.elFam17Mig）
+function elFam17cMig(m){const M=m&&m.el;if(!M||M.f17c)return;M.f17c=1;const G0=CFG.elite.fam17cGone||{},TO=CFG.elite.fam17cTo||{},OF=CFG.elite.fam17OldFam||{},B=elBlood(),old={},nf={};
+  for(const r in G0)for(const k of G0[r])old['f_'+k]=r;
+  if(M.rep&&typeof M.rep==='object')for(const r in G0){const N=elRegFamsAll(r);let s=0;for(const k of G0[r]){const v=M.rep['f_'+k];if(v){s+=v;delete M.rep['f_'+k]}}if(s&&N.length){const each=Math.round(s/N.length);for(const f of N)M.rep[f]=(M.rep[f]||0)+each}}
+  const gone=Object.keys(old);for(const id of gone){const k=id.slice(2),t=TO[k];if(t&&B['f_'+t]&&OF[k])nf[OF[k]]=B['f_'+t].fam}
+  const fix=o=>{if(!o||typeof o!=='object')return;let hit=false;if(o.bl&&typeof o.bl==='object'&&!Array.isArray(o.bl)){for(const id in o.bl)if(old[id]){hit=true;const t=TO[id.slice(2)],c=t&&B['f_'+t]?'f_'+t:'c_'+old[id];o.bl[c]=(o.bl[c]||0)+o.bl[id];delete o.bl[id]}
+      if(hit&&typeof o.fam==='string'&&nf[o.fam])o.fam=nf[o.fam]}   // hit：只改身上有那家血脉的人的姓
+    if(Array.isArray(o.bt))o.bt=o.bt.filter(k=>!gone.some(id=>String(k).startsWith(id+'_')))};
+  const walk=(o,d)=>{if(!o||typeof o!=='object'||d>6)return;fix(o);if(Array.isArray(o)){for(const x of o)walk(x,d+1)}else for(const k in o){const v=o[k];if(v&&typeof v==='object')walk(v,d+1)}};
+  walk(M,0);m._dirty=true;
+  if(M.f17t&&typeof M.f17t==='object'){for(const k in TO)delete M.f17t['f_'+TO[k]];elFam17Bt(m)}}   // 补抽（game/el_fam17.elFam17Bt 排在这个迁移前面跑过了）：并进来的人一条凡斯 / 风见特性都没有的，按招募的规矩抽一次
+META_LATE.push(['elFam17cMig',m=>{try{elFam17cMig(m)}catch(e){console.error(e)}}]);
+// 特性、技能、职业特性的说明
+Object.assign(EL_STD3,{
+  f17cArm:(v,pc)=>`护甲提供的物理防御 +${pc(v)}`,
+  f17cHund:(v,pc)=>`每受到一次攻击，减伤 +${pc(v[0])}，至多 ${v[2]} 层，持续 ${v[1]} 秒(受到伤害时刷新持续时间)`,
+  f17cRefl:(v,pc)=>`法术反伤 +${pc(v)}(受到攻击时，按这次受到的伤害以法术伤害反弹给攻击者)`,
+  f17cBurn:(v,pc)=>`普通攻击附带灼烧，${v[0]} 秒内造成 ${pc(v[1])} 物理攻击的火焰伤害`,
+  f17cBody:(v,pc)=>`周围 ${v[0]} 格内的亡灵每秒受到 ${pc(v[1])} 物理攻击的火焰伤害`,
+  f17cIai:(v,pc)=>`每 ${Math.round(v[0]*10)/10} 秒，下一次普通攻击变成拔刀斩：攻击距离 +1 格，造成 ${pc(v[1])} 物理攻击的伤害，并附带灼烧`,
+  f17cBell:(v,pc)=>`每次释放主动技能时，周围 ${v[0]} 格内的友军控制抗性 +${pc(v[1])}，持续 ${v[2]} 秒`,
+  f17cKag:(v,pc)=>`对主目标造成冰霜伤害时，有 ${pc(v[0])} 概率冰冻目标 ${v[1]} 秒，同一个目标 ${v[2]} 秒内只触发一次；对冰冻状态的亡灵伤害 +${pc(v[3])}`,
+  f17cBellA:(v,pc)=>`周围 ${v[0]} 格内友军的控制抗性 +${pc(v[1])}，不可叠加`,
+  f17cFrost:(v,pc)=>`造成的冰霜伤害 +${pc(v)}`,
 });
 
 // ---------- 0.12.7 代理 EG：精英装备「一键购买」「一键强化」（用户 0.12.7 预告第 3、4 条；数据 data/el_gear2.js 的 CFG.elite.eg，界面 ui/el_gear2.js）----------
@@ -86173,7 +86399,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="032a798",GAME_BUILT=1794011610165,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="2230744",GAME_BUILT=1794013486576,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
