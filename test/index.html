@@ -24403,20 +24403,24 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
 //   尼莫 nemo：同名，沿用老键，老存档里的血脉、声望照旧，老特性的键按门槛对上新特性（f_nemo_40 → 新的 40% 特性，同六阶的瓦特）
 //   马克西姆斯 huo、斯巴达克 ye（斗神大殿）、蒙哥菲尔 montgolfier（浮空之城）：去掉；声望均摊给同地区的新家族；血脉并进萝拉 / 菲尔（用户 11-07 定，fam17To）、老特性去掉；姓：并进菲尔的改姓菲尔，并进萝拉的照随母规则（萝拉血脉超过一半才改姓萝拉）（原来是并进平民，同五阶张氏的做法）
 //     （原来 Claude 定的是并进平民，怕萝拉「只有女性」和老家族的男人冲突；用户 11-07 定并进萝拉 / 菲尔，男人照样带萝拉血脉，只是姓按随母规则）
-// 平民血脉：七阶地区的平民血脉也等七阶倍率表，先不重建，沿用 data/el_late 的（迷海平民、武馆平民、浮城平民）
-// 家族的档位 L、波动 v、特别属性 sp：七阶倍率表（望楼）还没出，下面 fam17L 是 Claude 按策划里每家的属性倾向、照六阶的幅度往上推一档暂定的——表出了整张换掉 fam17L 就行
-// 介绍、局面：用户定；家主、面相：望楼拟（用户认可）；家徽：Claude 定（尼莫沿用老的）
+// 平民血脉：七阶七个地区按策划九节末尾的表重建（望楼拟：名字、档位、波动；fam17C）——玄钢山城、熔岩深渊、冰刺之地三个地区的平民也在这里建（家族另外登记）
+// 家族的档位 L、波动 v、特别属性 sp：策划九节「七阶的血脉属性倍率、特别属性」（望楼拟，fam17L；算出来的上下限和表逐格一致，t_fam17 查）
+// 介绍、局面：用户定；家主、面相：汇总表（望楼拟 / 用户定）；家徽：Claude 定（尼莫沿用老的）
 {const E=CFG.elite,BD=h=>[Math.max(0,10-h),3,Math.max(0,h-10)];
  // 面相：发色 0 黑 1 深棕 2 棕 3 浅棕 4 金 5 红 6 银 7 铂金；瞳色 0 黑 1 褐 2 蓝 3 绿 4 灰 5 红 6 琥珀；肤色（1～20）按 1～3 → 0 白皙、4～7 → 1 常见、8～11 → 2 小麦、12～15 → 3 褐、16～20 → 4 深
  const SK=n=>n<=3?0:n<=7?1:n<=11?2:n<=15?3:4;
- // —— 待七阶倍率表（望楼）：Claude 暂定 ——（六阶封顶家族 2.45，七阶 2.7；特别属性照六阶的 8～14% / 35～45% 往上推一档：增伤减伤 9～16%）
+ // 七阶平民血脉（望楼拟）：[名字, 档位, 波动]
+ E.fam17C={mistSea:['迷海平民',{vision:1,aspd:1,def:-1},0.2], wuHall:['斗殿平民',{atk:1,speed:1,mdef:-1},0.2], skyCity:['云民',{vision:1,rng:1,hp:-1},0.2],
+  steelCity:['山城平民',{def:1,hp:1,speed:-1},0.1], ghostShip:['船民',{aspd:1,speed:1,def:-1},0.3], lavaAbyss:['硫磺坡平民',{hp:1,atk:1,mdef:-1},0.2], iceSpike:['冰刺平民',{mdef:1,ap:1,speed:-1},0.2]};
+ for(const r in E.fam17C){const S=E.bloodSrc[r]||(E.bloodSrc[r]={});S.c=E.fam17C[r]}
+ // 七阶家族的档位、波动、特别属性（望楼拟；七阶封顶家族 2.7、平民 1.9；特别属性增伤减伤 9～16%、抗性 40～50%）
  E.fam17L={
-  nemo:{L:{atk:2,hp:1,reload:1,vision:1,speed:-1}, v:0.2, sp:{dmgR:[0.09,0.16]}},   // 潜艇：物理攻击、装填、生命 +300、视野；在水里（移速 −1）
-  lola:{L:{atk:2,ap:2,aspd:1,hp:-1}, v:0.2, sp:{dmgM:[0.09,0.16]}},                 // 精灵法术系、把法术融进兵击：物理攻击、法术攻击、攻速
-  fier:{L:{aspd:2,atk:1,rng:1,vision:1,hp:-1}, v:0.2, sp:{dmgR:[0.09,0.16]}},       // 热气球：攻速 +16%、射程、目标闪避、防空
-  decken:{L:{atk:2,hp:1,rng:1,vision:1,mdef:-1}, v:0.2, sp:{dmgM:[0.09,0.16]}},     // 海盗：物理攻击、生命、射程 +15%、瞭望；勾锁贴身劫掠（七阶代理加，Claude 暂定）
+  nemo:{L:{atk:2,hp:1,reload:1,speed:-1}, v:0.1, sp:{dmgR:[0.09,0.16]}},     // 远程物理增伤
+  lola:{L:{ap:3,mdef:1,aspd:1,def:-1}, v:0.2, sp:{dmgS:[0.09,0.16]}},        // 法术增伤（萝拉家族是法术系，用户定；五条特性偏物理是照英雄萝拉来的）
+  fier:{L:{aspd:2,rng:1,vision:1,hp:-1}, v:0.2, sp:{dmgR:[0.09,0.16]}},      // 远程物理增伤
+  decken:{L:{atk:2,speed:1,vision:1,def:-1}, v:0.3, sp:{dmgM:[0.09,0.16]}},  // 近战物理增伤
  };
- const F=(key,fam,reg,crest,head,desc,sit,look,o)=>{const T=E.fam17L[key];return Object.assign({key,fam,reg,L:T.L,v:T.v,sp:T.sp,crest,head,desc,sit,look:{hr:look[0],ey:look[1],sk:[SK(look[2])],b:BD(look[3])},tr0:[],tmp7:1},o||{})};   // tmp7：档位是暂定的（待七阶倍率表）
+ const F=(key,fam,reg,crest,head,desc,sit,look,o)=>{const T=E.fam17L[key];return Object.assign({key,fam,reg,L:T.L,v:T.v,sp:T.sp,crest,head,desc,sit,look:{hr:look[0],ey:look[1],sk:[SK(look[2])],b:BD(look[3])},tr0:[]},o||{})};
  const L17=[
   // ===== 迷海遗迹 =====
   F('nemo','尼莫','mistSea',{shape:'rectArc',bg:'blue',pat:'wave',fg:'silver'},'阿隆索·尼莫',
@@ -24443,7 +24447,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
  E.fam17=L17;E.fam17Regs=['mistSea','wuHall','skyCity','ghostShip'];
  // 老家族的姓（迁移时改姓用；要在换掉之前记下）
  E.fam17OldFam={};for(const r of E.fam17Regs){const S=E.bloodSrc[r];for(const f of(S?(Array.isArray(S.f)?S.f:S.f?[S.f]:[]):[]))if(f.key)E.fam17OldFam[f.key]=f.fam}
- for(const r of E.fam17Regs){const S=E.bloodSrc[r];S.f=[]}   // 平民血脉沿用 el_late 的（七阶倍率表出了再换）
+ for(const r of E.fam17Regs){const S=E.bloodSrc[r];S.f=[]}   // 平民 S.c 上面 fam17C 已经换过
  for(const f of L17){f.tr=f.tr0;E.famFx[f.key]=f.tr0;E.bloodSrc[f.reg].f.push(f);E.famInfo[f.key]={head:f.head,desc:f.desc,sit:f.sit};E.look.fam[f.key]=f.look;if(f.name===undefined)f.name=f.fam+'家族'}
  // 只有女性的家族（用户定：萝拉）：族里的女性之间不能联姻；这家血脉超过一半的人只会是女性（game/el_fam17.elFemFix）
  E.famFem={lola:1};
@@ -24538,7 +24542,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
 //   f17bLoot [地区材料, 建材] 劫掠之手：战后结算的地区木、矿(石)、皮、布 ×(1 + 前者)，建材 ×(1 + 后者)
 //   f17bSea [暴击率, 暴击伤害, 闪避率] 海之眷顾：自身在水域中、或打中在水域中的亡灵时暴击率 / 暴击伤害加成（engine/enemy.dealE 的暴击那步调 f17bSea）；自身在水域中闪避率 +
 //   f17bLone [闪避率, 减伤, 增伤] 孤舰深入（秘传被动，需求：船只单位）
-//   已有的键：dodge 偏斜值(固定值)、deflE 偏斜效果（game/el_fam17a）、rng 射程、hitK 命中值、atkX / hpX 独立乘区（game/el_fam3）
+//   已有的键：dodgeK 偏斜值 ×(1 + X)（用户定：戴肯的直觉是偏斜值 +20%，不是 +20 个百分点）、deflE 偏斜效果（game/el_fam17a）、rng 射程、hitK 命中值、atkX / hpX 独立乘区（game/el_fam3）
 // Claude 定（策划没写细的，回报里列了）：
 //   劫掠之手：这一局上过场的精英有人带着就算(阵亡了也算)，几名带着的也只算一次(同德雷克的劫掠后裔)；地区材料是每波缴获的、商人那里买的四种基础物资(不含特产)，
 //     加成后的小数按概率进位；建材四舍五入
@@ -24553,7 +24557,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
  // —— 局内参数（Claude 定）——
  E.f17b={int:0.25, loneR:4, hookT:0.25, hookPick:1.5, hookMiss:3, lootKinds:['wood','ore','cloth','hide']};   // int 每几秒看一次水域 / 周围队友；loneR 孤舰深入的格数；hookT 勾锁荡过去的秒数；hookPick 瞄准点附近几格内找目标；hookMiss 荡到时目标离开几格算落空
  // —— 家族特性（用户定）：[名字, 门槛, 属性]，说明按属性自动写（game/el_blood 的 EL_STD3）——
- FX.decken.push(['戴肯的直觉',0.2,{dodge:20, deflE:0.2}],['戴肯的瞭望',0.4,{rng:0.15, hitK:0.1}],['劫掠之手',0.6,{f17bLoot:[0.1,0.2]}],['戴肯的狠辣',0.8,{atkX:0.15, hpX:0.1}],['海之眷顾',1,{f17bSea:[0.25,0.4,0.1]}]);
+ FX.decken.push(['戴肯的直觉',0.2,{dodgeK:0.2, deflE:0.2}],['戴肯的瞭望',0.4,{rng:0.15, hitK:0.1}],['劫掠之手',0.6,{f17bLoot:[0.1,0.2]}],['戴肯的狠辣',0.8,{atkX:0.15, hpX:0.1}],['海之眷顾',1,{f17bSea:[0.25,0.4,0.1]}]);
  // —— 家族技能：fsk 家族、fr 要到的声望（尊敬 = 特殊技能，狂热 = 秘传）；「A～B」= 1～10 级的表；jreq = 需求：船只单位 ——
  const LN=LV(0.2,0.3),LD=LV(0.15,0.25);
  Object.assign(E.skills,{
@@ -80340,7 +80344,7 @@ function elBlTrKeys(L,id,T){const E=CFG.elite,n={},W={},wOf=x=>x[4]&&x[4].w>0?x[
     T[k]={name:x[0],blood:id,min:x[1],p,x:xx*w/W[t],xg:xx,w,alt:W[t]>w,st:x[2],desc:x[3]||elStDesc(x[2])};return k})}
 // 展开数据（要用地区的阶，等 game/meta 的 mapTierOf 能用了再算，所以第一次用时才展开）
 let EL_CFV=-1;   // 自建家族改过（META.el.cfv 变了）就重新展开
-function elBloodBuild(){const E=CFG.elite,v=(META&&META.el&&META.el.cfv)||0;if(E.blood&&EL_CFV===v)return;EL_CFV=v;const B=E.blood={},T=E.bloodTr={},r2=x=>Math.round(x*100)/100;
+function elBloodBuild(){const E=CFG.elite,v=(META&&META.el&&META.el.cfv)||0;if(E.blood&&EL_CFV===v)return;EL_CFV=v;const B=E.blood={},T=E.bloodTr={},r2=x=>Math.round(x*100+1e-6)/100;   // +1e-6：正好在 .xx5 上的按策划表四舍五入（七阶视野 1 + 0.85 × 0.3 = 1.255 浮点算成 1.25499…，原来舍成 1.25；只有七阶地区的视野会变）
   const minor=k=>E.bloodMinor.includes(k),noT=k=>E.bloodNoTier.includes(k),comp=(k,x)=>minor(k)?1+(x-1)*E.bloodMinorK:x,spr=(k,x)=>minor(k)?x*E.bloodMinorK:x;   // 0.12.0 移速等四项按一阶、五项振幅压到三成
   for(const reg in E.bloodSrc){const S=E.bloodSrc[reg],t=Math.max(0,Math.min(8,CFG.maps[reg]?mapTierOf(reg):0)),tt=k=>noT(k)?0:t,cHi=(k,L)=>{const cc=E.bloodCap.c[tt(k)],lv=L[k]||0;return Math.min(cc,cc-0.05*(1-lv))};
     {const[name,L,vv]=S.c,st={};for(const[k]of E.bloodStats){const hi=r2(comp(k,cHi(k,L)));st[k]=[r2(hi-spr(k,vv)),hi]}B['c_'+reg]={name,reg,kind:'c',st,sp:{},tr:[]}}
@@ -86169,7 +86173,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="06ad8ec",GAME_BUILT=1794008686147,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="6441b3c",GAME_BUILT=1794010981218,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
