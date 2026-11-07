@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.2.1",
- "code": 231,
- "size": 18676327,
- "sha256": "7c10a58f860a96a62f835018f0c9288629b6ad5c8ff27999b19c3db70a56b894",
+ "ver": "0.13.3",
+ "code": 232,
+ "size": 18944429,
+ "sha256": "24fcf1e7541d9fa091adadf523fe835224de2aae01ffdb2c51d27e352b79bfd1",
  "minLoader": 1,
- "sig": "ZIQ5FS+fG2Alq7H6ieI2O6tML40GabVsv1L1n+eaUUsobgaO2al5EbOiHHsiACYbta6zbaKXu1KQkGYmH7VFEA==",
- "note": "0.13.2.1 测试版：加纪念勋章不老先驱、赤血先驱、玄钢先驱",
- "at": "2026-11-06 15:52 UTC"
+ "sig": "GfBLemzML51C7S9/rCRUySwtkEq7q15Ms8BMv3AFCfzVcF7v/0O580hRNLaKne/r62ZYgAV8I/wzN+nhdAmeFg==",
+ "note": "0.13.3 测试版：八阶家族（德古拉、厄舍、教廷三家、土御门、安倍、安庇尔、胡、源能三家、希娜）、泰 / 奥西恩、进阶荒漠镖师·霍青、兵营编组、集中 / 分散出击、英雄索敌、抗性规则",
+ "at": "2026-11-07 07:54 UTC"
 }
