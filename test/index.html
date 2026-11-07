@@ -1850,7 +1850,7 @@ let CFG={   // P3 改（0.12.2d 性能）：let——数据文件都拼完后 co
   // 士兵（v0.2.3）：脚下 coneNear 格小圆 + 面朝方向 coneHalf×2 度的长扇形（步兵 soldier 格、骑兵 cavalry 格、远程 max(它, 射程 + rangedExtra)）
   vision:{soldier:8, cavalry:9, rangedExtra:0.5, wall:2, trap:1, coneNear:1.5, coneHalf:40},
   // ---------- 驻防：远程士兵（非骑兵）在「驻守」指令下优先登瞭望塔，其次经城门登墙 ----------
-  garrison:{tower:{range:0.5, vision:0.5}, wall:{range:0.25, vision:0.25}, postRadius:24, guardPtR:6, fallStun:0.6, holdHp:0.35, holdT:1.5},   // holdHp / holdT：v0.6.02（用户要求，数值 Claude 定）墙上的兵射程内有亡灵就原地打、不寻路，血量低于 35% 或射程内没亡灵 1.5 秒后才去别的驻防点 / 下墙   // v8：12 → 24 格（地图变大后城墙离兵营更远，12 格内找不到驻防点）   // guardPtR：v0.8.24 兵营指定了驻守点时，驻防点在驻守点几格内挑（Claude 定）
+  garrison:{tower:{range:0.5, vision:0.5}, wall:{range:0.25, vision:0.25}, postRadius:24, guardPtR:6, spreadClr:10, fallStun:0.6, holdHp:0.35, holdT:1.5},   // holdHp / holdT：v0.6.02（用户要求，数值 Claude 定）墙上的兵射程内有亡灵就原地打、不寻路，血量低于 35% 或射程内没亡灵 1.5 秒后才去别的驻防点 / 下墙   // v8：12 → 24 格（地图变大后城墙离兵营更远，12 格内找不到驻防点）   // guardPtR：v0.8.24 兵营指定了驻守点时，驻防点在驻守点几格内挑（Claude 定）
   // ---------- 常规模式·荒野：每波亡灵（数量）----------
   // sides：同时进攻的方向数；dur：这一波在多少秒内出完；第 5/10/15 波各一名精英，第 20 波首领
   regularWaves:[
@@ -23529,7 +23529,7 @@ CFG.elite.eg={enhTo:10, maxTry:500};   // 0.12.7a（用户定）enhTo 只是默�
   horseArcher:J('弓弩骑兵',2,'cav',['cav','archer'],'leather',['bow','crossbow','quiver'],{hp:120, atk:8},C2(5000),['游击','骑兵单位，移速 +5%，移动精准 +50%'],{speed:0.05, movePrec:0.5},{ser:'弓弩骑兵', mount:true}),
   gunCav:    J('火枪骑兵',2,'cav',['cav','archer'],'chain',['gun','ammobox'],{hp:120, atk:10},C2(5000),['游击','骑兵单位，移速 +5%，移动精准 +50%'],{speed:0.05, movePrec:0.5},{ser:'火枪手', mount:true}),
   // —— 特殊 ——
-  wizard:    J('巫师',1,'magic',['mage'],'cloth',['staff','tome'],{hp:50, ap:4},C1(1500),['咒术','施法范围 +5%'],{rng:0.05},{ser:'巫师'}),
+  wizard:    J('巫师',1,'magic',['mage'],'cloth',['staff','tome'],{hp:50, ap:4},C1(1500),['咒术','施法范围 +5%'],{castRng:0.05},{ser:'巫师'}),   // castRng：2026-11-07（用户定）「施法范围」统一 = 技能施法距离（原来 rng 加的是射程）
   mage:      J('法师',2,'magic',['mage'],'cloth',['staff','tome'],{hp:70, ap:8},C2(3000),['法术专精','法术伤害 +10%'],{dmgS:0.1},{ser:'法师'}),
   priest:    J('牧师',2,'magic',['mage'],'cloth',['staff','tome'],{hp:70, heal:10},C2(3000),['治愈专精','治疗效果 +10%'],{healK:0.1},{ser:'牧师'}),
   engineer:  J('工程师',2,'magic',['mech'],'leather',['gun'],{hp:70, rep:10},C2(3000),['工程维修','范围 5 格内每秒对一座受损建筑维修，维修量为 100%AD，维修时不攻击'],{autoRep:[5,1]},{ser:'工程师'}),
@@ -24975,7 +24975,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
 //   施法范围 +10% = 技能的施法距离 +10%（castRng；普通攻击的射程不加）
 //   灵能结界：自己也算在内；「远程」= 亡灵的弹道、远程亡灵的出手(不是近战、不是持续伤害)；每 0.25 秒刷新一次 0.4 秒；几名土御门只算一份
 //   天文遁甲：受到的伤害会让生命低于 1 时触发(斩杀不挡)；瞬移的方向背对出手的亡灵(没有就随便一个方向)，落点要能站人，找不到就原地；站在城墙 / 塔上不瞬移；护盾持续 5 秒
-//   雷符：「麻痹」= 晕眩(同雷电塔)；离落点近的先挑；只挑看得见的(雪夜神社视野不共享时按自己的视野)
+//   雷符：「麻痹」= 定身（2026-11-07 用户定，原来按晕眩做）；离落点近的先挑；只挑看得见的(雪夜神社视野不共享时按自己的视野)
 //   四方结界：正方形，中心在落点；施放时在里面的亡灵被困住(算一次定身类控制：霸体、大首领不困，只减速)，被困的亡灵往外挤就是在打结界，按它的每秒攻击力扣结界的生命；
 //     结界里的亡灵(含后来走进来的)每 0.25 秒挂一次减速；天上的也困；生命打光或时间到就散
 //   式神召唤：纸鹤是飞行的召唤物(士兵)，远程法术普通攻击、攻击距离 5 格、每秒一次；15 秒后消散；属性 ×(1 + 上古传承) ×(1 + 式神驱使)
@@ -25067,6 +25067,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
 //   力场护盾：给英雄、士兵（不给建筑）；护盾不叠，比原来的小才换上（同圣骑士的群体护盾）
 //   过载反冲：护盾被打破 = 身上还有护盾、这一帧挨了打变成 0（到期消失的不算）；护盾量 = 这层护盾从 0 涨上来以后的最高值；法术伤害（无属性）
 //   源能机甲：机械单位——敌人的电磁干扰（源能王城、秘法工厂、蒸汽重工……）对它生效，干扰期间不能普通攻击、机炮停火（能走、能放技能）；
+//     用户 11-07 定：吃所有「机械单位」的加成和效果（判定统一 maps/steam.isMechU；源能动力、源能核心 / 潮汐、精械之魂 / 工业之心、瓦特的精械重工 / 电磁静默 / 过载超频 / 维修、磁暴干扰、磁暴潮汐……）；精英不会被骇入，骇入的地方改成电磁干扰
 //     工程师维修：5 格内有工程维修的精英（工程师、重工技师……）或机械营的维修工时，每秒按它们的维修量修它（不占它们修建筑）；
 //     源能护盾：开波先给一层，之后每 15 秒一层，叠加，至多 3 层（45%）；机炮：每秒 4 发、打 5 格内最近的亡灵，物理（穿刺），不算普通攻击；眩晕、冰冻时也停火
 //   普朗克的分析：所有法术伤害（技能、普攻）都无视目标 15% 法术防御（engine/enemy.dealE_ 读精英身上的 f18cS.spen）
@@ -25077,7 +25078,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
 //   能量束（源能研究员）：普攻打中目标后，沿出手方向再打直线上至多 2 个亡灵（同样的伤害，不再触发命中效果），宽 1 格；对机械亡灵 +25% 加进增伤池子
 //   电弧 / 电磁枪 / 电磁阵塔的弹射：从被打中的亡灵往外找最近的；雷电伤害 = 带雷电属性的物理伤害（麦克走物理攻击）
 //   电磁反应：「友军」= 英雄、精英、士兵（含自己；建筑不算）；电磁反应自己打出的那一下不再触发；冷却按每名精英算
-//   电磁脉冲：麻痹 = 眩晕（同魔法电墙）；电磁干扰走 ynEmpE（只对机械亡灵，首领减半）
+//   电磁脉冲：麻痹 = 定身（2026-11-07 用户定「麻痹用定身」）；电磁干扰走 ynEmpE（只对机械亡灵，首领减半）
 //   电磁阵塔：临时建筑（CFG.buildings.f18cTower，挡亡灵、我方能穿过，波次结束消失）；「施法范围 9 × 9」= 以自己为中心 9 × 9 格；
 //     伤害记在施法者头上但不吃施法者的加成；「雷属性增伤、减伤」= 5 格内我方英雄、士兵造成的雷电伤害 +25%、受到的雷电伤害减伤 +25%（按这一下雷电的占比）；
 //     再放一座会拆掉自己的旧阵塔
@@ -25134,7 +25135,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
    j.hp+=x.hp||0;j.atk+=x.atk||0;j.ap+=x.ap||0;j.def+=x.def||0;j.mdef+=x.mdef||0;j.speed+=x.speed||0;return j};   // 同 data/el_jobs3 的 J()
  Object.assign(E.jobs,{
   staudtMech:J('源能机甲',8,'heavy',['warrior'],'plate',['hammer'],{hp:1200, atk:30, def:20},{silver:50000, lv:70, fam:'staudt'},
-    ['机甲','机械单位：会受到电磁干扰(干扰期间不能普通攻击，机炮停火)，可以被工程师维修；每 15 秒获得一层 15% 最大生命的源能护盾(至多 3 层)；带一门机炮，每秒 4 次，每次造成 25% 物理攻击的伤害，射程 5 格'],
+    ['机甲','机械单位(吃所有机械单位的加成和效果)：会受到电磁干扰(干扰期间不能普通攻击，机炮停火)，可以被工程师维修；每 15 秒获得一层 15% 最大生命的源能护盾(至多 3 层)；带一门机炮，每秒 4 次，每次造成 25% 物理攻击的伤害，射程 5 格'],
     {f18cMech:[0.15,15,3,0.25,4,5]},{ser:'战士'}),   // 系列：策划表写战士系列（审阅改；小人仍借大盾卫，见 game/el_fam18c 的 EL_SPR_FB）
   planckSci:J('源能研究员',8,'magic',['mage'],'cloth',['staff','tome'],{hp:380, ap:42},{silver:50000, lv:70, fam:'planck'},
     ['能量束','普通攻击变成源能射线，穿透直线上至多 3 个亡灵；对机械类亡灵伤害 +25%'],{f18cBeam:[3,0.25]},{ser:'法师'}),
@@ -25148,6 +25149,138 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
  cat('heavy',['staudtMech']);cat('magic',['planckSci']);cat('ranged',['mikeGunner']);
  for(const k in E.skills)E.skills[k].id=k;
 }
+
+// ---------- 0.13.3 血脉倍率迁移用的老表（tools/bmig_snap.py 生成，不要手改；逻辑 game/el_bmig.js）----------
+// 每个发过版的时期一份（老 → 新）：{血脉: [st 十项 [下限, 上限]（按 bloodStats 的顺序，和现在一样的写 0）, sp 特别属性（和现在一样的写 0）]}；只列和现在不一样的血脉
+CFG.elite.bmOld=[
+  {v:"9bbd375", // 0.12～0.13.1(215)
+   b:{
+    c_arcaneFactory:[[[1.2,1.4],[1.25,1.45],[1.3,1.5],[1.25,1.45],[1.25,1.45],[0.93,0.99],[0.93,0.99],[1.08,1.14],[0.93,0.99],[0.94,1]],0],
+    c_arcticTundra:[[[1.6,1.7],[1.55,1.65],[1.55,1.65],[1.6,1.7],[1.55,1.65],[0.96,0.99],[0.94,0.97],[1.17,1.2],[0.96,0.99],[0.96,0.99]],0],
+    c_bloodPass:[[[1.5,1.7],[1.5,1.7],[1.4,1.6],[1.45,1.65],[1.45,1.65],[0.93,0.99],[0.93,0.99],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_buddhaCave:[[[2.05,2.15],[1.95,2.05],[2,2.1],[2,2.1],[2.05,2.15],[0.96,0.99],[0.96,0.99],[1.3,1.33],[0.96,0.99],[0.96,0.99]],0],
+    c_cliffEdge:[[[1.55,1.65],[1.55,1.65],[1.55,1.65],[1.6,1.7],[1.55,1.65],[0.94,0.97],[0.96,0.99],[1.18,1.21],[0.96,0.99],[0.96,0.99]],0],
+    c_despairIsle:[[[1.5,1.7],[1.45,1.65],[1.4,1.6],[1.45,1.65],[1.45,1.65],[0.93,0.99],[0.93,0.99],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_echoCrypt:[[[1.6,1.8],[1.65,1.85],[1.7,1.9],[1.65,1.85],[1.7,1.9],[0.93,0.99],[0.93,0.99],[1.19,1.25],[0.93,0.99],[0.93,0.99]],0],
+    c_endlessDesert:[[[1.4,1.6],[1.45,1.65],[1.45,1.65],[1.45,1.65],[1.45,1.65],[0.94,1],[0.94,1],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_fallenSanctum:[[[1.35,1.65],[1.35,1.65],[1.4,1.7],[1.3,1.6],[1.35,1.65],[0.9,0.99],[0.9,0.99],[1.11,1.2],[0.9,0.99],[0.9,0.99]],0],
+    c_ghostShip:[[[1.5,1.8],[1.55,1.85],[1.55,1.85],[1.55,1.85],[1.6,1.9],[0.91,1],[0.9,0.99],[1.16,1.25],[0.9,0.99],[0.9,0.99]],0],
+    c_greyMarsh:[[[1.5,1.7],[1.45,1.65],[1.45,1.65],[1.45,1.65],[1.5,1.7],[0.91,0.97],[0.93,0.99],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_iceSpike:[[[1.8,1.9],[1.75,1.85],[1.75,1.85],[1.8,1.9],[1.75,1.85],[0.94,0.97],[0.96,0.99],[1.22,1.25],[0.96,0.99],[0.96,0.99]],0],
+    c_lavaAbyss:[[[1.7,1.9],[1.7,1.9],[1.65,1.85],[1.65,1.85],[1.6,1.8],[0.93,0.99],[0.93,0.99],[1.19,1.25],[0.93,0.99],[0.93,0.99]],0],
+    c_lavaLand:[[[1.4,1.5],[1.35,1.45],[1.35,1.45],[1.4,1.5],[1.35,1.45],[0.94,0.97],[0.96,0.99],[1.11,1.14],[0.96,0.99],[0.96,0.99]],0],
+    c_mistSea:[[[1.65,1.85],[1.65,1.85],[1.7,1.9],[1.6,1.8],[1.65,1.85],[0.93,0.99],[0.93,0.99],[1.21,1.27],[0.93,0.99],[0.93,0.99]],0],
+    c_papalPalace:[[[2,2.1],[2,2.1],[2.05,2.15],[2,2.1],[2.05,2.15],[0.94,0.97],[0.96,0.99],[1.3,1.33],[0.96,0.99],[0.96,0.99]],0],
+    c_sandCoast:[[[1.25,1.45],[1.25,1.45],[1.25,1.45],[1.2,1.4],[1.25,1.45],[0.94,1],[0.93,0.99],[1.09,1.15],[0.93,0.99],[0.93,0.99]],0],
+    c_shadowHigh:[[[1.25,1.45],[1.25,1.45],[1.25,1.45],[1.25,1.45],[1.2,1.4],[0.94,1],[0.93,0.99],[1.08,1.14],[0.93,0.99],[0.93,0.99]],0],
+    c_snowShrine:[[[1.85,2.05],[1.9,2.1],[1.9,2.1],[1.9,2.1],[1.9,2.1],[0.94,1],[0.94,1],[1.27,1.33],[0.93,0.99],[0.93,0.99]],0],
+    c_steelCity:[[[1.75,1.85],[1.8,1.9],[1.75,1.85],[1.8,1.9],[1.75,1.85],[0.94,0.97],[0.96,0.99],[1.22,1.25],[0.96,0.99],[0.96,0.99]],0],
+    c_taoRuins:[[[1.35,1.45],[1.3,1.4],[1.4,1.5],[1.35,1.45],[1.4,1.5],[0.96,0.99],[0.96,0.99],[1.11,1.14],[0.96,0.99],[0.96,0.99]],0],
+    c_vampCastle:[[[1.85,2.05],[1.9,2.1],[1.95,2.15],[1.9,2.1],[1.95,2.15],[0.93,0.99],[0.93,0.99],[1.27,1.33],[0.93,0.99],[0.93,0.99]],0],
+    c_wuHall:[[[1.65,1.85],[1.7,1.9],[1.65,1.85],[1.65,1.85],[1.6,1.8],[0.93,0.99],[0.94,1],[1.19,1.25],[0.93,0.99],[0.93,0.99]],0],
+    f_akagi:[[[1.9,2.1],[2.3,2.5],[1.65,1.85],[1.65,1.85],[1.5,1.7],[0.93,0.99],[0.93,0.99],[1.19,1.25],[0.93,0.99],[0.93,0.99]],{"dmgM":[0.05,0.1]}],
+    f_borgia:[[[0.75,1.05],[1,1.3],[1.54,1.84],[1,1.3],[1,1.3],[0.9,0.99],[0.9,0.99],[1,1.09],[0.9,0.99],[0.9,0.99]],{"resPoison":[0.15,0.25]}],
+    f_decken:[[[1.73,2.03],[1.55,1.85],[1.76,2.06],[1.45,1.75],[2,2.3],[0.91,1],[0.9,0.99],[1.16,1.25],[0.9,0.99],[0.9,0.99]],{"drM":[0.05,0.08]}],
+    f_dracula:[[[1.99,2.29],[2.25,2.55],[2.28,2.58],[1.7,2],[1.85,2.15],[0.9,0.99],[0.9,0.99],[1.24,1.33],[0.9,0.99],[0.9,0.99]],{"drM":[0.05,0.1]}],
+    f_drake:[[[1.15,1.45],[1.34,1.64],[1.15,1.45],[1,1.3],[1.15,1.45],[0.95,1.04],[0.9,0.99],[1.06,1.15],[0.98,1.07],[0.9,0.99]],{"dmgR":[0.04,0.08]}],
+    f_ge:[[[1.73,1.83],[1.2,1.3],[1.4,1.5],[1.35,1.45],[1.58,1.68],[0.96,0.99],[0.96,0.99],[1.11,1.14],[0.96,0.99],[0.96,0.99]],0],
+    f_kazami:[[[1.7,1.9],[1.65,1.85],[1.65,1.85],[1.6,1.8],[1.65,1.85],[1,1.06],[1.01,1.07],[1.19,1.25],[0.97,1.03],[0.93,0.99]],{"dmgR":[0.05,0.1]}],
+    f_krupp:[[[1.21,1.31],[1.05,1.15],[1.05,1.15],[1.4,1.5],[1.05,1.15],[0.91,0.94],[0.96,0.99],[1.02,1.05],[0.96,0.99],[0.97,1]],{"drP":[0.03,0.05]}],
+    f_lawrence:[[[0.85,1.05],[0.95,1.15],[0.75,0.95],[0.8,1],[0.75,0.95],[0.85,1.05],[0.8,1],[0.95,1.05],[1,1],[0.95,1.05]],0],
+    f_macleod:[[[1.25,1.45],[1.63,1.83],[1.25,1.45],[1.25,1.45],[1.1,1.3],[0.98,1.04],[0.93,0.99],[1.08,1.14],[0.93,0.99],[0.93,0.99]],{"dmgM":[0.04,0.08]}],
+    f_nemo:[[[1.55,1.75],[1.65,1.85],[2.1,2.3],[1.6,1.8],[1.65,1.85],[0.93,0.99],[0.93,0.99],[1.33,1.39],[0.93,0.99],[0.93,0.99]],{"drM":[0.04,0.07]}],
+    f_osborne:[[[0.55,0.85],[0.65,0.95],[0.93,1.23],[0.65,0.95],[0.95,1.25],[0.88,0.97],[0.9,0.99],[0.9,0.99],[0.9,0.99],[0.9,0.99]],{"resPoison":[0.1,0.2]}],
+    f_ragnarsson:[[[1.31,1.51],[1,1.2],[0.85,1.05],[0.9,1.1],[0.85,1.05],[0.88,0.94],[0.9,0.96],[0.96,1.02],[0.93,0.99],[0.93,0.99]],{"resFrost":[0.15,0.15]}],
+    f_skadi:[[[1,1.2],[1.28,1.48],[0.95,1.15],[0.9,1.1],[0.95,1.15],[0.93,0.99],[0.91,0.97],[1.03,1.09],[0.93,0.99],[0.93,0.99]],{"dmgR":[0.03,0.06]}],
+    f_stclair:[[[1.05,1.15],[1,1.1],[1.4,1.5],[1.05,1.15],[1.55,1.65],[0.93,0.96],[0.96,0.99],[1.02,1.05],[0.96,0.99],[0.96,0.99]],{"drM":[0.05,0.1]}],
+    f_tesla:[[[1.1,1.3],[1.25,1.45],[1.83,2.03],[1.25,1.45],[1.25,1.45],[0.93,0.99],[0.93,0.99],[1.08,1.14],[0.93,0.99],[1.02,1.08]],{"dmgS":[0.04,0.08]}],
+    f_usher:[[[1.75,2.05],[1.75,2.05],[2.03,2.33],[1.8,2.1],[2.49,2.79],[0.87,0.96],[0.9,0.99],[1.24,1.33],[0.9,0.99],[0.9,0.99]],{"drM":[0.05,0.1]}],
+    f_watt:[[[1.55,1.65],[1.55,1.65],[1.55,1.65],[1.98,2.08],[1.55,1.65],[0.91,0.94],[0.96,0.99],[1.17,1.2],[0.96,0.99],[1.08,1.11]],{"drP":[0.04,0.07]}],
+  }},
+  {v:"6874a36", // 0.13.1b～0.13.1.4(216～224)
+   b:{
+    c_arcaneFactory:[[[1.2,1.4],[1.25,1.45],[1.3,1.5],[1.25,1.45],[1.25,1.45],[0.93,0.99],[0.93,0.99],[1.08,1.14],[0.93,0.99],[0.94,1]],0],
+    c_arcticTundra:[[[1.6,1.7],[1.55,1.65],[1.55,1.65],[1.6,1.7],[1.55,1.65],[0.96,0.99],[0.94,0.97],[1.17,1.2],[0.96,0.99],[0.96,0.99]],0],
+    c_bloodPass:[[[1.5,1.7],[1.5,1.7],[1.4,1.6],[1.45,1.65],[1.45,1.65],[0.93,0.99],[0.93,0.99],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_buddhaCave:[[[2.05,2.15],[1.95,2.05],[2,2.1],[2,2.1],[2.05,2.15],[0.96,0.99],[0.96,0.99],[1.3,1.33],[0.96,0.99],[0.96,0.99]],0],
+    c_cliffEdge:[[[1.55,1.65],[1.55,1.65],[1.55,1.65],[1.6,1.7],[1.55,1.65],[0.94,0.97],[0.96,0.99],[1.18,1.21],[0.96,0.99],[0.96,0.99]],0],
+    c_despairIsle:[[[1.5,1.7],[1.45,1.65],[1.4,1.6],[1.45,1.65],[1.45,1.65],[0.93,0.99],[0.93,0.99],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_echoCrypt:[[[1.6,1.8],[1.65,1.85],[1.7,1.9],[1.65,1.85],[1.7,1.9],[0.93,0.99],[0.93,0.99],[1.19,1.25],[0.93,0.99],[0.93,0.99]],0],
+    c_endlessDesert:[[[1.4,1.6],[1.45,1.65],[1.45,1.65],[1.45,1.65],[1.45,1.65],[0.94,1],[0.94,1],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_fallenSanctum:[[[1.35,1.65],[1.35,1.65],[1.4,1.7],[1.3,1.6],[1.35,1.65],[0.9,0.99],[0.9,0.99],[1.11,1.2],[0.9,0.99],[0.9,0.99]],0],
+    c_ghostShip:[[[1.5,1.8],[1.55,1.85],[1.55,1.85],[1.55,1.85],[1.6,1.9],[0.91,1],[0.9,0.99],[1.16,1.25],[0.9,0.99],[0.9,0.99]],0],
+    c_greyMarsh:[[[1.5,1.7],[1.45,1.65],[1.45,1.65],[1.45,1.65],[1.5,1.7],[0.91,0.97],[0.93,0.99],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_iceSpike:[[[1.8,1.9],[1.75,1.85],[1.75,1.85],[1.8,1.9],[1.75,1.85],[0.94,0.97],[0.96,0.99],[1.22,1.25],[0.96,0.99],[0.96,0.99]],0],
+    c_lavaAbyss:[[[1.7,1.9],[1.7,1.9],[1.65,1.85],[1.65,1.85],[1.6,1.8],[0.93,0.99],[0.93,0.99],[1.19,1.25],[0.93,0.99],[0.93,0.99]],0],
+    c_lavaLand:[[[1.4,1.5],[1.35,1.45],[1.35,1.45],[1.4,1.5],[1.35,1.45],[0.94,0.97],[0.96,0.99],[1.11,1.14],[0.96,0.99],[0.96,0.99]],0],
+    c_mistSea:[[[1.65,1.85],[1.65,1.85],[1.7,1.9],[1.6,1.8],[1.65,1.85],[0.93,0.99],[0.93,0.99],[1.21,1.27],[0.93,0.99],[0.93,0.99]],0],
+    c_papalPalace:[[[2,2.1],[2,2.1],[2.05,2.15],[2,2.1],[2.05,2.15],[0.94,0.97],[0.96,0.99],[1.3,1.33],[0.96,0.99],[0.96,0.99]],0],
+    c_sandCoast:[[[1.25,1.45],[1.25,1.45],[1.25,1.45],[1.2,1.4],[1.25,1.45],[0.94,1],[0.93,0.99],[1.09,1.15],[0.93,0.99],[0.93,0.99]],0],
+    c_shadowHigh:[[[1.25,1.45],[1.25,1.45],[1.25,1.45],[1.25,1.45],[1.2,1.4],[0.94,1],[0.93,0.99],[1.08,1.14],[0.93,0.99],[0.93,0.99]],0],
+    c_snowShrine:[[[1.85,2.05],[1.9,2.1],[1.9,2.1],[1.9,2.1],[1.9,2.1],[0.94,1],[0.94,1],[1.27,1.33],[0.93,0.99],[0.93,0.99]],0],
+    c_steelCity:[[[1.75,1.85],[1.8,1.9],[1.75,1.85],[1.8,1.9],[1.75,1.85],[0.94,0.97],[0.96,0.99],[1.22,1.25],[0.96,0.99],[0.96,0.99]],0],
+    c_taoRuins:[[[1.35,1.45],[1.3,1.4],[1.4,1.5],[1.35,1.45],[1.4,1.5],[0.96,0.99],[0.96,0.99],[1.11,1.14],[0.96,0.99],[0.96,0.99]],0],
+    c_vampCastle:[[[1.85,2.05],[1.9,2.1],[1.95,2.15],[1.9,2.1],[1.95,2.15],[0.93,0.99],[0.93,0.99],[1.27,1.33],[0.93,0.99],[0.93,0.99]],0],
+    c_wuHall:[[[1.65,1.85],[1.7,1.9],[1.65,1.85],[1.65,1.85],[1.6,1.8],[0.93,0.99],[0.94,1],[1.19,1.25],[0.93,0.99],[0.93,0.99]],0],
+    f_akagi:[[[1.9,2.1],[2.3,2.5],[1.65,1.85],[1.65,1.85],[1.5,1.7],[0.93,0.99],[0.93,0.99],[1.19,1.25],[0.93,0.99],[0.93,0.99]],{"dmgM":[0.05,0.1]}],
+    f_alenita:[0,{}],
+    f_anko:[0,{}],
+    f_bonaparte:[0,{}],
+    f_borgia:[[[1.05,1.25],[1.1,1.3],[1.31,1.51],[1.1,1.3],[1.63,1.83],[0.9,0.96],[0.93,0.99],[1.03,1.09],[0.93,0.99],[0.93,0.99]],{}],
+    f_ciel:[0,{}],
+    f_decken:[[[1.73,2.03],[1.55,1.85],[1.76,2.06],[1.45,1.75],[2,2.3],[0.91,1],[0.9,0.99],[1.16,1.25],[0.9,0.99],[0.9,0.99]],{"drM":[0.05,0.08]}],
+    f_dracula:[[[1.99,2.29],[2.25,2.55],[2.28,2.58],[1.7,2],[1.85,2.15],[0.9,0.99],[0.9,0.99],[1.24,1.33],[0.9,0.99],[0.9,0.99]],{"drM":[0.05,0.1]}],
+    f_drake:[[[1.15,1.45],[1.34,1.64],[1.15,1.45],[1,1.3],[1.15,1.45],[0.95,1.04],[0.9,0.99],[1.06,1.15],[0.98,1.07],[0.9,0.99]],{"dmgR":[0.04,0.08]}],
+    f_faris:[[[0.85,1.05],[1,1.2],[0.85,1.05],[0.75,0.95],[0.8,1],[1.01,1.07],[0.94,1],[0.96,1.02],[0.93,0.99],[0.93,0.99]],{}],
+    f_ge:[[[1.73,1.83],[1.2,1.3],[1.4,1.5],[1.35,1.45],[1.58,1.68],[0.96,0.99],[0.96,0.99],[1.11,1.14],[0.96,0.99],[0.96,0.99]],0],
+    f_hik:[0,{}],
+    f_irene:[[[1,1.2],[1.1,1.3],[1.31,1.51],[1.05,1.25],[1.1,1.3],[1.01,1.07],[0.97,1.03],[1.05,1.11],[0.93,0.99],[0.93,0.99]],{}],
+    f_kazami:[[[1.7,1.9],[1.65,1.85],[1.65,1.85],[1.6,1.8],[1.65,1.85],[1,1.06],[1.01,1.07],[1.19,1.25],[0.97,1.03],[0.93,0.99]],{"dmgR":[0.05,0.1]}],
+    f_krupp:[[[0.95,1.15],[1.28,1.48],[0.95,1.15],[1.15,1.35],[0.95,1.15],[0.88,0.94],[0.93,0.99],[0.99,1.05],[0.93,0.99],[0.94,1]],{}],
+    f_lawrence:[[[1.05,1.25],[0.75,0.95],[0.7,0.9],[1.03,1.23],[0.75,0.95],[0.9,0.96],[0.93,0.99],[0.93,0.99],[0.93,0.99],[0.93,0.99]],0],
+    f_lott:[[[0.75,1.05],[0.75,1.05],[0.75,1.05],[0.6,0.9],[0.75,1.05],[0.99,1.08],[0.9,0.99],[1.02,1.11],[0.9,0.99],[0.9,0.99]],{}],
+    f_macleod:[[[1.25,1.45],[1.63,1.83],[1.25,1.45],[1.25,1.45],[1.1,1.3],[0.98,1.04],[0.93,0.99],[1.08,1.14],[0.93,0.99],[0.93,0.99]],{"dmgM":[0.04,0.08]}],
+    f_massa:[0,{}],
+    f_nemo:[[[1.55,1.75],[1.65,1.85],[2.1,2.3],[1.6,1.8],[1.65,1.85],[0.93,0.99],[0.93,0.99],[1.33,1.39],[0.93,0.99],[0.93,0.99]],{"drM":[0.04,0.07]}],
+    f_osborne:[[[0.85,0.95],[0.99,1.09],[0.85,0.95],[1.26,1.36],[0.9,1],[0.91,0.94],[0.96,0.99],[0.96,0.99],[0.96,0.99],[0.96,0.99]],{"resPoison":[0.1,0.2]}],
+    f_ragnarsson:[0,{"resFrost":[0.15,0.15]}],
+    f_seta:[0,{}],
+    f_skadi:[0,{}],
+    f_stclair:[0,{"drM":[0.05,0.1]}],
+    f_tesla:[[[1.1,1.3],[1.25,1.45],[1.83,2.03],[1.25,1.45],[1.25,1.45],[0.93,0.99],[0.93,0.99],[1.08,1.14],[0.93,0.99],[1.02,1.08]],{"dmgS":[0.04,0.08]}],
+    f_usher:[[[1.75,2.05],[1.75,2.05],[2.03,2.33],[1.8,2.1],[2.49,2.79],[0.87,0.96],[0.9,0.99],[1.24,1.33],[0.9,0.99],[0.9,0.99]],{"drM":[0.05,0.1]}],
+    f_watt:[[[1.55,1.65],[1.55,1.65],[1.55,1.65],[1.98,2.08],[1.55,1.65],[0.91,0.94],[0.96,0.99],[1.17,1.2],[0.96,0.99],[1.08,1.11]],{"drP":[0.04,0.07]}],
+    f_william:[0,{}],
+  }},
+  {v:"85c218c", // 0.13.2～0.13.2.1(227～231)
+   b:{
+    c_arcticTundra:[[[1.6,1.7],[1.55,1.65],[1.55,1.65],[1.6,1.7],[1.55,1.65],[0.96,0.99],[0.94,0.97],[1.17,1.2],[0.96,0.99],[0.96,0.99]],0],
+    c_bloodPass:[[[1.5,1.7],[1.5,1.7],[1.4,1.6],[1.45,1.65],[1.45,1.65],[0.93,0.99],[0.93,0.99],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_buddhaCave:[[[2.05,2.15],[1.95,2.05],[2,2.1],[2,2.1],[2.05,2.15],[0.96,0.99],[0.96,0.99],[1.3,1.33],[0.96,0.99],[0.96,0.99]],0],
+    c_cliffEdge:[[[1.55,1.65],[1.55,1.65],[1.55,1.65],[1.6,1.7],[1.55,1.65],[0.94,0.97],[0.96,0.99],[1.18,1.21],[0.96,0.99],[0.96,0.99]],0],
+    c_despairIsle:[[[1.5,1.7],[1.45,1.65],[1.4,1.6],[1.45,1.65],[1.45,1.65],[0.93,0.99],[0.93,0.99],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_echoCrypt:[[[1.6,1.8],[1.65,1.85],[1.7,1.9],[1.65,1.85],[1.7,1.9],[0.93,0.99],[0.93,0.99],[1.19,1.25],[0.93,0.99],[0.93,0.99]],0],
+    c_endlessDesert:[[[1.4,1.6],[1.45,1.65],[1.45,1.65],[1.45,1.65],[1.45,1.65],[0.94,1],[0.94,1],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_fallenSanctum:[[[1.35,1.65],[1.35,1.65],[1.4,1.7],[1.3,1.6],[1.35,1.65],[0.9,0.99],[0.9,0.99],[1.11,1.2],[0.9,0.99],[0.9,0.99]],0],
+    c_ghostShip:[[[1.5,1.8],[1.55,1.85],[1.55,1.85],[1.55,1.85],[1.6,1.9],[0.91,1],[0.9,0.99],[1.16,1.25],[0.9,0.99],[0.9,0.99]],0],
+    c_greyMarsh:[[[1.5,1.7],[1.45,1.65],[1.45,1.65],[1.45,1.65],[1.5,1.7],[0.91,0.97],[0.93,0.99],[1.14,1.2],[0.93,0.99],[0.93,0.99]],0],
+    c_iceSpike:[[[1.8,1.9],[1.75,1.85],[1.75,1.85],[1.8,1.9],[1.75,1.85],[0.94,0.97],[0.96,0.99],[1.22,1.25],[0.96,0.99],[0.96,0.99]],0],
+    c_lavaAbyss:[[[1.7,1.9],[1.7,1.9],[1.65,1.85],[1.65,1.85],[1.6,1.8],[0.93,0.99],[0.93,0.99],[1.19,1.25],[0.93,0.99],[0.93,0.99]],0],
+    c_mistSea:[[[1.65,1.85],[1.65,1.85],[1.7,1.9],[1.6,1.8],[1.65,1.85],[0.93,0.99],[0.93,0.99],[1.21,1.27],[0.93,0.99],[0.93,0.99]],0],
+    c_papalPalace:[[[2,2.1],[2,2.1],[2.05,2.15],[2,2.1],[2.05,2.15],[0.94,0.97],[0.96,0.99],[1.3,1.33],[0.96,0.99],[0.96,0.99]],0],
+    c_snowShrine:[[[1.85,2.05],[1.9,2.1],[1.9,2.1],[1.9,2.1],[1.9,2.1],[0.94,1],[0.94,1],[1.27,1.33],[0.93,0.99],[0.93,0.99]],0],
+    c_steelCity:[[[1.75,1.85],[1.8,1.9],[1.75,1.85],[1.8,1.9],[1.75,1.85],[0.94,0.97],[0.96,0.99],[1.22,1.25],[0.96,0.99],[0.96,0.99]],0],
+    c_vampCastle:[[[1.85,2.05],[1.9,2.1],[1.95,2.15],[1.9,2.1],[1.95,2.15],[0.93,0.99],[0.93,0.99],[1.27,1.33],[0.93,0.99],[0.93,0.99]],0],
+    c_wuHall:[[[1.65,1.85],[1.7,1.9],[1.65,1.85],[1.65,1.85],[1.6,1.8],[0.93,0.99],[0.94,1],[1.19,1.25],[0.93,0.99],[0.93,0.99]],0],
+    f_akagi:[[[1.9,2.1],[2.3,2.5],[1.65,1.85],[1.65,1.85],[1.5,1.7],[0.93,0.99],[0.93,0.99],[1.19,1.25],[0.93,0.99],[0.93,0.99]],{"dmgM":[0.05,0.1]}],
+    f_decken:[[[1.73,2.03],[1.55,1.85],[1.76,2.06],[1.45,1.75],[2,2.3],[0.91,1],[0.9,0.99],[1.16,1.25],[0.9,0.99],[0.9,0.99]],{"drM":[0.05,0.08]}],
+    f_dracula:[[[1.99,2.29],[2.25,2.55],[2.28,2.58],[1.7,2],[1.85,2.15],[0.9,0.99],[0.9,0.99],[1.24,1.33],[0.9,0.99],[0.9,0.99]],{"drM":[0.05,0.1]}],
+    f_kazami:[[[1.7,1.9],[1.65,1.85],[1.65,1.85],[1.6,1.8],[1.65,1.85],[1,1.06],[1.01,1.07],[1.19,1.25],[0.97,1.03],[0.93,0.99]],{"dmgR":[0.05,0.1]}],
+    f_nemo:[[[1.55,1.75],[1.65,1.85],[2.1,2.3],[1.6,1.8],[1.65,1.85],[0.93,0.99],[0.93,0.99],[1.33,1.39],[0.93,0.99],[0.93,0.99]],{"drM":[0.04,0.07]}],
+    f_usher:[[[1.75,2.05],[1.75,2.05],[2.03,2.33],[1.8,2.1],[2.49,2.79],[0.87,0.96],[0.9,0.99],[1.24,1.33],[0.9,0.99],[0.9,0.99]],{"drM":[0.05,0.1]}],
+    f_watt:[[[1.55,1.65],[1.55,1.65],[1.55,1.65],[1.98,2.08],[1.55,1.65],[0.91,0.94],[0.96,0.99],[1.17,1.2],[0.96,0.99],[1.08,1.11]],{"drP":[0.04,0.07]}],
+  }},
+];
 
 // ---------- 0.12.1 不老之泉的禁疗（用户定：史诗、传说卡和商人独特商品；名字 Claude 定；效果在 maps/bl_spring 的 afterHitE）----------
 // 我方所有单位造成伤害后，给亡灵禁疗（受到的治疗 −X%）；卡和坏血弹药是两个来源，按 engine/buff.eHwPut 相乘；传说「断泉」顶替史诗「蚀泉」（拿了传说，史诗不再出、不再算）
@@ -26341,7 +26474,7 @@ f4OlN f4OlU f4RollU f4RollV f4SwU f4SwV f4SwP f4LsU f4LhU f4LhV f4PsU f4PsCd f4P
 svSq elBC elMvP elGun elChg elMvT elChgOn elRepT elHealT visFix elHealF elHealK jsHoldU jsHX jsHY jsCvU jsCvR jsGhU jsKs jsKsU elAccT elCv
 fbS f5bS
 f15S f15IdU f15Fg
-f16bS f17S f17bS f17cS f18aS f18bS f18cS f18cAp empU`.trim().split(/\s+/);   // elBC…elHealK：0.13 精英职业技能（game/el_jobfx）；jsHoldU…jsKsU：0.13 精英新技能（game/el_jsk）；elAccT / elCv：骑兵加速（game/el_jobfx）   // svSq：0.12.7b 幸存者模式的队员位置（game/sv_squad）   // es2Rd es2Bn es2ArcN：0.12.7 代理 ES 加（精英技能第三批，game/el_skills3）   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）   // ydv*：0.12.5 第二轮代理 T，源能装置给的护盾、攻击加成（structs/yn_tdev）
+f16bS f17S f17bS f17cS f18aS f18bS f18cS f18cAp empU mkA mkE emImU wtOvU wtOvK`.trim().split(/\s+/);   // elBC…elHealK：0.13 精英职业技能（game/el_jobfx）；jsHoldU…jsKsU：0.13 精英新技能（game/el_jsk）；elAccT / elCv：骑兵加速（game/el_jobfx）   // svSq：0.12.7b 幸存者模式的队员位置（game/sv_squad）   // es2Rd es2Bn es2ArcN：0.12.7 代理 ES 加（精英技能第三批，game/el_skills3）   // hmFlU…hmLc：0.12.6 代理 X 加（隐士仙法，game/hermit）   // deflE：代理 B 加（0.12.4 御风布甲的偏斜效果，gear/fx_nb）   // obRgU obRgV：代理 3 加（0.12.2 黑曜炮军旗的射程）   // elAcc…ordF：代理 4 加（0.12.2 精英吃士兵的科技、临时攻速，game/obf_elite）   // ydv*：0.12.5 第二轮代理 T，源能装置给的护盾、攻击加成（structs/yn_tdev）   // mkA…wtOvK：源能机甲精英吃瓦特的精械重工 / 电磁静默 / 过载超频（同士兵，用户 11-07 定）
 // 建筑（含主堡）的全部字段：makeStruct / placeBase 字面量在前，兵营、激光塔、维修、开拓地多格建筑等写的在后（0.6.34 是 10 种形状）
 const STRUCT_KEYS=`
 type cfg tx ty x y level flash cd ammo rel aim recoil invested dead maxHp hp def aura spent turrets fzN ord muskets pid unit mode locked trainT slots
@@ -52234,6 +52367,10 @@ const ESWM=SWK('mech'),ENOMT=SWK('noMechT'),ESWRT=ETYPES.map(k=>/^sw(Train|Train
 // 机械类：建筑看种类（CFG.steam.mech.structs），士兵看电磁干扰表（秘法工厂 emMech.units）或兵种的 mech（精械工厂的兵、无人机）
 const swMechS=s=>!!s&&!s.dead&&!s.temp&&SW_MS.has(s.type);
 const swMechU=u=>!!u&&!u.dead&&!u.isHero&&(!!AF_EMU[u.type]||!!(u.c&&u.c.mech));
+// 机械单位（统一判定）= 机械士兵（swMechU）+ 源能机甲精英（施道尔家族兵种，game/el_fam18c 的 f18cS.mech）；用户 2026-11-07 定：源能机甲吃所有机械单位的加成和效果
+//   遍历 G.soldiers 找机械士兵的地方，再走一遍 mechEls()（这一帧在场的源能机甲精英，game/el_fam18c.f18cTick 每帧重排；没有精英时是空表）
+const isMechU=u=>swMechU(u)||(!!u&&u.isHero===true&&!u.dead&&!!u.f18cS&&!!u.f18cS.mech);
+const mechEls=()=>F18C.mech;
 // 地面：发褐的钢板地、铆钉；齿轮（黄铜）、铁轨（枕木 + 钢轨 + 碎石）、裂口
 THEME_PAL.steamWorks={GR:[[70,62,56],[78,69,62],[86,76,68],[96,85,75]],TU:[118,98,76],TU2:[48,42,38],DI:[[108,96,84],[120,108,94],[132,119,104]],PE:[62,56,52],PE2:[156,138,118],
   MC:['#5a5048','#7c706a','#3a3430','#7a7670','#5d5763','#4a4a3a','#888888','#888888','#888888','#888888','#888888','#a0784a','#2e2e34','#b0905a'],TD:[0.78,0.76,0.74],BU:['#2a2622','#4a4238','#7a6a52'],DRY:1,
@@ -54915,12 +55052,12 @@ zoneDef('mhTide',{tick(z,dt){if(eOk(z.i,z.id)){z.x=E.x[z.i];z.y=E.y[z.i]}if(z.t>
 // 普通攻击两种模式（E.yN：0 绕着目标转圈喷、1 停在 3.5 格外左右摇摆着喷），每 mode.every 秒换一种（E.yA 计时）；E.yB 喷水计时；
 // 技能：E.pA 龙之咆哮、E.pB 高速俯冲（E.pD = 还要冲多远，E.dgx / E.dgy 方向，MH_DIVE 冲过时打到过的）、E.pC 天降甘霖
 const MH_DIVE=new Map();
-const mhMech=u=>swMechU(u)||!!(u.c&&u.c.ship);
+const mhMech=u=>isMechU(u)||!!(u.c&&u.c.ship);   // isMechU：源能机甲精英也算（用户 11-07 定）：水龙喷水停火 = 缴械 disU、龙之咆哮不晕
 function mhDragonInit(i,c){const D=c.mhDragon;E.air[i]=1;E.pA[i]=D.roar.cd*0.5;E.pB[i]=D.dive.cd*0.6;E.pC[i]=D.rain.cd*0.7;E.pD[i]=0;E.yA[i]=D.mode.every;E.yN[i]=0;E.yB[i]=0;E.yC[i]=0;
   sayB(`${c.name}降临`,'天气转为暴雨：浅海变深海，陆地变浅海；动物伤害、减伤 +35%')}
 // v0.10.3 积木：扇形（贴脸也看角度），守军含城墙上的、法术；建筑不是法术（另放一次）、算作它打的、× structMul；机械单位停火 cease 秒
 function mhSpray(i,c,ang,k){const S=c.mhDragon.spray,x=E.x[i],y=E.y[i],dmg=E.dmg[i]*S.mul*k,C=bkCE(i,x,y,ang),sh={k:'cone',arc:S.arc,len:S.len};C.atk=dmg;
-  bkCast(sh,{who:'F',dmg:1,magic:1,mix:{frost:1},fy:0,padF:4,amF:-1,fx:null,on:u=>{if(!u.dead&&mhMech(u))u.mhOffU=Math.max(u.mhOffU||0,G.time+S.cease)}},C);
+  bkCast(sh,{who:'F',dmg:1,magic:1,mix:{frost:1},fy:0,padF:4,amF:-1,fx:null,on:u=>{if(!u.dead&&mhMech(u)){if(u.isHero)u.disU=Math.max(u.disU||0,G.time+S.cease);else u.mhOffU=Math.max(u.mhOffU||0,G.time+S.cease)}}},C);
   bkCast(sh,{who:'S',dmg:1,mix:{frost:1},sSrc:1,padS:8,amS:-1,fx:null,onS:s=>{if(swMechS(s))s.mhOffU=Math.max(s.mhOffU||0,G.time+S.cease)}},C)}
 function mhSprayFx(i,c,ang){if(FXK<=0||!inViewPt(E.x[i],E.y[i]))return;const S=c.mhDragon.spray,R=S.len*16,half=S.arc/2*DEG,h=c.hover.h*0.6,x0=E.x[i]+Math.cos(ang)*10,y0=E.y[i]-h+Math.sin(ang)*6;
   for(let k=0;k<3;k++){const a=ang+vr(-half,half),v=R*vr(1.4,2.2);pp(x0,y0,h,Math.cos(a)*v,Math.sin(a)*v,vr(2,6),40,vr(0.4,0.55),vpick(['#dff4f2','#9ad8e8','#5aa8c8']),vpick([1,2]),1,1)}}
@@ -54935,7 +55072,7 @@ function mhDragonAbil(i,c,x,y,tgt,stg,dt){const D=c.mhDragon,id=E.id[i],spd=E.sp
     // 龙之咆哮：r 格内的守军受到 mul 倍伤害；生物士兵晕眩 stun 秒、英雄 × heroK；伤害和晕眩随距离衰减到 min
     if(E.pA[i]<=0){const A=D.roar,R=A.r*16,L=G.friends.filter(u=>!u.dead&&Math.hypot(u.x-x,u.y-y)<=R);
       if(L.length){E.pA[i]=A.cd;const C=bkCE(i,x,y,0);C.atk=E.dmg[i]*A.mul;   // v0.10.3 积木：圆形，伤害、晕眩随距离衰减到 min（含城墙上的；晕眩不含）
-        bkCast({k:'c',r:A.r},{who:'F',dmg:1,fall:A.min,magic:1,mix:{blunt:1},fy:0,fx:null,on:(u,C2,q)=>{if(!u.dead&&!u.layer){const k=1-(1-A.min)*q;if(u.isHero)fStun(u,A.stun*k*A.heroK);else if(!mhMech(u))fStun(u,A.stun*k)}}},C);
+        bkCast({k:'c',r:A.r},{who:'F',dmg:1,fall:A.min,magic:1,mix:{blunt:1},fy:0,fx:null,on:(u,C2,q)=>{if(!u.dead&&!u.layer){const k=1-(1-A.min)*q;if(mhMech(u))return;if(u.isHero)fStun(u,A.stun*k*A.heroK);else fStun(u,A.stun*k)}}},C);
         G.shake=Math.max(G.shake,3);addFx({k:'ring',x:Math.round(x),y:Math.round(y),r:R,life:0.6,c:'#9ad8e8'});sayB(`${c.name}：龙之咆哮`,`${A.r} 格内的生物士兵晕眩，英雄晕眩减半`);sfx('horn')}else E.pA[i]=1}
     // 高速俯冲：朝目标（没有就朝主堡）冲过去
     if(E.pB[i]<=0){const T=pickFriend(i,x,y,D.dive.len*16,true)||csNearS(x,y,D.dive.len*16,false);
@@ -56560,6 +56697,7 @@ function ynmMechTick(dt){const S=G.ynm,R=YC.mech.regen;S.rgT-=dt;
 function ynmTide(){const T=YC.mech.tide,until=G.time+T.noHeal;let n=0;
   for(const s of G.structs){if(s.dead)continue;s.shcF=1;s.shcU=Math.max(s.shcU||0,until);if(ynmMechS(s)&&rng()<T.p){ynmEmp(s,T.dur);s.hp=Math.max(1,s.hp*(1-T.hpCut));n++;ynmSpark(s.x,s.y-12)}}
   for(const u of G.soldiers){if(u.dead||!swMechU(u)||rng()>=T.p)continue;ynmEmp(u,T.dur);u.hp=Math.max(1,u.hp*(1-T.hpCut));n++;ynmSpark(u.x,u.y-8)}
+  for(const u of mechEls()){if(!isMechU(u)||rng()>=T.p)continue;ynmEmp(u,T.dur);u.hp=Math.max(1,u.hp*(1-T.hpCut));n++;ynmSpark(u.x,u.y-8)}   // 源能机甲精英（用户 11-07 定）
   for(const t of G.traps){if(t.dead||!YNM_MT.has(t.type)||rng()>=T.p)continue;ynmEmp(t,T.dur);n++}
   if(!YNM_TIP&&n){YNM_TIP=true;sayT(`磁暴潮汐：机械单位受到电磁干扰，建筑 ${T.noHeal} 秒内无法恢复生命`)}return n}
 function ynmSpark(x,y){if(!inViewPt(x,y))return;for(let k=0;k<6;k++)pp(x+vr(-8,8),y+vr(-6,6),0,vr(-30,30),vr(-30,10),vr(4,10),0,vr(0.2,0.5),vpick(['#9af0ff','#e8fbff','#5ac8e8']),1,1,1)}
@@ -56572,7 +56710,7 @@ function ynmPostE(i,d,o){const t=E.t[i],C=YNM_C;
   if(o.blast||o.boom)d*=1-imK(C.bk);
   const m=o.mix;if(m){if(m.fire)d*=1-imK(C.fk)*m.fire;if(m.poison)d*=1-imK(C.pz)*m.poison;if(m.lightning)d*=1+C.lt*m.lightning}
   if(!o.magic&&!o.dot&&!o.blast&&!o.boom){if(o.melee)d*=1+C.ml;else d*=1-imK(C.rg)}   // 物理近战 +50%（独立）、物理远程免伤 25%
-  if(C.iv>0&&!YNM_MECH[t]&&!YNM_ESB[t]&&((o.fu&&swMechU(o.fu))||(o.su&&ynmMechS(o.su))))d*=1+C.iv;   // 机械入侵（独立乘，Claude 定）
+  if(C.iv>0&&!YNM_MECH[t]&&!YNM_ESB[t]&&((o.fu&&swMechU(o.fu))||(o.hk&&isMechU(o.hk))||(o.su&&ynmMechS(o.su))))d*=1+C.iv;   // 机械入侵（独立乘，Claude 定）；o.hk：源能机甲精英（用户 11-07 定）
   return d}
 // 噩梦起：受到法术弹道（我方弹道、法术、不是爆炸 / 持续伤害）以后，从受击的亡灵向出手的单位射回一发法球，伤害 = 这一发原始伤害 × reflect
 const YNM_RC={proj:'eorb',magic:true,mix:null,pspd:0,aoe:0,spread:0,crit:0};
@@ -58166,7 +58304,7 @@ for(const[t,ab,ini,die]of[[SZB_T.heli,szbHeliAbil,szbHeliInit],[SZB_T.falcon,szb
 for(let t=0;t<ETYPES.length;t++)if(SZB_PLN[t]){EAB[t]=szbPlaneAbil;EAB_SIL[t]=1;EINIT[t]=szbPlaneInit;EDIE[t]=ETC[t].szbPlane.boom?szbDroneDie:undefined}
 for(const t of[SZB_T.arm,SZB_T.god,SZB_T.whale])if(t>=0)ENOSEP[t]=1;   // 触手每帧摆在本体周围、和本体重叠，不推挤（同章鱼王）
 // 建筑 / 机械单位不能索敌电磁静默中的隼式（包在天灾海域的视野钩子外面，里面一层是 sz_units 的 szuVisF（天鹰号）；DS_CUR = 正在索敌的我方单位）
-{const MF=MAP_FX.scourgeSea,v0=MF.eVisF;MF.eVisF=i=>{if(SZB_SN>0&&SZB_SI[i]===E.id[i]&&SZB_SU[i]>G.time){const u=DS_CUR;if(u&&(u.cfg||u.c&&u.c.mech))return false}return v0?v0(i):undefined}}
+{const MF=MAP_FX.scourgeSea,v0=MF.eVisF;MF.eVisF=i=>{if(SZB_SN>0&&SZB_SI[i]===E.id[i]&&SZB_SU[i]>G.time){const u=DS_CUR;if(u&&(u.cfg||u.c&&u.c.mech||u.isHero&&isMechU(u)))return false}return v0?v0(i):undefined}}   // isMechU：源能机甲精英也算（用户 11-07 定）
 const szbOn=()=>!!G&&(G.map==='scourgeSea'||SZB_FORCE);
 feat('szBoss',{ord:496,on:szbOn,hooks:{start:szbReset,tick:szbTick,waveEnd:szbWaveEnd,dmgPostE:szbDmgE,towerOff:szbTowerOff,waveRemain:szbRemain,drawUnder:szbDrawUnder,drawWorld:szbDrawWorld}});
 
@@ -62362,6 +62500,7 @@ function ynEmpArea(x,y,R,dur){let n=0;
 function ynEmpAny(x,y,R){const R2=R*R;
   for(let k=0;k<G.structs.length;k++){const s=G.structs[k];if(s.dead||s.foe||!YNR_MS.has(s.type))continue;const dx=s.x-x,dy=s.y-8-y;if(dx*dx+dy*dy<=(R+8)*(R+8))return true}
   for(let k=0;k<G.soldiers.length;k++){const u=G.soldiers[k];if(u.dead||!swMechU(u))continue;const dx=u.x-x,dy=u.y-y;if(dx*dx+dy*dy<=R2)return true}
+  for(let k=0,M_=mechEls();k<M_.length;k++){const u=M_[k];if(!isMechU(u))continue;const dx=u.x-x,dy=u.y-y;if(dx*dx+dy*dy<=R2)return true}   // 源能机甲精英（用户 11-07 定）
   for(let k=0;k<G.traps.length;k++){const t=G.traps[k];if(t.dead||!YNR_MT.has(t.type))continue;const dx=t.x-x,dy=t.y-8-y;if(dx*dx+dy*dy<=R2)return true}
   return false}
 // 失灵的建筑、士兵、陷阱身上跳蓝色电火花（同秘法工厂 arcDraw 的画法；秘法工厂、蒸汽重工自己会画）
@@ -62530,7 +62669,8 @@ function ynUCompact(){let w=0;for(let k=0;k<YNU_L.length;k++){const e=YNU_L[k];i
 function ynUTick(){if(YNU_LG!==G){YNU_L.length=0;YNU_LG=G;YNU_PBC=0}ynUCompact();let pb=0,rp=0;for(let k=0;k<YNU_L.length;k++){const e=YNU_L[k];if(e.k===3)pb++;else if(e.k===2)rp++}
   if(pb!==YNU_PBC){G.pbN=Math.max(0,(G.pbN|0)-YNU_PBC+pb);YNU_PBC=pb}YNU_RPN=rp}
 // 隐形轰炸机：正在行动的是我方机械建筑 / 机械士兵 → 看不见（engine/enemy.eVis 的 eVisF 钩子；塔楼另外在 structs.towerPick 按 noMechT 跳过）
-function ynUVis(i){if(!YNU_NMT[E.t[i]])return;const u=DS_CUR;if(!u||u.isHero)return;if(u.c?swMechU(u):(u.cfg&&!u.trap&&YNR_MS.has(u.type)))return false}
+function ynUVis(i){if(!YNU_NMT[E.t[i]])return;const u=DS_CUR;if(!u)return;if(u.isHero)return isMechU(u)?false:undefined;   // 源能机甲精英也看不见（用户 11-07 定：吃机械单位的效果）
+  if(u.c?swMechU(u):(u.cfg&&!u.trap&&YNR_MS.has(u.type)))return false}
 function ynUDraw(cx0,cy0,cx1,cy1){const T=G.time;
   for(let k=0;k<YNU_L.length;k++){const e=YNU_L[k];if(e.k!==1||!eOk(e.i,e.id))continue;const i=e.i,x=E.x[i],y=E.y[i]-8-(ETC[E.t[i]].hover?ETC[E.t[i]].hover.h:0);
     for(let q=0;q<2;q++){const j=q?YNA.a1[i]:YNA.a0[i];if(j<0||!eOk(j,q?YNA.d1[i]:YNA.d0[i]))continue;const jx=E.x[j],jy=E.y[j]-8-(E.air[j]&&ETC[E.t[j]].hover?ETC[E.t[j]].hover.h:0);
@@ -63305,6 +63445,7 @@ const aisCoreEff=(amp,rg)=>aisEff('c'+amp+'_'+rg,()=>({atk:amp,dr:amp,regen:rg})
 // ================= 源能核心（我方）：R 像素内的我方机械士兵、机械建筑 =================
 function aisCoreF(x,y,R,amp,rg){const eff=aisCoreEff(amp,rg),dur=CFG.buffs.aura,until=G.time+dur,R2=R*R;let n=0;
   const S=G.soldiers;for(let k=0;k<S.length;k++){const u=S[k];if(u.dead)continue;const dx=u.x-x,dy=u.y-y;if(dx*dx+dy*dy>R2||!swMechU(u))continue;aisImmF(u,until);bfAdd(u,'aiCore',eff,dur);n++}
+  const M_=mechEls();for(let k=0;k<M_.length;k++){const u=M_[k];if(!isMechU(u))continue;const dx=u.x-x,dy=u.y-y;if(dx*dx+dy*dy>R2)continue;aisImmF(u,until);bfAdd(u,'aiCore',eff,dur);n++}   // 源能机甲精英（用户 11-07 定）
   const T=G.structs;for(let k=0;k<T.length;k++){const s=T[k];if(s.dead)continue;const dx=s.x-x,dy=s.y-8-y;if(dx*dx+dy*dy>(R+8)*(R+8)||!aisMechS(s))continue;aisImmF(s,until);bfAdd(s,'aiCore',eff,dur);n++}
   return n}
 // ================= 源能核心（亡灵）：R 像素内的机械亡灵（含亡灵阵营的建筑）=================
@@ -63343,14 +63484,15 @@ function aisBAbil(i,c,x,y,tgt,stg,dt){aisEG();const K=AIS_BK;
   else if(E.pD[i]<=0){E.pD[i]=aisBDome(i,x,y)?K.dome.cd:0.5}
   return false}
 // 磁暴干扰：施法距离内我方机械单位最密的地方；半径内的我方机械士兵、建筑受到伤害并被骇入（骇入不了的电磁干扰）
-function aisBEmp(i,x,y){const K=AIS_BK.emp,R=K.r*16,RR=(K.range+K.r)*16,S=G.soldiers,T=G.structs;let bx=0,by=0,bn=0;
-  const cand=(px,py)=>{let n=0;for(let k=0;k<S.length;k++){const u=S[k];if(!u.dead&&swMechU(u)&&Math.hypot(u.x-px,u.y-py)<=R)n++}for(let k=0;k<T.length;k++){const s=T[k];if(aisMechS(s)&&Math.hypot(s.x-px,s.y-8-py)<=R+8)n++}
+function aisBEmp(i,x,y){const K=AIS_BK.emp,R=K.r*16,RR=(K.range+K.r)*16,S=G.soldiers,T=G.structs,M_=mechEls();let bx=0,by=0,bn=0;   // M_：源能机甲精英也算我方机械单位（用户 11-07 定；精英不会被骇入 → 走下面「骇入不了就电磁干扰」）
+  const cand=(px,py)=>{let n=0;for(let k=0;k<S.length;k++){const u=S[k];if(!u.dead&&swMechU(u)&&Math.hypot(u.x-px,u.y-py)<=R)n++}for(let k=0;k<M_.length;k++){const u=M_[k];if(isMechU(u)&&Math.hypot(u.x-px,u.y-py)<=R)n++}for(let k=0;k<T.length;k++){const s=T[k];if(aisMechS(s)&&Math.hypot(s.x-px,s.y-8-py)<=R+8)n++}
     if(n>bn){bn=n;bx=px;by=py}};
   for(let k=0;k<S.length;k++){const u=S[k];if(!u.dead&&swMechU(u)&&Math.hypot(u.x-x,u.y-y)<=RR)cand(u.x,u.y)}
+  for(let k=0;k<M_.length;k++){const u=M_[k];if(isMechU(u)&&Math.hypot(u.x-x,u.y-y)<=RR)cand(u.x,u.y)}
   for(let k=0;k<T.length;k++){const s=T[k];if(aisMechS(s)&&Math.hypot(s.x-x,s.y-8-y)<=RR)cand(s.x,s.y-8)}
   if(!bn)return false;
   const d=K.b+K.ad*E.dmg[i],sid=E.id[i],kt=E.t[i];let n=0;
-  const hit=[];for(let k=0;k<S.length;k++){const u=S[k];if(!u.dead&&swMechU(u)&&Math.hypot(u.x-bx,u.y-by)<=R)hit.push(u)}for(let k=0;k<T.length;k++){const s=T[k];if(aisMechS(s)&&Math.hypot(s.x-bx,s.y-8-by)<=R+8)hit.push(s)}
+  const hit=[];for(let k=0;k<S.length;k++){const u=S[k];if(!u.dead&&swMechU(u)&&Math.hypot(u.x-bx,u.y-by)<=R)hit.push(u)}for(let k=0;k<M_.length;k++){const u=M_[k];if(isMechU(u)&&Math.hypot(u.x-bx,u.y-by)<=R)hit.push(u)}for(let k=0;k<T.length;k++){const s=T[k];if(aisMechS(s)&&Math.hypot(s.x-bx,s.y-8-by)<=R+8)hit.push(s)}
   for(const t of hit){if(t.dead)continue;const O={src:i,sid,id:sid,kt,magic:true,mix:AIS_LIT};if(t.cfg)hurtS(t,d,O);else hurtF(t,d,O);if(t.dead||!(t.hp>0))continue;
     const ok=aisImm(t)?false:t.cfg?(typeof hackS==='function'&&hackS(t,K.dur,i)):(typeof hackU==='function'&&hackU(t,K.dur,i));
     if(!ok&&typeof ynEmp==='function'&&ynEmp(t,K.dur))n++;else if(ok)n++}
@@ -65071,7 +65213,7 @@ function updateSoldiers(DT){
       if(s.pet){cx=s.x;cy=s.y;R_=CFG.run.petSeek*16}}   // v0.6.0 助战（白熊、狮鹫、森林狼）：在自己身边主动找亡灵，不只是跟着主人
     else if(mode==='guard'){const gh=campGuardPt(home)||home.gdP||home;   // campGuardPt：v0.8.18 指挥面板指定的驻守点
      s.patrolT-=dt;if(s.patrolT<=0){const t=!s.post&&!s.layer?gdSpot(s,gh):-1;if(t>=0){s.px=(t%MAP_W)*16+8;s.py=((t/MAP_W)|0)*16+8}else{const P=guardPts(gh);if(P.length){if(s.gHome!==gh){s.gHome=gh;s.gq=gh.gq=(gh.gq||0)+1}const p=P[(s.gq+(c.cavalry?0:G.gdK*CFG.garrison.guard.step))%P.length];s.px=p.x;s.py=p.y}}}   // gdSpot：v0.10.0 一人一格（下面），格子分完了才退回原来的共用点   // v0.8.0（用户定）骑兵待命时站着不动，不跟着换布防   // v0.6.3 共用驻守点图（patrolT > 0 = 阵型临时指定的站位）；v0.6.6 gh：兵营被派去热点 / 破口时，驻守那个点（units/guard）
-      ax=s.px;ay=s.py;cx=gh.x;cy=gh.y;R_=s.c.noWall&&s.rg?Math.max(6*16,s.rg.range*16):6*16;gIn=gh.cg===1&&gh.ins===1&&!s.rg}   // noWall：v0.5.3 加农炮、投石车驻守时按射程打
+      ax=s.px;ay=s.py;cx=gh.x;cy=gh.y;R_=s.c.noWall&&s.rg?Math.max(6*16,s.rg.range*16):6*16;gIn=false}   // gIn：2026-11-07（用户定「打附近的，不追太远」）编组驻守的近战兵也打城外附近的（驻守点 6 格内），不再只打城内的   // noWall：v0.5.3 加农炮、投石车驻守时按射程打
     else if(!elevated&&!s.ordP&&(CGP_Q=cgpFg(s))!==null&&cgpIn(s)){cgpGo(s,CGP_Q);ax=CGP_AX;ay=CGP_AY;cx=CGP_Q.cx;cy=CGP_Q.cy;R_=CGP_Q.fr}   // 0.13.2.x（用户定）编组出击：成一团走（cgpGo），只打组中心附近的（units/campgrp）
     else{const cp=elevated?null:home.mode==='spread'?spreadPt(s):campChargePt(home);ax=home.x;ay=home.y+10;cx=home.x;cy=home.y;R_=1e9;if(cp){ax=cp.x;ay=cp.y;cx=s.x;cy=s.y;R_=10*16}   // cp：v0.8.18 指挥面板选的出击方向（刷新点），路上打 10 格内的
       else if(s.guer&&G.phase==='wave'&&!elevated){s.sgT=(s.sgT||0)-dt;if(s.sgT<=0){s.sgT=1;s.sgo=cavSortie(s)}if(s.sgo){ax=s.sgo.x;ay=s.sgo.y}cx=s.x;cy=s.y}   // v0.4.6 游击骑兵「出击」：像 AI 英雄一样去堵刷新点（cavSortie），目标按离自己最近的挑
@@ -65624,10 +65766,11 @@ function campChargePt(b){const q=b._cgo;if(q&&q.m==='charge'&&b.mode==='charge')
 // 0.13.2.x（用户定）分散出击：分散出击兵营的兵，每个兵种平均分到这一波还在出怪的刷新点（s.spS = 刷新点下标）；
 //   分到的点这一波出完了（或新练出来的兵）就换到还在出怪的点里这个兵种人最少的那个（一样少挑离自己近的）；都出完了 s.spS = -1，照集中出击自由找怪
 //   每一波开始全部重新平均分一次；波中间不强行重新平均（死了几个不把别处的兵调过来，免得满地图跑）；指挥面板的出击方向只管集中出击；每 0.5 秒分一次
-let SPR_T=-1,SPR_G=null,SPR_W=-1;const SPR_A=[],SPR_P=[],SPR_C=new Map();   // SPR_W：上次分配时是第几波（审阅修正：新的一波开始全部重新平均分，原来沿用上一波分到的点，上一波只有一个点出怪、这一波多了点也全挤在老点上）
+let SPR_T=-1,SPR_G=null,SPR_W=-1;const SPR_A=[],SPR_P=[],SPR_C=new Map(),SPR_SEEN=[];let SPR_N=0;const sprCnt=()=>{SPR_N++};   // SPR_N：出怪点附近还剩几只亡灵（不看视野）   // SPR_W：上次分配时是第几波（审阅修正：新的一波开始全部重新平均分，原来沿用上一波分到的点，上一波只有一个点出怪、这一波多了点也全挤在老点上）
 const spreadOn=s=>!s.summon&&!s.repairer&&s.camp&&!s.camp.dead&&s.camp.mode==='spread';
 function spreadTick(alive){if(G.phase!=='wave'||(SPR_G===G&&SPR_W===G.wave&&G.time<SPR_T&&G.time>SPR_T-1))return;const nw=SPR_G!==G||SPR_W!==G.wave;SPR_G=G;SPR_W=G.wave;SPR_T=G.time+0.5;
-  const A=SPR_A;A.length=0;SPR_P.length=0;for(let q=0,Q=G.queue;q<Q.length;q++){const k=Q[q].side;if(A.indexOf(k)<0&&G.spawns[k]){const p=spawnPt(k);if(p){A.push(k);SPR_P[k]=p}}}
+  const A=SPR_A;A.length=0;SPR_P.length=0;if(nw)SPR_SEEN.length=0;for(let q=0,Q=G.queue;q<Q.length;q++){const k=Q[q].side;if(A.indexOf(k)<0&&G.spawns[k]){const p=spawnPt(k);if(p){A.push(k);SPR_P[k]=p;if(SPR_SEEN.indexOf(k)<0)SPR_SEEN.push(k)}}}
+  for(let q=0;q<SPR_SEEN.length;q++){const k=SPR_SEEN[q];if(A.indexOf(k)>=0||!G.spawns[k])continue;const p=spawnPt(k);SPR_N=0;if(p)eQuery(p.x,p.y,CFG.garrison.spreadClr*16,sprCnt,false);if(SPR_N>0){A.push(k);SPR_P[k]=p}}   // 2026-11-07（用户定）「出怪点打完不再出怪后再换」：这一波出过怪的点，出完了但附近 spreadClr 格内还有亡灵 = 还没打完，照样算
   const C=SPR_C;C.clear();const cnt=(t,k)=>{let r=C.get(t);if(!r){r={};C.set(t,r)}return r[k]=(r[k]||0)};
   for(let i=0;i<alive.length;i++){const s=alive[i];if(!spreadOn(s))continue;if(!nw&&A.indexOf(s.spS)>=0){const r=C.get(s.type)||{};r[s.spS]=(r[s.spS]||0)+1;C.set(s.type,r)}else s.spS=-2}
   for(let i=0;i<alive.length;i++){const s=alive[i];if(!spreadOn(s)||s.spS!==-2)continue;if(!A.length){s.spS=-1;continue}
@@ -65649,7 +65792,7 @@ function heroCmdSet(id,k,v){if(!G.heroCmd)G.heroCmd={};const C=G.heroCmd[id]||(G
 // 组号（Claude 定）：局内从 1 起，新建时取最小的空号（解散了的组号会再用，和即时战略的编队号一样）；组号不设上限。组里没有兵营了（拆掉、被毁、都移出）自动解散。
 // 下给组的指令 = 组里每座兵营都照这个：cgpApply 把模式和 b.cmd（g / f / c）抄给每座，所以驻守、跟随、存读档、指令记录、AI 接口照单座兵营的逻辑走。
 //   组里的兵营单独改模式（选中兵营的模式按钮、指挥面板、AI 接口）= 离开编组（Claude 定）；「全部兵营」、键盘切换、同类 / 相邻套用都不改编组的兵营（同锁定）。
-// 组驻守：驻守点由组共用一个对象（cgpGp）；驻守点 guardPtR 格内有城墙驻防位时 ins = 1：近战兵只站城内的格子、只打城内的亡灵（城墙内侧），
+// 组驻守：驻守点由组共用一个对象（cgpGp）；驻守点 guardPtR 格内有城墙驻防位时 ins = 1：近战兵只站城内的格子（城墙内侧）、打驻守点 6 格内的亡灵（2026-11-07 用户定「打附近的，不追太远」，城外附近的也打），
 //   远程兵照单座兵营「指定驻守点」的规矩（updatePosts 的 gpOf）上驻守点附近的城墙 / 瞭望塔；没有城墙就都守在驻守点。
 // 组出击：每 CFG.campGrp.tick 秒（cgpTick）算一次组中心（组里在地上走的兵的平均位置）和目标——选了刷新点就是那个刷新点；没选 = 离组中心最近的看得见的亡灵，
 //   一只都看不见就按顺序巡逻刷新点；士兵每帧只读这些缓存（cgpGo）：离组中心太远就往中心靠，比组中心离目标近太多就原地等，其余朝目标走；只打组中心附近的亡灵。
@@ -65939,7 +66082,7 @@ function meleeSwing(h,ang,mul,arcMin,mk){
   if(w.killHeal&&kills)healF(h,h.maxHp*w.killHeal*kills);
   h.swing=0.2;h.swingA=ang;h.facing=Math.cos(ang)>=0?1:-1;if(w.type==='spear')h.thrust=0.18;
   if(inViewPt(h.x,h.y))sfx('swing',h.x,h.y);return list.length}
-const heroAtkInt=h=>h.ws.int/(1+(h.elite?pm.atkSpd+obFElAsp(h):heroPool(HP_AS,HP_AS2)+TM.hAtkSpd)+(h.aspd||0)+(h.shadowT>0?1:0)+drumF(h)+(h.gAtk||0)+rwK(h)+(h.bpSpU>G.time?h.bpSp:0))/ENV.ourAtk/fAtkK(h)/(1+(h.ashAs||0)+(h.loWind||0));   // loWind：v0.10.0 斗神·萝拉「其疾如风」（独立乘区；和 ashAs 不会在同一个英雄身上）   // ashAs：v0.9.0 阿什娜「月华」夜晚的攻速（独立乘区，heroes/ashna）   // bpSp：先登之志（v0.8.11 起相加）   // fAtkK：v0.7.0 魔王咆哮、死灵尖啸   // rwK：v0.6.0 艾伦尼塔「振奋之风」   // gAtk：v0.4.3 饰品「攻速」   // drumF：战鼓楼（v0.3.4）   // aspd：v0.5.7 英雄自身攻速
+const heroAtkInt=h=>h.ws.int/(1+(h.elite?pm.atkSpd+obFElAsp(h):heroPool(HP_AS,HP_AS2)+TM.hAtkSpd)+(h.aspd||0)+(h.shadowT>0?1:0)+drumF(h)+(h.gAtk||0)+rwK(h)+(h.bpSpU>G.time?h.bpSp:0))/ENV.ourAtk/fAtkK(h)/(1+(h.ashAs||0)+(h.loWind||0))/(h.mkA>0||h.wtOvU>G.time?mkK(h):1);   // loWind：v0.10.0 斗神·萝拉「其疾如风」（独立乘区；和 ashAs 不会在同一个英雄身上）   // ashAs：v0.9.0 阿什娜「月华」夜晚的攻速（独立乘区，heroes/ashna）   // bpSp：先登之志（v0.8.11 起相加）   // fAtkK：v0.7.0 魔王咆哮、死灵尖啸   // rwK：v0.6.0 艾伦尼塔「振奋之风」   // gAtk：v0.4.3 饰品「攻速」   // drumF：战鼓楼（v0.3.4）   // aspd：v0.5.7 英雄自身攻速   // mkK：源能机甲精英吃瓦特「精械重工」/ 过载超频（同机械士兵的 uCmdK，用户 11-07 定）
 function heroAttack(h,aim){
   const w=h.ws;if(h.atkCd>0||h.swapT>0||h.whirlT>0||h.dashT>0||h.barT>0||h.reviveT>0||h.fearT>0||h.frzT>0||(OATH_SLOTH&&h.slpU>G.time)||h.disU>G.time)return false;   // slpU：v0.9.4 誓约「懒惰」   // disU：v0.11.0 缴械到几时（通用；血族城堡诅咒干尸）   // barT：枪林弹雨期间不能普攻；reviveT：v0.4.2 复活保护期间不出手；fearT：v0.5.0 恐惧
   if(w.cls==='melee'){
@@ -71094,17 +71237,21 @@ function mkFrame(dt){MK_T-=dt;if(MK_T>0)return;MK_T=0.25;
   const ws=[],gs=[];for(let i_1=0,a_1=G.heroes;i_1<a_1.length;i_1++){const h=a_1[i_1];if(h.dead)continue;if(h.id==='watt'&&h.psv)ws.push(h);if(h.swEmC||h.swRep||h.swOc)gs.push(h)}
   if(!ws.length&&!gs.length&&!MK_ON)return;MK_ON=ws.length>0||gs.length>0;
   for(let i_2=0,a_2=G.structs;i_2<a_2.length;i_2++){const s=a_2[i_2];s.mkA=0;s.mkC=0;s.mkE=0}for(let i_3=0,a_3=G.soldiers;i_3<a_3.length;i_3++){const u=a_3[i_3];u.mkA=0;u.mkE=0}
+  const ME=mechEls();for(let k=0;k<ME.length;k++){const u=ME[k];u.mkA=0;u.mkE=0}   // 源能机甲精英也是机械单位（用户 11-07 定，maps/steam.isMechU）
   for(const h of ws){const P=h.psv,R=P.r*16,all=P.r>=999;
     for(let i_4=0,a_4=G.structs;i_4<a_4.length;i_4++){const s=a_4[i_4];if(swMechS(s)&&(all||Math.hypot(s.x-h.x,s.y-8-h.y)<=R)){s.mkA=Math.max(s.mkA,P.spd);s.mkE=Math.max(s.mkE,P.emp)}}
-    for(let i_5=0,a_5=G.soldiers;i_5<a_5.length;i_5++){const u=a_5[i_5];if(swMechU(u)&&(all||Math.hypot(u.x-h.x,u.y-h.y)<=R)){u.mkA=Math.max(u.mkA,P.spd);u.mkE=Math.max(u.mkE,P.emp)}}}
+    for(let i_5=0,a_5=G.soldiers;i_5<a_5.length;i_5++){const u=a_5[i_5];if(swMechU(u)&&(all||Math.hypot(u.x-h.x,u.y-h.y)<=R)){u.mkA=Math.max(u.mkA,P.spd);u.mkE=Math.max(u.mkE,P.emp)}}
+    for(let k=0;k<ME.length;k++){const u=ME[k];if(isMechU(u)&&(all||Math.hypot(u.x-h.x,u.y-h.y)<=R)){u.mkA=Math.max(u.mkA,P.spd);u.mkE=Math.max(u.mkE,P.emp)}}}
   for(const h of gs){
     if(h.swOc){const R=h.swOc.r*16;for(let i_6=0,a_6=G.structs;i_6<a_6.length;i_6++){const s=a_6[i_6];if(!s.dead&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R)s.mkC=Math.max(s.mkC,h.swOc.spd)}}
     if(h.swEmC){const R=h.swEmC*16,U=G.time+0.4;for(let i_7=0,a_7=G.structs;i_7<a_7.length;i_7++){const s=a_7[i_7];if(swMechS(s)&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R){s.empU=0;s.emImU=U}}
       for(let i_8=0,a_8=G.traps;i_8<a_8.length;i_8++){const t=a_8[i_8];if(SW_MT.has(t.type)&&Math.hypot(t.x-h.x,t.y-8-h.y)<=R){t.empU=0;t.emImU=U}}
-      for(let i_9=0,a_9=G.soldiers;i_9<a_9.length;i_9++){const u=a_9[i_9];if(swMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R){u.empU=0;u.emImU=U}}}
+      for(let i_9=0,a_9=G.soldiers;i_9<a_9.length;i_9++){const u=a_9[i_9];if(swMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R){u.empU=0;u.emImU=U}}
+      for(let k=0;k<ME.length;k++){const u=ME[k];if(isMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R){u.empU=0;u.emImU=U}}}
     if(h.swRep&&G.phase==='wave'){const R=h.swRep.r*16,k=h.swRep.pct*0.25;
       for(let i_10=0,a_10=G.structs;i_10<a_10.length;i_10++){const s=a_10[i_10];if(!s.dead&&s.hp<s.maxHp&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R){s.hp=Math.min(s.maxHp,s.hp+s.maxHp*k*bldHealK(h,s)*sHealK(s));if(chance(0.15))healFx(s.x,s.y-12,'#7af0ff')}}
-      for(let i_11=0,a_11=G.soldiers;i_11<a_11.length;i_11++){const u=a_11[i_11];if(swMechU(u)&&u.hp<u.maxHp&&Math.hypot(u.x-h.x,u.y-h.y)<=R)healF(u,u.maxHp*k)}}}}
+      for(let i_11=0,a_11=G.soldiers;i_11<a_11.length;i_11++){const u=a_11[i_11];if(swMechU(u)&&u.hp<u.maxHp&&Math.hypot(u.x-h.x,u.y-h.y)<=R)healF(u,u.maxHp*k)}
+      for(let q=0;q<ME.length;q++){const u=ME[q];if(isMechU(u)&&u.hp<u.maxHp&&Math.hypot(u.x-h.x,u.y-h.y)<=R)healF(u,u.maxHp*k)}}}}
 // ================= 炮舰统领 坎 =================
 // 舰船：不在水里（黄沙海岸的浅滩、深海）时移速 × land
 const kanLandK=h=>{if(h.fly)return 1;if(G.csOn&&G.csW&&!h.layer&&csWAt(h.x,h.y)>0)return 1;const p=h.psv;return h.d.shipLand>0?h.d.shipLand:p?p.land:CFG.skills.gunship.land};   // shipLand：0.13.2 代理 15b 加，精英的炮艇 / 斗舰（game/el_fam15b）
@@ -71210,17 +71357,21 @@ Object.assign(SK,{
       for(let i_13=0,a_13=G.structs;i_13<a_13.length;i_13++){const s=a_13[i_13];if(swMechS(s)&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R){s.empU=0;s.empH=0;s.emImU=U;s.hp=Math.min(s.maxHp,s.hp+s.maxHp*p.heal*sHealK(s));n++;if(inViewPt(s.x,s.y))healFx(s.x,s.y-12,'#7af0ff')}}
       for(let i_14=0,a_14=G.traps;i_14<a_14.length;i_14++){const t=a_14[i_14];if(SW_MT.has(t.type)&&Math.hypot(t.x-h.x,t.y-8-h.y)<=R){t.empU=0;t.emImU=U}}
       for(let i_15=0,a_15=G.soldiers;i_15<a_15.length;i_15++){const u=a_15[i_15];if(swMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R){u.empU=0;u.emImU=U;healF(u,u.maxHp*p.heal);n++}}
+      for(let k=0,M_=mechEls();k<M_.length;k++){const u=M_[k];if(isMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R){u.empU=0;u.emImU=U;healF(u,u.maxHp*p.heal);n++}}   // 源能机甲精英（用户 11-07 定）
       if(inViewPt(h.x,h.y)){addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-6),r:R,life:0.5,c:'#7af0ff'});addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-6),r:R*0.6,life:0.4,c:'#ffffff'})}
       sfx('zap');if(h.ctl&&!n)toast('附近没有机械单位');return true},
     ai(h,p){const R=p.r*16;let em=0,hurt=0;for(let i_16=0,a_16=G.structs;i_16<a_16.length;i_16++){const s=a_16[i_16];if(swMechS(s)&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R){if(s.empU>G.time)em++;if(s.hp<s.maxHp*0.6)hurt++}}
-      for(let i_17=0,a_17=G.soldiers;i_17<a_17.length;i_17++){const u=a_17[i_17];if(swMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R){if(u.empU>G.time)em++;if(u.hp<u.maxHp*0.5)hurt++}}return em>=1||hurt>=2?{}:null}},
+      for(let i_17=0,a_17=G.soldiers;i_17<a_17.length;i_17++){const u=a_17[i_17];if(swMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R){if(u.empU>G.time)em++;if(u.hp<u.maxHp*0.5)hurt++}}
+      for(let k=0,M_=mechEls();k<M_.length;k++){const u=M_[k];if(isMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R){if(u.empU>G.time)em++;if(u.hp<u.maxHp*0.5)hurt++}}return em>=1||hurt>=2?{}:null}},
   overload:{cast(h,p){if(!(p.r>0))return false;const R=p.r*16,U=G.time+p.dur;let n=0;
       for(let i_18=0,a_18=G.structs;i_18<a_18.length;i_18++){const s=a_18[i_18];if(swMechS(s)&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R){s.hp=Math.max(1,s.hp-s.maxHp*p.cost);s.wtOvU=U;s.wtOvK=p.spd;n++}}
       for(let i_19=0,a_19=G.soldiers;i_19<a_19.length;i_19++){const u=a_19[i_19];if(swMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R){u.hp=Math.max(1,u.hp-u.maxHp*p.cost);u.wtOvU=U;u.wtOvK=p.spd;n++}}
+      for(let k=0,M_=mechEls();k<M_.length;k++){const u=M_[k];if(isMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R){u.hp=Math.max(1,u.hp-u.maxHp*p.cost);u.wtOvU=U;u.wtOvK=p.spd;n++}}   // 源能机甲精英（用户 11-07 定；攻速倍率在 heroes/hero.heroAtkInt 读 mkK）
       if(inViewPt(h.x,h.y)){addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-6),r:R,life:0.5,c:'#ffd25a'});G.shake=Math.max(G.shake,0.8)}
       sfx('horn');if(h.ctl&&!n)toast('附近没有机械单位');return true},
     ai(h,p){if(!(p.r>0))return null;const R=p.r*16;let n=0;for(let i_20=0,a_20=G.structs;i_20<a_20.length;i_20++){const s=a_20[i_20];if(swMechS(s)&&s.hp>s.maxHp*(p.cost+0.3)&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R)n++;}
-      for(let i_21=0,a_21=G.soldiers;i_21<a_21.length;i_21++){const u=a_21[i_21];if(swMechU(u)&&u.hp>u.maxHp*(p.cost+0.3)&&Math.hypot(u.x-h.x,u.y-h.y)<=R)n++;}return n>=3&&countNear(h.x,h.y,R+6*16)>=5?{}:null}},
+      for(let i_21=0,a_21=G.soldiers;i_21<a_21.length;i_21++){const u=a_21[i_21];if(swMechU(u)&&u.hp>u.maxHp*(p.cost+0.3)&&Math.hypot(u.x-h.x,u.y-h.y)<=R)n++;}
+      for(let k=0,M_=mechEls();k<M_.length;k++){const u=M_[k];if(isMechU(u)&&u.hp>u.maxHp*(p.cost+0.3)&&Math.hypot(u.x-h.x,u.y-h.y)<=R)n++}return n>=3&&countNear(h.x,h.y,R+6*16)>=5?{}:null}},
 });
 // v0.8.10 冲刺登记（heroes/hero.DASH）：坎「疾速冲锋」
 DASH.kanRam={step:kanRamDash,land:h=>{kanRamEnd(h)}};
@@ -74275,6 +74426,7 @@ function aisEmpBest(h,p){const R=aisEmpR(p)*16;let best=-1,bn=0,tried=0;
 // ================= 源能潮汐 =================
 function aisTideCast(h,p){const R=p.r*16,R2=R*R,L=[],eS=aisEff('ts'+p.spd,()=>({aspd:p.spd,rld:p.spd,cdSpd:p.spd})),eB=aisEff('tb'+p.spd,()=>({aspd:p.spd,cdSpd:p.spd}));
   const S0=G.soldiers;for(let k=0;k<S0.length;k++){const u=S0[k];if(u.dead)continue;const dx=u.x-h.x,dy=u.y-h.y;if(dx*dx+dy*dy>R2||!swMechU(u))continue;bfAdd(u,'aiTide1',eS,p.t1);L.push(u)}
+  const M_=mechEls();for(let k=0;k<M_.length;k++){const u=M_[k];if(!isMechU(u))continue;const dx=u.x-h.x,dy=u.y-h.y;if(dx*dx+dy*dy>R2)continue;bfAdd(u,'aiTide1',eS,p.t1);L.push(u)}   // 源能机甲精英（用户 11-07 定）
   const T=G.structs;for(let k=0;k<T.length;k++){const s=T[k];if(s.dead)continue;const dx=s.x-h.x,dy=s.y-8-h.y;if(dx*dx+dy*dy>(R+8)*(R+8)||!aisMechS(s))continue;bfAdd(s,'aiTide1',eB,p.t1);L.push(s)}
   const S=aisSt(h);S.tdAt=G.time+p.t1;S.tdL=L;S.tdP=p;
   if(inViewPt(h.x,h.y)){addFx({k:'ring',x:Math.round(h.x),y:Math.round(h.y-6),r:Math.min(R,220),life:0.6,c:AIS_C1});G.shake=Math.max(G.shake,0.6)}sfx('surge',h.x,h.y);
@@ -74282,6 +74434,7 @@ function aisTideCast(h,p){const R=p.r*16,R2=R*R,L=[],eS=aisEff('ts'+p.spd,()=>({
 function aisTide2(S){const p=S.tdP,L=S.tdL;S.tdAt=0;S.tdL=null;if(!p||!L)return;const eff=aisEff('t2'+p.rg+'_'+p.dr,()=>({regen:p.rg,dr:p.dr}));
   for(let k=0;k<L.length;k++){const u=L[k];if(!u.dead){bfAdd(u,'aiTide2',eff,p.t2);if(FXK>0&&inViewPt(u.x,u.y))healFx(u.x,u.y-(u.cfg?14:8),AIS_C1)}}}
 function aisMechNear(h,R){const R2=R*R;let n=0;const S0=G.soldiers;for(let k=0;k<S0.length;k++){const u=S0[k];if(u.dead)continue;const dx=u.x-h.x,dy=u.y-h.y;if(dx*dx+dy*dy<=R2&&swMechU(u))n++}
+  const M_=mechEls();for(let k=0;k<M_.length;k++){const u=M_[k];if(!isMechU(u))continue;const dx=u.x-h.x,dy=u.y-h.y;if(dx*dx+dy*dy<=R2)n++}   // 源能机甲精英
   const T=G.structs;for(let k=0;k<T.length;k++){const s=T[k];if(s.dead)continue;const dx=s.x-h.x,dy=s.y-8-h.y;if(dx*dx+dy*dy<=(R+8)*(R+8)&&aisMechS(s))n++}return n}
 // ================= 天幕屏障 =================
 const aisDomeU=s=>!s.dead&&!s.temp&&!s.trap&&!s.foe&&!isWallT(s.type)&&!isGateT(s.type);   // 算「单位」的建筑：不含城墙、城门、陷阱
@@ -77885,7 +78038,8 @@ function ydvTick(dt){YDV_T-=dt;if(YDV_T>0)return;YDV_T=YDV.tick;YDV_TK++;
       for(let k=0;k<Hs.length;k++){const u=Hs[k];if(!u.dead&&ydvInU(s,u,h))give(u)}}
     else if(m==='pow'){const a=ydvAtk(s),eff=ydvEff(ydvAspd(s)),give=t=>{if(t.ydvAT!==YDV_TK){t.ydvAT=YDV_TK;t.ydvA=a}else if(a>t.ydvA)t.ydvA=a;t.ydvAU=until;bfAdd(t,'ydvPow',eff,au,YDV_KM)};   // 几座重叠：攻击、攻速都取最高
       for(let k=0;k<S.length;k++){const t=S[k];if(!t.dead&&ydvTwr(t)&&ydvInS(s,t,h))give(t)}
-      for(let k=0;k<U.length;k++){const u=U[k];if(!u.dead&&swMechU(u)&&ydvInU(s,u,h))give(u)}}
+      for(let k=0;k<U.length;k++){const u=U[k];if(!u.dead&&swMechU(u)&&ydvInU(s,u,h))give(u)}
+      for(let k=0,M_=mechEls();k<M_.length;k++){const u=M_[k];if(isMechU(u)&&ydvInU(s,u,h))give(u)}}   // 源能机甲精英（用户 11-07 定）：攻击走 drumA（heroes/hero 普攻读）、攻速走统一 buff
     if(e.ydRep){s.ydvRt=(s.ydvRt||0)-YDV.tick;if(s.ydvRt<=0){s.ydvRt+=YDV.rep.int;ydvRepair(s,h,e)}}}
   YDV_ON=on}
 // 维修装置：范围里受损最重的一座（同维修塔的修理量）；领域维修：再修它周围 area 格
@@ -77897,7 +78051,7 @@ function ydvAbs(t,dmg){const d=t.ydvG;if(!d||!(dmg>0)||!(t.ydvGU>G.time)||d.dead
   if(FXK>0&&inViewPt(t.x,t.y)&&fxr()<0.3)pp(t.x+vr(-5,5),t.y-10,0,vr(-12,12),vr(-12,4),vr(4,12),0,0.3,'#7fe0ff',1,0,1);return dmg-ab}
 // 免疫电磁干扰（k = 0）/ 骇入（k = 1）：挡下返回 true（maps/arcane.afEmp、structs/hack.hackS / hackU 调）
 function ydvBlock(t,k){if(!t||!(t.ydvGU>G.time))return false;const d=t.ydvG;if(!d||d.dead||!(d.ydvSh>0)||ydvMode(d)!=='shd'||ydvOff(d))return false;
-  if(t.cfg?(t.trap||!YDV_MS.has(t.type)):!(t.c&&swMechU(t)))return false;
+  if(t.cfg?(t.trap||!YDV_MS.has(t.type)):!isMechU(t))return false;   // isMechU：源能机甲精英也挡（用户 11-07 定）
   const now=G.time,P=YDV.shd;if(k){if(d.ydvHt===undefined||now-d.ydvHt>=P.gap-1e-6){d.ydvHt=now;d.ydvSh=Math.max(0,d.ydvSh-ydvLoss(d,P.hack))}}
   else if(d.ydvEt===undefined||now-d.ydvEt>=P.gap-1e-6){d.ydvEt=now;d.ydvSh=Math.max(0,d.ydvSh-ydvLoss(d,P.emp))}
   if(FXK>0&&inViewPt(t.x,t.y))addFx({k:'ring',x:Math.round(t.x),y:Math.round(t.y-10),r:10,life:0.3,c:'#7fe0ff'});return true}
@@ -80798,7 +80952,7 @@ function localDayIdx(){const h=new Date(metaNow()).getHours(),H=SB.dayHours;let 
 //        dep 上阵, cmd 局内指令（'sortie' / 'guard'）, log {n 场, k 杀, d 输出, t 承伤, h 治疗, c 控制, L 最近的战报}, par 父母编号, kids 孩子编号, gen 第几代, learn {k, lv, end}, ly 上次学特性的年龄}
 const EL=()=>CFG.elite;
 const elRi=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),elPick=a=>a[Math.floor(Math.random()*a.length)];
-function elSt(){const m=META.el||(META.el=elFam18New(elFam17New(elFam16New(elFam15New({})))));if(!(m.t>0))m.t=metaNow();if(!(m.n>0))m.n=1;for(const k of['list','kids','roll','ins','staff','ev','fam','follow','cf'])if(!Array.isArray(m[k]))m[k]=[];if(!(m.del>=0))m.del=0;for(const k of['rec','tch','irec','irq','rep'])if(!m[k]||typeof m[k]!=='object')m[k]={};if(!m.opt||typeof m.opt!=='object')m.opt={injOff:true};if(!m.v6&&typeof elBlMig==='function'){m.v6=1;for(const L of[m.list,m.kids,m.roll,m.staff])L.forEach(elBlMig);for(const r in m.rec)(m.rec[r].offers||[]).forEach(elBlMig);for(const r in m.irec)(m.irec[r].offers||[]).forEach(elBlMig);for(const c of m.kids)if(c.enr==null)c.enr=1}   // v6：0.12.0 血脉（老存档按籍贯算平民血脉）、训练所里原有的孩子都算已入学   // elFam15New：0.13.2 修，新建的精英存档把一次性的补抽特性标成做过（game/el_fam15）
+function elSt(){const m=META.el||(META.el=elBmNew(elFam18New(elFam17New(elFam16New(elFam15New({}))))));if(!(m.t>0))m.t=metaNow();if(!(m.n>0))m.n=1;for(const k of['list','kids','roll','ins','staff','ev','fam','follow','cf'])if(!Array.isArray(m[k]))m[k]=[];if(!(m.del>=0))m.del=0;for(const k of['rec','tch','irec','irq','rep'])if(!m[k]||typeof m[k]!=='object')m[k]={};if(!m.opt||typeof m.opt!=='object')m.opt={injOff:true};if(!m.v6&&typeof elBlMig==='function'){m.v6=1;for(const L of[m.list,m.kids,m.roll,m.staff])L.forEach(elBlMig);for(const r in m.rec)(m.rec[r].offers||[]).forEach(elBlMig);for(const r in m.irec)(m.irec[r].offers||[]).forEach(elBlMig);for(const c of m.kids)if(c.enr==null)c.enr=1}   // v6：0.12.0 血脉（老存档按籍贯算平民血脉）、训练所里原有的孩子都算已入学   // elFam15New：0.13.2 修，新建的精英存档把一次性的补抽特性标成做过（game/el_fam15）
   if(!m.v7&&m.v6){m.v7=1;const N=EL().bloodN,sc=x=>{if(!x||!x.bl)return;let t=0,big=null;for(const id in x.bl)t+=x.bl[id];if(t===N)return;for(const id in x.bl){x.bl[id]=Math.round(x.bl[id]*N/t);if(!big||x.bl[id]>x.bl[big])big=id}let u=0;for(const id in x.bl)u+=x.bl[id];if(big)x.bl[big]+=N-u};
     for(const L of[m.list,m.kids,m.roll,m.staff,m.fam])L.forEach(sc);for(const r in m.rec)(m.rec[r].offers||[]).forEach(sc);for(const r in m.irec)(m.irec[r].offers||[]).forEach(sc)}else if(!m.v7)m.v7=1;   // v7：0.12.0 血脉 16 份 → 20 份（精度 5%）
   if(!m.v9){m.v9=1;for(const cf of m.cf||[])for(const t in cf.tr||{})if(!(CFG.elite.cfam.trG[t]||[]).some(o=>o.key===cf.tr[t]))delete cf.tr[t];m.cfv=(m.cfv||0)+1}   // v9：0.12.0 自建家族特性改成五格各一组，老的选择清掉（重新免费选）
@@ -82023,9 +82177,8 @@ function elFx3Hit(h,i,dmg,o,S){
 // 每帧（EL_FX.tick）：每波开始的护盾、站定计时
 function elFx3Tick(h,S){
   if(S.waveSh&&G.phase==='wave'&&h.elWsW!==G.wave&&!h.dead){h.elWsW=G.wave;const a=h.maxHp*S.waveSh;if(!(h.shieldHp>a)){h.shieldHp=a;h.shieldMax=a}h.shieldT=Math.max(h.shieldT||0,30);healFx(h.x,h.y-10,'#f3d47c')}
-  if(S.mechA&&G.phase==='wave'&&!h.dead){h.elMaT=(h.elMaT||0)-1;if(h.elMaT<=0){h.elMaT=15;bfAuraF(h.x,h.y,S.mechA[0]*16,'elMechA',elEffOf(EL_SONG_E,'M|'+S.mechA[1],()=>({aspd:S.mechA[1]})),{heroes:false,only:elMechU})}}   // 0.12.2 瓦特家「工业之心」（用户定）：周围的机械单位攻速提高，每 15 帧刷新
+  if(S.mechA&&G.phase==='wave'&&!h.dead){h.elMaT=(h.elMaT||0)-1;if(h.elMaT<=0){h.elMaT=15;bfAuraF(h.x,h.y,S.mechA[0]*16,'elMechA',elEffOf(EL_SONG_E,'M|'+S.mechA[1],()=>({aspd:S.mechA[1]})),{only:isMechU})}}   // isMechU：源能机甲精英也算（用户 11-07 定）   // 0.12.2 瓦特家「工业之心」（用户定）：周围的机械单位攻速提高，每 15 帧刷新
   if(S.still){if(Math.abs(h.x-h.elStX)>0.5||Math.abs(h.y-h.elStY)>0.5||!(h.elStT>0)){h.elStX=h.x;h.elStY=h.y;h.elStT=G.time}}}
-const elMechU=u=>!!(u.c&&u.c.mech)||!!(typeof AF_EMU!=='undefined'&&AF_EMU[u.type]);   // 机械单位（同 maps/steam.swMechU）
 const elStillDr=(u,S)=>S.still&&u.elStT>0&&G.time-u.elStT>=S.still[0]?S.still[1]:0;
 // 受伤：每秒受到的伤害封顶（cap）、替身边的友军分担（share）、近战反伤（thorn）；击杀叠增伤（kStk）
 feat('elite3',{on:()=>!!(G&&G.elites&&G.elites.length),hooks:{
@@ -83020,6 +83173,7 @@ function f16aTick(dt){if((F16A.t-=dt)>0)return;F16A.t=0.25;F16A.cmd.length=0;F16
     if(S.f16Cmd)F16A.cmd.push(h);if(S.f16Crown)F16A.crown.push(h);
     if(S.f16Mech&&wave){const R=S.f16Mech[0]*16,v=S.f16Mech[1],eu=f16aEff('mu'+v,()=>({aspd:v,rld:v})),es=f16aEff('ms'+v,()=>({aspd:v}));
       for(let q=0;q<G.soldiers.length;q++){const u=G.soldiers[q];if(swMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R)bfAdd(u,'f16Mech',eu,T)}
+      for(let q=0,M_=mechEls();q<M_.length;q++){const u=M_[q];if(isMechU(u)&&Math.hypot(u.x-h.x,u.y-h.y)<=R)bfAdd(u,'f16Mech',eu,T)}   // 源能机甲精英（用户 11-07 定：吃机械单位加成）
       for(let q=0;q<G.structs.length;q++){const s=G.structs[q];if(swMechS(s)&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R)bfAdd(s,'f16MechS',es,T)}}   // 同一个 id：多名瓦特不叠加
     if(S.f16RepEmp&&S.fix&&wave){const R=S.fix[0]*16;for(let q=0;q<G.structs.length;q++){const s=G.structs[q];if(!s.dead&&s.hp<s.maxHp&&s.empU>G.time&&Math.hypot(s.x-h.x,s.y-8-h.y)<=R)f16aEmpClr(s)}}}}   // 随身维修修到的建筑
 // 赤血军令：u 在哪名精英的范围里（返回加成，0 = 不在）
@@ -83808,7 +83962,7 @@ function f18bRwTick(){const T=f18bF(),H=G.heroes,L=G.friends,n=G.time;let v=0;
 // —— 雷符：落点半径 r 格内离中心近的至多 n 个亡灵 ——
 SK.f18bThund={cast(h,p,a){const t=a&&a.x!==undefined?a:null;if(!t)return false;const c=clampAim(h,t,p.range*16),L=[];
     eQuery(c.x,c.y,p.r*16,(j,d)=>{L.push([d,j])},true);if(!L.length)return false;L.sort((x,y)=>x[0]-y[0]);const D=skD(h,p),o={hk:h,magic:1,mix:F18B_LT,crit:h.crit,critMul:heroCritMul(h)};
-    for(let k=0;k<Math.min(p.n,L.length);k++){const j=L[k][1];if(!E.alive[j])continue;const x=E.x[j],y=E.y[j];dealE(j,D,o);if(E.alive[j])eStun(j,p.stun);
+    for(let k=0;k<Math.min(p.n,L.length);k++){const j=L[k][1];if(!E.alive[j])continue;const x=E.x[j],y=E.y[j];dealE(j,D,o);if(E.alive[j])eRoot(j,p.stun);
       if(inViewPt(x,y)){addFx({k:'zap',x0:Math.round(x+vr(-6,6)),y0:Math.round(y-90),x1:Math.round(x),y1:Math.round(y-6),life:0.25});addFx({k:'ring',x:Math.round(x),y:Math.round(y-2),r:10,life:0.3,c:'#cfe8ff'})}}
     sfx('zap',c.x,c.y);return true},
   ai(h,p){const c=densest(h.x,h.y,p.range*16*0.95);return c&&c.n>=1?{x:c.x,y:c.y}:null}};
@@ -83873,6 +84027,7 @@ function f18bOwnRed(u,F,d){if(F.loss)d*=1-Math.min(0.99,f18bLv(u,F.loss[0])*F.lo
 SK.f18bAxe={cast(h,p){const F=f18bS0(h);F.axN=p.n;F.axT=G.time;F.axK=0;F.axP=p;f18bAxeSwing(h,F);return true},
   ai(h,p){return G.phase==='wave'&&countNear(h.x,h.y,2*16)>=1?{}:null}};
 function f18bAxeSwing(h,F){const p=F.axP;if(!p){F.axN=0;return}const R=[p.r1,p.r2,p.r3][Math.min(2,F.axK)],j=f18bAs(h,()=>nearGround(h.x,h.y,f18bF().axeR*16));
+  if(F.axK>0&&j<0){F.axN=0;return}   // 2026-11-07（用户定）连挥三斧，除非亡灵被打死：第二、三斧挥之前身边没有亡灵了就停
   const ang=j>=0?Math.atan2(E.y[j]-h.y,E.x[j]-h.x):(h.facing>=0?0:Math.PI);h.facing=Math.cos(ang)>=0?1:-1;h.swing=0.2;h.swingA=ang;
   F18B_AXH=h;F18B_AXB=f18bLv(h,f18bF().step10)*p.amp;try{bkCast({k:'cone',arc:p.arc,len:R},{who:'E',gnd:1,melee:1,mix:F18B_SLA,crit:h.crit,critMul:heroCritMul(h),st:{kb:p.kb},fx:null},bkCH(h,skD(h,p),h.x,h.y,ang))}finally{F18B_AXH=null;F18B_AXB=0}
   if(inViewPt(h.x,h.y)){const half=p.arc/2*DEG;for(let k=0;k<10;k++){const aa=ang+vr(-half,half),rr=vr(6,R*16);pp(h.x+Math.cos(aa)*rr,h.y-6+Math.sin(aa)*rr*0.8,2,Math.cos(aa)*20,Math.sin(aa)*16,vr(2,5),0,vr(0.2,0.35),vpick(['#e8e0d0','#c8382c','#ffffff']),1,0,1)}sfx('swing',h.x,h.y)}
@@ -83969,7 +84124,11 @@ function f18cRecalc(h,S){const F=f18cS0(h);F.loop=S.f18cLoop||null;F.yn=S.f18cYn
 //   家族的主地区（跨地区的按 reg）在 CFG.wares.tiers 第几档 → 阶 = 档 + 1 → 个数 famJobWareN[阶]、材料 = 这一档里这个地区的 core；王都不在表里 = 不加
 //   原来就要同一种材料的（老的同英雄兵种）取较大的数，不重复收
 function elFamJobStage(reg){const T=CFG.wares.tiers;for(let k=0;k<T.length;k++){const m=T[k].maps&&T[k].maps[reg];if(m)return{st:k+1,w:m.core}}return null}
-function elFamJobWare(U,C){if(!U||!U.fam)return C;const B=elBlood()['f_'+U.fam];if(!B||!B.reg)return C;const R=elFamJobStage(B.reg);if(!R)return C;
+function elFamWareStage(w){const T=CFG.wares.tiers;for(let k=0;k<T.length;k++){const M=T[k].maps;if(M)for(const r in M)if(M[r].core===w)return{st:k+1,w}}return null}   // 某种材料是第几档哪个地区的特殊材料
+function elFamJobWare(U,C){if(!U||!U.fam)return C;const B=elBlood()['f_'+U.fam];if(!B||!B.reg)return C;let R=elFamJobStage(B.reg);
+  {const L=[B.reg].concat(B.regs||[]).map(elFamJobStage).filter(Boolean);for(const x of C.wl){const q=elFamWareStage(x[0]);if(q)L.push(q)}   // 2026-11-07（用户定）跨地区的家族收低阶地区的特殊材料：取阶最低的那个地区；兵种数据里原来写的别的地区的特殊材料（如法里斯骆驼骑兵的法老金）也算跨地区，一样只收低阶那份
+    for(const q of L)if(!R||q.st<R.st)R=q;for(const q of L)if(q.w!==R.w){C.wl=C.wl.filter(x=>x[0]!==q.w);if(C.ware===q.w){C.ware=null;C.n=0}}}
+  if(!R)return C;
   const n=(EL().famJobWareN||[])[R.st]||0,w=R.w;if(!(n>0)||!w||!CFG.wares.items[w])return C;
   const x=C.wl.find(q=>q[0]===w);if(x)x[1]=Math.max(x[1],n);else C.wl.push([w,n]);if(C.ware===w)C.n=Math.max(C.n,n);C.fw=w;C.fn=n;return C}
 // —— 源能工程（在场 = 这一局上阵、没倒下的精英；几名只算一份）——
@@ -84065,7 +84224,7 @@ SK.f18cCol={cast(h,p,a){const c=clampAim(h,a&&a.x!==undefined?a:{x:h.x,y:h.y},p.
     if(inViewPt(c.x,c.y)){addFx({k:'ring',x:Math.round(c.x),y:Math.round(c.y),r:p.r*16,life:0.5,c:'#9fe8ff'});sfx('surge',c.x,c.y)}h.facing=c.x>=h.x?1:-1;return true},
   ai(h,p){const c=densest(h.x,h.y,p.range*16);return c&&aiN(h,p,c,3)?{x:c.x,y:c.y}:null}};
 SK.f18cEmp={cast(h,p,a){const c=clampAim(h,a&&a.x!==undefined?a:{x:h.x,y:h.y},p.range*16),emp=p.emp;
-    const n=bkCast({k:'c',r:p.r},{who:'E',mix:F18C_LIT,crit:h.crit,critMul:heroCritMul(h),st:{stun:p.para},on:j=>{if(E.alive[j])ynEmpE(j,emp)},fx:null},bkCH(h,skD(h,p),c.x,c.y,0));   // 一次施放建一个回调（不是每帧）
+    const n=bkCast({k:'c',r:p.r},{who:'E',mix:F18C_LIT,crit:h.crit,critMul:heroCritMul(h),st:{root:p.para},on:j=>{if(E.alive[j])ynEmpE(j,emp)},fx:null},bkCH(h,skD(h,p),c.x,c.y,0));   // 一次施放建一个回调（不是每帧）
     if(inViewPt(c.x,c.y)){addFx({k:'ring',x:Math.round(c.x),y:Math.round(c.y-4),r:p.r*16,life:0.45,c:'#7fd8ff'});for(let q=0;q<6;q++){const an=q*1.047+fxr()*0.5,r=p.r*16*(0.4+fxr()*0.6);addFx({k:'zap',x0:Math.round(c.x),y0:Math.round(c.y-6),x1:Math.round(c.x+Math.cos(an)*r),y1:Math.round(c.y-6+Math.sin(an)*r*0.7),life:0.18})}sfx('zap',c.x,c.y)}
     h.facing=c.x>=h.x?1:-1;return true},
   ai(h,p){const c=densest(h.x,h.y,p.range*16);return c&&aiN(h,p,c,2)?{x:c.x,y:c.y}:null}};
@@ -84139,7 +84298,7 @@ Object.assign(EL_STD3,{
   f18cLoop:(v,pc)=>`身上每有 ${pc(v[0])} 最大生命的护盾，攻击速度 +${pc(v[1])}，至多 +${pc(v[2])}`,
   f18cYn:()=>'在场时，源能装置的效果 +25%(产出、护盾量、提供的攻击力)，源能工厂训练速度 +25%、造价 ×95%；不可叠加',
   f18cRecoil:(v,pc)=>`自身的护盾被打破时，对周围 ${Math.round(v[0]*100)/100} 格内的亡灵造成护盾量 ${pc(v[1])} 的伤害，并把它们击退到范围边缘；冷却 ${v[2]} 秒`,
-  f18cMech:(v,pc)=>`机械单位：会受到电磁干扰，可以被工程师维修；每 ${v[1]} 秒获得一层 ${pc(v[0])} 最大生命的源能护盾(至多 ${v[2]} 层)；带一门机炮，每秒 ${v[4]} 次，每次造成 ${pc(v[3])} 物理攻击的伤害，射程 ${v[5]} 格`,
+  f18cMech:(v,pc)=>`机械单位(吃所有机械单位的加成和效果)：会受到电磁干扰，可以被工程师维修；每 ${v[1]} 秒获得一层 ${pc(v[0])} 最大生命的源能护盾(至多 ${v[2]} 层)；带一门机炮，每秒 ${v[4]} 次，每次造成 ${pc(v[3])} 物理攻击的伤害，射程 ${v[5]} 格`,
   f18cSpen:(v,pc)=>`法术伤害无视目标 ${pc(v)} 的法术防御`,
   f18cWave:(v,pc)=>`每次释放技能，法术增伤 +${pc(v[0])}，至多 ${v[1]} 层，持续 ${v[2]} 秒`,
   f18cHeart:(v,pc)=>`把自身法术攻击的 ${pc(v[0])} 加给周围 ${v[1]} 格内的友军，不可叠加，同类取最高值`,
@@ -84148,6 +84307,56 @@ Object.assign(EL_STD3,{
   f18cReact:(v,pc)=>`自身半径 ${v[0]} 格内的友军受到或造成雷电伤害时，自身向半径 ${v[1]} 格内最近的亡灵打出一次 ${pc(v[2])} 物理攻击的雷电伤害；冷却 ${v[3]} 秒`,
   f18cGun:(v,pc)=>`普通攻击改成闪电装置，造成雷电伤害，命中后弹到 ${v[0]} 格内至多 ${v[1]} 个亡灵身上，造成 ${pc(v[2])} 的伤害`,
 });
+
+// ---------- 0.13.3 血脉倍率 / 特别属性按现在的表重算（一次，META.el.bmR；老表 data/el_bmig.js，用户 11-07：「看看能不能迁移一下」）----------
+// 为什么：e.bm（属性倍率）、e.bsp（特别属性）是出生 / 招募时按当时的表随机定下、存在人身上的（game/el_blood.elBlRoll），家族重置（一到八阶）换了表以后，老族人还是老表的数
+// 做法（Claude 定）：
+//   只管家族重置涉及的血脉：所有家族血脉（kind 'f'）+ 平民血脉（c_*）；王都（reg 'royal'：王都四家、王都平民）和自建家族照旧——身上只有这些血脉的人不动
+//   时期：data/el_bmig 存了三个发过版的时期的老表（只存和现在不一样的血脉），加上现在，一共四个；一个人按自己现在的血脉成分算出每个时期的上下限（elBlRange 的算法），
+//     看他的 e.bm 有几项落在那个时期的区间里，落得最多的就是他出生 / 招募时的表（一样多取新的：按现在的表出生的人原样不动）
+//   倍率：每一项按在那个时期区间里的相对位置（0 = 下限、1 = 上限）放到现在的区间里（保留个人的好坏）；已经在现在的表里出生的、这一项又在区间里的不动；
+//     对不上的（老存档 0.12.0 定成 1 的、并进别家后成分变了偏出区间太多的）按现在的表重抽，随机数用确定的种子（精英编号 + 属性），同一份存档迁移结果固定
+//   特别属性：按现在的表重给——现在没有的去掉；现在有的，老时期也有就按相对位置放；老时期没有这一种的（换了种类：老德古拉法术减伤 → 近战物理增伤）按老特别属性的平均相对位置放；都没有就按现在的表抽（同上的种子）
+//   一样多取新的：老时期和现在的区间重叠、这人每项都落在重叠里时，原样不动（数都合现在的表；分不出他是哪个时期出生的）
+//   局外跑（读档时），出征时 elSpec → elDef 按 e.bm / e.bsp 现算，不用另外重算；读档时还没有局，G 里没有精英
+// 不迁移：已故的（st 'dead' / dead）
+const EL_BMT=1e-3,EL_BMSLACK=0.02;   // EL_BMT：判「在区间里」的容差（倍率按 0.001 取整）；EL_BMSLACK：认了时期以后，偏出区间这么多以内的按端点算，再远的重抽
+function elBmIn(id){const S=elBlood()[id];return!!S&&S.reg!=='royal'&&!S.custom&&(S.kind==='f'||S.kind==='c')}
+// 确定的随机数（FNV-1a）：同一个人同一个键每次一样
+function elBmRnd(seed,k){let h=2166136261;const s=seed+'|'+k;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h/4294967296}
+function elBmSeed(e){return e.id!=null?'i'+e.id:[e.given,e.fam,e.sex,e.age,e.reg,JSON.stringify(e.bl)].join('|')}
+// 第 j 个时期（0..H.length-1 = 老表，H.length = 现在）的倍率上下限、特别属性上下限（同 elBlRange / elBlSpRange，换成那个时期的表）
+function elBmRange(bl,j){const B=elBlood(),N=EL().bloodN,ST=EL().bloodStats,H=EL().bmOld||[],o=[];
+  for(let i=0;i<ST.length;i++){let lo=0,hi=0,n=0;for(const id in bl){const S=B[id];if(!S)continue;const f=bl[id]/N,x=j<H.length&&elBmIn(id)&&H[j].b[id],r=x&&x[0]?x[0][i]:S.st[ST[i][0]];n+=f;lo+=r[0]*f;hi+=r[1]*f}if(n<1){lo+=1-n;hi+=1-n}o.push([lo,hi])}return o}
+function elBmSpRange(bl,j){const B=elBlood(),N=EL().bloodN,H=EL().bmOld||[],o={};
+  for(const id in bl){const S=B[id];if(!S)continue;const x=j<H.length&&elBmIn(id)&&H[j].b[id],sp=x&&x[1]!==0&&x[1]!=null?x[1]:S.sp||{},f=bl[id]/N;
+    for(const k in sp){const r=o[k]||(o[k]=[0,0]);r[0]+=sp[k][0]*f;r[1]+=sp[k][1]*f}}return o}
+const elBmHit=(v,r,t)=>typeof v==='number'&&v>=r[0]-t&&v<=r[1]+t;
+// 相对位置：v 在老区间 r 里的位置；认不出来返回 −1（要重抽）
+function elBmPos(v,r){if(!elBmHit(v,r,EL_BMSLACK))return-1;const w=r[1]-r[0];return w>1e-9?Math.max(0,Math.min(1,(v-r[0])/w)):-1}
+const elBmR3=x=>Math.round(x*1000)/1000;
+// 一个人：返回改了没有
+function elBmOne(e){if(!e||typeof e!=='object'||e.dead||e.st==='dead'||!e.bl||typeof e.bl!=='object'||Array.isArray(e.bl))return false;if(!Object.keys(e.bl).some(elBmIn))return false;
+  const ST=EL().bloodStats,H=EL().bmOld||[],cur=H.length,M=e.bm&&typeof e.bm==='object'?e.bm:{},seed=elBmSeed(e);
+  let bj=cur,bs=-1;const RS=[];for(let j=0;j<=cur;j++){const R=elBmRange(e.bl,j);RS.push(R);let s=0;for(let i=0;i<ST.length;i++)if(elBmHit(M[ST[i][0]],R[i],EL_BMT))s++;if(s>=bs){bs=s;bj=j}}   // >=：一样多取新的
+  const Ro=RS[bj],Rn=RS[cur],bm={};
+  for(let i=0;i<ST.length;i++){const k=ST[i][0],v=M[k],n=Rn[i];
+    if(bj===cur&&elBmHit(v,n,EL_BMT)){bm[k]=v;continue}
+    let p=elBmPos(v,Ro[i]);if(p<0)p=elBmRnd(seed,k);bm[k]=elBmR3(n[0]+p*(n[1]-n[0]))}
+  const Po=elBmSpRange(e.bl,bj),Pn=elBmSpRange(e.bl,cur),S0=e.bsp&&typeof e.bsp==='object'?e.bsp:{},bsp={};
+  let la=0,ln=0;for(const k in Po){const p=elBmPos(S0[k],Po[k]);if(p>=0){la+=p;ln++}}const luck=ln?la/ln:-1;   // 老特别属性的平均相对位置：换了种类的（德古拉 法术减伤 → 近战物理增伤）按它放
+  for(const k in Pn){const n=Pn[k],v=S0[k],o=Po[k];let p;
+    if(bj===cur&&elBmHit(v,n,EL_BMT)){if(v>0)bsp[k]=v;continue}
+    if(o&&typeof v==='number')p=elBmPos(v,o);else if(o&&v==null&&o[0]<=0)p=0;else p=o?-1:luck;   // 老表这一项下限 ≤ 0、身上没有：当时抽到的是 0
+    if(p<0)p=elBmRnd(seed,'sp.'+k);const x=elBmR3(n[0]+p*(n[1]-n[0]));if(x>0)bsp[k]=x}
+  const same=JSON.stringify(bm)===JSON.stringify(M)&&JSON.stringify(bsp)===JSON.stringify(S0);e.bm=bm;e.bsp=bsp;return!same}
+function elBmMig(m){const M=m&&m.el;if(!M||M.bmR)return;M.bmR=1;let n=0;const seen=new Set();
+  const walk=(o,d)=>{if(!o||typeof o!=='object'||d>6||seen.has(o))return;seen.add(o);if(!Array.isArray(o)&&o.bl&&o.bm!==undefined&&elBmOne(o))n++;   // 精英、候选人、招募池、配偶（x.sp）、相亲人选（x.mc）……身上有 bl 的都算
+    if(Array.isArray(o)){for(const x of o)walk(x,d+1)}else for(const k in o){const v=o[k];if(v&&typeof v==='object')walk(v,d+1)}};
+  walk(M,0);m._dirty=true;if(n)console.log('elBmMig',n)}
+META_LATE.push(['elBmMig',m=>{try{elBmMig(m)}catch(e){console.error(e)}}]);
+// 新建的精英存档（game/el_core.elSt 第一次建 META.el 时调，接在 elFam18New 外面）：按现在的表出生，当已经做过
+function elBmNew(m){m.bmR=1;return m}
 
 // ---------- 0.12.7 代理 EG：精英装备「一键购买」「一键强化」（用户 0.12.7 预告第 3、4 条；数据 data/el_gear2.js 的 CFG.elite.eg，界面 ui/el_gear2.js）----------
 // 一键购买 egBuyPlan()：上阵的精英（锁定配置的跳过），按 主武器 → 副手 → 头 → 身 → 脚 的顺序，每个格子在「常规商店现在能买的」和「仓库里没人穿的」里挑最好的一件：
@@ -87713,7 +87922,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.3',GAME_TAG='测试版',GAME_CODE=232,GAME_BUILD="dc2fd22",GAME_BUILT=1794038324607,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.3',GAME_TAG='测试版',GAME_CODE=234,GAME_BUILD="b6ba92a",GAME_BUILT=1794059234933,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');

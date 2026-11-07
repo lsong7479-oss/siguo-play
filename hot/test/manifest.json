@@ -1,11 +1,11 @@
 {
  "ch": "test",
  "ver": "0.13.3",
- "code": 232,
- "size": 18944429,
- "sha256": "24fcf1e7541d9fa091adadf523fe835224de2aae01ffdb2c51d27e352b79bfd1",
+ "code": 234,
+ "size": 18963342,
+ "sha256": "d83afe5a29e3eb43c7417cc42c9fe17255b8033ec27d0808553ef65ca3598085",
  "minLoader": 1,
- "sig": "GfBLemzML51C7S9/rCRUySwtkEq7q15Ms8BMv3AFCfzVcF7v/0O580hRNLaKne/r62ZYgAV8I/wzN+nhdAmeFg==",
- "note": "0.13.3 测试版：八阶家族（德古拉、厄舍、教廷三家、土御门、安倍、安庇尔、胡、源能三家、希娜）、泰 / 奥西恩、进阶荒漠镖师·霍青、兵营编组、集中 / 分散出击、英雄索敌、抗性规则",
- "at": "2026-11-07 07:54 UTC"
+ "sig": "/8qvwIUzRoyO4TA+MK/Q0QgS6Col5Rws5UoIvunKEcjcB0dn2xAxQ5xLNkTW5TBsJBPZK/bTij2yloFy+9aseg==",
+ "note": "0.13.3（和正式版相同）",
+ "at": "2026-11-07 13:44 UTC"
 }
