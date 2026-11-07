@@ -6635,7 +6635,7 @@ CFG.drops.items=Object.assign(CFG.drops.items||{},{diFeihong:[{w:'diAirRemote', 
      深渊：我方士兵、英雄掉下去就死（亡灵掉下去会爬回来）；本关首领不会被击退
      Claude 定：落石每 8 秒 1～3 块（第 10 波起 2～4 块），落下前崖边先掉碎石预警 1 秒；巨石碰到士兵、英雄把他们往两边推开 1.2 格（往南推容易连人带石滚进深渊）；
        东边约一半的亡灵、三个洞穴分另一半；亡灵掉进深渊 2 秒后在崖边爬上来
-   击退抗性（v0.9.0 新的我方属性，maps/cliff.jbKnock 读）：卡牌「爆炸抗性」只减爆炸击退（pm.kbBoom）；巨人套装、磐石护符（kbA）、莉可的被动（lkKb）两种都减；合计 100% = 不被击退
+   击退抗性（v0.9.0 新的我方属性，maps/cliff.jbKnock 读）：卡牌「爆炸抗性」只减爆炸击退（pm.kbBoom）；巨人套装、磐石护符（kbA）、莉可的被动（lkKb）两种都减；相加后击退距离 ÷ (1 + 击退抗性)（2026-11-07 改；原来 × (1 − X)），莉可被动「免疫」才不被击退
    亡灵能力字段（maps/cliff 读取；dig / explode / summon / hover / drop / burst / vult / charge / atLadder 沿用各地图的）：
      jbKb {d,boom}                   打中我方单位把它击退 d 格（boom = 爆炸击退）
      jbLob {r,kb}                    普通攻击改成抛投炸弹：落点 r 格内爆炸、击退 kb 格
@@ -6721,7 +6721,7 @@ CFG.maps.cliffEdge={viewPad:{n:8, s:8}, name:'绝壁峭崖', req:['shadowHigh','
 CFG.mapPages[CFG.mapPages.length-1].maps.push('cliffEdge');
 // 场景卡：只在绝壁峭崖出现（用户定）
 CFG.cards.push({id:'cliffRock', name:'爆炸抗性', alt:'坚如磐石', q:'all', map:'cliffEdge', eff:{blastRes:0.1, kbBoom:0.2}, qv:{blastRes:[0.1,0.12,0.14,0.17,0.2], kbBoom:[0.2,0.24,0.28,0.34,0.4]},
-  desc:'全体单位的爆炸抗性 +{blastRes%}、爆炸击退抗性 +{kbBoom%}', help:'爆炸伤害 ÷ (1 + 抗性)；击退距离 × (1 − 击退抗性)，100% 就不会被炸飞。只在绝壁峭崖出现。'});
+  desc:'全体单位的爆炸抗性 +{blastRes%}、爆炸击退抗性 +{kbBoom%}', help:'爆炸伤害 ÷ (1 + 抗性)；击退距离 ÷ (1 + 击退抗性)。只在绝壁峭崖出现。'});
 // —— 绝壁峭崖的装备（用户定名字、品质、掉率和效果；数值、没写到的件数和两件套效果 Claude 定；工程套装链甲 / 板甲、猿王套装皮甲用户定）——
 Object.assign(CFG.weapons,{
   jbImpactCannon:{name:'冲击重炮', type:'gun', dmg:70, int:0.5, range:8, spread:4, speed:15, proj:'shell', aoe:1.2, mag:1, reload:2.8, pen:6, draw:'handcannon', special:true, q:'legend', mix:{impact:1},
@@ -24622,7 +24622,7 @@ const famJob6=fam=>Object.assign({},CFG.elite.famJobCost6,{fam});
 //   炎径：冲刺 0.3 秒；沿途 1 格内的亡灵每只打一次，伤害一半斩击、一半火焰(物理)；火焰路径从起点到停下的地方，每 0.5 秒结算一次，只烧地面的亡灵
 //   居合：每波开始重新计时，到点后下一次普通攻击是拔刀斩(远程武器同样，射程 +1 格)；伤害 = 这一下普攻按「倍数 × 物理攻击 ÷ 普攻伤害」放大(副目标照样按比例)；
 //     附带的灼烧同炎刃 3 秒 30%，自己的炎刃更强就用炎刃的
-//   铃音：主动技能进入冷却就算放了一次；给自己和周围 4 格内的英雄、士兵；控制抗性 = 被冰冻 / 眩晕 / 减速等控制的时间 ×(1 − X)；同一个来源不叠加(刷新)，和巫女的神乐铃相加
+//   铃音：主动技能进入冷却就算放了一次；给自己和周围 4 格内的英雄、士兵；控制抗性 = 被冰冻 / 眩晕 / 减速等控制的时间 ÷(1 + X)（2026-11-07 用户定；原来 ×(1 − X)）；同一个来源不叠加(刷新)，和巫女的神乐铃相加
 //   冰霜神乐：「主目标」= 每次出手打中的第一个亡灵(同一帧里只算一个)；冰冻吃亡灵的控制抗性；「3 秒内只触发一次」按冰冻成功算；对冰冻亡灵的增伤是全部伤害
 //   吹雪：减速只减移速；雪结界：每 0.5 秒结算一次，打得到天上的亡灵；友军回血每 0.5 秒一次，结界里的英雄、士兵都回
 //   神乐铃：每 0.25 秒刷新一次 0.4 秒；几名巫女只算一份；冰霜伤害 +15% 按这一下里冰霜的占比加进增伤池子
@@ -25594,6 +25594,8 @@ function zeroMods(keys){const o=fastObj(Object.fromEntries(keys.map(k=>[k,0.5]))
 // 伤害类型：mix = {类型: 占比}，res = {类型: 抗性}，imm = {类型: 免疫比例}（亡灵数据的 dmgImm，可以不传）
 // 2026-11-07（用户定）：抗性 X > 0 → 这类伤害 ÷ (1 + X)，不封顶；弱点（负的抗性）→ × (1 + |X|)（同原来）；「免疫 X% 某类伤害」→ × (1 − X)，最低 0；两种都有时相乘
 const resKOf=r=>r>0?1/(1+r):r<0?1-r:1;
+// 我方被击退的距离倍率（2026-11-07 用户定）：击退抗性（装备、特性 kbA，卡牌「爆炸抗性」的爆炸击退 pm.kbBoom，莉可被动 lkKb）相加后 ÷ (1 + 抗性)；莉可被动五星「免疫击退」（psv.imm）= 0
+function kbResK(u,boom){if(u.lkKb>0&&u.psv&&u.psv.imm)return 0;const r=(boom?pm.kbBoom||0:0)+(u.kbA||0)+(u.lkKb||0);return r>0?1/(1+r):1}
 function mixMul(res,mix,imm){if(!mix)return 1;let m=0;for(const k in mix){let f=mix[k];if(res){const r=res[k];if(r>0)f/=1+r;else if(r<0)f*=1-r}if(imm){const v=imm[k];if(v>0)f*=v<1?1-v:0}m+=f}return m}
 // v0.6.1 无视部分抗性：抗性（正数）减 cut[k] 个百分点，最低到 0；弱点（负数）、免疫不变
 function mixMulCut(res,mix,cut,imm){let m=0;for(const k in mix){let r=res?res[k]||0:0;if(r>0&&cut[k])r=Math.max(0,r-cut[k]);let f=mix[k]*resKOf(r);if(imm){const v=imm[k];if(v>0)f*=v<1?1-v:0}m+=f}return m}
@@ -53846,7 +53848,7 @@ function jbPix(P,px,py,t,lx,ly,tx,ty,h){if(t!==T_TWALL)return;const top=ty<JB.wa
   const e=py-G.jbAb;if(e<3)return[96,86,74];if(e<8)return[60,52,46];const k=Math.max(0,1-e/90),n=h*0.06;return[Math.round(10+40*k+n*40),Math.round(8+34*k+n*30),Math.round(14+42*k+n*40)]}
 // ================= 击退和深渊 =================
 // 把我方单位往 (ux, uy) 推 dist 像素：先按击退抗性打折（boom = 爆炸击退；100% 推不动）；落点在深渊里就掉下去
-function jbKnock(u,ux,uy,dist,boom){if(!u||u.dead||u.layer||u.fly||u.elev>4)return;const res=Math.min(1,(boom?pm.kbBoom||0:0)+(u.kbA||0)+(u.lkKb||0));dist*=1-res;if(dist<1)return;
+function jbKnock(u,ux,uy,dist,boom){if(!u||u.dead||u.layer||u.fly||u.elev>4)return;dist*=kbResK(u,boom);if(dist<1)return;
   if(G.jbOn&&uy>0&&u.y+uy*dist>=G.jbAb-2){u.x=clamp(u.x+ux*dist,8,MW-8);jbFall(u);return}
   const n=Math.max(1,Math.ceil(dist/6)),k=dist/n;for(let s=0;s<n;s++)moveFriend(u,ux*k,uy*k)}   // 每步不超过 6 像素，远距离抛投也穿不过城墙
 // 我方单位掉进深渊：当场死（英雄照常在主堡复活）
@@ -54863,9 +54865,9 @@ function skFallE(i){const c=ETC[E.t[i]];
 function skLandNear(x,y,r){const V=G.skVd,tx=x>>4,ty=y>>4;let best=null,bd=1e9;
   for(let oy=-r;oy<=r;oy++)for(let ox=-r;ox<=r;ox++){const X=tx+ox,Y=ty+oy;if(X<1||Y<1||X>=MAP_W-1||Y>=MAP_H-1)continue;const t=Y*MAP_W+X;if(V[t]||treeAt(t)||G.structAt[t])continue;const d=Math.hypot(X*16+8-x,Y*16+8-y);if(d<bd){bd=d;best={x:X*16+8,y:Y*16+8}}}return best}
 // 风属性的击退、牵引（kind：'kb' 击退、'pull' 牵引、'wind' 起风、'storm' 八面飓风）：抗性 = 卡牌 + 装备的击退抗性；风龙珠不吃击退和起风；八面飓风期间一律没有抗性
-function skRes(u,kind){if(G.skHurU>G.time)return 0;let r=(pm.skWind||0)+(u.kbA||0)+(u.lkKb||0);if(u.skKbI&&kind!=='pull')r+=1;return Math.min(1,r)}
+function skResK(u,kind){if(G.skHurU>G.time)return 1;if(u.skKbI&&kind!=='pull')return 0;return Math.max(0,1-(pm.skWind||0))*kbResK(u,false)}   // 2026-11-07：稳若泰山「−X%」照旧 ×(1 − X)；击退抗性 ÷ (1 + X)（core.kbResK）；风龙珠免疫 = 0
 // 推动守军 dist 像素：按中心点一步步走（每步 ≤ 4 像素）；前面是虚空就掉下去，是建筑、树就停住；开拓地的地图（没有虚空）照普通的推法
-function skPush(u,ux,uy,dist,kind){if(!u||u.dead||skFlyF(u))return;dist*=1-skRes(u,kind);if(!(dist>0.05))return;const n=Math.max(1,Math.ceil(dist/4)),k=dist/n;
+function skPush(u,ux,uy,dist,kind){if(!u||u.dead||skFlyF(u))return;dist*=skResK(u,kind);if(!(dist>0.05))return;const n=Math.max(1,Math.ceil(dist/4)),k=dist/n;
   if(!G.skVd){for(let s=0;s<n;s++)moveFriend(u,ux*k,uy*k);return}
   for(let s=0;s<n;s++){const nx=clamp(u.x+ux*k,4,MW-4),ny=clamp(u.y+uy*k,4,MH-4),t=tidx(nx,ny);
     if(G.skVd[t]&&!(G.ltBrM&&G.ltBrM[t])){const S=G.structAt[t];if(S&&!friendPassS(S))return;u.x=nx;u.y=ny;skFallF(u);return}
@@ -63959,7 +63961,7 @@ function bkFBlind(u,t){t=bkCcIn(u,t,'blind');if(t>0&&!u.dead){u.blT=Math.max(u.b
 // @bk 守军控制 | bkFConf(u,t) | 混乱：t 秒内乱跑（u.zsCf 到期时刻；按恐惧算抗性和黄虎料势；乱跑的方向由地图每一跳重新选，道观废墟） | bkFConf(u,2)
 function bkFConf(u,t){t=bkCcIn(u,t,'fear');if(!(t>0)||u.dead)return 0;u.zsCf=Math.max(u.zsCf||0,G.time+t);u.fearT=Math.max(u.fearT||0,0.3);u.fearX=u.x+vr(-20,20);u.fearY=u.y+vr(-20,20);return t}   // 0.11.4 代理cc 加
 // @bk 守军控制 | bkFKnock(u,ux,uy,dist,boom) | 击退 dist 像素（每步不超过 6 像素，穿不过城墙；吃击退抗性 kbA；城墙上、飞行的不动） | bkFKnock(u,dx/d,dy/d,32)
-function bkFKnock(u,ux,uy,dist,boom){if(!u||u.dead||u.layer||u.fly||u.elev>4)return;const res=Math.min(1,(boom?pm.kbBoom||0:0)+(u.kbA||0)+(u.lkKb||0));dist*=1-res;if(dist<1)return;
+function bkFKnock(u,ux,uy,dist,boom){if(!u||u.dead||u.layer||u.fly||u.elev>4)return;dist*=kbResK(u,boom);if(dist<1)return;
   if(typeof jbKnock==='function'&&G.jbOn){jbKnock(u,ux,uy,dist/(1-res||1),boom);return}const n=Math.max(1,Math.ceil(dist/6)),k=dist/n;for(let s=0;s<n;s++)moveFriend(u,ux*k,uy*k)}
 // @bk 守军控制 | bkFPsn(u,dps,t,stack) | 中毒：默认不叠，只留每秒伤害最高的；stack = 数字（最多几层）或 true 才叠（用户定） | bkFPsn(u,E.dmg[i]*0.2,4)
 function bkFPsn(u,dps,t,stack){poisonF(u,{dps,t},stack||false)}
@@ -69563,7 +69565,7 @@ zoneDef('wyAllyArm',{tick(z,dt){const h=z.h,A=z.A;if(z.t>=z.life||!h||h.dead){z.
   draw(z){const S=SPR.enemies[z.spr];if(S)drawUnitSpr(S,z.x,z.y,0,z.an,z.face,0,0,0.9,null)}});
 
 // ---------- v0.10.0 浮空之城的装备特效（数据见 data/map_skycity.js）----------
-// 英雄身上：skOrbT 回生风珠下次能用的时刻；skKbI 风龙珠（免疫风属性击退，maps/skycity.skRes 读）；skVoU 虚空铠甲的闪避到什么时候、skVoT 下次能触发的时刻；
+// 英雄身上：skOrbT 回生风珠下次能用的时刻；skKbI 风龙珠（免疫风属性击退，maps/skycity.skResK 读）；skVoU 虚空铠甲的闪避到什么时候、skVoT 下次能触发的时刻；
 //   skHp 女妖之羽召来的鹰身女妖、skHpRT 它倒下后再来的倒计时；skFrT 鹰羽神弓下次能放的时刻；风行之云 = wing（飞着走）+ csSw（能下深海、不淹水），浮空之城里不会掉下去
 const SKF_W={proj:'arrow',speed:18,spread:0,mix:{pierce:1}};
 Object.assign(GEAR_FX,{
@@ -80416,7 +80418,7 @@ function elStDesc(st){const pc=x=>Math.round(Math.abs(x)*1000)/10+'%',sg=x=>x<0?
     else if(k==='home')o.push(`入侵战守开拓地时造成伤害、减伤 +${pc(v)}`);
     else if(k==='blockR')o.push(`格挡率 +${pc(v)}(需要持盾)`);
     else if(k==='aid')o.push(`每 ${v[0]} 秒治疗 ${v[1]} 格内生命比例最低的友军 ${pc(v[2])} 生命上限`);
-    else if(k==='ccR')o.push(`被控制的时间 −${pc(v)}`);
+    else if(k==='ccR')o.push(`全控制抗性 +${pc(v)}`);
     else if(k==='nightDmg')o.push(`夜间造成伤害 +${pc(v)}`);
     else if(k==='wallDmg')o.push(`站在城墙上时造成伤害 +${pc(v)}`);
     else if(k==='form')o.push(`${v[0]} 格内每有一名精英减伤 +${pc(v[1])}，至多 ${pc(v[2])}`);
@@ -81004,7 +81006,7 @@ feat('elite',{on:()=>!!(G&&((G.elites&&G.elites.length)||elMemOn())),hooks:{
   dmgInF:(u,dmg,o)=>{if(u.isHero&&(u.elite||u.id==='scribe')){UF_DR+=elMemK()+u.clStK;if(u.elite){const S=u.d.elS||{};if(o&&(S.drP||S.drM))UF_DR+=ufMg(o)?(S.drM||0):(S.drP||0);if(S.ss&&u.elSs>0)UF_DR+=u.elSs*S.ss[1];if(S.dr)UF_DR+=S.dr;   // drP / drM：0.12.0 血脉的物理 / 法术减伤
       if(S.xd){if(!(u.elXdU>G.time))u.elXdN=0;u.elXdN=Math.min(S.xd[2]/S.xd[0],(u.elXdN||0)+1);u.elXdU=G.time+S.xd[1];UF_DR+=u.elXdN*S.xd[0]}
       if(S.stk){if(!(u.elStkU>G.time))u.elStkN=0;u.elStkN=Math.min(S.stk[2],(u.elStkN||0)+1);u.elStkU=G.time+S.stk[1];UF_DR+=u.elStkN*S.stk[0]}UF_DR+=elDr2(u,S);if(S.hitSh&&dmg>0)elHitSh(u,S.hitSh)}}return dmg},   // stk：0.12.0 家族特性「每次受伤叠减伤」（不免控）
-  ccInF:(u,t)=>u&&u.elite&&u.d.elS?(u.d.elS.xd?0:u.d.elS.ccR?t*Math.max(0,1-u.d.elS.ccR):t):t,   // ccR：0.12.0 训练「意志训练」
+  ccInF:(u,t)=>u&&u.elite&&u.d.elS?(u.d.elS.xd?0:u.d.elS.ccR?t/(1+u.d.elS.ccR):t):t,   // ccR：0.12.0 训练「意志训练」
   healInF:(u,amt,src)=>{const a=u&&u.elite&&u.d.elS&&u.d.elS.alchK,b=src&&src!==u&&src.elite&&src.d&&src.d.elS&&src.d.elS.alchK;return amt*(1+(a||0)+(b||0))},   // 药剂学（0.12.1）：受到的治疗、发出的治疗
   dmgInE:(i,dmg,o)=>{const h=o&&o.hk,k=h&&h.elite&&h.d.elS&&h.d.elS.alchK;return k&&o.mix&&(o.mix.acid||o.mix.poison||o.mix.fire)?dmg*(1+k):dmg},   // 药剂学：自己的酸蚀、毒、火焰伤害
   afterHitE:(i,dmg,o)=>{const h=o&&o.hk;if(h&&h.elite&&E.hp[i]<=0&&h.d.elS&&h.d.elS.killHeal&&!h.dead)healF(h,h.maxHp*h.d.elS.killHeal)}}});   // killHeal：0.12.0 特性「嗜血」（0.12.2 修复：原来按 alive 判断，这时还没结算死亡，从来不触发）
@@ -82569,7 +82571,7 @@ function f17Sky(h,F){const P=F.sky,R=P[0]*16,e=f17Eff('s'+P[1],()=>({atk:P[1],dr
   for(let k=0;k<L.length;k++){const u=L[k];if(u.dead||(u!==h&&!u.fly))continue;const dx=u.x-h.x,dy=u.y-h.y;if(dx*dx+dy*dy>R*R)continue;bfAdd(u,'f17Sky',e,D)}}
 // —— 菲尔：热气球（一直飞着；浮空之城起风时跟着风漂）——
 function f17Bal(h,dt){if(h.layer)heroSetLayer(h,0);h.fly=true;const want=f17F().balElev;h.elev+=(want-h.elev)*Math.min(1,dt*4);if(Math.abs(want-h.elev)<0.05)h.elev=want;
-  if(G.skVd&&G.skWd>=0&&G.phase==='wave'){const D=SK_WD[G.skWd],v=SKC.wind.v*16*dt*(1-skRes(h,'wind'));if(v>0){h.x=clamp(h.x+D[0]*v,4,MW-4);h.y=clamp(h.y+D[1]*v,4,MH-4)}}}   // 飞着不会被吹下岛
+  if(G.skVd&&G.skWd>=0&&G.phase==='wave'){const D=SK_WD[G.skWd],v=SKC.wind.v*16*dt*skResK(h,'wind');if(v>0){h.x=clamp(h.x+D[0]*v,4,MW-4);h.y=clamp(h.y+D[1]*v,4,MH-4)}}}   // 飞着不会被吹下岛
 // —— 击落：E.air 清零 t 秒 ——
 function f17Ground(j,t){if(!E.alive[j]||!E.air[j])return;const L=F17.gd;for(let k=0;k<L.length;k+=3)if(L[k]===j&&L[k+1]===E.id[j]){L[k+2]=Math.max(L[k+2],G.time+t);E.air[j]=0;return}L.push(j,E.id[j],G.time+t);E.air[j]=0;
   if(inViewPt(E.x[j],E.y[j]))addFx({k:'ring',x:Math.round(E.x[j]),y:Math.round(E.y[j]-4),r:10,life:0.3,c:'#e8f6ff'})}
@@ -82810,7 +82812,7 @@ feat('elFam17c',{ord:533,on:()=>!!(G&&G.heroes&&G.heroes.some(h=>h.elite)),hooks
   afterHurtF:(u,dmg,o)=>{if(F17C.rf||!(dmg>0)||!o||o.dot||!(o.src>=0)||!E.alive[o.src]||(o.sid!==undefined&&E.id[o.src]!==o.sid))return;
     let k=u.elite&&u.f17cS?u.f17cS.refl:0;if(F17C.arm.size){const a=F17C.arm.get(u);if(a&&a.u>G.time)k+=a.r}if(!(k>0))return;
     F17C.rf=1;try{dealE(o.src,dmg*k,{hk:u.isHero?u:null,magic:1,mix:f17cF().rfMix,thorn:1,noFx:1})}finally{F17C.rf=0}},   // 法术反伤（反伤打回来的不再反）
-  ccInF:(u,t)=>{if(!F17C.cc.size)return t;const v=f17cCcOf(u);return v>0?t*Math.max(0,1-v):t}}});
+  ccInF:(u,t)=>{if(!F17C.cc.size)return t;const v=f17cCcOf(u);return v>0?t/(1+v):t}}});   // 2026-11-07（用户定）控制抗性 ÷ (1 + X)
 // 特色兵种的小人（美术代理之后画）：借同系列的
 Object.assign(EL_SPR_FB,{vanceGuard:'el_shieldGuard',flameSamurai:'el_greatsword',shrineMaiden:'el_mage'});
 // —— 老存档迁移（一次，META.el.f17c）：data/el_fam17 的 fam17cGone（韦兰、伊米尔）——声望均摊给同地区（elRegFamsAll）的家族；
@@ -86404,7 +86406,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="bbeede2",GAME_BUILT=1794018411661,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.2.1',GAME_TAG='稳定版',GAME_CODE=229,GAME_BUILD="fcfe39a",GAME_BUILT=1794022827638,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
