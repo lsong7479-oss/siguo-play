@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.3",
- "code": 233,
- "size": 18963342,
- "sha256": "e6c4199695a5fe0ba8cad29b8e2ef0e703f5a14f373e7b96d542065627e0e007",
+ "ver": "0.13.4",
+ "code": 235,
+ "size": 19007318,
+ "sha256": "2c09efe77f70e36b8afde157abd4bfc13c4405197fbf98f0263e9b9d9b7e579e",
  "minLoader": 1,
- "sig": "uGC22aITR36YOWNgBwqb/kLOvODPjfP44krIDyNswzQ8QCN06y2XLsPvHYd4Aw6zkmAXBbf6vc1dBwqcweOrXg==",
- "note": "0.13.3：八阶家族全部、进阶荒漠镖师·霍青、兵营编组、集中 / 分散出击、英雄索敌打分、抗性改成 ÷(1+抗性)、家族兵种收地区特殊材料、老族人血脉迁移",
- "at": "2026-11-07 13:38 UTC"
+ "sig": "myU9YN3sMh2Jjrl4lA5m2w41VhO4rMniEJtce0/Q1MsUkYCT4Iunz2mjIy3x/wdYX5baRuIDInClg1QgFfPbcQ==",
+ "note": "0.13.4：九阶家族泰、卡拉尼和海神鳞，进阶猎豹冠军·奥塞洛特，多伦 / 艾斯 / 魏德曼 / 联盟司令增强，三款塔楼皮肤，前期首领 = 小首领，大地图地面分块",
+ "at": "2026-11-08 07:35 UTC"
 }
