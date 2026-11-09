@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.5.1",
- "code": 239,
- "size": 19295599,
- "sha256": "d8e80bd5b07aed42286202a42ecd8f51eebdd7b1e556d2231cc0f05000396176",
+ "ver": "0.13.6",
+ "code": 240,
+ "size": 19562677,
+ "sha256": "65fe97b3bd212e5fd2d7bb9fef57145a4862da493f35791d8eb0c40428fe4dd7",
  "minLoader": 1,
- "sig": "21cuVEqaXN2FH1q2H3LB20Ha1LVGJffM2Zf/AW40Pu/p0P4lPyjcfReHfwCohmeOqcDSi/N+NcazA5rOaKjV5A==",
- "note": "0.13.5.1：强化 / 镶嵌的仓库装备加翻页；宝石背包和仓库宝石分页加筛选（种类 / 阶 / 品质）和翻页",
- "at": "2026-11-09 15:46 UTC"
+ "sig": "7Ap0NZ2hFYaQVv8kkq3tnd0288WzdbfQAikbzFhKiMUZ6cIqxpF7Y+Qj9gj/cF49FSosALRuVuBLiIKOY/alrw==",
+ "note": "0.13.6 测试版：七款建筑皮肤（兵营皮肤换士兵外观）、七～九阶新科技、家族科技（29 家）、雾隐家族、符文系统、常规装备上调与紫色、进阶罗兰、九阶北原王庭、北原骑营",
+ "at": "2026-11-09 21:23 UTC"
 }
