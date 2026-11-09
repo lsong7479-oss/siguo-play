@@ -90393,7 +90393,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.5',GAME_TAG='稳定版',GAME_CODE=237,GAME_BUILD="8e1714f",GAME_BUILT=1794239445079,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.5',GAME_TAG='稳定版',GAME_CODE=237,GAME_BUILD="e91d983",GAME_BUILT=1794240193288,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -93365,8 +93365,8 @@ function storeGearList(){opFltLoad();let L=invView(stKind).filter(x=>itemKind(x)
   const CM={q:(a,b)=>qi(b)-qi(a)||tr(b)-tr(a)||ci(b)-ci(a)||en(b)-en(a),t:(a,b)=>tr(b)-tr(a)||qi(b)-qi(a)||ci(b)-ci(a),e:(a,b)=>en(b)-en(a)||qi(b)-qi(a),c:(a,b)=>ci(b)-ci(a)||qi(b)-qi(a),n:(a,b)=>itemName(a).localeCompare(itemName(b),'zh'),new:(a,b)=>b.uid-a.uid},C=CM[stSort]||CM.q;
   return pgStack(L.slice().sort((a,b)=>C(a,b)||a.base.localeCompare(b.base)||a.uid-b.uid))}   // pgStack：v0.11.4 标准件叠成一格
 function storeGearHTML(){const tabs=ST_KINDS.map(([k,n])=>`<button class="px sm${stKind===k?' on':''}" type="button" data-act="stk" data-v="${k}">${n}<em>${invView(k).filter(x=>itemKind(x)===k).length}</em></button>`).join('');
-  const L=storeGearList(),pages=Math.max(1,Math.ceil(L.length/BAG_PAGE));stPage=clamp(stPage,0,pages-1);const page=L.slice(stPage*BAG_PAGE,(stPage+1)*BAG_PAGE);
-  const pg=pages>1?`<div class="pager"><button class="px sm" type="button" data-act="stpage" data-v="${stPage-1}" ${stPage<=0?'disabled':''}>‹</button><span class="meta">第 ${stPage+1} / ${pages} 页</span><button class="px sm" type="button" data-act="stpage" data-v="${stPage+1}" ${stPage>=pages-1?'disabled':''}>›</button></div>`:'';
+  const L=storeGearList();stPage=pgFit(stPage,L.length);const page=L.slice(stPage*BAG_PAGE,(stPage+1)*BAG_PAGE);   // pgFit：卖掉、筛掉后这一页没东西了就退到最后一页
+  const pg=pagerBar(stPage,Math.ceil(L.length/BAG_PAGE),'stpage','stpj','stJump');   // 同英雄页装备仓库的翻页条（ui/hero.pagerBar）
   const so=subOpts(stKind),sub=subPick(stKind,stCats[stKind]);
   return`${gemWorkBar('st')}<div class="tabs sub dtabs wrap">${tabs}</div><div class="bagf">${opFltBtn('s')}</div>
     <div class="bag" data-sk="st-${stKind}">${page.map(x=>itemCell(x,x.uid===stSel?' on':'','stsel',x.uid)).join('')||`<span class="meta">(没有${stQ?CFG.itemQ[stQ].name+'品质的':''}${sub?(so.find(([k])=>k===sub)||[0,''])[1]:ST_KINDS.find(k=>k[0]===stKind)[1]})</span>`}</div>${pg}`}
@@ -93404,10 +93404,10 @@ function hubStore(){
   return res+tabs+body+(testOn()?testGiveHTML():'')+(stSub==='item'?storeMatPop():'')+(stSub==='gear'?opPopFor('s'):'')}   // opPopFor：代理 OP 加，装备筛选弹窗（ui/op_pop）
 const SOUL_ACTS=new Set(['ststar','strec','stfrag','stfx']);
 function storeAct(a,v){stMsg='';if(a!=='stsell')stArm=0;
-  if(a==='stsub'){stSub=v;stSel=0;stMat=''}
+  if(a==='stsub'){stSub=v;stSel=0;stMat='';stPage=0}
   else if(a==='stf'){stItem=v;stSel=0;stMat=''}
   else if(a==='stk'){stKind=v;stPage=0;stSel=0}
-  else if(a==='stpage'){stPage=+v}
+  else if(a==='stpage'){stPage=+v}else if(a==='stpj'){stPage=pgJump('stJump',stPage)}
   else if(a==='stsel'){stSel=+v;stMat=''}
   else if(a==='stsoul'){hubHero=advBase(v);heroSub='info';showHub('hero');return}
   else if(a==='ststar'){if(starUp(v)){sfx('pick');toast(`${CFG.heroes[v].name}升到 ${META.heroes[v].star}★`)}}   // v0.6.7 仓库里直接升星 / 招募
@@ -93423,7 +93423,7 @@ function storeAct(a,v){stMsg='';if(a!=='stsell')stArm=0;
   else if(a==='stmerge'){const[k,t,n]=v.split(':'),c=matMerge(k,+t,n==='all'?'all':+n);if(c){sfx('pick');toast(`合成了 ${c} 个${matName(k,+t+1)}`)}}   // 0.13.0j 合成强化石
   else if(a==='stmats'){if(testOn()){for(const k of MAT_KINDS)for(const t of MAT_TIERS)matAdd(k,t,1000);saveMeta()}}
   if(SOUL_ACTS.has(a))stSub='soul';showHub('store')}
-const STORE_ACTS=['stsub','stf','stk','stpage','stsel','stsoul','ststar','strec','stfrag','stfx','stlock','stsell','stforge','stenh','stmats','stmat','stmatx','stmerge'];
+const STORE_ACTS=['stsub','stf','stk','stpage','stpj','stsel','stsoul','ststar','strec','stfrag','stfx','stlock','stsell','stforge','stenh','stmats','stmat','stmatx','stmerge'];
 function storeSheetChange(el){const k=el.dataset.chg;if(k==='sq')stQ=el.value;else if(k==='scat')stCats[stKind]=el.value;else if(k==='spart')stPart=el.value;else if(k==='ssort')stSort=el.value;else return false;stPage=0;showHub('store');return true}
 
 // ---------- v0.6.2 开拓地界面：营地「开拓地」页（选地区、一键收取、扩张）、开拓地场景里的选中面板与顶部一行（v0.10.0 改成需求 / 满意度 / 繁荣度）----------
