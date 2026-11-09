@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.5",
- "code": 238,
- "size": 19290965,
- "sha256": "3405bc92e33232f8d78b6b90dff080e41027e2df1d86b5e419c8b4949981b11a",
+ "ver": "0.13.5.1",
+ "code": 239,
+ "size": 19295599,
+ "sha256": "d8e80bd5b07aed42286202a42ecd8f51eebdd7b1e556d2231cc0f05000396176",
  "minLoader": 1,
- "sig": "gJ+zL5D+FcqKZfFb2G44cT5Z/qBnCGiLoDX4CPOMpPYm241ZrGDinoDwwpv1NR3+rs8nWWemFraZex62wHD3zg==",
- "note": "0.13.5（和正式版相同）",
- "at": "2026-11-09 14:05 UTC"
+ "sig": "21cuVEqaXN2FH1q2H3LB20Ha1LVGJffM2Zf/AW40Pu/p0P4lPyjcfReHfwCohmeOqcDSi/N+NcazA5rOaKjV5A==",
+ "note": "0.13.5.1：强化 / 镶嵌的仓库装备加翻页；宝石背包和仓库宝石分页加筛选（种类 / 阶 / 品质）和翻页",
+ "at": "2026-11-09 15:46 UTC"
 }
