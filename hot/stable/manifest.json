@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.4",
- "code": 235,
- "size": 19007318,
- "sha256": "2c09efe77f70e36b8afde157abd4bfc13c4405197fbf98f0263e9b9d9b7e579e",
+ "ver": "0.13.5",
+ "code": 237,
+ "size": 19292397,
+ "sha256": "a3921e8d0b7ac2ccfad7c65ef9d4d6f412cfbdc5e53206fed708a99a211b62da",
  "minLoader": 1,
- "sig": "myU9YN3sMh2Jjrl4lA5m2w41VhO4rMniEJtce0/Q1MsUkYCT4Iunz2mjIy3x/wdYX5baRuIDInClg1QgFfPbcQ==",
- "note": "0.13.4：九阶家族泰、卡拉尼和海神鳞，进阶猎豹冠军·奥塞洛特，多伦 / 艾斯 / 魏德曼 / 联盟司令增强，三款塔楼皮肤，前期首领 = 小首领，大地图地面分块",
- "at": "2026-11-08 07:35 UTC"
+ "sig": "1yUTXOf3gql80FYhFpNPYUD1aKhlu3W2ZLnpZy16TgSL3hMO4kJFtVDiPUWzS+UtoL+OnWI2/9og0VtE+9XveQ==",
+ "note": "0.13.5：九阶新地图迷雾沼泽（毒坑、移动迷雾、沼毒，16 种亡灵，小首领瘟疫行者 / 剧毒蛙母 / 蚀金之骨与大首领沼泽迷雾，七件掉落）、新英雄妖火贤师·米修斯、新塔楼炼毒炮塔、宝石镶嵌（宝石商店、局内宝石商人）、仙人传法改版、亡灵成长调整、精英功勋新公式、家族时间每 6 小时一年、冰刺阵塔加强",
+ "at": "2026-11-09 14:00 UTC"
 }
