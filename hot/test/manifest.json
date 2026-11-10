@@ -1,11 +1,11 @@
 {
  "ch": "test",
  "ver": "0.13.6",
- "code": 241,
- "size": 19565355,
- "sha256": "28e8d33c34dad4a0d7e55554951249fa53e42af807d96ddcdf797f0aacbdcfe9",
+ "code": 243,
+ "size": 19567818,
+ "sha256": "021e200df391871defb5467d41d39632cdbd89e70214acf2df6cd0a746d1b208",
  "minLoader": 1,
- "sig": "xOyek1Amp7Yh5fi8+SriNwG7ag14MxMKuI+eG5QN8c69I1i4rYsgj+R1PI06ZxMcUc+tWSr6rZqu4eN49lt9hg==",
- "note": "0.13.6 测试版（241）：家族时间流速设置（默认 24 小时 1 年）、北原王庭 / 骑营 / 罗兰按反馈修改、基础攻击科技与卡牌加算、每一批卡牌都能刷新",
- "at": "2026-11-09 22:28 UTC"
+ "sig": "t6Kr2zxt9cOOmaJ0lweq7T2AwjQO/II7mjlvndf/8MZ+eeK4NNPEcLeLo/S8lSazfVZO24LVoqvmsz94Qnis3w==",
+ "note": "0.13.6（和正式版相同）",
+ "at": "2026-11-10 03:18 UTC"
 }

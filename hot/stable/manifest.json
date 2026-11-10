@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.5",
- "code": 237,
- "size": 19292397,
- "sha256": "a3921e8d0b7ac2ccfad7c65ef9d4d6f412cfbdc5e53206fed708a99a211b62da",
+ "ver": "0.13.6",
+ "code": 242,
+ "size": 19567818,
+ "sha256": "181c6ed28111ff8b5be406d0fd3c5431b9a7e47b7c489da62ad60f2d371a3185",
  "minLoader": 1,
- "sig": "1yUTXOf3gql80FYhFpNPYUD1aKhlu3W2ZLnpZy16TgSL3hMO4kJFtVDiPUWzS+UtoL+OnWI2/9og0VtE+9XveQ==",
- "note": "0.13.5：九阶新地图迷雾沼泽（毒坑、移动迷雾、沼毒，16 种亡灵，小首领瘟疫行者 / 剧毒蛙母 / 蚀金之骨与大首领沼泽迷雾，七件掉落）、新英雄妖火贤师·米修斯、新塔楼炼毒炮塔、宝石镶嵌（宝石商店、局内宝石商人）、仙人传法改版、亡灵成长调整、精英功勋新公式、家族时间每 6 小时一年、冰刺阵塔加强",
- "at": "2026-11-09 14:00 UTC"
+ "sig": "/a1ILYDZfeag4PnbjiyQjwFNGslpkNpj8bjuWkI3ii9siRzhm/iCCkBMVfGQDpW2/uAGlDzcxa3MCA4l7uP95w==",
+ "note": "0.13.6：九阶新地图北原王庭、新兵营北原骑营、进阶罗兰、七～九阶新科技、家族科技、雾隐家族、符文系统、常规装备上调与紫色、七款建筑皮肤、家族时间流速设置、每一批卡牌都能刷新、基础攻击统一加算",
+ "at": "2026-11-10 03:14 UTC"
 }
