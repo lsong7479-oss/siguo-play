@@ -68675,8 +68675,9 @@ const fixKL=(id,L)=>{const r=fixR(L)/fixR(10*(fixTier(id)+1));return r>=1?r:Math
 const fixK=h=>h.elite||(G&&G.story)?1:fixKL(h.id,heroLv(h));   // 精英、剧情（第二卷主角固定等级）不乘（用户定）
 // AD（v0.6.0 用户定）= (英雄物攻 + 武器伤害 ÷ 这把武器的物攻加成比例 adR) × 局内倍率——不同武器的技能加成基本一致（拿法杖 / 书时 = 物攻 × 局内倍率）
 // AP = 拿法杖 / 书时一次普攻（拿别的武器时 = 法攻 × 局内倍率），× 法术伤害卡
-const heroAD=h=>h.ws.cls==='magic'?heroStatG(h,'atk')*heroDmgM(h,false,'atk'):h.ws.adR>0?h.ws.wdmg/h.ws.adR+h.ws.adb:h.ws.dmg;
-const heroAP=h=>h.ws.cls==='magic'?h.ws.dmg*heroDmgM(h,true,'ap')/heroDmgM(h,false,'ap'):heroStatG(h,'ap')*heroDmgM(h,true,'ap');   // v0.8.1 法术伤害卡和别的加成相加
+const elDsK=h=>h.elite?1+hhDsA(h):1;   // 0.13.6.1 用户 11-10 定：精英技能的「× 物攻 / 法攻」吃黄虎「定四方」（AD 100 → 180 时 100%AD = 180，只乘一次），固定值不吃
+const heroAD=h=>h.ws.cls==='magic'?heroStatG(h,'atk')*heroDmgM(h,false,'atk')*elDsK(h):h.ws.adR>0?(h.ws.wdmg/h.ws.adR+h.ws.adb)*elDsK(h):h.ws.dmg;   // elDsK：精英的定四方（普攻在 tech136s.tc6ElRecalc 乘进 ws.dmg，读 ws.dmg 的分支已经带上）
+const heroAP=h=>h.ws.cls==='magic'?h.ws.dmg*heroDmgM(h,true,'ap')/heroDmgM(h,false,'ap'):heroStatG(h,'ap')*heroDmgM(h,true,'ap')*elDsK(h);   // v0.8.1 法术伤害卡和别的加成相加
 // 装备特效、召唤物、毒层等「随英雄成长」的倍率：星级 × skM
 const physMul=h=>starMul(h.star)*skM0(h,false);
 const spellMul=h=>starMul(h.star)*skM0(h,true);
@@ -76784,7 +76785,7 @@ SKFX.npFaith=h=>{vfx('wave',{x:h.x,y:h.y,r:56,r0:4,c:NP_PINK,w:3,life:0.55,gnd:1
 // 效果的算法（Claude 定）：
 //   定四方：生命 = 士兵 uHpMul_、英雄 heroRecalc 末尾 ×(1 + v)；物防、法防 = 受伤 hurtF 里的防御 / 法防 ×(1 + v)
 //     物攻、法攻 = 基础攻击 +v（用户 11-09 定，进基础攻击加算池，原来是独立乘区 atkI）：士兵 = 统一 buff 'hhDs' 的 bAtk（和科技、拔山盖世、格文等相加，units/tech136s.tc6DK）；
-//     英雄没有别的基础攻击池，heroes/hero.heroStatG 的物攻、法攻 × (1 + 锻造神兵 f15Fg + v)（hhDsA）；精英按士兵的池子，加在 tech136s.tc6ElRecalc 的 1 + 科技 + 拔山盖世 里（精英的技能和士兵一样不吃这个池子）；
+//     英雄没有别的基础攻击池，heroes/hero.heroStatG 的物攻、法攻 × (1 + 锻造神兵 f15Fg + v)（hhDsA）；精英按士兵的池子，加在 tech136s.tc6ElRecalc 的 1 + 科技 + 拔山盖世 里（精英技能的「× 物攻 / 法攻」也吃定四方、固定值不吃：hero.elDsK，用户 11-10 定；士兵的攻击科技精英技能照旧不吃）；
 //     英雄、精英身上也挂着 'hhDs'（只为了头像下显示名字，英雄不读 bAtk）
 //   筹万物：结算资源 = 商人「搜山检海」的 tr 上加（game/meta.awardMeta）；掉落 = merchant.dropMul 上加（精英、首领的装备 / 打造书 / 道具 / 英雄之魄）
 //   夺天命：waveEnd 钩子（选卡之前）幸运 +luck（吃科技「天眷」）、刷新次数 +rr
@@ -92184,7 +92185,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.6.1',GAME_TAG='测试版',GAME_CODE=244,GAME_BUILD="4960cf9",GAME_BUILT=1794287511740,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.6',GAME_TAG='稳定版',GAME_CODE=242,GAME_BUILD="51bb7e3+",GAME_BUILT=1794289025112,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -95049,7 +95050,7 @@ function formulaHTML(){
     `普攻每一击 = (武器伤害 × 阶数倍率 × 强化倍率(第 1 级 +${pc(SM.enhDmg)}，以后每级多 ${pc(SM.enhDmgAdd||0)}，+${SM.enhCap} 合计 +${pc(enhK(SM.enhCap)-1)}；+${SM.enhCap+1}～+${SM.maxEnh} 每级 +${pc(SM.enhOver)}，+${SM.maxEnh} 合计 +${pc(enhK(SM.maxEnh)-1)}) × 工艺浮动 × 箭袋加成 + 物攻 × 物攻加成 + 法攻 × 法攻加成) × 英雄伤害倍率`,
     `装备阶数倍率：`+CFG.gearTier.name.map((n,i)=>`${n} ×${CFG.gearTier.mul[i]}`).join('、')+`；放大武器伤害、护甲和盾牌的防御、盾的格挡减伤、饰品的生命 / 防御词条、装备词条的攻击 / 生命 / 物防 / 法防；攻速、装填、距离、偏斜不变`,
     `AD = (物攻 + 武器伤害 ÷ 这把武器的物攻加成比例) × 英雄伤害倍率，不同武器的技能加成基本一致；拿法杖、牧师杖、书时 = 物攻 × 英雄伤害倍率；AP = 拿法杖、牧师杖、书时一次普攻的伤害，拿别的武器时 = 法攻 × 英雄伤害倍率，再 × (1 + 法术伤害卡)`,
-    `物攻、法攻的基础攻击加成(0.13.6)：物攻、法攻 × (1 + 锻造神兵 + 黄虎「定四方」)，相加后乘一次；精英的普攻按士兵的基础攻击池(科技、「拔山盖世」、定四方相加)；面板上的普攻 AD / AP 是增伤之前的攻击，增伤另列(「攻击 A · 增伤 ×M%」，M% = 英雄伤害倍率)`,
+    `物攻、法攻的基础攻击加成(0.13.6)：物攻、法攻 × (1 + 锻造神兵 + 黄虎「定四方」)，相加后乘一次；精英的普攻按士兵的基础攻击池(科技、「拔山盖世」、定四方相加)；精英技能里的「× 物攻 / 法攻」也吃定四方(只乘一次)，技能的固定值不吃；面板上的普攻 AD / AP 是增伤之前的攻击，增伤另列(「攻击 A · 增伤 ×M%」，M% = 英雄伤害倍率)`,
     `技能数值 = 基础值 × 技能倍率 + AD 或 AP × 加成比例；技能倍率 = 英雄伤害倍率 × (1 + ${pc(HB.skill.wave)} × (波次 − 1))，法术、治疗技能再 × (1 + 法术伤害卡)`,
     `装备、饰品、召唤物「随英雄伤害成长」= × 星级倍率 × 技能倍率`,
     `普攻的命中偏移 = 武器偏移 ÷ 精准 ÷ (1 + 精度加成)；精准基础 100%，`+Object.values(CFG.heroes).filter(H=>(H.prec||1)!==1).map(H=>`${H.name} ${pc(H.prec)}`).join('、'),
