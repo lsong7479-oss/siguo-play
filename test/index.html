@@ -2632,7 +2632,7 @@ Object.assign(CFG,{
     swap:'切换武器', wave:'开始下一波', pause:'暂停', heroAI:'英雄托管', army:'士兵指令', follow:'镜头回到英雄', batch:'连续建造', undo:'撤销模式', heroNext:'切换操控的英雄'},
 });
 // 防误触（秒，用户 2026-11-10 定 tap 0.1；只拦真实的鼠标 / 触屏点击，键盘和脚本直接调函数不拦，见 ui/hud.tgSel / tgSheet）
-CFG.tapGuard={sel:0.35, tap:0.1};   // sel：选中建筑后面板出现的这段时间里面板按钮都不响应（防止点建筑的同一下点穿到面板上；原来写死 350 毫秒、只管升级 / 维修 / 拆除这几个，Claude 定沿用并扩到全部按钮）；tap：面板里点了一个按钮后这段时间里再点无效（防连点），卡牌 / 誓约这类选择弹窗出现或换了一批后这段时间里点击无效
+CFG.tapGuard={sel:0.35, tap:0.2};   // tap 0.1 → 0.2：用户 11-10 改（0.13.6.1）；sel：选中建筑后面板出现的这段时间里面板按钮都不响应（防止点建筑的同一下点穿到面板上；原来写死 350 毫秒、只管升级 / 维修 / 拆除这几个，Claude 定沿用并扩到全部按钮）；tap：面板里点了一个按钮后这段时间里再点无效（防连点），卡牌 / 誓约这类选择弹窗出现或换了一批后这段时间里点击无效
 
 /* ---------- 局外：开拓地与科技树 ----------
    资源：设计点（解锁建筑）、科研点（科技）、铜币（局内）、银币（通用）、金币（交易，预留）、建材（建造）、人口（v0.6.2 起：民居里的居民，去生产建筑上班）
@@ -27088,33 +27088,37 @@ CFG.designTree.push({id:'radarBase', cost:300, req:['watchtower'], map:'scourgeS
    用户定：1×1，380 铜币，生命 550；攻击 35，射程 7.5 格，攻速 1 次 / 秒；
      攻击时对主目标方向扇形 ±15° 范围内的至多 3 个目标抛射攻击，造成 100% 伤害并中毒：基础中毒伤害 30(随攻击成长)，持续 15 秒(重置持续时间)，至多叠 5 层。
      一阶：蓄力投射(最大射程 150%，100%～150% 要 1.5 倍攻击间隔、伤害 ×150%，不含中毒) · 连续投射(50% 概率下一次攻击间隔 −50%，可连续触发) · 分散投射(至多目标 +3)
-     二阶：雾沼炼毒(中毒附带 2% 最大生命，BOSS 0.2%) · 剧毒骤发(中毒在命中时立刻结算，额外无视 25% 毒抗) · 毒入骨髓(至多 25 层)
+     二阶：雾沼炼毒(中毒附带 2% 最大生命，精英 1%(用户 11-10 改，原来 2%)，BOSS 0.2%) · 剧毒骤发(中毒在命中时立刻结算，额外无视 25% 毒抗) · 毒入骨髓(至多 25 层)
      三阶：全域散射(扇形 ±30°、至多目标 ×10) · 连环投射(前置连续投射：100% 触发、下一次间隔 −75%，至多目标 +5) · 毒雾弥散(半径 2.5 格毒雾 4 秒，50% 中毒伤害持续 3 秒，不叠加)
-   主会话定：抛射 = 抛物线弹道（越过建筑，同圣焰塔），落点打目标本身、不溅射；中毒每层每秒 30 × (这一发的攻击 ÷ 基础攻击 35)，毒属性，走亡灵统一的中毒（E.psn 层数、E.psnT、E.psnD 每层伤害取大）；
+   主会话定：抛射 = 抛物线弹道（越过建筑，同圣焰塔），落点打目标本身、不溅射(用户 11-10 改成溅射：落点 0.2 格内的亡灵都受到这一发，见下面「用户 11-10 改」)；中毒每层每秒 30 × (这一发的攻击 ÷ 基础攻击 35)，毒属性，走亡灵统一的中毒（E.psn 层数、E.psnT、E.psnD 每层伤害取大）；
      蓄力：目标在 7.5～11.25 格时这一次攻击间隔 ×1.5、直接伤害 ×1.5；连续投射只影响下一次；分散 + 全域 = (3 + 3) × 10；
      剧毒骤发（用户 11-09 再定：「就是单纯直接打爆发伤害，不会叠伤」）：每次命中不叠中毒层、不持续掉血，直接打出这座塔一层中毒的全部伤害（每层每秒 × 15 秒，含雾沼炼毒的最大生命部分），毒抗按 ×75% 算（用户确认）；和毒入骨髓同在二阶、三选一；
      毒雾：毒雾里的亡灵每秒受到这座塔单层中毒伤害的 50%，作用 3 秒（离开后持续到 3 秒满），几团毒雾重叠只算一份。
+   用户 11-10 改（0.13.6.1；起因：用户报「有时候伤害打不出来」，排查见 tools/tests/t_tpchit）：
+     直接伤害改成炮弹物理伤害（原来是毒属性法术，迷雾沼泽「中毒伤害转治疗」把直接伤害也转成了治疗）；中毒照旧是中毒；
+     落点 0.2 格溅射（w.tpc.sp，格；按亡灵身体边缘算，同 eQuery）：锁定的那只照旧打中，落点 0.2 格内别的亡灵也各吃 100% 伤害 + 一层中毒；锁定的那只半路死了，落点旁边的照样打；毒雾一发只生成一团；
+     雾沼炼毒对精英（四阶、不是小首领）1%。
    Claude 定：
-     法术伤害、毒属性（同炼毒塔：投出去的是毒瓶），塔楼类（cat tower、kind none）；防御 4、视野 8、弹速 9、没有弹匣；
+     （原来）法术伤害、毒属性（同炼毒塔：投出去的是毒瓶）→ 用户 11-10 改成炮弹物理，塔楼类（cat tower、kind none）；防御 4、视野 8、弹速 9、没有弹匣；
      弹道追踪锁定的目标（home，同魔导阵塔「精准制导」）：落地时目标还活着就一定打中（「落点打目标本身」）；目标半路死了就落空；
      扇形里的其它目标：离主目标最近的先挑；看得见的才挑；飞行的也算（每个目标各一枚，都是主目标）；
      蓄力：先在普通射程里挑目标，没有才挑 100%～150% 的；一次攻击里主目标在 100%～150% 时整轮都算蓄力（伤害 ×1.5、间隔 ×1.5），扇形也挑到 150%；
-     雾沼炼毒按每层算（2% × 层数，和 30 一起放进每层伤害），首领、小首领都按 BOSS 算 0.2%；毒雾的「单层中毒伤害」也带上雾沼的那部分；
+     雾沼炼毒按每层算（2% × 层数，和 30 一起放进每层伤害），首领、小首领都按 BOSS 算 0.2%(精英 1%：用户 11-10)；毒雾的「单层中毒伤害」也带上雾沼的那部分；
      毒雾：只在打中时生成，对天上的也有效，范围吃卡牌的范围加成；剧毒骤发不改毒雾（毒雾照常每 0.5 秒结算）；
      研发 300 设计点、前置炼毒塔、通关「迷雾沼泽」后才能研发；建筑科技 / 进化花费同圣焰塔（三阶默认一阶的 5 倍）；基础加成同塔楼（攻击、生命、命中、暴击）
-   字段：w.tpc {arc 扇形半角(°), n 至多目标数, psn 每层每秒中毒伤害(基础攻击时), t 中毒持续(秒), max 层数上限}
-   进化：tpcCharge {dmg, int}（配 rangeMul）· tpcCont {p, k} · tpcN 至多目标 +X · tpcHp {p, boss} · tpcBurst {cut} · tpcMax 层数上限 ·
+   字段：w.tpc {sp 落点溅射半径(格), arc 扇形半角(°), n 至多目标数, psn 每层每秒中毒伤害(基础攻击时), t 中毒持续(秒), max 层数上限}
+   进化：tpcCharge {dmg, int}（配 rangeMul）· tpcCont {p, k} · tpcN 至多目标 +X · tpcHp {p, elite, boss} · tpcBurst {cut} · tpcMax 层数上限 ·
      tpcArc 扇形半角 · tpcNK 至多目标 × · tpcChain {p, k, n}（要带着连续投射才生效）· tpcFog {r, dur, p, t} */
 CFG.buildings.toxCannon={cat:'tower', name:'炼毒炮塔', cost:380, hp:550, def:4, vision:8, kind:'none',
-  weapon:{dmg:35, magic:true, int:1, mag:0, range:7.5, spread:0, proj:'flask', speed:9, lob:true, home:true, mix:{poison:1},
-    tpc:{arc:15, n:3, psn:30, t:15, max:5}},
-  note:'朝主目标方向 ±15° 扇形里的至多 3 个亡灵各抛射一枚毒瓶：100% 伤害(毒属性法术伤害)并中毒，每层每秒 30(随攻击成长)，持续 15 秒(再中重置时间)，至多 5 层；越过建筑'};
+  weapon:{dmg:35, int:1, mag:0, range:7.5, spread:0, proj:'flask', speed:9, lob:true, home:true,
+    tpc:{sp:0.2, arc:15, n:3, psn:30, t:15, max:5}},
+  note:'朝主目标方向 ±15° 扇形里的至多 3 个亡灵各抛射一枚毒瓶：落点 0.2 格内的亡灵受到 100% 伤害(物理)并中毒，每层每秒 30(随攻击成长)，持续 15 秒(再中重置时间)，至多 5 层；越过建筑'};
 CFG.btech.towers.toxCannon={base:CFG.olv.lists.tower.slice(), baseOld:['hp','rate','dmg'], cost:[20,160], evoCost:[80,640], evo:{   // base：本文件排在 data/olv.js 之后，自己写基础加成列表（同塔楼）
   tpCharge:{name:'蓄力投射', desc:'最大射程改为 150%；目标在 100%～150% 射程时这一次攻击间隔 ×1.5，直接伤害 ×150%(不含中毒伤害)', rangeMul:1.5, tpcCharge:{dmg:1.5, int:1.5}},
   tpCont:  {name:'连续投射', desc:'攻击时 50% 概率触发连续投射(可连续触发)：下一次攻击间隔 −50%', tpcCont:{p:0.5, k:0.5}},
   tpSplit: {name:'分散投射', desc:'至多攻击目标数 +3', tpcN:3},
 }, evo2:{
-  tpMarsh: {name:'雾沼炼毒', desc:'中毒每层每秒另外造成目标 2% 最大生命的伤害(对首领、小首领 0.2%)', tpcHp:{p:0.02, boss:0.002}},
+  tpMarsh: {name:'雾沼炼毒', desc:'中毒每层每秒另外造成目标 2% 最大生命的伤害(对精英 1%，对首领、小首领 0.2%)', tpcHp:{p:0.02, elite:0.01, boss:0.002}},
   tpBurst: {name:'剧毒骤发', desc:'命中时不再叠中毒，改为直接造成一层中毒 15 秒的全部伤害(带雾沼炼毒时含最大生命的部分)，并额外无视目标 25% 的毒抗', tpcBurst:{cut:0.25}},
   tpBone:  {name:'毒入骨髓', desc:'中毒至多叠加 25 层', tpcMax:25},
 }, evo3:{
@@ -81540,10 +81544,11 @@ feat('radar',{on:()=>!!(G&&G.loadout&&G.loadout.includes('radarBase')),hooks:{
 //   再把记着的亡灵各打一次 0.5 秒的伤害；几团毒雾重叠只是重复刷新同一条记录 = 不叠加
 // 每座塔一个伤害选项对象（TPC_OM：塔 → o），飞行中的毒瓶共用；一局一清
 const TPC_E0={},TPC_FMAX=256,TPC_DT=0.5;
-const TPC_BOSS=Uint8Array.from(ETYPES,k=>{const c=CFG.enemies[k];return c.tier>=5||(c.tier===4&&c.mini)?1:0});   // 雾沼炼毒按 BOSS 算的：首领、小首领（用户定）
+const TPC_EK=Uint8Array.from(ETYPES,k=>{const c=CFG.enemies[k];return c.tier>=5||(c.tier===4&&c.mini)?2:c.tier===4?1:0});   // 雾沼炼毒的档：2 = BOSS（首领、小首领，用户定）、1 = 精英（四阶、不是小首领；用户 11-10 定 1%）、0 = 其它
+const tpcHpR=(H,t)=>{const k=TPC_EK[t];return k===2?H.boss:k===1&&H.elite!=null?H.elite:H.p};   // 雾沼炼毒这一只按几成最大生命
 const TPC_GI=new Int32Array(ECAP).fill(-1),TPC_GU=new Float64Array(ECAP),TPC_GD=new Float32Array(ECAP),TPC_GS=new Array(ECAP).fill(null);   // 毒雾的作用记录
 const TPC_FX=new Float32Array(TPC_FMAX),TPC_FY=new Float32Array(TPC_FMAX),TPC_FR=new Float32Array(TPC_FMAX),TPC_FU=new Float64Array(TPC_FMAX),TPC_FT=new Float64Array(TPC_FMAX),
-  TPC_FD=new Float32Array(TPC_FMAX),TPC_FH=new Float32Array(TPC_FMAX),TPC_FB=new Float32Array(TPC_FMAX),TPC_FK=new Float32Array(TPC_FMAX),TPC_FL=new Float32Array(TPC_FMAX),TPC_FS=new Array(TPC_FMAX).fill(null);   // 毒雾：位置、半径、到期、生成时刻、单层每秒伤害、雾沼比例（普通 / BOSS）、50%、作用秒数、哪座塔
+  TPC_FD=new Float32Array(TPC_FMAX),TPC_FH=new Float32Array(TPC_FMAX),TPC_FB=new Float32Array(TPC_FMAX),TPC_FE=new Float32Array(TPC_FMAX),TPC_FK=new Float32Array(TPC_FMAX),TPC_FL=new Float32Array(TPC_FMAX),TPC_FS=new Array(TPC_FMAX).fill(null);   // 毒雾：位置、半径、到期、生成时刻、单层每秒伤害、雾沼比例（普通 / BOSS / 精英）、50%、作用秒数、哪座塔
 const TPC_LI=new Int32Array(2048),TPC_LV=new Float64Array(2048);   // 扇形候选：下标、离主目标的距离
 let TPC_FN=0,TPC_TK=0,TPC_GL=0,TPC_LN=0,TPC_X=0,TPC_Y=0,TPC_A=0,TPC_H=0,TPC_T=-1,TPC_MX=0,TPC_MY=0;   // TPC_GL：毒雾记录里最晚的到期时刻（过了就不扫）
 const TPC_OM=new Map(),TPC_RC={poison:0};
@@ -81555,8 +81560,8 @@ const tpcArc=(ev,P)=>(ev.tpcArc||P.arc)*DEG;
 const tpcMax=(ev,P)=>ev.tpcMax||P.max;
 const tpcR0=(T,ev)=>ev.tpcCharge?T.range/(ev.rangeMul||1):T.range;   // 普通射程（像素）；蓄力投射时 T.range 是 150% 的最大射程
 const tpcPd=(s,T)=>s.cfg.weapon.tpc.psn*T.dmg/s.cfg.weapon.dmg;   // 每层每秒中毒（随攻击成长；不含蓄力的 ×1.5）
-const tpcLayer=(j,pd,ev)=>pd+(ev.tpcHp?E.mhp[j]*(TPC_BOSS[E.t[j]]?ev.tpcHp.boss:ev.tpcHp.p):0);   // 这一只身上每层每秒（雾沼炼毒按每层加最大生命的部分）
-function tpcO(s){let o=TPC_OM.get(s);if(!o){o={magic:true,mix:null,pitMul:1,dotMul:1,aoeAdd:0,psn:0,spen:0,hd:0,am:1,hit:100,mhit:100,critPt:0,sa:0,tpd:0};TPC_OM.set(s,o)}return o}
+const tpcLayer=(j,pd,ev)=>pd+(ev.tpcHp?E.mhp[j]*tpcHpR(ev.tpcHp,E.t[j]):0);   // 这一只身上每层每秒（雾沼炼毒按每层加最大生命的部分）
+function tpcO(s){let o=TPC_OM.get(s);if(!o){o=s.cfg.weapon.magic?{magic:true,mix:null,pitMul:1,dotMul:1,aoeAdd:0,psn:0,spen:0,hd:0,am:1,hit:100,mhit:100,critPt:0,sa:0,tpd:0}:{pen:0,crit:0,critMul:1,mix:null,pitMul:1,dotMul:1,aoeAdd:0,psn:0,hd:0,penP:0,first:0,am:1,hit:100,critPt:0,sa:0,tpd:0};TPC_OM.set(s,o)}return o}   // 用户 11-10：直接伤害改成炮弹物理（字段同 structs.updateTowers 物理塔的伤害选项）；数据写 magic 时照旧走法术
 // 扇形候选（eQuery 的固定回调；TPC_X/Y 塔，TPC_A 主目标方向，TPC_H 半角，TPC_T 主目标，TPC_MX/MY 主目标位置）
 const pfTpcFan=j=>{if(j===TPC_T||TPC_LN>=2048)return;if(angDiff(Math.atan2(E.y[j]-TPC_Y,E.x[j]-TPC_X),TPC_A)>TPC_H)return;TPC_LI[TPC_LN]=j;TPC_LV[TPC_LN]=Math.hypot(E.x[j]-TPC_MX,E.y[j]-TPC_MY);TPC_LN++};
 // updateTowers 里开火：返回冷却（秒）
@@ -81567,7 +81572,8 @@ function tpcFire(s,T,t,mk,mcd,bf){featNeed('tpc');DS_CUR=s;const ev=tpcEv(s),w=T
   const far=!!ch&&Math.hypot(E.x[t]-x0,E.y[t]-y0)-E.r[t]>R0,reach=far?R:R0;
   if(pm.frenzy>0)T.dmg*=(1+T.bp+fzHit(s)-1)/(1+T.bp);   // 走火入魔（同 updateTowers）
   const o=tpcO(s),d=T.dmg*mk*(far?ch.dmg:1);
-  o.mix=w.mix;o.pitMul=o.dotMul=T.dmg/w.dmg;o.aoeAdd=T.aoeAdd;o.psn=G.poisonOn&&G.psnR<0?1:0;o.spen=T.spen;o.hd=d;o.am=(T.am||1)*mk;o.hit=T.hit;o.mhit=T.hit;o.critPt=T.critPt||0;
+  o.mix=w.mix||null;o.pitMul=o.dotMul=T.dmg/w.dmg;o.aoeAdd=T.aoeAdd;o.psn=G.poisonOn&&G.psnR<0?1:0;o.hd=d;o.am=(T.am||1)*mk;o.hit=T.hit;o.critPt=T.critPt||0;
+  if(o.magic){o.spen=T.spen;o.mhit=T.hit}else{o.pen=w.pen||0;o.crit=(w.crit||0)+T.crit;o.critMul=bCritMul();o.penP=T.penP;o.first=T.first}
   o.sa=s.csInk>G.time?CFG.coast.ink.spread:0;o.tpd=tpcPd(s,T);
   s.aim=Math.atan2(E.y[t]-(s.y-20),E.x[t]-s.x);s.recoil=0.15;const mz=muzzle(s);
   fireAt(mz.x,mz.y,t,w,d,o,T.acc,R,true);
@@ -81578,12 +81584,17 @@ function tpcFire(s,T,t,mk,mcd,bf){featNeed('tpc');DS_CUR=s;const ev=tpcEv(s),w=T
       fireAt(mz.x,mz.y,TPC_LI[k],w,d,o,T.acc,R,true)}}
   let cd=T.int*mcd*(far?ch.int:1);const Q=ev.tpcChain&&ev.tpcCont?ev.tpcChain:ev.tpcCont;if(Q&&(Q.p>=1||chance(Q.p)))cd*=Q.k;   // 连续投射 / 连环投射：只影响下一次
   towerHeat(s,cd/bf);if(inViewPt(s.x,s.y))sfx('thump');return cd}
-// 毒瓶落地：锁定的那只还在落点（追踪弹道一般都在）就打中：100% 伤害 + 中毒（+ 毒雾）；不溅射
-function tpcLand(p){const s=p.ds||null,o=p.o,x=p.x1,y=p.y1;let j=p.hj>=0&&eOk(p.hj,p.tid)?p.hj:-1;
+// 毒瓶落地：锁定的那只还在落点（追踪弹道一般都在）就打中：100% 伤害 + 中毒（+ 毒雾）；
+//   用户 11-10：落点 w.tpc.sp 格（吃卡牌的范围加成，同毒雾）内别的亡灵也各吃 100% 伤害 + 中毒（先记下标、id 再打，打的时候可能死、可能分裂）
+const TPC_SI=new Int32Array(256),TPC_SD=new Int32Array(256);let TPC_SN=0,TPC_SJ=-1;
+const pfTpcSp=j=>{if(j!==TPC_SJ&&TPC_SN<256){TPC_SI[TPC_SN]=j;TPC_SD[TPC_SN]=E.id[j];TPC_SN++}};
+function tpcLand(p){const s=p.ds||null,o=p.o,x=p.x1,y=p.y1,P=p.w.tpc;let j=p.hj>=0&&eOk(p.hj,p.tid)?p.hj:-1;
   if(j>=0&&Math.hypot(E.x[j]-x,E.y[j]-y)>E.r[j]+10)j=-1;
+  const r=(P.sp||0)*16*(1+pm.aoe);TPC_SN=0;TPC_SJ=j;if(r>0)eQuery(x,y,r,pfTpcSp);const n=TPC_SN;
   if(inViewPt(x,y)){for(let k=0;k<5;k++)pp(x+(fxr()-0.5)*6,y-2,2,(fxr()-0.5)*60,-fxr()*24,10+fxr()*20,180,0.3+fxr()*0.25,fxr()<0.5?'#7fd84a':'#c8f07a',1,0,0)}
-  if(j<0)return;const ev=s?tpcEv(s):TPC_E0,P=p.w.tpc;
-  dealE(j,p.dmg,o);if(E.alive[j])tpcPsn(j,o.tpd,ev,P,s);
+  if(j<0&&!n)return;const ev=s?tpcEv(s):TPC_E0;
+  if(j>=0){dealE(j,p.dmg,o);if(E.alive[j])tpcPsn(j,o.tpd,ev,P,s)}
+  for(let k=0;k<n;k++){const q=TPC_SI[k];if(!eOk(q,TPC_SD[k]))continue;dealE(q,p.dmg,o);if(E.alive[q])tpcPsn(q,o.tpd,ev,P,s)}
   if(ev.tpcFog)tpcFogAdd(x,y,ev.tpcFog,o.tpd,ev.tpcHp,s)}
 // 打中一只：叠一层中毒（剧毒骤发：不叠层，直接打出一层 15 秒的全部伤害）
 function tpcPsn(j,pd,ev,P,s){const L=tpcLayer(j,pd,ev),T=P.t;if(!(L>0))return;
@@ -81592,13 +81603,13 @@ function tpcPsn(j,pd,ev,P,s){const L=tpcLayer(j,pd,ev),T=P.t;if(!(L>0))return;
   dealE(j,L*T,TPC_BO);if(E.alive[j]&&inViewPt(E.x[j],E.y[j]))for(let k=0;k<3;k++)pp(E.x[j]+(fxr()-0.5)*8,E.y[j]-4-fxr()*8,0,(fxr()-0.5)*16,-10-fxr()*14,4+fxr()*6,0,0.4,fxr()<0.5?'#7fd84a':'#3e7a2a',1,0,1)}
 // 生成一团毒雾（满了顶掉最早到期的）
 function tpcFogAdd(x,y,F,pd,H,s){let k=TPC_FN;if(k>=TPC_FMAX){k=0;for(let q=1;q<TPC_FN;q++)if(TPC_FU[q]<TPC_FU[k])k=q}else TPC_FN++;
-  TPC_FX[k]=x;TPC_FY[k]=y;TPC_FR[k]=F.r*16*(1+pm.aoe);TPC_FU[k]=G.time+F.dur;TPC_FT[k]=G.time;TPC_FD[k]=pd;TPC_FH[k]=H?H.p:0;TPC_FB[k]=H?H.boss:0;TPC_FK[k]=F.p;TPC_FL[k]=F.t;TPC_FS[k]=s}
+  TPC_FX[k]=x;TPC_FY[k]=y;TPC_FR[k]=F.r*16*(1+pm.aoe);TPC_FU[k]=G.time+F.dur;TPC_FT[k]=G.time;TPC_FD[k]=pd;TPC_FH[k]=H?H.p:0;TPC_FB[k]=H?H.boss:0;TPC_FE[k]=H?(H.elite!=null?H.elite:H.p):0;TPC_FK[k]=F.p;TPC_FL[k]=F.t;TPC_FS[k]=s}
 let TPC_QK=0;
-const pfTpcFog=j=>{const k=TPC_QK,id=E.id[j],dps=TPC_FK[k]*(TPC_FD[k]+E.mhp[j]*(TPC_BOSS[E.t[j]]?TPC_FB[k]:TPC_FH[k])),u=G.time+TPC_FL[k];
+const pfTpcFog=j=>{const k=TPC_QK,id=E.id[j],dps=TPC_FK[k]*(TPC_FD[k]+E.mhp[j]*(TPC_EK[E.t[j]]===2?TPC_FB[k]:TPC_EK[E.t[j]]===1?TPC_FE[k]:TPC_FH[k])),u=G.time+TPC_FL[k];
   if(TPC_GI[j]===id&&TPC_GU[j]>G.time){if(dps>TPC_GD[j]){TPC_GD[j]=dps;TPC_GS[j]=TPC_FS[k]}}else{TPC_GI[j]=id;TPC_GD[j]=dps;TPC_GS[j]=TPC_FS[k]}
   TPC_GU[j]=u;if(u>TPC_GL)TPC_GL=u};
 function tpcTick(dt){if(!TPC_FN&&!(TPC_GL>G.time))return;TPC_TK+=dt;if(TPC_TK<TPC_DT)return;TPC_TK-=TPC_DT;const now=G.time;
-  for(let k=0;k<TPC_FN;k++){if(TPC_FU[k]<=now){const z=--TPC_FN;if(k!==z){TPC_FX[k]=TPC_FX[z];TPC_FY[k]=TPC_FY[z];TPC_FR[k]=TPC_FR[z];TPC_FU[k]=TPC_FU[z];TPC_FT[k]=TPC_FT[z];TPC_FD[k]=TPC_FD[z];TPC_FH[k]=TPC_FH[z];TPC_FB[k]=TPC_FB[z];TPC_FK[k]=TPC_FK[z];TPC_FL[k]=TPC_FL[z];TPC_FS[k]=TPC_FS[z]}TPC_FS[z]=null;k--;continue}
+  for(let k=0;k<TPC_FN;k++){if(TPC_FU[k]<=now){const z=--TPC_FN;if(k!==z){TPC_FX[k]=TPC_FX[z];TPC_FY[k]=TPC_FY[z];TPC_FR[k]=TPC_FR[z];TPC_FU[k]=TPC_FU[z];TPC_FT[k]=TPC_FT[z];TPC_FD[k]=TPC_FD[z];TPC_FH[k]=TPC_FH[z];TPC_FB[k]=TPC_FB[z];TPC_FE[k]=TPC_FE[z];TPC_FK[k]=TPC_FK[z];TPC_FL[k]=TPC_FL[z];TPC_FS[k]=TPC_FS[z]}TPC_FS[z]=null;k--;continue}
     TPC_QK=k;eQuery(TPC_FX[k],TPC_FY[k],TPC_FR[k],pfTpcFog)}
   if(!(TPC_GL>now))return;const dc=DS_CUR;
   for(let j=0;j<E.n;j++){if(!E.alive[j]||TPC_GI[j]!==E.id[j]||!(TPC_GU[j]>now))continue;const s=TPC_GS[j];DS_CUR=s&&!s.dead?s:null;dealE(j,TPC_GD[j]*TPC_DT,TPC_FO)}
@@ -81622,7 +81633,7 @@ feat('tpc',{on:()=>{const b=!!(G&&G.loadout&&G.loadout.includes('toxCannon'));if
 function tpcInfo(s){const T=towerW(s),ev=tpcEv(s),P=s.cfg.weapon.tpc,e3=btEvo3(s.type),A=CFG.btech.evo3At,f1=v=>(Math.round(v*10)/10).toFixed(1),ch=ev.tpcCharge,Q=ev.tpcChain&&ev.tpcCont?ev.tpcChain:ev.tpcCont;
   return(ev!==TPC_E0?`【${ev.name}】`:'')+(e3&&!evo3On(s)?`三阶「${e3.name}」Lv${A.lv} 强化 +${A.xlv} 后生效 · `:'')
     +`射程 ${f1(tpcR0(T,ev)/16)} 格${ch?`(蓄力 ${f1(T.range/16)} 格：间隔 ×${ch.int}、伤害 ×${ch.dmg})`:''} · ${atkAmT(T.dmg,T.am)} · 攻速 ${atkRate(T.int)}`
-    +` · 扇形 ±${ev.tpcArc||P.arc}° 至多 ${tpcN(ev,P)} 个 · 中毒每层每秒 ${f1(tpcPd(s,T))}${ev.tpcHp?` + ${ev.tpcHp.p*100}% 最大生命`:''}${ev.tpcBurst?`：命中时直接打出 ${P.t} 秒的伤害，不叠层`:`、${P.t} 秒、至多 ${tpcMax(ev,P)} 层`}`
+    +`${P.sp?` · 落点溅射 ${f1(P.sp*(1+pm.aoe))} 格`:''} · 扇形 ±${ev.tpcArc||P.arc}° 至多 ${tpcN(ev,P)} 个 · 中毒每层每秒 ${f1(tpcPd(s,T))}${ev.tpcHp?` + ${ev.tpcHp.p*100}% 最大生命(精英 ${(ev.tpcHp.elite!=null?ev.tpcHp.elite:ev.tpcHp.p)*100}%、BOSS ${ev.tpcHp.boss*100}%)`:''}${ev.tpcBurst?`：命中时直接打出 ${P.t} 秒的伤害，不叠层`:`、${P.t} 秒、至多 ${tpcMax(ev,P)} 层`}`
     +(Q?` · 连续投射 ${Math.round(Q.p*100)}%：下一次间隔 −${Math.round((1-Q.k)*100)}%`:'')+(ev.tpcFog?` · 毒雾 ${f1(ev.tpcFog.r*(1+pm.aoe))} 格 ${ev.tpcFog.dur} 秒`:'')+(s.aura?' · 瞭望加成':'')}
 
 // ---------- 0.13.6 九阶地区「北原王庭」northCourt（数据和用户定 / Claude 定的口径见 data/nk_map.js 开头）----------
@@ -92190,7 +92201,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.6',GAME_TAG='稳定版',GAME_CODE=242,GAME_BUILD="9eb1ed1",GAME_BUILT=1794294387631,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.6',GAME_TAG='稳定版',GAME_CODE=242,GAME_BUILD="9eb1ed1+",GAME_BUILT=1794318457214,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
