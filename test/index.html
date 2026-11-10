@@ -82856,7 +82856,11 @@ function hmRoll(n){if(!G||!G.prepEvOn||G.story||G.invade||G.expand!=null)return;
   if(G.mc){G.mc=null;MC_HTML=null;G.hmMcD=1}   // 商人同一回合也来了：延到下一回合
   toast(G.hmMcD?'一位隐士云游至此，要传授仙法(流浪商人改到下一回合来)':'一位隐士云游至此，要传授仙法')}
 // —— 答复（ui/hermit 的弹窗按钮）：v = 选的仙法、'' 都不选（'1' = 第一种，老测试用）；之后接着问别的（誓约、五神法），再看商人、自动下一波
-function hmPick(v){if(!G||modalState!=='hermit')return;const O=hmOptL(G.hmOpt),a=v==='1'?O[0]:O.includes(v)?v:null;G.hmOpt=null;hideModal();
+// hmTry 是界面入口（点仙法卡、数字键）：先弹确认框；hmPick 是真正答复（确认键、婉拒、AI 接口、测试直接调），不经过确认
+let HM_ASK=null;
+function hmTry(v){if(!G||modalState!=='hermit')return;if(!v||!hmOptL(G.hmOpt).includes(v)){hmPick(v);return}HM_ASK=v;hmAskR(1)}
+function hmNo(){HM_ASK=null;if(G&&modalState==='hermit')hmAskR(1)}
+function hmPick(v){if(!G||modalState!=='hermit')return;HM_ASK=null;const O=hmOptL(G.hmOpt),a=v==='1'?O[0]:O.includes(v)?v:null;G.hmOpt=null;hideModal();
   if(a){G.hmArt=a;G.hmW=G.wave;hkBuild();hmApply();G.nextPlan=planWave(G.wave+1);sfx('pick');sayB(`仙法 · ${HMA[a].name}(持续 ${hmDur()} 波)`,`接下来 ${HMC.waves} 波是试炼：亡灵怪组数量 +100%，${HMA[a].cost}`)}
   else sfx('click');
   saveRun();if(UI.ready){refreshPhaseUI();refreshSel(true)}
@@ -92122,7 +92126,8 @@ addEventListener('keydown',e=>{
   if(modalState){
     if(k==='enter')e.preventDefault();
     if(modalState==='zslaw'&&['1','2','3','4','5'].includes(k)&&!e.repeat)zsLawPick(Object.keys(CFG.taoRuins.laws)[+k-1]);
-    if(modalState==='hermit'&&G&&G.hmOpt&&/^[1-9]$/.test(k)&&!e.repeat){const O=hmOptL(G.hmOpt);if(+k<=O.length)hmPick(O[+k-1])}   // 0.13.5 隐士三选一：数字键选（game/hermit）
+    if(modalState==='hermit'&&G&&G.hmOpt&&HM_ASK&&(k==='enter'||k==='escape')&&!e.repeat){if(k==='enter')hmPick(HM_ASK);else hmNo()}   // 0.13.6.1 隐士确认框：回车确认、Esc 取消
+    else if(modalState==='hermit'&&G&&G.hmOpt&&/^[1-9]$/.test(k)&&!e.repeat){const O=hmOptL(G.hmOpt);if(+k<=O.length)hmTry(O[+k-1])}   // 0.13.5 隐士三选一：数字键选（game/hermit）
     if(modalState==='oath'&&OATH_ASK&&(k==='enter'||k==='escape')&&!e.repeat){if(k==='enter')oathPick(OATH_ASK);else oathNo()}   // 誓约确认框：回车确认、Esc 取消
     else if(modalState==='oath'&&OATH_OPTS&&/^[1-9]$/.test(k)&&+k<=OATH_OPTS.ids.length&&!e.repeat)oathTry(OATH_OPTS.ids[+k-1]);   // v0.9.4 誓约：数字键选   // v0.7.0 道观废墟五神法：数字键选
     else if((modalState==='cards'||modalState==='ecards')&&['1','2','3','4','5','6'].includes(k))cardTap(+k-1,modalState==='ecards');
@@ -92185,7 +92190,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.6',GAME_TAG='稳定版',GAME_CODE=242,GAME_BUILD="51bb7e3+",GAME_BUILT=1794289025112,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.6',GAME_TAG='稳定版',GAME_CODE=242,GAME_BUILD="9eb1ed1",GAME_BUILT=1794294387631,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -93596,7 +93601,7 @@ function onSheetClick(e){
   else if(a==='zslaw')zsLawPick(v);   // v0.7.0 道观废墟五神法
   else if(a==='oath')oathTry(v);   // v0.9.4 誓约（点卡先弹确认，game/oath094.oathTry）
   else if(a==='oathok')oathPick(v);else if(a==='oathno')oathNo();   // 誓约确认框
-  else if(a==='hmPick')hmPick(v);   // 0.12.6 代理 X 加：隐士（game/hermit）
+  else if(a==='hmPick')hmPick(v);else if(a==='hmTry')hmTry(v);else if(a==='hmNo')hmNo();   // 0.12.6 代理 X 加：隐士（game/hermit）
   else if(a==='ar3o')ar3OPick(v);   // 0.12.6 代理 R 加：联盟共主-亚瑟「胜利誓约」（heroes/arthur3）
   else if(a==='mctab'||a==='mcbuy'||a==='mcx')merchantAct(a,v);   // v0.9.4 商人
   else if(a==='pevTog'){SET.prepEvOn=SET.prepEvOn===false;saveSettings();showDiff()}
@@ -94431,14 +94436,19 @@ HELP.pmerch=()=>({t:'流浪商人 · 隐士',b:hpL(['准备阶段有时会来流
 
 // ---------- 0.12.6 隐士的弹窗、战场详情里的一行（代理 X；机制 game/hermit.js，头像 art/hermit_art.js）----------
 // 弹窗：准备阶段（hmEv0 的 prepAsk，排在誓约前面）打开；0.13.5 三选一：每种一张卡（data-act="hmPick" data-v=仙法，ui/menus 转给 game/hermit.hmPick），下面「婉拒」= 都不选
-function hmAsk(){if(!G||!G.hmOpt||G.phase!=='prep'||!UI.ready)return false;const O=hmOptL(G.hmOpt),C=CFG.hermit;if(!O.length)return false;
+function hmAsk(){HM_ASK=null;return hmAskR()}   // 0.13.6.1 用户 11-10：点仙法先弹确认框（game/hermit.hmTry）；重新弹出时清掉没答完的确认
+function hmAskR(re){if(!G||!G.hmOpt||(!re&&G.phase!=='prep')||!UI.ready)return false;const O=hmOptL(G.hmOpt),C=CFG.hermit;if(!O.length)return false;   // re：弹窗已经开着、只是重画（弹出 / 收起确认框）——幸存者模式借这个弹窗时不在准备阶段（ui/survivor.svHmOpen）
   const img=typeof hmPorUrl==='function'?hmPorUrl():'',R=hmDur();
-  const cards=O.map((k,q)=>{const A=C.arts[k];return`<button class="card q4" type="button" data-act="hmPick" data-v="${k}"><kbd>${q+1}</kbd><span class="tier">仙法</span><b>${A.name}</b><span class="desc">效果(${R} 波)：${A.eff}<br><br>试炼(接下来 ${C.waves} 波)：${A.cost}</span></button>`}).join('');
+  const cards=O.map((k,q)=>{const A=C.arts[k];return`<button class="card q4" type="button" data-act="hmTry" data-v="${k}"><kbd>${q+1}</kbd><span class="tier">仙法</span><b>${A.name}</b><span class="desc">效果(${R} 波)：${A.eff}<br><br>试炼(接下来 ${C.waves} 波)：${A.cost}</span></button>`}).join('');
   openModal('hermit',`<h2 class="hd">隐士</h2><div class="hmbox" style="display:flex;gap:12px;align-items:center">${img?`<img src="${img}" alt="" style="width:64px;height:75px;image-rendering:pixelated;flex:none">`:''}<div>`+
     `<p class="meta">一位白须老者手持拂尘，云游至此：「老夫有${O.length>1?'几':'一'}门仙法，可愿择一受此传授与试炼？」</p>`+
     `<p class="meta">仙法效果持续一轮(${R} 波)，到期以后隐士还会再来；接受的这一门有试炼：接下来 ${C.waves} 波亡灵怪组数量 +${Math.round((C.countK-1)*100)}%，另加卡上写的代价</p></div></div>`+
     `<div class="cards" style="--n:${O.length}">${cards}</div>`+
-    `<div class="actions"><button class="px" type="button" data-act="hmPick" data-v="">婉拒</button></div>`,null);return true}
+    `<div class="actions"><button class="px" type="button" data-act="hmPick" data-v="">婉拒</button></div>${HM_ASK&&O.includes(HM_ASK)?hmCfHTML(HM_ASK,R):''}`,null);return true}
+// 确认框：同誓约的确认框（game/oath094.oathCfHTML），写着效果和试炼
+function hmCfHTML(k,R){const C=CFG.hermit,A=C.arts[k];return`<div class="mpopbg" data-act="hmNo" role="button" aria-label="取消"></div><div class="mpop oppop" role="dialog"><div class="oph"><b>确定接受仙法「${A.name}」吗？</b><button class="px sq" type="button" data-act="hmNo" aria-label="取消">×</button></div>
+  <div class="opb"><p>效果(${R} 波)：${A.eff}</p><p>试炼(接下来 ${C.waves} 波)：亡灵怪组数量 +${Math.round((C.countK-1)*100)}%，${A.cost}</p></div>
+  <div class="opf actions"><button class="px warn2" type="button" data-act="hmPick" data-v="${k}">确认</button><button class="px" type="button" data-act="hmNo">取消</button></div></div>`}
 // 读档回到还没答复的准备阶段：隔两帧再弹（同商人的 mcDefer）
 function hmAskLater(){const go=()=>{if(!G||!G.hmOpt||G.phase!=='prep'||!modal.hidden)return;hmAsk()};
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(go));else setTimeout(go,32)}
