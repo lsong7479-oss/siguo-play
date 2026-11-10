@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.6",
- "code": 243,
- "size": 19567818,
- "sha256": "021e200df391871defb5467d41d39632cdbd89e70214acf2df6cd0a746d1b208",
+ "ver": "0.13.6.1",
+ "code": 244,
+ "size": 19574574,
+ "sha256": "bc568d8ffe94c58f1cf334ce0d0da21e16ef29fac1521d0435317b5ca475181a",
  "minLoader": 1,
- "sig": "t6Kr2zxt9cOOmaJ0lweq7T2AwjQO/II7mjlvndf/8MZ+eeK4NNPEcLeLo/S8lSazfVZO24LVoqvmsz94Qnis3w==",
- "note": "0.13.6（和正式版相同）",
- "at": "2026-11-10 03:18 UTC"
+ "sig": "iXIpmfSbH+rEUly7RRW1bCoFKRCHt3LwdsI4CzQTbBTM95iXKphVy+hMZgcFy19cSxXPf8GB83DbV8rbtZjipg==",
+ "note": "0.13.6.1 测试版",
+ "at": "2026-11-10 05:07 UTC"
 }
