@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.6",
- "code": 242,
- "size": 19567818,
- "sha256": "181c6ed28111ff8b5be406d0fd3c5431b9a7e47b7c489da62ad60f2d371a3185",
+ "ver": "0.13.7.2",
+ "code": 247,
+ "size": 21021428,
+ "sha256": "459067c05b30817b5618d6df74a392965b1cfbe5f1d240c6a075578f8e29b95e",
  "minLoader": 1,
- "sig": "/a1ILYDZfeag4PnbjiyQjwFNGslpkNpj8bjuWkI3ii9siRzhm/iCCkBMVfGQDpW2/uAGlDzcxa3MCA4l7uP95w==",
- "note": "0.13.6：九阶新地图北原王庭、新兵营北原骑营、进阶罗兰、七～九阶新科技、家族科技、雾隐家族、符文系统、常规装备上调与紫色、七款建筑皮肤、家族时间流速设置、每一批卡牌都能刷新、基础攻击统一加算",
- "at": "2026-11-10 03:14 UTC"
+ "sig": "CpVNGy9lt4A79hAgJkeYbUy+Q5eWHojZbDvvMH9IOTAg5LsEu5w7lJwuyKLrYVHjYg6YqgzWGidStXqGA2OAQw==",
+ "note": "0.13.7.2 稳定版",
+ "at": "2026-11-11 07:19 UTC"
 }
