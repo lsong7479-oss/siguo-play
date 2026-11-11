@@ -13452,8 +13452,8 @@ Object.assign(CFG.story.plans,{
 //   精英等级（第一夜 1 级、荒野来客 5 级、第三章 10 级）、首通金币、各章简介（desc）、剧情教的技能等级（elSkLv）Claude 定
 Object.assign(CFG.story.npcLook,{'里瓦':{job:'musketeer', age:42, lk:{sk:1, hr:3, ey:4, b:1}}});   // 0.13.7.1b 里瓦是劳伦斯家的人：照家主的沙褐发、灰蓝眼（Claude 定）
 CFG.story.npcLook['老人']=CFG.story.npcLook['汉斯'];
-// 0.13.7.1b 台本的表情（tools/story3/n1build 的 EXPR）→ 对话框的表情气泡（art/st_emo 的 12 个）：眯眼笑 → 得意（闪光）、严肃 → 无语（……，没有更贴近的）、挑眉 → 疑（?）、微笑 → 喜（♪）、面色铁青 → 怒（青筋）（Claude 定）
-CFG.story.emo={squint:'smug', serious:'dots', brow:'question', smile:'joy', grim:'anger'};   // 0.13.7.1b 台本里「老人」就是还没报名字的汉斯（「大人叫我汉斯就行」），长得一样；汉斯 56 岁照《第一阶段人设表》
+// 0.13.7.1b 台本的表情（tools/story3/n1build 的 EXPR）→ 对话框的表情气泡（art/st_emo 的 13 个）：眯眼笑 → 得意（闪光）、严肃 → 严肃（皱眉，用户 11-11 定单独画）、挑眉 → 疑（?）、微笑 → 喜（♪）、面色铁青 → 怒（青筋）（Claude 定）
+CFG.story.emo={squint:'smug', serious:'serious', brow:'question', smile:'joy', grim:'anger'};   // 0.13.7.1b 台本里「老人」就是还没报名字的汉斯（「大人叫我汉斯就行」），长得一样；汉斯 56 岁照《第一阶段人设表》
 Object.assign(CFG.story.npcLook,{'小约翰':{job:'warrior', age:32, lk:{sk:2, hr:1, ey:1, b:2, acc:'beard'}}, '马奇':{job:'recruit', age:20, lk:{sk:1, hr:2, ey:1, b:0}}, '信使':{job:'gunCav', age:28, lk:{sk:0, hr:3, ey:4, b:1}}});   // 0.13.0b 腐化之地篇的配角（职业、年龄 Claude 定）
 CFG.story.elPers={'马丁':'brave', '路德':'reckless', '奥托':'careful', '托比':'brave', '阿兰':'timid'};
 CFG.story.elSkLv=2;
@@ -15639,7 +15639,7 @@ Object.assign(CFG.heroes.xina,CFG.heroStats.xina);
 /* ---------- 0.12.6 英雄二次进阶：联盟共主-亚瑟（金色，用户 2026-10-31 的策划；代理 R）----------
    技能逻辑、二次进阶在 heroes/arthur3.js；小人、技能图标在 art/ar3_art.js；立绘 art/portraits/arthur3.png（原图 art/立绘原图/arthur3.png）
    用户定：品质金色；擅长单手剑、单手枪、盾（熟练只按种类认：sword、spear、shield），板甲；四个技能的效果和 1★～5★ 的数值；决死意志冷却 10 秒不受缩减；
-     解锁（用户 2026-10-31 改）：通关第一卷剧情、进阶-亚瑟 5 星、四阶及以下所有地区的家族声望都到「忠诚」或以上，在英雄页再次进阶；和亚瑟、进阶-亚瑟不能同时上阵（advOf 指向原版亚瑟，同一位英雄的三个形态）
+     解锁（用户 2026-10-31 改）：通关第一卷剧情、进阶-亚瑟 5 星、四阶及以下所有地区的家族声望都到「信任」或以上（用户 11-11 由「忠诚」改），在英雄页再次进阶；和亚瑟、进阶-亚瑟不能同时上阵（advOf 指向原版亚瑟，同一位英雄的三个形态）
    adv2：二次进阶（game/meta 的 ADV_ID 跳过它，进阶-亚瑟照旧是 ADV_ID.arthur）——form 先要的形态（要到满星）、story 要通关的剧情地区、rep {tier 几阶及以下的地区, lv 家族声望要到的等级名}
    Claude 定：基础属性（进阶-亚瑟往上提一档，参照同为金色近战的日轮王子·永、胡寒）；四个技能 1★ 就都有（allSkills）；
      「通关第一卷剧情」= 第一卷最后一个地区「重返荒野」(homeWild) 通关过（第二卷的地区都要它）；
@@ -15668,7 +15668,7 @@ Object.assign(CFG.skills,{
     desc:p=>`${p.r>0?`自身和半径 ${p.r} 格内的士兵`:'自身'} ${p.dur} 秒内：每损失 1% 生命，增伤 +${ufPc2(p.amp)}；濒死时 ${p.undy} 秒内不会阵亡；冷却 ${p.cd} 秒(不受冷却缩减)`},
 });
 CFG.heroes.arthur3={name:'亚瑟', title:'联盟共主', quality:'gold', look:'arthur3', recruit:true, advOf:'arthur', allSkills:true,
-  adv2:{form:'arthur2', story:'homeWild', rep:{tier:4, lv:'忠诚'}, tag:'共主'}, soulTier:4,   // soulTier：0.12.6 第二批（主会话要）英雄之魄需求按阶的倍率用这个阶（ui/hv.hvHeroT 读）
+  adv2:{form:'arthur2', story:'homeWild', rep:{tier:4, lv:'信任'}, tag:'共主'}, soulTier:4,   // soulTier：0.12.6 第二批（主会话要）英雄之魄需求按阶的倍率用这个阶（ui/hv.hvHeroT 读）
   hp:620, def:7.2, dodge:0.03, crit:0.07, speed:4.5, vision:8, tough:122,
   prof:{weapon:['sword','spear','shield'], armor:['plate']},
   start:{weapons:[], offhand:null, armor:'plate'},
@@ -23760,7 +23760,7 @@ CFG.elite.famKeep={gcHours:72, followMax:6, adult:15};
 
 // ---------- 0.12.0 自建家族（用户定；数 Claude 定；逻辑 game/el_cfam.js）----------
 // 至多 max 个，必定在王都；建立时得一名 50% 自家血脉 + 50% 王都平民的精英，默认关注；升阶：消耗当前阶所有地区的特产（core）各 upCore[阶] 个，并且要当前阶的地图全部拿到深渊徽章
-// 属性：每项上限 1～这一阶家族封顶（移速、攻速、装填、射程按一阶封顶），下限 = 上限 − 0.2；可分配的总量 = (封顶 − 1) × allocK（一项堆满、另一项 50%）
+// 属性：每项上限 1～这一阶家族封顶（移速、攻速、装填、射程按一阶封顶），下限 = 上限 − 0.2；可分配的总量 = (封顶 − 起点) × allocK（一项堆满、另一项 50%）；起点 = 本阶平民水准（下限保底，九阶 2.35；用户 11-11 定，原来从 1 起）
 // 特别属性：每阶一个，每个 spStep；家族特性：20 / 40 / 60 / 80 / 100% 各选一个（p、x 按 bloodTrPX 固定），可选的随阶数变多（trOpts 的 t = 要的阶）
 CFG.elite.cfam={max:3, silver:50000, upCore:[20,30,40,50,60,80,100,120], allocK:1.5, lo:0.2, spStep:0.05, step:0.05, thr:[0.2,0.4,0.6,0.8,1],
   trOpts:{
@@ -50637,9 +50637,9 @@ function stLkAcc(S,o,y,ph){const A=EL_LK.acc;
   if(A.includes('tusk')){const b=hdM('bone');S.px(11,y+2.6,'#3a2818');S.ln(11,y+3.4,11.6,y+5.6,[b,3]);S.px(12,y+6,[b,1])}
   if(A.includes('glass')){const g=hdM('gold');for(const x of[16,18,19,21])S.ln(x,y,x,y+1,[g,1]);S.ln(16,y-0.2,18,y-0.2,[g,2]);S.ln(19,y-0.2,21,y-0.2,[g,2])}}
 
-// ---------- 0.13.7.1 剧情对话的表情气泡（望楼 11-04 画的 12 个，16×16，原稿《0.13策划-表情气泡/emo_表情气泡.py》，这里逐像素照抄）----------
+// ---------- 0.13.7.1 剧情对话的表情气泡（望楼 11-04 画的 12 个 + 11-11 Claude 补的「严肃」，16×16，原稿《0.13策划-表情气泡/emo_表情气泡.py》，这里逐像素照抄）----------
 // 白色圆角气泡 + 左下小尾巴（指向说话人的头），里面一个符号；对话框按 2 倍整数放大显示（ui/story 的 dlgShow，CSS .dlgemo）
-// 台本的表情 → 气泡：CFG.story.emo（data/story_n1.js）；气泡的键：surprise 惊、question 疑、joy 喜、love 心动、anger 怒、sweat 汗、dots 无语、annoyed 烦躁、idea 灵光、sleepy 困、cry 哭、smug 得意
+// 台本的表情 → 气泡：CFG.story.emo（data/story_n1.js）；气泡的键：surprise 惊、question 疑、joy 喜、love 心动、anger 怒、sweat 汗、dots 无语、annoyed 烦躁、idea 灵光、sleepy 困、cry 哭、smug 得意、serious 严肃
 const ST_EMO_BUB=['..############..','.#WWWWWWWWWWWW#.','#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#',
   '#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#','#SWWWWWWWWWWWWS#','.#SSSSSSSSSSSS#.','..#S#########...','..#S#...........','..##............','................'];
 const ST_EMO_PAL={'#':'#2c1c20',W:'#faf8f4',S:'#d6d0de',k:'#2c1c20',r:'#ce3034',R:'#961c28',b:'#468cdc',B:'#285aaa',l:'#aad2fa',p:'#ec5a82',P:'#b4325a',y:'#f6c83c',Y:'#c88c1e',g:'#787482',w:'#ffffff',o:'#f08228'};
@@ -50656,7 +50656,8 @@ const ST_EMO_SYM={
   idea:['...yyyy...','..yyywyy..','..yywyyy..','..yyyyyy..','...yYYy...','....gg....','....gg....','..........'],
   sleepy:['......bbb.','.......b..','......bbb.','bbbbb.....','...b......','..b.......','.b........','bbbbb.....'],
   cry:['kkkk.kkkk.','.bb...bb..','.bb...bb..','.lb...lb..','.bl...bl..','..........','...kkkk...','..........'],
-  smug:['....y.....','....y.....','..yyYyy...','....y...y.','....y..yYy','........y.','..y.......','.yYy......']};
+  smug:['....y.....','....y.....','..yyYyy...','....y...y.','....y..yYy','........y.','..y.......','.yYy......'],
+  serious:['.kk....kk.','..kk..kk..','..........','..kk..kk..','..kk..kk..','..........','...kkkk...','..........']};   // serious：用户 11-11 定「严肃」单独一个气泡，Claude 照「哭」那套脸画：皱眉 + 竖眼 + 一字嘴
 const ST_EMO_URL={};
 // 表情键（台本的 squint…）→ 气泡图（16×16 的 dataURL）；不认识的表情返回 null（对话框就不显示气泡）
 function stEmoUrl(ex){const id=CFG.story.emo&&CFG.story.emo[ex];if(!id||!ST_EMO_SYM[id])return null;if(ST_EMO_URL[id])return ST_EMO_URL[id];
@@ -78113,7 +78114,7 @@ SKFX.xnDrain=h=>{vfx('rune',{x:h.x,y:h.y,r:20,c:XN_C3,c2:XN_C1,life:0.6,spin:1.5
 SKFX.xnWrath=h=>{vfx('pillar',{x:h.x,y:h.y,w:8,hh:90,c:XN_C1,c2:'#ffffff',life:0.5})};
 
 // ---------- 0.12.6 英雄二次进阶：联盟共主-亚瑟（数据 data/hero_arthur3.js；小人、技能图标 art/ar3_art.js）代理 R ----------
-// 二次进阶（用户 2026-10-31 定：通关第一卷剧情、进阶-亚瑟 5 星、四阶及以下所有地区的家族声望到「忠诚」或以上，在英雄页再次进阶）：
+// 二次进阶（用户 2026-10-31 定：通关第一卷剧情、进阶-亚瑟 5 星、四阶及以下所有地区的家族声望到「信任」或以上（用户 11-11 由「忠诚」改），在英雄页再次进阶）：
 //   数据 adv2 = {form 先要的形态, story / clear / rep 条件, tag 形态名}（0.12.6 第二批通用化：梅林二次进阶 merlin3 也走这里）；AR3_ADV[原版] = 二次进阶的形态（game/meta 的 ADV_ID 跳过 adv2，进阶-亚瑟照旧是 ADV_ID.arthur）
 //   形态存 META.heroForm[原版]：0 / false 原版、1 / true 进阶、2 二次进阶（game/meta.heroForm / toggleForm 认 2；英雄页的切换按钮三个形态轮着切）
 //   英雄之魄、星级各算各的（同进阶-亚瑟）：二次进阶从 1 星开始；装备共用原版的；测试模式不用进阶也能切到
@@ -86680,10 +86681,14 @@ const elCfMinor=k=>EL().bloodMinor.includes(k);
 function elCfCap(cf,k){const E=EL(),t=E.bloodNoTier.includes(k)?0:Math.min(8,cf.tier-1),c=E.bloodCap.f[t];return elCfMinor(k)?1+(c-1)*E.bloodMinorK:c}
 // 下限的保底（0.12.0 用户定：升阶自动把下限拉到本阶平民水准）：本阶平民的上限（封顶 − 0.05；移速、攻速、装填、射程按一阶，五项压到三成）
 function elCfFloor(cf,k){const E=EL(),t=E.bloodNoTier.includes(k)?0:Math.min(8,cf.tier-1),c=E.bloodCap.c[t]-0.05;return elCfMinor(k)?1+(c-1)*E.bloodMinorK:c}
-// 已用的分配量：每项 (上限 − 1) / (封顶 − 1)，合计不超过 allocK（一项堆满、另一项 50%）
-function elCfUsed(cf,skip){let u=0;for(const k in cf.alloc||{}){if(k===skip)continue;const c=elCfCap(cf,k);if(c>1)u+=Math.max(0,cf.alloc[k]-1)/(c-1)}return u}
+// 分配的起点（用户 11-11 定）：从本阶的保底开始分（九阶 2.35），不再从 1.0 开始；一阶保底不到 1 时按 1
+function elCfBase(cf,k){return Math.max(1,Math.round(elCfFloor(cf,k)*100)/100)}
+// 现在的上限：没分配过 / 低于保底的按保底
+function elCfHi(cf,k){return Math.min(elCfCap(cf,k),Math.max(elCfBase(cf,k),(cf.alloc||{})[k]||1))}
+// 已用的分配量：每项 (上限 − 起点) / (封顶 − 起点)，合计不超过 allocK（一项堆满、另一项 50%）
+function elCfUsed(cf,skip){let u=0;for(const k in cf.alloc||{}){if(k===skip)continue;const c=elCfCap(cf,k),b=elCfBase(cf,k);if(c>b)u+=Math.max(0,elCfHi(cf,k)-b)/(c-b)}return u}
 function elCfBuild(B,T){const m=META&&META.el;if(!m||!Array.isArray(m.cf))return;const E=EL(),C=CFM(),r2=x=>Math.round(x*100)/100;
-  for(const cf of m.cf){const id='f_u'+cf.id,st={},sp={};for(const[k]of E.bloodStats){const hi=r2(Math.min(elCfCap(cf,k),Math.max(1,(cf.alloc||{})[k]||1)));const lo=Math.max(hi-(elCfMinor(k)?C.lo*E.bloodMinorK:C.lo),elCfFloor(cf,k));st[k]=[r2(lo),r2(Math.max(hi,lo))]}
+  for(const cf of m.cf){const id='f_u'+cf.id,st={},sp={};for(const[k]of E.bloodStats){const hi=r2(elCfHi(cf,k));const lo=Math.max(hi-(elCfMinor(k)?C.lo*E.bloodMinorK:C.lo),elCfFloor(cf,k));st[k]=[r2(lo),r2(Math.max(hi,lo))]}
     for(const k of cf.sp||[])sp[k]=[r2((sp[k]?sp[k][0]:0)+C.spStep),r2((sp[k]?sp[k][1]:0)+C.spStep)];
     const tkey=(thr,o)=>id+'_'+Math.round(thr*100)+'_'+o,mk=(thr,o)=>{const O=C.trAll[o];if(!O)return null;const k=tkey(thr,o),[p,x]=E.bloodTrPX[thr];T[k]={name:O.name,blood:id,min:thr,p,x,st:O.st,desc:O.desc};return k};
     for(const k of cf.trH||[]){const a=k.slice(id.length+1).split('_');mk(+a[0]/100,a.slice(1).join('_'))}   // 换掉的选项也留着（老成员身上还有）
@@ -86696,9 +86701,9 @@ function elCfCreate(name,crest){const m=elSt(),C=CFM();name=String(name||'').tri
   const B=elBlood();for(const id in B)if(B[id].fam===name)return'这个姓已经有家族了';if(m.list.length>=elCap())return`精英已满(${elCap()} 名)`;if((META.wallet.银币||0)<C.silver)return`银币不够(需要 ${C.silver})`;
   META.wallet.银币-=C.silver;const cf={id:(m.cfn=(m.cfn||0)+1),name,tier:1,alloc:{},sp:[],tr:{},trH:[],crest:elCfCrestFix(crest),at:metaNow()};m.cf.push(cf);elCfDirty();
   const e=elGen('royal',{noBl:true,age:elRi(18,22)});e.fam=name;e.bl={['f_u'+cf.id]:EL().bloodN/2,c_royal:EL().bloodN/2};elBlRoll(e);elBlTraits(e,'hire');e.id=m.n++;e.ja=e.age;m.list.push(e);elAutoSk(e);if(!m.follow.includes(e.id))m.follow.push(e.id);saveMeta();return null}   // 族长 18～22 岁，留几年给玩家自己挑配偶
-// 分配属性上限：一次 ±step；不超过这一项的封顶和总量
-function elCfAlloc(cf,k,d){const cap=elCfCap(cf,k),cur=(cf.alloc||{})[k]||1,nv=Math.round(clamp(cur+d*CFM().step,1,cap)*100)/100;if(nv===cur)return d>0?'已经到这一项的上限':null;
-  if(d>0&&elCfUsed(cf,k)+(cap>1?(nv-1)/(cap-1):0)>CFM().allocK+1e-6)return'可分配的量用完了(一项堆满、另一项一半)';(cf.alloc||(cf.alloc={}))[k]=nv;elCfDirty();return null}
+// 分配属性上限：一次 ±step，从本阶保底起（elCfBase）；不超过这一项的封顶和总量
+function elCfAlloc(cf,k,d){const cap=elCfCap(cf,k),b=elCfBase(cf,k),cur=elCfHi(cf,k),nv=Math.round(clamp(cur+d*CFM().step,b,cap)*100)/100;if(nv===cur)return d>0?'已经到这一项的上限':null;
+  if(d>0&&elCfUsed(cf,k)+(cap>b?(nv-b)/(cap-b):0)>CFM().allocK+1e-6)return'可分配的量用完了(一项堆满、另一项一半)';(cf.alloc||(cf.alloc={}))[k]=nv;elCfDirty();return null}
 // 特别属性：每阶一个
 function elCfSp(cf,k,on){if(on){if(cf.sp.length>=cf.tier)return`现在只能配 ${cf.tier} 个(每阶一个)`;cf.sp.push(k)}else{const i=cf.sp.lastIndexOf(k);if(i>=0)cf.sp.splice(i,1)}elCfDirty();return null}
 // 特别属性一次改完（0.12.0 用户定：要确认；只往空格子里加不要钱，改掉已配的花 spGold 金币）：L = 新的列表
@@ -93254,7 +93259,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.7.2',GAME_TAG='稳定版',GAME_CODE=247,GAME_BUILD="491b714+",GAME_BUILT=1794403866990,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.7.2',GAME_TAG='稳定版',GAME_CODE=247,GAME_BUILD="4d91c79+",GAME_BUILT=1794406687758,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -97354,28 +97359,31 @@ function storySay(lines,done){if(!lines||!lines.length){if(done)done();return}
   if(dlgOn){const q=dlgQ,d0=dlgDone;dlgQ=q.concat(lines);dlgDone=()=>{if(d0)d0();if(done)done()};return}   // 正在放：接在后面
   dlgQ=lines.slice();dlgK=0;dlgDone=done||null;dlgOn=true;dlgMenu=[];dlgVis.clear();if(running)paused=true;keys.clear();atkKey=false;dlgEl.hidden=false;dlgShow()}
 // 0.13 对白里的特殊行（荒野篇新剧情，data/story_n1_say 由 tools/story3/n1build 从台本生成；分支在章节的 br 里）：
-//   ['opt', [[按钮文字, 分支名 | '@join' 汇合 | '@up' 回到上一层]]] 选项（选过的、自己不再带选项的分支下次不列出来）· ['back'] 回到选项 · ['up'] 回到上一层选项 · ['join'] 汇合（接着最外层选项后面的对白）
+//   ['opt', [[按钮文字, 分支名 | '@join' 汇合 | '@up' 回到上一层]]] 选项（看完的分支下次不列出来：没有子选项的选过就算看完；带子选项的，子选项里除了 @ 退出项都看完才算，见 dlgSpent）· ['back'] 回到选项 · ['up'] 回到上一层选项 · ['join'] 汇合（接着最外层选项后面的对白）
 //   ['if', 标记, [是], [否]] · ['set', 标记] · ['fav', 名字, 数] 好感（只记不显示，用户定）· ['learn', 名字, 精英技能] · ['hj', 英雄] 英雄加入（game/st_new 的 stOp*）
 //   分支的对白是拷进 dlgQ 里接着放的；dlgMenu = 现在打开着的选项（最外层在前），回到选项 = 把这一段已经放过的分支从 dlgQ 里删掉、再列一次
 let dlgMenu=[],dlgOpt=null;const dlgVis=new Set(),dlgOptEl=document.createElement('div');dlgOptEl.className='dlgopts';dlgOptEl.hidden=true;dlgEl.querySelector('.dlgbox').appendChild(dlgOptEl);
 const DLG_FX={tod:q=>{if(typeof stTodSet==='function')stTodSet(q[1])},set:q=>stOpSet(q[1]),fav:q=>stOpFav(q[1],q[2]),learn:q=>stOpLearn(q[1],q[2]),hj:q=>stOpHj(q[1]),hl:q=>stOpHl(q[1])};   // hl：0.13.7.1 英雄离队
 const dlgBr=nm=>{const x=G&&G.story?stCur():null,B=x&&x.C.br;return B&&B[nm]||null};
-const dlgLeaf=nm=>!(dlgBr(nm)||[]).some(q=>q[0]==='opt');
+const dlgOptsIn=(L,out)=>{for(const q of L||[]){if(!Array.isArray(q))continue;if(q[0]==='opt')out.push(q);else if(q[0]==='if')dlgOptsIn(stFlag(q[1])?q[2]:q[3],out)}return out};   // 一段对白里的选项（if 按现在的标记走那一边）
+const dlgSpent=(nm,d)=>dlgVis.has(nm)&&(d>8||dlgOptsIn(dlgBr(nm),[]).every(q=>!q[1].some(o=>dlgCanGo(o,d+1))));   // 用户 11-11 定：分支看完了 = 选过，而且它里面的子选项除了「返回 / 差不多了」这类 @ 退出项都看完了（一层层往下查）；d 防绕圈
+const dlgCanGo=(o,d)=>o[1][0]!=='@'&&!!dlgBr(o[1])&&!dlgSpent(o[1],d|0);   // 这一项还有没看的：不是退出项、有这个分支、没看完
 // 回到第 m 个打开着的选项：删掉它后面到 k（含）放过的对白
-function dlgBack(m,k){const o=dlgMenu[m],i=dlgQ.indexOf(o);dlgMenu.length=m+1;dlgQ.splice(i+1,k-i);dlgK=i}
-function dlgJoin(k){const o=dlgMenu[0],i=dlgQ.indexOf(o);dlgMenu=[];dlgQ.splice(i,k-i+1);dlgK=i}
+const dlgBEnd=(o,i,k)=>{let j=k;for(let x=i+1;x<dlgQ.length;x++){const l=dlgQ[x];if(l[0]==='bend'&&l[1]===o){j=Math.max(k,x);break}}return j};   // 11-11 Claude 定：从这个选项进去的分支末尾（dlgPick 放的 bend 记号）；回到选项 / 汇合时连子选项后面没放到的对白一起删掉
+function dlgBack(m,k){const o=dlgMenu[m],i=dlgQ.indexOf(o),j=dlgBEnd(o,i,k);dlgMenu.length=m+1;dlgQ.splice(i+1,j-i);dlgK=i}
+function dlgJoin(k){const o=dlgMenu[0],i=dlgQ.indexOf(o),j=dlgBEnd(o,i,k);dlgMenu=[];dlgQ.splice(i,j-i+1);dlgK=i}
 // 处理特殊行，停在下一句要显示的对白 / 选项上；fast = 跳过：普通对白也一路跳过去，只停在选项上
 function dlgRun(fast){for(let n=0;n<5000;n++){const q=dlgQ[dlgK];if(!q){dlgEnd();return null}const w=q[0];
-    if(DLG_FX[w]){DLG_FX[w](q);dlgK++;continue}
+    if(DLG_FX[w]||w==='bend'){if(DLG_FX[w])DLG_FX[w](q);dlgK++;continue}   // bend：分支末尾的记号，不显示
     if(w==='if'){dlgQ.splice(dlgK,1,...(stFlag(q[1])?q[2]:q[3]).map(l=>l.slice()));continue}
     if(w==='back'||w==='up'){if(!dlgMenu.length){dlgK++;continue}if(w==='up')dlgMenu.pop();if(!dlgMenu.length){dlgK++;continue}dlgBack(dlgMenu.length-1,dlgK);continue}
     if(w==='join'){if(!dlgMenu.length){dlgK++;continue}dlgJoin(dlgK);continue}
-    if(w==='opt'){if(dlgMenu[dlgMenu.length-1]!==q)dlgMenu.push(q);const L=q[1].filter(o=>o[1][0]==='@'||!(dlgVis.has(o[1])&&dlgLeaf(o[1]))&&dlgBr(o[1]));if(!L.length){dlgK++;dlgMenu.pop();continue}return['opt',L]}
+    if(w==='opt'){if(dlgMenu[dlgMenu.length-1]!==q)dlgMenu.push(q);const L=q[1].filter(o=>o[1][0]==='@'||dlgCanGo(o));if(!L.length){dlgMenu.pop();if(dlgMenu.length)dlgBack(dlgMenu.length-1,dlgK);else dlgK++;continue}return['opt',L]}   // 一项都不剩：最外层就接着往下放，子菜单回到上一层（11-11 Claude 定，和「@up」一样）
     if(fast){dlgK++;continue}return q}
   dlgEnd();return null}
 function dlgPick(o){const q=dlgQ[dlgK];if(!dlgOpt||!q||q[0]!=='opt')return;sfx('click');dlgOpt=null;dlgOptEl.hidden=true;dlgOptEl.innerHTML='';const t=o[1];
   if(t==='@join')dlgJoin(dlgK);else if(t==='@up'){dlgMenu.pop();if(dlgMenu.length)dlgBack(dlgMenu.length-1,dlgK);else dlgK++}
-  else{dlgVis.add(t);dlgQ.splice(dlgK+1,0,...(dlgBr(t)||[]).map(l=>l.slice()));dlgK++}
+  else{dlgVis.add(t);dlgQ.splice(dlgK+1,0,...(dlgBr(t)||[]).map(l=>l.slice()),['bend',q]);dlgK++}
   dlgShow()}
 function dlgShowOpt(L){dlgOpt=L;dlgEl.classList.add('ask');dlgOptEl.innerHTML=L.map((o,i)=>`<button class="px dlgop" type="button" data-o="${i}"><em>${i+1}</em>${i18nT(o[0])}</button>`).join('');dlgOptEl.hidden=false;dlgNextI.hidden=true}
 const dlgNextI=dlgEl.querySelector('.dlgnext');
@@ -98287,7 +98295,7 @@ function elCfHTML(){const m=elSt(),C=CFG.elite.cfam;
 const elCfSpTxt=L=>{const n={};for(const k of L)n[k]=(n[k]||0)+1;return Object.keys(n).map(k=>`${EL().bloodSpName[k]} +${Math.round(n[k]*CFG.elite.cfam.spStep*100)}%`).join('、')||'无'};
 function elCfTabHTML(cf,t){const C=CFG.elite.cfam,E=EL(),SP=E.bloodSpName,id='f_u'+cf.id,B=elBlood()[id];
   if(t==='st'){const used=elCfUsed(cf);return`<p class="meta">已分配 <b>${Math.round(used*100)}%</b> / ${Math.round(C.allocK*100)}%(一项堆满、另一项一半)；下限 = 上限 − ${C.lo}，但不低于本阶平民的水准(升阶自动拉高)；只影响以后出生的人</p>
-    <div class="statg">${E.bloodStats.map(([k,n])=>{const cap=elCfCap(cf,k),hi=(cf.alloc||{})[k]||1;return`<div><span>${statIco(n)}${n}</span><b>×${hi.toFixed(2)}<i class="gw">/ ${cap.toFixed(2)}</i></b>${B&&B.st[k]?`<i class="gw">出生 ${B.st[k][0].toFixed(2)}～${B.st[k][1].toFixed(2)}</i>`:''}<span>${elBtn('elxcfa',cf.id+'|'+k+'|-1','−')}${elBtn('elxcfa',cf.id+'|'+k+'|1','+')}</span></div>`}).join('')}</div>`}
+    <div class="statg">${E.bloodStats.map(([k,n])=>{const cap=elCfCap(cf,k),hi=elCfHi(cf,k);return`<div><span>${statIco(n)}${n}</span><b>×${hi.toFixed(2)}<i class="gw">/ ${cap.toFixed(2)}</i></b>${B&&B.st[k]?`<i class="gw">出生 ${B.st[k][0].toFixed(2)}～${B.st[k][1].toFixed(2)}</i>`:''}<span>${elBtn('elxcfa',cf.id+'|'+k+'|-1','−')}${elBtn('elxcfa',cf.id+'|'+k+'|1','+')}</span></div>`}).join('')}</div>`}
   if(t==='sp'){const L=EL_CSP[cf.id]||cf.sp,cost=elCfSpCost(cf,L),ch=L.length!==cf.sp.length||cost>0,cnt=(A,k)=>A.filter(x=>x===k).length;
     return`<p class="meta">每阶一个格子，同一项可以叠加，每层 +${Math.round(C.spStep*100)}%(按血脉占比打折)；只影响以后出生的人。往空格子里配不要钱，改掉已配的要确认、花 ${C.spGold} 金币。</p>
     <div class="elslots">${Array.from({length:cf.tier},(_,i)=>L[i]?`<span class="elslot on">${SP[L[i]]}</span>`:'<span class="elslot">空</span>').join('')}<span class="meta">${L.length} / ${cf.tier}</span></div>
