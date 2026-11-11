@@ -23018,10 +23018,10 @@ CFG.btech.towers.campYn={base:CFG.olv.lists.camp.slice(), baseOld:['ctrain','chp
      k 种类：wolf 天狼卫 / peg 天马骑 / tiger 玄虎骑
      lob {range, aspd}   直射 / 抛射两档：目标在 ranged.range(直射射程)以内直射，以外到 lob.range 抛射(越过建筑)，抛射时攻击间隔 ÷ aspd
      sc {n, ang, mul}    每次攻击另外散射：±ang、±2ang…各一枚(n 枚)，每枚 mul 伤害(直射、抛射都散)
-     sk {t, cd, …}       兵种自带技能(用户 11-12 定；不要科技)：波次中有目标时自动放，持续 t 秒、冷却 cd 秒(units/nq_camp.nqSkTry)
+     sk {t, cd, …}       兵种自带技能(用户 11-12 定；不要科技)：波次中有目标时自动放，持续 t 秒、冷却 cd 秒(units/nq_camp.nqSkTry；吃统一 buff 的冷却速度，用户 11-12 定)
        天狼卫 天狼冲锋：near 目标在 near 格内才放(Claude 定)；期间每次近战攻击都按冲锋攻击算(满速 cvFull：冲锋倍率、克烈的冲锋加成照常)
-       天马骑 天马连珠：as 攻速 ×as(独立，排在别的攻速加成之后；坐骑攻击不算，Claude 定)；目标在射程(含抛射)内才放
-       玄虎骑 玄虎震炮：dmg 这名兵造成的伤害 ×dmg(独立)、boom 爆炸半径 ×boom(直射、抛射的爆炸，玄虎重炮的火坑半径跟着放大)；目标在射程(含抛射)内才放
+       天马骑 天马连珠：as 攻速 ×as(独立，排在别的攻速加成之后；坐骑攻击不算，用户 11-12 定)；目标在射程(含抛射)内才放
+       玄虎骑 玄虎震炮：dmg 这名兵造成的伤害 ×dmg(独立；坐骑攻击不算，用户 11-12 定)、boom 爆炸半径 ×boom(直射、抛射的爆炸，玄虎重炮的火坑半径跟着放大)；目标在射程(含抛射)内才放
    兵营字段 mvDmg [per, max]：北原骑营的三种兵每 1 点移速(格 / 秒，按当前实际移速：含良骑育种、光环、减速、地形)独立增伤 per，至多 max(用户 11-12 定)
    进化字段（CFG.btech.towers.campNq；合并后的进化对象里读）：
      nqBreed {mv, hp, mount:{兵种: 攻击}, int, reach}   一阶良骑育种：移速 ×mv、生命 ×hp(独立)，坐骑每 int 秒攻击 reach 格内最近的亡灵一次
@@ -73376,10 +73376,11 @@ function nqBand(s,j){const Q=s.nq;if(!Q.rgD)return;const w=Math.hypot(E.x[j]-s.x
 
 // —— 每帧（units/soldiers.solTick，恐惧 / 僵直 / 快速推进之后；返回 true = 这一帧处理完了：嗷啸时停下）——
 function nqTick(s,dt){const Q=s.nq;
-  if(Q.sk){Q.kc-=dt;if(Q.kc<=0)nqSkTry(s,Q)}
+  const cs=s.bfV?Math.max(0.1,1+s.bfV[9]):1;   // 用户 11-12：兵种技能吃冷却速度（统一 buff 的 cdSpd，同边军大营）
+  if(Q.sk){Q.kc-=dt*cs;if(Q.kc<=0)nqSkTry(s,Q)}
   if(Q.hu>0){Q.hu-=dt;s.walking=false;s.cv=0;s.cvFull=false;return true}
   if(Q.mount>0)nqMount(s,Q,dt);
-  if(Q.howl){Q.hc-=dt;if(Q.hc<=0){if(G.phase==='wave'&&nearestEnemy(s.x,s.y,Q.howl.r*16,true)>=0)nqHowl(s,Q,Q.howl);else Q.hc=0.25}}
+  if(Q.howl){Q.hc-=dt*cs;if(Q.hc<=0){if(G.phase==='wave'&&nearestEnemy(s.x,s.y,Q.howl.r*16,true)>=0)nqHowl(s,Q,Q.howl);else Q.hc=0.25}}
   return false}
 // 坐骑攻击（良骑育种）：reach 格内最近的地面亡灵；吃近战加成、兵的攻击倍率和攻速
 const nqMAs=s=>(1+pmNC(s,pm.atkSpd)+TM.uMeleeSpd+drumF(s)+solAspT(s))*ENV.fslow*ENV.ourAtk*fAtkK(s)/(s.nq.ku>G.time?s.nq.as:1);   // 天马连珠的攻速（fAtkK 钩子里乘的）不给坐骑
@@ -73441,7 +73442,7 @@ function nqPlainAt(t){if(!NQ_PT[G.terrain[t]])return false;
 function nqPlainK(u){if(u.layer)return 0;const t=tidx(clamp(u.x,0,MW-1),clamp(u.y,0,MH-1));if(!nqPlainAt(t))return 0;
   const cp=u.camp,lv=cp&&!cp.dead?cp.level:u.nq.lv,P=CFG.camps.campNq.plain;return P[Math.max(0,Math.min(P.length-1,lv-1))]}
 function nqBaseE(i,dmg,o){if(NQ_MU[i]>G.time&&NQ_MI[i]===E.id[i]&&NQ_MN[i]>0)DRK*=Math.max(0,1-NQ_MDR*NQ_MN[i]);   // 天狼月刃：移除减伤（减伤池子 × (1 − 0.1 × 层数)，DRK 在 dealE 结束时复原）
-  const u=o.su||o.fu;if(u&&u.nq&&!u.dead){const k=nqPlainK(u);if(k>0)dmg*=1+k;dmg*=nqDmK(u)}return dmg}
+  const u=o.su||o.fu;if(u&&u.nq&&!u.dead){const k=nqPlainK(u);if(k>0)dmg*=1+k;dmg*=o.nqMt?nqSpK(u):nqDmK(u)}return dmg}   // 用户 11-12：坐骑攻击不吃玄虎震炮（移速增伤照吃）
 function nqHitE(i,dmg,o){if(!(dmg>0)||o.dot||!E.alive[i])return;const u=o.su;if(u&&u.nq&&u.nq.fe)nqWeak(i,u.nq.fe)}
 
 // —— 兵营的四座箭塔（structs/structs.updateTowers：电磁干扰 / 地图攻速倍率之后整座交给这里）：各自冷却、各自选目标；数值走 towerW（吃弓弩类科技、卡牌、兵营等级）——
@@ -93286,7 +93287,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.7.2',GAME_TAG='稳定版',GAME_CODE=247,GAME_BUILD="3a89fd0+",GAME_BUILT=1794430511081,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.7.2',GAME_TAG='稳定版',GAME_CODE=247,GAME_BUILD="4288a40+",GAME_BUILT=1794435858418,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
