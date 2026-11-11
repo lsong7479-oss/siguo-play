@@ -536,6 +536,8 @@ i.rup,i.rdn,i.req{font-style:normal;font-size:.85em}i.rup{color:#7fd17f}i.rdn{co
 .dlgbox{position:relative;display:flex;gap:14px;align-items:flex-end;width:min(calc(780px * var(--fk,1)),100%);box-sizing:border-box;background:#1a1622;box-shadow:0 0 0 2px var(--rivet),inset 0 0 0 1px var(--iron);padding:14px 16px 16px}
 .dlgpor{flex:none;width:104px;height:138px;margin-top:-64px;object-fit:cover;object-position:50% 8%;background:radial-gradient(ellipse at 50% 70%,#2c2434,#16131b 70%);box-shadow:0 0 0 2px var(--rivet),inset 0 0 0 1px var(--iron-hi)}
 .dlgpor[hidden]{display:none}.dlgpor.spr{object-fit:contain;object-position:50% 85%;image-rendering:pixelated}
+.dlgemo{position:absolute;left:82px;bottom:108px;width:32px;height:32px;image-rendering:pixelated;pointer-events:none;animation:dlgep .18s steps(2)}.dlgemo[hidden]{display:none}   /* 0.13.7.1b 表情气泡（16×16 放大 2 倍，尾巴指着头像里的头；头像框底边固定在框底 16px 上面，所以按 bottom 定位）（ui/story.dlgEmoSet） */
+@keyframes dlgep{0%{transform:translateY(4px) scale(.6)}}
 .dlgtx{flex:1;min-width:0;padding-right:62px}.dlgname{display:block;font-family:var(--f-display);font-weight:400;color:var(--brass-hi);font-size:1.05rem;margin-bottom:4px}
 .dlgline{margin:0;font-size:1rem;line-height:1.7;color:var(--bone);min-height:1.7em;white-space:pre-wrap}
 #dlg.fade{background:#000;align-items:center}#dlg.fade .dlgbox{background:none;box-shadow:none}#dlg.fade .dlgline{font-style:normal!important;font-size:1.5rem;color:var(--bone)!important}#dlg.fade .dlgskip{display:none}   /* 0.12.2 新剧情的黑屏转场字幕 */
@@ -546,7 +548,7 @@ i.rup,i.rdn,i.req{font-style:normal;font-size:.85em}i.rup{color:#7fd17f}i.rdn{co
 .dlgskip{position:absolute;top:6px;right:8px;font-size:.75rem;padding:2px 8px}
 .dlgnext{position:absolute;right:12px;bottom:8px;font-style:normal;font-size:.7rem;color:var(--brass-hi);animation:dlgb 1s steps(2) infinite}
 @keyframes dlgb{50%{opacity:.2}}
-@media (max-width:540px){.dlgpor{width:72px;height:96px;margin-top:-44px}.dlgline{font-size:.92rem}}
+@media (max-width:540px){.dlgpor{width:72px;height:96px;margin-top:-44px}.dlgline{font-size:.92rem}.dlgemo{left:60px;bottom:79px}}
 .stpage{display:grid;gap:10px;max-width:calc(900px * var(--fk,1));min-width:0}.sttabs .px em{margin-left:6px}
 .sttabs{flex-wrap:nowrap!important;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding-bottom:4px}.sttabs>.px{flex:0 0 auto;white-space:nowrap}   /* v0.8.15（用户定）剧情阶段横向滑动 */
 details.box>summary{cursor:pointer;list-style:none}details.box>summary h4{display:inline}details.box>summary::before{content:'▸ ';color:var(--ash)}details.box[open]>summary::before{content:'▾ '}details.box.lock{opacity:.6}
@@ -13408,20 +13410,23 @@ const STN1={
   n14:{"say":{"start":[["n","绿洲高处的风灯挂到了最高一格。西边金字塔的方向，低沉的号角声响了一整夜。"],["gunslinger","亚瑟骑士，这号角声不对劲……前几天黄沙关被攻破之前，关外响的就是这种号角！荒漠亡灵的正主儿被我们引出来了！"],["arthur","全员上墙！只要我们今晚在绿洲顶住这波主力，黄沙关那边就能彻底稳住了！"]],"w16":[["if","夜鸦护送村民",[["n","东边的风沙里忽然响起一阵急促的驼铃声。夜鸦从矮墙侧面翻身跃入，身后紧跟着一队手持弯刀的骆驼骑兵，领头的是个披着白袍的年轻首领。"],["arthur","夜鸦！你回来了！那八户乡亲送到了吗？"],["assassin","送到了，都在黄沙关内，平安。半路遇上他们，带回来了。"],["camelKnight","我是荒漠诸邦的新任盟主法里斯。我父亲几天前死在这些亡灵手里，这位黑衣朋友救了我们派出的斥候，告诉我你们在绿洲腹地死战。荒漠的仇，我们自己来报！"],["arthur","多谢法里斯盟主援手！我是王国骑士亚瑟！"],["hj","assassin"],["hj","camelKnight"],["npc","提示","夜鸦与荒漠盟主法里斯（全盛）加入了战斗，法里斯由 AI 操控。"]],[]]],"boss":[["n","低沉的号角声骤然停止。漫天黄沙中，几具高大的死灵抬出一顶金光灿灿的王轿，轿上端坐着一具头戴金冠的干瘪法老。"],["n","不朽法老抬起手中的黄金权杖往前一指，冲在最前面的一名民兵顿时倒地，再爬起来时浑身已被白布缠绕，反身扑向城墙！"],["engineer","快退到火枪塔后面！别被它手里的权杖指到，被指到的活人会直接变成木乃伊！"],["npc","提示","首领「不朽法老」的攻击会将我方士兵转化为敌方木乃伊，请利用防御塔与远程火力集中击杀。"]],"b1":[["if","夜鸦护送村民",[["camelKnight","骆驼骑兵听令，随我从侧翼冲散抬轿子的护卫！火枪塔瞄准轿子上面那个怪物！"]],[["n","激战正酣，东边的沙暴里突然响起一阵急促的驼铃声，一队手持弯刀的骆驼骑兵从亡灵侧后方杀入阵中！"],["camelKnight","绿洲的守军撑住！我是荒漠诸邦盟主法里斯，来向这群怪物讨还血债！"],["arthur","打开侧门接应友军！跟他们夹击金轿上的法老！"],["hj","camelKnight"],["npc","提示","荒漠盟主法里斯（全盛）加入了战斗，由 AI 操控。"]]]],"win":[["n","在火枪塔的齐射与众人的围攻下，黄金王轿轰然碎裂，不朽法老手中的权杖断成两截，干瘪的身躯化作飞灰散入黄沙。周围的亡灵大军随之土崩瓦解。"],["n","王轿倒塌的瞬间，法里斯座下的那头老骆驼被碎石砸中前腿，重重倒在沙地上，把法里斯压在了下面。"],["arthur","快！马丁、路德，过来搭把手把骆驼抬开！"],["camelKnight","别管我，先去救那边受伤的骑兵！"],["n","亚瑟和马丁合力抬开骆驼，将法里斯扶了出来。法里斯顾不上拍身上的沙土，第一时间跪倒在老骆驼身边，解开染血的驼鞍。"],["camelKnight","……它跟着我父亲走了十年荒漠，我父亲战死那天，也是它把遗体驮回来的。"],["n","亚瑟递过水囊，法里斯接了过来，先转身喂给了旁边一名嘴唇干裂的受伤骑兵。"],["n","荒漠腹地的亡灵主力被一举击溃，王都军队趁机重新占领并修固了黄沙关。"],["if","夜鸦护送村民",[["n","三天后，被送往黄沙关的八户绿洲村民回到了村子。拆下来的房梁和门板一根不少地码在后院。"],["npc","村民阿迪拉","骑士大人，我走之前画的那张灶台图纸呢？"],["n","达·芬奇从怀里掏出那张沾满黑灰的图纸递过去，阿迪拉画的炭笔印还清清楚楚留在背面。"],["arthur","我说话算话。弟兄们，动手帮乡亲们把屋子照原样盖起来，先盖阿迪拉大姐家！"],["n","士兵们和村民一起和泥垒墙、架梁上顶，用了十几天把八座民房全部重建起来，只是村子外围依然保留了那几座威慑亡灵的火枪塔。"],["n","年迈的村长掏出怀里的旧钥匙插进新屋门锁里，发现换了新铜锁，嘟囔了一句。"],["npc","年迈的村长","……旧钥匙开不了咯。不过这扇门，倒是比以前那扇结实多了。"]],[["n","战后第二天，亚瑟带着马丁和路德在绿洲东面三里外的一处流沙坑旁打扫战场时，从沙土里翻出了几个散落的粗布包袱。"],["n","包袱里装着几块干硬的麦饼、两只摔瘪的水壶，还有一把老旧的铜门锁钥匙。周围没有活人的脚印。"],["npc","马丁","大人，这包袱和钥匙……好像是绿洲村子那八户人家的。"],["arthur","……"],["n","亚瑟蹲下身，默默把那把旧铜钥匙捡起来收进怀里，站起身看向绿洲。"],["arthur","把他们的包袱收好。马丁，路德，通知弟兄们，把后院留存的房梁搬出来。我答应过他们要重建屋子的，哪怕人没走回绿洲，这八间屋子我们也照原样盖起来，外围的火枪塔继续留着守村子。"]]],["n","亚瑟带着人在绿洲多留了半个月，白天帮着荒漠部落疏通水井、搬运石料，晚上帮着法里斯清点粮草。"],["n","这天夜里，篝火熄了大半，年轻的盟主法里斯走到亚瑟身旁坐下。"],["camelKnight","亚瑟，不瞒你说，最开始听说你是王都派来的骑士，我还以为你跟黄沙关那些贵族军官一样，都是些只知道向荒漠收过路税、一见亡灵就跑的人。"],["arthur","现在呢？"],["camelKnight","现在我才知道，你跟他们完全不是一路人。要是你能早来荒漠半年，也许我父亲就不会死了。"],["camelKnight","其实……我根本不会当这个诸邦盟主。这几天你也看见了，分水的时候各部落吵，修井的时候吵，连谁家先领木料都要拔刀子。我父亲在的时候，一句话就能镇住所有人；现在轮到我坐在那个位子上，我看着他们吵，连句硬话都说不出口。"],["camelKnight","亚瑟，我跟几个长老商量过了，大家都服你。你干脆留在荒漠，替我当这个盟主吧！"],["arthur","让我当荒漠的盟主？为什么？"],["camelKnight","因为你天生就是个能让大家信服的领袖，比我强百倍。你留在王都替那些腐朽的贵族卖命，他们只会拿你当刀使；留在荒漠，我们诸邦的骑兵全听你的号令！"],["opt",[["保留意见，约定日后若有变故再来相聚（枭雄线）","枭雄之念"],["断然拒绝，鼓励法里斯自己挑起大梁（英雄线）","英雄之志"]]],["n","第二天清晨，绿洲的房屋和火枪塔全部修缮完毕。亚瑟、达·芬奇、夜鸦与霍青、法里斯道别，率领队伍启程返回黄沙关。"],["npc","提示","荒漠黄沙关剧情完成。"]]},"br":{"枭雄之念":[["n","亚瑟看着跳动的火苗，摸了摸怀里那张王都催缴三成秋收的旧税单，沉默了许久。"],["arthur","法里斯，我现在还背着王国的军令，荒野和腐化之地还有几百号跟着我出来的乡亲，我不能今天就留在这儿。"],["camelKnight","那你的意思是……"],["arthur","荒漠诸邦的盟主，眼下还得由你这个老盟主的儿子来当。替我把这支骆驼骑兵练好、把绿洲守稳。如果有一天，王都那些贵族真的连一点活路都不给底下的百姓留……我会回来找你的。"],["camelKnight","好！有你这句话就够了！从今往后，荒漠诸邦就是你在西边的后盾，只要你一句话，我的骑兵随时为你出征！"],["set","荒漠路线_枭雄"],["fav","法里斯",1],["join"]],"英雄之志":[["n","亚瑟温和但坚定地摇了摇头，拍了拍法里斯的肩膀。"],["arthur","法里斯，荒漠是你们的家园，这里的人认识的是你父亲和你，不是我这个外来的骑士。我不想要什么盟主的权力，也绝不会夺走属于你的位置。"],["camelKnight","可是我真的怕自己做不好……"],["arthur","没有人天生就会当领袖。我刚带队去荒野的时候，连五车粮食够吃几天都算不明白，还差点在冰原把大家带进死路，笨得像个木头人。"],["camelKnight","噗……你都是木头人，那我算什么？"],["arthur","算骆驼头子？哈哈，总之你只管放手去做，只要荒漠有难处，我们随时是并肩作战的盟友。"],["camelKnight","哈哈，好！那我就试试当好这个骆驼头子！以后你那边只要用得着我法里斯，写封信来，我绝不推辞！"],["set","荒漠路线_英雄"],["fav","法里斯",1],["join"]]}},
   n15:{"say":{"start":[["n","黄沙关大捷的消息传回王都，亚瑟带着达·芬奇、夜鸦和五个年轻部下返回王宫复命。"],["n","议事厅里炉火正旺，国王看着呈上来的冰原金矿账册与黄沙关捷报，脸上露出了久违的笑容。"],["npc","国王","好，太好了！冰原的金矿重新打通了，黄沙关也夺了回来，亚瑟，你替王国立下了大功！"],["arthur","这都是将士们和达·芬奇先生、法里斯盟主齐心协力的功劳。"],["n","国王高兴了片刻，眉头却又锁紧了，转头看向站在一旁的财政大臣和西奥公爵。"],["npc","国王","金子是有了，西边的商道也通了，可国库里的粮食还是见底。卢西安，你们西奥家的商队什么时候才能把西边的粮食运回来？"],["npc","西奥公爵","陛下明鉴，黄沙关刚打完仗，商路上的骆驼队来回一趟少说也要一两个月，远水救不了近火呀。"],["npc","克略公爵","我看不是运不过来，是有人想等粮价再涨高一些吧？"],["npc","西奥公爵","克略公爵，话可不能乱说，我们西奥家为王国筹措军资，也是尽力了的。"],["npc","霍利侯爵","陛下，臣倒有一个救急的办法。王国最南边的丛林四季温暖，哪怕是眼下这个时节，林子里也有野果和块茎，而且世居丛林的洛特家族手里向来存着不少粮食。"],["npc","国王","洛特家族？他们已经好几年没来王都朝贡了，而且丛林里亡灵遍布、瘴气又重，派谁去？"],["npc","霍利侯爵","亚瑟骑士连荒野、腐化之地和冰原都打下来了，派他带人去一趟南方丛林，向洛特家族征调一批粮食回来，岂不是正合适？"],["arthur","陛下，若能解王都缺粮之急，臣愿意带人去一趟南方丛林！"],["npc","国王","好！达·芬奇，你也继续跟着亚瑟去。只要能从丛林带回粮食，我重重有赏！"],["engineer","……老夫的钟楼又得往后推了。行吧，收拾家伙，去南边！"],["n","一行人出了王都南门，钻进闷热潮湿的南方丛林走了七天，才在一处林间空地扎下营寨。"],["n","木墙刚立起来的第二天，墙面上就爬满了滑腻的黑绿色青苔，木桩接缝处裂开了大口子。"],["npc","马丁","大人，这地方太邪门了！昨天刚刮干净的青苔，今天又长满了，木头吸了水涨得老大，太阳一晒又裂开！"],["n","达·芬奇蹲在墙根下，用小刀撬起一块黑苔，底下的木头已经发霉发黑，他忍不住掩嘴咳了两声。"],["engineer","咳咳……地气太潮，泥水顺着木头往上爬。光刮表面没用，得顺着墙根挖一圈排水沟把积水引走，墙脚垫一层碎石隔开烂泥，再往木头缝里抹满生石灰，青苔才长不出来。"],["arthur","好！马丁、路德，带人跟我去挖沟搬石头！"]],"q0":[["npc","提示","加固后的城墙在每一波开始时会获得额外护盾。注意：丛林中弥漫着毒瘴，所有单位会持续缓慢失去生命值，且在城内无法自然回血。"]],"w1":[["n","闷热的林雾中，一群长满藤蔓与霉斑的丛林亡灵从灌木丛里钻了出来。"],["npc","阿兰","呼……这里又闷又臭，吸一口气嗓子眼就像针扎一样！"],["arthur","把水囊里的水沾湿布条，蒙住口鼻！"]],"p3":[["n","第三天夜里，托比靠在箭塔下剧烈地咳嗽起来，吐出的唾沫里带着血丝。"],["npc","托比","咳咳……大人，我没事，还能拉弓……"],["npc","奥托","大人，他的额头烫得吓人，营地里已经有好几个弟兄开始咳血了。"],["arthur","托比，先把弓放下，进屋里歇着，外头交给我们！"]],"p6":[["n","傍晚，达·芬奇拿着铜尺在城墙上测量裂缝，转身下梯子时脚下一软，直挺挺地从梯子上栽了下来。"],["arthur","达·芬奇先生！"],["n","亚瑟一把扶住达·芬奇。老人脸色潮红，呼吸急促，嘴角溢出一丝黑血，已经烧得昏迷不醒。"],["npc","路德","糟了！达·芬奇老先生也中瘴毒了！这鬼地方连风里都是毒，我们带来的草药根本不管用！"],["arthur","夜鸦！"],["assassin","在。"],["arthur","达·芬奇先生和弟兄们撑不了多久。你立刻写封信让乌鸦传回腐化之地，再亲自去北边接应帕拉塞尔苏斯先生过来！只有他能解这种毒瘴！"],["assassin","来回，十天。"],["arthur","……达·芬奇先生高烧不退，七天之内，能赶回来吗？"],["assassin","我抄近路。撑住。"],["n","夜鸦吹响骨哨放飞信鸦，随即翻出木墙，消失在密林深处。"],["hl","assassin"],["npc","提示","夜鸦前往腐化之地搬请救兵，暂时离开队伍。"]],"win":[["n","亚瑟带着剩下的年轻人咬牙死守了四天，终于将第一批围攻营地的亡灵全部击退。但屋里的达·芬奇依然昏迷不醒，咳嗽声在营地里此起彼伏。"]]},"br":{}},
   n16:{"say":{"start":[["n","第七天傍晚，林子北边终于传来了急促的脚步声。夜鸦浑身是泥地冲进寨门，身后跟着背着大药箱、戴着鸟嘴面具的帕拉塞尔苏斯。"],["poisoner","让开让开！正义的使者来了！病人在哪儿？"],["npc","马丁","毒师先生！您可算来了！达·芬奇老先生和托比都在里屋！"],["n","帕拉塞尔苏斯冲进屋里，撬开达·芬奇的嘴灌下一瓶绿色的药剂，又给咳嗽的士兵们挨个发了药丸，走出门来擦了擦鸟嘴面具上的汗。"],["poisoner","死不了了。不过我这药只能先保命，你们要是继续这么待着，不出三天还得全趴下。"],["arthur","先生，这丛林里的瘴毒到底是怎么回事？能除根吗？"],["poisoner","这根本不是什么神鬼瘴气，是林子里的毒蚊子，加上满地腐烂的亡灵尸体在湿热空气里滋生出来的疫病！要想除根，第一，所有人涂我的驱蚊草膏，绝不能喝林子里的生水；第二，打死的亡灵尸体一具都不许留，必须用猛火彻底烧成灰，高温才能杀灭病菌！"],["n","两天后，喝了药的达·芬奇醒了过来，扶着门框走到院子里。"],["engineer","……老夫睡了几天？"],["arthur","达·芬奇先生，您醒了！您昏睡了六天，是帕拉塞尔苏斯先生救了您。"],["engineer","墙没塌吧？"],["arthur","照您的法子挖了排水沟、抹了生石灰，墙很结实。就是外头的亡灵尸体太多，林子里木柴又潮，点篝火根本烧不过来。帕拉塞尔苏斯先生说，必须用高温把尸体全烧掉才能断掉毒瘴。"],["engineer","……高温烧尸？拿纸和炭笔来！这点小事还用得着点柴火？交给老夫！"],["n","达·芬奇在图纸上刷刷画出一座压气喷油的铁塔结构，带着马丁连夜用铁管和火油桶改装了出来。"]],"q10":[["npc","提示","解锁建筑：喷火塔。喷火塔可持续喷射高温烈焰，对近距离集群亡灵造成高额范围伤害，并有效克制丛林再生与疫病。"]],"w11":[["n","大批沾满毒泥的亡灵涌到墙下，架在转角的喷火塔轰然喷出一道火龙，将冲在前排的尸群烧得噼啪作响。"],["npc","路德","好猛的火！这下不用拿铁锹去埋死人了！"]],"p14":[["n","战斗间隙，达·芬奇嫌一座喷火塔的火苗偏小，亲自探过脑袋去查看喷油嘴。"],["n","喷油嘴忽然噗地窜出一股尺许长的火苗，把达·芬奇剩下的半截胡子烧掉了大半。"],["n","城头上瞬间安静了下来。路德赶紧把脸扭到一边，肩膀一抖一抖地憋笑；帕拉塞尔苏斯躲在鸟嘴面具后面发出闷响；亚瑟想忍住，嘴角抽了两下，终究还是扑哧笑了出来。"],["engineer","……笑什么笑！看什么看！喷口角度往下调两寸，另外……给阀门加个安全插销！"]],"p17":[["n","奥托从南边的林子巡哨回来，手里提着半截木杆。"],["npc","奥托","大人，我在南边一里外的树林里，看见三具亡灵被长标枪钉死在树干上，枪尾还系着一绺花豹皮。"],["arthur","林子里还有活人？会不会是住在丛林里的洛特家族？"],["assassin","标枪的尖，朝南边死人来的方向，不朝我们。没有恶意。"],["arthur","好，先把眼前这批亡灵清完，明天我们顺着标枪的方向去找他们。"]],"win":[["n","在喷火塔的烈焰封锁下，外围的尸群被焚烧殆尽，营地里的瘴气也彻底消散了。"],["n","深入丛林腹地寻找洛特家族前，还有半天休整时间。"],["opt",[["帮达·芬奇加装喷火塔保险，听他和毒师斗嘴","胡子与药箱"],["带夜鸦、奥托和托比去研究林子里的豹皮标枪","林中标枪"],["和马丁、路德、阿兰一起给全军涂抹驱蚊药膏","药膏与石灰"]]]]},"br":{"胡子与药箱":[["n","亚瑟来到工棚，帮达·芬奇按住滚烫的铁管，装上新打制的铜插销。达·芬奇摸着自己只剩寸把长的焦胡茬，还在生闷气。"],["poisoner","达·芬奇老头，别摸了，再摸也长不快。要不要正义的使者给你配一瓶生发毒药？抹上去保准三天长出绿胡子来。"],["engineer","滚滚滚！把你那臭烘烘的药箱离老夫的图纸远点！要不是为了烧你说的什么病菌，老夫至于把留了二十年的胡子搭进去吗？"],["arthur","两位先生别吵了，这次要是没有帕拉塞尔苏斯先生的解药和达·芬奇先生的喷火塔，我们连丛林边都站不住。来，我给两位先生把工具箱和药箱都归置好了。"],["poisoner","哼，还是亚瑟小骑士会说话。老头，看在大家同生共死的份上，这瓶治烫伤的药膏白送你了，擦在下巴上不留疤。"],["engineer","……这还差不多。"],["fav","达·芬奇",1],["fav","帕拉塞尔苏斯",1],["set","改过喷火塔保险"],["join"]],"林中标枪":[["n","亚瑟带着夜鸦、奥托和托比来到南边那几棵钉着亡灵的大树下。"],["n","夜鸦伸手握住标枪尾端，用力一拔，标枪穿透亡灵胸骨，深深扎进树干三寸有余。"],["assassin","力气很大。出枪极快，在树顶上投下来的。"],["npc","奥托","这标枪的木杆是用丛林铁木削的，比咱们的箭杆沉得多，但在林子里不怕树枝挡道。"],["npc","托比","哇，这上头系着的花豹皮好威风！"],["arthur","能在亡灵群里来去自如，一定是洛特家族的勇士。奥托，托比，丛林里树木太密，远距离抛射容易被树冠挡住，你们也试试顺着树隙平射。"],["n","夜鸦跃上树枝，给奥托和托比指出林间气流的走向，两人在林间练习穿林快射，准头精进了不少。"],["npc","提示","在夜鸦的指点下，托比掌握了丛林穿隙射击技巧，学会了技能「贯穿射击」。"],["fav","夜鸦",1],["fav","奥托",1],["learn","托比","el_es3pierce"],["set","见过豹皮标枪"],["join"]],"药膏与石灰":[["n","营地空地上，亚瑟和马丁、路德、阿兰正把帕拉塞尔苏斯配好的青草药膏分装进小竹筒里，涂在脖子和手腕上。"],["npc","阿兰","这草膏闻着凉丝丝的，一抹上去，那些花脚大蚊子真不敢往脸上扑了！刚才我都怕自己也像托比那样咳出血来。"],["npc","路德","你小子每天把脸蒙得跟粽子一样，蚊子想咬你也找不着下嘴的地方！"],["npc","马丁","大人，我们从王都带出来的生石灰还剩两袋，待会儿进林子找洛特家族的时候带上吧。林子里到处是烂泥，万一要扎营修墙，随时用得上。"],["arthur","好，马丁想得周到，把石灰和火油都装车带上！"],["fav","马丁",1],["fav","路德",1],["fav","阿兰",1],["set","涂过防蚊草膏"],["join"]]}},
-  n17:{"say":{"start":[["n","第二天上午，亚瑟一行人顺着林间的标枪记号往南走了十余里，前方出现了一片依山傍水的巨木寨落。"],["n","寨门外堆满了亡灵的尸体，几十名脸上涂着绿纹、手持铁木标枪的丛林战士正依托木栅栏苦战。一名五十多岁、耳挂兽牙、面刺绿色图腾的壮硕长者正挥刀劈翻一具腐尸。"],["npc","奥托","大人，他们快被四面涌上来的亡灵围死了！"],["arthur","别袖手旁观！马丁、路德，随我冲上去帮他们守住寨门！达·芬奇先生，在寨门两侧架起喷火塔！"],["n","亚瑟率众冲上前去，几道烈焰从喷火塔喷涌而出，瞬间将寨门前聚拢的尸群烧退。"],["n","寨门内的丛林战士们被突如其来的烈火吓了一跳，纷纷举起标枪后退。那名耳挂兽牙的长者按住族人的手，大步走出寨门。"],["npc","特帕克·洛特","停手！我是洛特家族的族长，特帕克·洛特。你们是从北边王都来的？为什么要把烧林子的火器带进我们的领地？"],["arthur","洛特族长请别误会！我是王国骑士亚瑟。外面的亡灵身上带有疫病，只有用火烧掉尸体才能防止毒瘴蔓延。"],["engineer","放心吧，老夫调过喷火塔的俯仰角，火苗只往寨门外的泥地上喷，绝不会烧着你们林子里的树。"],["npc","特帕克·洛特","……原来是这样。刚才多亏你们出手解围，我们洛特家族记下这份人情了。你们大老远进丛林，是为了什么事？"],["arthur","实不相瞒，今年王都和北方遭遇灾荒，粮食见底。听说丛林四季有果木产出，我们是特地来向洛特家族求购、借调一批粮食救急的。"],["npc","特帕克·洛特","求粮？呵，以前王都派来的使者，张嘴闭嘴都是让我们「朝贡」，你是头一个客客气气跟我们谈借粮的。"],["npc","特帕克·洛特","我们族仓里确实有存粮。但你也看见了，这几天林子深处的亡灵像疯了一样从东南西北四个方向围攻寨子，连我们族里最强的猎豹勇士「奥塞洛特」前几天出去探查源头，到现在都没回来。"],["arthur","既然遇上了，我们就绝不会见死不救。请洛特族长允许我们进寨协防，我们帮贵族先把四面的亡灵彻底打退，再谈借粮的事！"],["npc","特帕克·洛特","好！痛快！洛特家族的猎豹卫队听令，打开寨门，跟北边来的朋友们并肩迎敌！"],["npc","特帕克·洛特","亡灵是从四个方向围过来的！我的族人熟悉林地，会分守四角协助你们！"],["npc","提示","洛特家族的特殊兵种精英加入了战斗。本场战斗亡灵将从四个方向同时发起进攻，请合理布置喷火塔与城墙防线。"]],"w1":[["npc","路德","哈哈，这些脸上画绿道道的兄弟投标枪真猛，一枪就能扎透两个死人！"]],"p14":[["n","南侧的密林里忽然飞出一支系着豹皮的标枪，笃的一声扎在寨门柱上，枪杆上沾着乌黑发臭的血迹。"],["npc","特帕克·洛特","这是奥塞洛特的标枪！"],["poisoner","慢着，别拿手直接碰！这枪杆上的黑血……是高度浓缩的尸毒！"],["arthur","奥塞洛特勇士中毒了？他在哪儿？"],["assassin","南边林子里。他来了，后面跟着很多死人。"]],"boss":[["n","夜色中，一个披着花豹皮的高大青年勇士一步步走出密林。他的半边身子爬满了狰狞的黑纹，双眼泛着绿光，身后跟着黑压压的尸潮。"],["n","一具亡灵靠得太近，他本能地反手一枪，将那具亡灵死死钉在地上，随后握着滴血的长枪冲向寨门。"],["npc","特帕克·洛特","是奥塞洛特！他被尸毒侵蚀神智了！"],["arthur","他还认得亡灵是敌人！快开门放他进来！"],["poisoner","别开大门！他现在神智不清，放进来见人就捅！要想救他的命，先动手把他打到力竭制住，我才能给他放血拔毒！"],["npc","特帕克·洛特","亚瑟骑士，奥塞洛特是我们洛特家族从小培养、最勇猛的勇士，求你们手下留情，别伤他的性命！"],["arthur","族长放心！所有人听令，只拆他的招、耗尽他的力气，绝不许下死手！"],["npc","提示","将腐化奥塞洛特的生命值削减至 20% 即可将其制伏，切勿将其击杀。"]],"cap":[["n","混战中，奥塞洛特飞身扑上矮墙，一枪将亚瑟撞倒在地。锋利的枪尖抵在亚瑟咽喉前寸许，他眼里的绿光剧烈闪烁，握枪的右手拼命颤抖，硬生生停住了没有刺下去。"],["n","夜鸦从侧面欺身而上，一把死死压住枪杆；路德和马丁一左一右抱住他的双臂。"],["poisoner","按住他的脖子和肩膀，别让他乱动！麻药来了！"],["n","帕拉塞尔苏斯一针扎进奥塞洛特颈侧，奥塞洛特身子一软，昏睡过去。失去了头领的残余亡灵也被喷火塔和洛特族人一扫而空。"]],"win":[["n","放血拔毒的手术一直做到了第二天傍晚。帕拉塞尔苏斯从屋里走出来时，累得靠着树干直喘气，连端水碗的手都在发抖。"],["n","屋里的木榻上，身上的黑纹已经退去的奥塞洛特睁开眼睛，先摸了摸床边的标枪，又看向围在床前的特帕克·洛特和亚瑟。"],["npc","奥塞洛特","族长……我……还活着？"],["npc","特帕克·洛特","活着！奥塞洛特，多亏了这位北边来的亚瑟骑士，还有这位炼金术士先生，整整救了你一天一夜，把你从死神手里抢回来了！"],["arthur","你醒了就好。我是亚瑟，感觉怎么样？"],["poisoner","刚把骨头缝里的黑血放干净，失血过多，老老实实躺着养几天，少说话！"],["npc","奥塞洛特","……救命之恩，奥塞洛特，记下了。"],["n","特帕克·洛特带着亚瑟走出木屋。寨子中央的空地上，洛特家族的族人们已经推来了二十辆装满粮食、干果和熏肉的大车。"],["npc","特帕克·洛特","亚瑟骑士，你们不仅帮洛特家族守住了寨子，还救活了我们全族最看重的勇士奥塞洛特。这二十车粮食和肉干，是我们洛特家族送给你的，一分钱也不用给！"],["arthur","族长，这太贵重了，我们原本是来购粮的……"],["npc","特帕克·洛特","朋友之间不谈买卖。不瞒你说，以前王都那些贵族老爷总拿我们当未开化的野人，把我们双方互通有无的贸易叫做「朝贡」，族里的人早就不想搭理王都了。"],["npc","特帕克·洛特","但你不一样，亚瑟。你真心实意把我们当朋友，连喷火的铁塔都特地调低了怕烧着我们的林子。我就直说了吧，这批粮食我是看在你的面子上给的，可不是孝敬王都里那帮老爷的。要是以后你自己立旗做事，我们洛特家族和奥塞洛特第一个站出来帮你！"],["opt",[["保留意见，收下洛特家族的私下结盟承诺（枭雄线）","丛林枭雄"],["断然拒绝，表示自己只是替王国与百姓奔走（英雄线）","丛林英雄"]]],["n","半个月后，亚瑟率队押送着二十大车满满当当的丛林粮食与干果，浩浩荡荡进了王都南门。"],["n","荒野与腐化之地站稳了脚跟，北方冰原的金矿源源不断产出金沙，西方黄沙关固若金汤，如今连最致命的缺粮之困也随着丛林粮车进城迎刃而解。"],["n","数日后的内阁会议上，国王端坐在主位上，气色比入冬时红润了许多。"],["npc","国王","丛林运来的二十车粮食已经全部入库，冰原第一批金砖也铸好了。今年开春的军饷和口粮，总算不用再看谁的脸色行事了。"],["n","国王的目光扫过长桌。向来爱眯着眼打太极的西奥公爵卢西安低头端着茶杯，一句话也没接，悄悄把身子往后缩了缩。"],["n","坐在另一侧的奥马金公爵盖伦依旧面无表情地抱臂坐着，只关心城防军换防的日常名册。"],["n","而一旁的克略公爵马库斯则挺直了腰板，脸上露出了几年来少有的畅快神色。"],["npc","克略公爵","陛下，事实证明，只要后勤不再被人掣肘，我王国的将士绝不惧怕区区亡灵！亚瑟骑士连战连捷，正是我王国重振军威的开端！"],["npc","国王","克略公爵说得是。传令下去，将丛林运回的粮食拨发亲军与开拓各营，任何人不得克扣！"],["n","王宫外，亚瑟站在台阶上，望着王都灰蒙蒙的天空。第一阶段的四方征途暂告一段落，但王都内外的暗流，才刚刚开始涌动。"],["npc","提示","丛林剧情完成，第一阶段（荒野、腐化之地、冰原、荒漠、丛林）全部通关！"]]},"br":{"丛林枭雄":[["n","亚瑟看着眼前装得满满当当的粮车，想起王都朝堂上那些只会推诿扯皮的贵族，点了点头。"],["arthur","洛特族长的心意，我明白了。王都城里还有几万挨饿的百姓和士兵在等这批粮食，这趟我先把粮运回去。"],["arthur","至于以后的事……等北边和南边的局势到了那一步，我再来找洛特族长和奥塞洛特勇士饮酒详谈。"],["npc","特帕克·洛特","哈哈，好！我们丛林人说话一口唾沫一个钉，随时等你消息！"],["set","丛林路线_枭雄"],["fav","奥塞洛特",1],["join"]],"丛林英雄":[["n","亚瑟摇了摇头，向特帕克·洛特郑重行了一礼。"],["arthur","多谢族长厚爱。不过我所做的一切，只是尽一名骑士保家卫民的本分，绝没有自立门户的念头。"],["arthur","至于王都以前把贸易当朝贡的傲慢做法，等我回都复命，一定向陛下据实陈情，往后按公平贸易与洛特家族往来。"],["npc","特帕克·洛特","你这年轻人，真是比林子里的铁木还要正。行，不管你当不当这个头，你这个朋友我们洛特家族认下了！只要你有难处，奥塞洛特的标枪随时为你出手！"],["set","丛林路线_英雄"],["fav","奥塞洛特",1],["join"]]}},
+  n17:{"say":{"start":[["n","第二天上午，亚瑟一行人顺着林间的标枪记号往南走了十余里，前方出现了一片依山傍水的巨木寨落。"],["n","寨门外堆满了亡灵的尸体，几十名脸上涂着绿纹、手持铁木标枪的丛林战士正依托木栅栏苦战。一名五十多岁、耳挂兽牙、面刺绿色图腾的壮硕长者正挥刀劈翻一具腐尸。"],["npc","奥托","大人，他们快被四面涌上来的亡灵围死了！"],["arthur","别袖手旁观！马丁、路德，随我冲上去帮他们守住寨门！达·芬奇先生，在寨门两侧架起喷火塔！"],["n","亚瑟率众冲上前去，几道烈焰从喷火塔喷涌而出，瞬间将寨门前聚拢的尸群烧退。"],["n","寨门内的丛林战士们被突如其来的烈火吓了一跳，纷纷举起标枪后退。那名耳挂兽牙的长者按住族人的手，大步走出寨门。"],["npc","特帕克·洛特","停手！我是洛特家族的族长，特帕克·洛特。你们是从北边王都来的？为什么要把烧林子的火器带进我们的领地？"],["arthur","洛特族长请别误会！我是王国骑士亚瑟。外面的亡灵身上带有疫病，只有用火烧掉尸体才能防止毒瘴蔓延。"],["engineer","放心吧，老夫调过喷火塔的俯仰角，火苗只往寨门外的泥地上喷，绝不会烧着你们林子里的树。"],["npc","特帕克·洛特","……原来是这样。刚才多亏你们出手解围，我们洛特家族记下这份人情了。你们大老远进丛林，是为了什么事？"],["arthur","实不相瞒，今年王都和北方遭遇灾荒，粮食见底。听说丛林四季有果木产出，我们是特地来向洛特家族求购、借调一批粮食救急的。"],["npc","特帕克·洛特","求粮？呵，以前王都派来的使者，张嘴闭嘴都是让我们「朝贡」，你是头一个客客气气跟我们谈借粮的。"],["npc","特帕克·洛特","我们族仓里确实有存粮。但你也看见了，这几天林子深处的亡灵像疯了一样从东南西北四个方向围攻寨子，连我们族里最强的猎豹勇士「奥塞洛特」前几天出去探查源头，到现在都没回来。"],["arthur","既然遇上了，我们就绝不会见死不救。请洛特族长允许我们进寨协防，我们帮你们先把四面的亡灵彻底打退，再谈借粮的事！"],["npc","特帕克·洛特","好！痛快！洛特家族的猎豹卫队听令，打开寨门，跟北边来的朋友们并肩迎敌！"],["npc","特帕克·洛特","亡灵是从四个方向围过来的！我的族人熟悉林地，会分守四角协助你们！"],["npc","提示","洛特家族的特殊兵种精英加入了战斗。本场战斗亡灵将从四个方向同时发起进攻，请合理布置喷火塔与城墙防线。"]],"w1":[["npc","路德","哈哈，这些脸上画绿道道的兄弟投标枪真猛，一枪就能扎透两个死人！"]],"p14":[["n","南侧的密林里忽然飞出一支系着豹皮的标枪，笃的一声扎在寨门柱上，枪杆上沾着乌黑发臭的血迹。"],["npc","特帕克·洛特","这是奥塞洛特的标枪！"],["poisoner","慢着，别拿手直接碰！这枪杆上的黑血……是高度浓缩的尸毒！"],["arthur","奥塞洛特勇士中毒了？他在哪儿？"],["assassin","南边林子里。他来了，后面跟着很多死人。"]],"boss":[["n","夜色中，一个披着花豹皮的高大青年勇士一步步走出密林。他的半边身子爬满了狰狞的黑纹，双眼泛着绿光，身后跟着黑压压的尸潮。"],["n","一具亡灵靠得太近，他本能地反手一枪，将那具亡灵死死钉在地上，随后握着滴血的长枪冲向寨门。"],["npc","特帕克·洛特","是奥塞洛特！他被尸毒侵蚀神智了！"],["arthur","他还认得亡灵是敌人！快开门放他进来！"],["poisoner","别开大门！他现在神智不清，放进来见人就捅！要想救他的命，先动手把他打到力竭制住，我才能给他放血拔毒！"],["npc","特帕克·洛特","亚瑟骑士，奥塞洛特是我们洛特家族从小培养、最勇猛的勇士，求你们手下留情，别伤他的性命！"],["arthur","族长放心！所有人听令，只拆他的招、耗尽他的力气，绝不许下死手！"],["npc","提示","将腐化奥塞洛特的生命值削减至 20% 即可将其制伏，切勿将其击杀。"]],"cap":[["n","混战中，奥塞洛特飞身扑上矮墙，一枪将亚瑟撞倒在地。锋利的枪尖抵在亚瑟咽喉前寸许，他眼里的绿光剧烈闪烁，握枪的右手拼命颤抖，硬生生停住了没有刺下去。"],["n","夜鸦从侧面欺身而上，一把死死压住枪杆；路德和马丁一左一右抱住他的双臂。"],["poisoner","按住他的脖子和肩膀，别让他乱动！麻药来了！"],["n","帕拉塞尔苏斯一针扎进奥塞洛特颈侧，奥塞洛特身子一软，昏睡过去。失去了头领的残余亡灵也被喷火塔和洛特族人一扫而空。"]],"win":[["n","放血拔毒的手术一直做到了第二天傍晚。帕拉塞尔苏斯从屋里走出来时，累得靠着树干直喘气，连端水碗的手都在发抖。"],["n","屋里的木榻上，身上的黑纹已经退去的奥塞洛特睁开眼睛，先摸了摸床边的标枪，又看向围在床前的特帕克·洛特和亚瑟。"],["jaguar","族长……我……还活着？"],["npc","特帕克·洛特","活着！奥塞洛特，多亏了这位北边来的亚瑟骑士，还有这位炼金术士先生，整整救了你一天一夜，把你从死神手里抢回来了！"],["arthur","你醒了就好。我是亚瑟，感觉怎么样？"],["poisoner","刚把骨头缝里的黑血放干净，失血过多，老老实实躺着养几天，少说话！"],["jaguar","……救命之恩，奥塞洛特，记下了。"],["n","特帕克·洛特带着亚瑟走出木屋。寨子中央的空地上，洛特家族的族人们已经推来了二十辆装满粮食、干果和熏肉的大车。"],["npc","特帕克·洛特","亚瑟骑士，你们不仅帮洛特家族守住了寨子，还救活了我们全族最看重的勇士奥塞洛特。这二十车粮食和肉干，是我们洛特家族送给你的，一分钱也不用给！"],["arthur","族长，这太贵重了，我们原本是来购粮的……"],["npc","特帕克·洛特","朋友之间不谈买卖。不瞒你说，以前王都那些贵族老爷总拿我们当未开化的野人，把我们双方互通有无的贸易叫做「朝贡」，族里的人早就不想搭理王都了。"],["npc","特帕克·洛特","但你不一样，亚瑟。你真心实意把我们当朋友，连喷火的铁塔都特地调低了怕烧着我们的林子。我就直说了吧，这批粮食我是看在你的面子上给的，可不是孝敬王都里那帮老爷的。要是以后你自己立旗做事，我们洛特家族和奥塞洛特第一个站出来帮你！"],["opt",[["保留意见，收下洛特家族的私下结盟承诺（枭雄线）","丛林枭雄"],["断然拒绝，表示自己只是替王国与百姓奔走（英雄线）","丛林英雄"]]],["n","半个月后，亚瑟率队押送着二十大车满满当当的丛林粮食与干果，浩浩荡荡进了王都南门。"],["n","荒野与腐化之地站稳了脚跟，北方冰原的金矿源源不断产出金沙，西方黄沙关固若金汤，如今连最致命的缺粮之困也随着丛林粮车进城迎刃而解。"],["n","数日后的内阁会议上，国王端坐在主位上，气色比入冬时红润了许多。"],["npc","国王","丛林运来的二十车粮食已经全部入库，冰原第一批金砖也铸好了。今年开春的军饷和口粮，总算不用再看谁的脸色行事了。"],["n","国王的目光扫过长桌。向来爱眯着眼打太极的西奥公爵卢西安低头端着茶杯，一句话也没接，悄悄把身子往后缩了缩。"],["n","坐在另一侧的奥马金公爵盖伦依旧面无表情地抱臂坐着，只关心城防军换防的日常名册。"],["n","而一旁的克略公爵马库斯则挺直了腰板，脸上露出了几年来少有的畅快神色。"],["npc","克略公爵","陛下，事实证明，只要后勤不再被人掣肘，我王国的将士绝不惧怕区区亡灵！亚瑟骑士连战连捷，正是我王国重振军威的开端！"],["npc","国王","克略公爵说得是。传令下去，将丛林运回的粮食拨发亲军与开拓各营，任何人不得克扣！"],["n","王宫外，亚瑟站在台阶上，望着王都灰蒙蒙的天空。第一阶段的四方征途暂告一段落，但王都内外的暗流，才刚刚开始涌动。"],["npc","提示","丛林剧情完成，第一阶段（荒野、腐化之地、冰原、荒漠、丛林）全部通关！"]]},"br":{"丛林枭雄":[["n","亚瑟看着眼前装得满满当当的粮车，想起王都朝堂上那些只会推诿扯皮的贵族，点了点头。"],["arthur","洛特族长的心意，我明白了。王都城里还有几万挨饿的百姓和士兵在等这批粮食，这趟我先把粮运回去。"],["arthur","至于以后的事……等北边和南边的局势到了那一步，我再来找洛特族长和奥塞洛特勇士饮酒详谈。"],["npc","特帕克·洛特","哈哈，好！我们丛林人说话一口唾沫一个钉，随时等你消息！"],["set","丛林路线_枭雄"],["fav","奥塞洛特",1],["join"]],"丛林英雄":[["n","亚瑟摇了摇头，向特帕克·洛特郑重行了一礼。"],["arthur","多谢族长厚爱。不过我所做的一切，只是尽一名骑士保家卫民的本分，绝没有自立门户的念头。"],["arthur","至于王都以前把贸易当朝贡的傲慢做法，等我回都复命，一定向陛下据实陈情，往后按公平贸易与洛特家族往来。"],["npc","特帕克·洛特","你这年轻人，真是比林子里的铁木还要正。行，不管你当不当这个头，你这个朋友我们洛特家族认下了！只要你有难处，奥塞洛特的标枪随时为你出手！"],["set","丛林路线_英雄"],["fav","奥塞洛特",1],["join"]]}},
 };
 
 /* ---------- 新剧情（荒野）：0.12.2 起的「新剧情」地区（nv:1，选章页顶上切换新 / 老剧情，SET.stOld = 看老剧情，进度和老剧情分开记）；机制在 game/st_new.js（新字段的说明在那个文件开头）----------
    0.13 整个换成用户 2026-11-02 定稿的荒野篇（引子 + 第一～三章，6 章）；对白在 data/story_n1_say.js（tools/story3/n1build.py 从台本生成，别手改）
    0.12.2 那一版（用户 2026-10-28 的五节台本）作废，原文在 git 历史和《剧情重置/交接包-第二章/09_作者旧稿_荒野五节_作废.md》 */
 // 对话框头像（用户定：精英模板 + 职业画的小人）：配角的职业、年龄（Claude 定）；马丁、路德、奥托、托比、阿兰按章节 els 的兵器；enemy = 用这种亡灵的图
-CFG.story.npcLook={'军官':{job:'musketeer', age:42}, '副官':{job:'recruit', age:30}, '汉斯':{job:'engineer', age:66}, '亡灵大法师':{enemy:'lich'}};
+CFG.story.npcLook={'军官':{job:'musketeer', age:42}, '副官':{job:'spearman', age:30, lk:{sk:1, hr:2, ey:1, b:0}}, '汉斯':{job:'engineer', age:56, lk:{sk:2, hr:6, ey:1, b:1, acc:'beard'}}, '亡灵大法师':{enemy:'lich'}};
 // 0.12.9b 引子「开拓前夕」（用户台本）的御前会议：国王、财政官、博蒙公爵、劳伦斯伯爵、奥斯本伯爵、罗兰（职业、年龄 Claude 定，只管对话框头像；国王用专门画的小人 art/st_npc，用户定）
 // 0.13.7.1 引子「内阁会议」（作者手写，用户 11-10 定）和冰原～丛林篇的配角：四位家主照《剧情重置/世界设定-引子与家族梳理》的面相（lk = CFG.elite.look 的下标：sk 肤色、hr 发色、ey 瞳色、b 体型），职业、年龄、其余人的长相 Claude 定
-Object.assign(CFG.story.npcLook,{'财政大臣':{job:'alchemist', age:55}, '奥马金公爵':{job:'shieldGuard', age:62, lk:{sk:0, hr:1, ey:4, b:2}}, '克略公爵':{job:'heavyCav', age:45, lk:{sk:2, hr:0, ey:6, b:2}},
+//   0.13.7.1b（用户 11-11 要：新人物别再用通用小人）每个说话的配角都配一份 lk；acc = 配饰（逗号分隔，画法 art/st_npc.stLkAcc：scarf 本白头巾、scarfR 茜红头巾、tat 绿色纹面、tusk 兽牙耳饰、beard 短胡子、glass 圆框眼镜）
+//   台本写了的照台本（特帕克·洛特：黑发黑瞳、皮肤很深、绿色纹面、兽牙），没写的按身份 Claude 定（驿卒、信使、侍卫、副官穿王都军服；村民缠头巾）
+Object.assign(CFG.story.npcLook,{'财政大臣':{job:'alchemist', age:55, lk:{sk:0, hr:6, ey:1, b:0, acc:'glass'}},'奥马金公爵':{job:'shieldGuard', age:62, lk:{sk:0, hr:1, ey:4, b:2}}, '克略公爵':{job:'heavyCav', age:45, lk:{sk:2, hr:0, ey:6, b:2}},
   '霍利侯爵':{job:'priest', age:54, lk:{sk:0, hr:4, ey:2, b:1}}, '西奥公爵':{job:'bard', age:42, lk:{sk:1, hr:5, ey:3, b:0}},
-  '驿卒':{job:'scoutCav', age:30}, '侍卫':{job:'infantry', age:32}, '村民阿迪拉':{job:'recruit', sex:'f', age:35, lk:{sk:3, hr:0, ey:1, b:1}}, '年迈的村长':{job:'recruit', age:70, lk:{sk:3, hr:6, ey:1, b:0}},
-  '特帕克·洛特':{job:'jungleWarrior', age:55, lk:{sk:4, hr:0, ey:0, b:2}}, '冰霜亡灵法师':{enemy:'iceArchmage'}});
+  '驿卒':{job:'lightCav', age:26, lk:{sk:2, hr:2, ey:1, b:1}}, '侍卫':{job:'infantry', age:32, lk:{sk:1, hr:1, ey:2, b:2}},
+  '村民阿迪拉':{job:'recruit', sex:'f', age:35, lk:{sk:3, hr:0, ey:1, b:1, acc:'scarfR'}}, '年迈的村长':{job:'recruit', age:70, lk:{sk:3, hr:6, ey:1, b:0, acc:'scarf,beard'}},
+  '特帕克·洛特':{job:'jungleWarrior', age:55, lk:{sk:4, hr:0, ey:0, b:2, acc:'tat,tusk'}}, '冰霜亡灵法师':{enemy:'iceArchmage'}});
 Object.assign(CFG.story.npcLook,{'国王':{spr:'npc_king'}, '财政官':{job:'alchemist', age:55}, '博蒙公爵':{job:'bard', age:52}, '劳伦斯伯爵':{job:'shieldGuard', age:46}, '奥斯本伯爵':{job:'musketeer', age:50}, '罗兰':{job:'recruit', age:30}});
 Object.assign(CFG.story.plans,{
   // 王都：开拓地大地图（96 × 96）正中，外城 60 × 60 带四座瓮城、内城 28 × 28、王宫 10 × 10；塔楼、兵营、民居按规则排（game/st_new），全部满级（章节 maxLv）
@@ -13445,8 +13450,11 @@ Object.assign(CFG.story.plans,{
 // 0.13 荒野篇新剧情（用户 2026-11-02 定稿，台本《剧情重置/荒野篇全集-定稿.md》）：对白、分支由 tools/story3/n1build.py 生成在 data/story_n1_say.js（STN1），这里只写章节的战斗配置
 //   剧情精英：台本写的「新兵」只是名字，实际是对应职业（用户定）：马丁、阿兰剑盾（大盾卫），路德狂战士（单手短斧、无盾），奥托、托比弓（神射手）；性格照台本
 //   精英等级（第一夜 1 级、荒野来客 5 级、第三章 10 级）、首通金币、各章简介（desc）、剧情教的技能等级（elSkLv）Claude 定
-Object.assign(CFG.story.npcLook,{'里瓦':{job:'musketeer', age:42}, '老人':{job:'engineer', age:66}});
-Object.assign(CFG.story.npcLook,{'小约翰':{job:'spearman', age:32}, '马奇':{job:'recruit', age:20}, '信使':{job:'lightCav', age:28}});   // 0.13.0b 腐化之地篇的配角（职业、年龄 Claude 定）
+Object.assign(CFG.story.npcLook,{'里瓦':{job:'musketeer', age:42, lk:{sk:1, hr:3, ey:4, b:1}}});   // 0.13.7.1b 里瓦是劳伦斯家的人：照家主的沙褐发、灰蓝眼（Claude 定）
+CFG.story.npcLook['老人']=CFG.story.npcLook['汉斯'];
+// 0.13.7.1b 台本的表情（tools/story3/n1build 的 EXPR）→ 对话框的表情气泡（art/st_emo 的 12 个）：眯眼笑 → 得意（闪光）、严肃 → 无语（……，没有更贴近的）、挑眉 → 疑（?）、微笑 → 喜（♪）、面色铁青 → 怒（青筋）（Claude 定）
+CFG.story.emo={squint:'smug', serious:'dots', brow:'question', smile:'joy', grim:'anger'};   // 0.13.7.1b 台本里「老人」就是还没报名字的汉斯（「大人叫我汉斯就行」），长得一样；汉斯 56 岁照《第一阶段人设表》
+Object.assign(CFG.story.npcLook,{'小约翰':{job:'warrior', age:32, lk:{sk:2, hr:1, ey:1, b:2, acc:'beard'}}, '马奇':{job:'recruit', age:20, lk:{sk:1, hr:2, ey:1, b:0}}, '信使':{job:'gunCav', age:28, lk:{sk:0, hr:3, ey:4, b:1}}});   // 0.13.0b 腐化之地篇的配角（职业、年龄 Claude 定）
 CFG.story.elPers={'马丁':'brave', '路德':'reckless', '奥托':'careful', '托比':'brave', '阿兰':'timid'};
 CFG.story.elSkLv=2;
 {const EL5=lv=>[['马丁','ss',lv],['路德','ax',lv],['奥托','bow',lv],['托比','bow',lv],['阿兰','ss',lv]],T=c=>({say:STN1[c].say, br:STN1[c].br}),
@@ -30454,9 +30462,9 @@ function hdArmFront(S,o){S.cap(21.5,16.5,23,21.5,2.3,2,o.sleeve);S.ell(23.3,22.6
 function hdHead(S,o){S.ell(16,10.6,6.3,6.1,o.skin,{flat:0.45});const ear=EL_LK?EL_LK.ear:0;
   if(ear===1)S.part(o.skin,{flat:0.5},p=>p.poly([[12.4,12.8],[10.4,10.4],[6.8,6.6],[11.4,9.2],[12.8,10.8]]));else if(!o.noEar)S.ell(11.4,11.4,1.3,1.6,o.skin,{flat:0.5});   // 尖耳（精灵）
   if(ear===2){const h=hm(EL_LK.hair,'hair');S.part(h,{},p=>{p.poly([[11,6],[12,0.8],[15,4.8]]);p.poly([[16.4,4.4],[19.4,0.6],[20.6,5.2]])})}}   // 兽耳（头顶，戴帽子的会被盖住）
-function hdFace(S,o){const e=EL_LK?EL_LK.eye:o.eye||'#2a1e1a',y=o.ey||10,bw=EL_LK&&o.brow?EL_LK.brow:o.brow;
+function hdFace(S,o){const e=EL_LK?EL_LK.eye:o.eye||'#2a1e1a',y=o.ey||10,bw=EL_LK&&o.brow?EL_LK.brow:o.brow,ac=EL_LK&&EL_LK.acc;if(ac)stLkAcc(S,o,y,0);   // ac：0.13.7.1 剧情配角的配饰（art/st_npc）
   S.rc(17,y,1,2,e);S.rc(20,y,1,2,e);if(bw){S.ln(16.5,y-1,18,y-1,bw);S.ln(19.5,y-1,21,y-1,bw)}
-  if(o.mouth!==false)S.ln(18.5,y+4,19.5,y+4,[o.skin,0]);S.px(21,y+2,[o.skin,1])}
+  if(o.mouth!==false)S.ln(18.5,y+4,19.5,y+4,[o.skin,0]);S.px(21,y+2,[o.skin,1]);if(ac)stLkAcc(S,o,y,1)}
 // 披风（身后往左后方飘；迈步帧飘高一点）
 function hdCape(S,fr,mat,o){o=o||{};const y1=o.y1||28;S.poly(fr?[[10,14],[16,14],[14,y1-1],[6,y1],[1.5,y1-3],[3,20]]:[[10,14],[16,14],[15,y1],[7,y1+1],[2.5,y1],[4,20]],mat,{R:3})}
 // 皮带（y 行，扣子颜色）
@@ -50620,6 +50628,42 @@ function npcKing(fr){return hdFig(32,32,S=>{
   hdFace(S,{skin,ey:10,brow:'#d8d4cc',mouth:false});S.ln(17.4,8.4,18.6,8.4,[skin,0],1);S.ln(20,8.4,21,8.4,[skin,0],1);   // 白眉；额头的皱纹
 },{})}
 Object.assign(HD_HEROES,{npc_king:npcKing});
+// 0.13.7.1 剧情配角的配饰（npcLook 的 lk.acc，逗号分隔；art/hd_heroes 的 hdFace 画脸时调：ph 0 在眼睛之前画、1 在眼睛之后画；y = 眼睛那一行；骑兵传进来的 S 已经平移过）
+//   scarf 本白头巾（盖住头顶，布尾垂在脑后；scarfR 茜红的）· tat 绿色纹面 · tusk 耳朵上挂兽牙 · beard 短胡子（发色）· glass 圆框眼镜
+function stLkAcc(S,o,y,ph){const A=EL_LK.acc;
+  if(!ph){if(A.includes('scarf')){const c=hm(A.includes('scarfR')?'#a04a3a':'#ece4d0','cloth');S.part(c,{},p=>{p.ell(15.2,y-3.6,7.6,4.4);p.ell(11,y+0.6,3.2,4.4);p.poly([[8.6,y+1],[12.4,y+1],[11.6,y+7.6],[8,y+7]]);p.cut.poly([[18.4,y-1.6],[25,y-2.4],[25,y+9],[17.6,y+9]]);p.cut.rect(12.6,y-1.4,13,10)});S.ln(9,y-2,22.6,y-2.6,[c,1])}return}   // 头巾的布尾
+  if(A.includes('beard')){const h=hm(EL_LK.hair,'hair');S.part(h,{R:1},p=>p.poly([[16.4,y+2.6],[22.2,y+2.2],[21.8,y+5.4],[19.6,y+6.8],[17.2,y+5.4]]));S.ln(18.4,y+4,19.6,y+4,[h,0])}
+  if(A.includes('tat')){const g='#2e9a56';S.ln(16.6,y+2.6,17.8,y+2.6,g);S.ln(19.6,y+2.6,21.6,y+2.2,g);S.px(19,y+5,g);S.px(19,y+6,g);S.ln(18.6,y-2.6,20.6,y-2.8,g)}   // 两颊、下巴、额头
+  if(A.includes('tusk')){const b=hdM('bone');S.px(11,y+2.6,'#3a2818');S.ln(11,y+3.4,11.6,y+5.6,[b,3]);S.px(12,y+6,[b,1])}
+  if(A.includes('glass')){const g=hdM('gold');for(const x of[16,18,19,21])S.ln(x,y,x,y+1,[g,1]);S.ln(16,y-0.2,18,y-0.2,[g,2]);S.ln(19,y-0.2,21,y-0.2,[g,2])}}
+
+// ---------- 0.13.7.1 剧情对话的表情气泡（望楼 11-04 画的 12 个，16×16，原稿《0.13策划-表情气泡/emo_表情气泡.py》，这里逐像素照抄）----------
+// 白色圆角气泡 + 左下小尾巴（指向说话人的头），里面一个符号；对话框按 2 倍整数放大显示（ui/story 的 dlgShow，CSS .dlgemo）
+// 台本的表情 → 气泡：CFG.story.emo（data/story_n1.js）；气泡的键：surprise 惊、question 疑、joy 喜、love 心动、anger 怒、sweat 汗、dots 无语、annoyed 烦躁、idea 灵光、sleepy 困、cry 哭、smug 得意
+const ST_EMO_BUB=['..############..','.#WWWWWWWWWWWW#.','#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#',
+  '#WWWWWWWWWWWWWW#','#WWWWWWWWWWWWWW#','#SWWWWWWWWWWWWS#','.#SSSSSSSSSSSS#.','..#S#########...','..#S#...........','..##............','................'];
+const ST_EMO_PAL={'#':'#2c1c20',W:'#faf8f4',S:'#d6d0de',k:'#2c1c20',r:'#ce3034',R:'#961c28',b:'#468cdc',B:'#285aaa',l:'#aad2fa',p:'#ec5a82',P:'#b4325a',y:'#f6c83c',Y:'#c88c1e',g:'#787482',w:'#ffffff',o:'#f08228'};
+// 符号画在气泡里 10×8 的格子（左上角在 (3,2)）
+const ST_EMO_SYM={
+  surprise:['....rr....','....rr....','....rr....','....rr....','....RR....','..........','....rr....','....RR....'],
+  question:['...kkkk...','..kk..kk..','......kk..','.....kk...','....kk....','..........','....kk....','....kk....'],
+  joy:['......kkk.','....kkk.k.','....k...k.','....k...k.','..kkk.kkk.','.kkkkkkkk.','.kkk..kk..','..........'],
+  love:['..pp..pp..','.pwppppPP.','.pwppppPP.','.ppppppPP.','..ppppPP..','...ppPP...','....PP....','..........'],
+  anger:['..r....r..','.rR....Rr.','..rr..rr..','..........','..........','..rr..rr..','.rR....Rr.','..r....r..'],
+  sweat:['....b.....','...bb.....','..blbb....','..bllb....','.bllbbb...','.bbbbbB...','..bBBB....','..........'],
+  dots:['..........','..........','..........','..........','.kk.kk.kk.','.kk.kk.kk.','..........','..........'],
+  annoyed:['..kkkk....','.k....k.k.','.k.kk..kk.','..k..k.k..','.k.kk.k.kk','.k....k..k','..kkkk.kk.','..........'],
+  idea:['...yyyy...','..yyywyy..','..yywyyy..','..yyyyyy..','...yYYy...','....gg....','....gg....','..........'],
+  sleepy:['......bbb.','.......b..','......bbb.','bbbbb.....','...b......','..b.......','.b........','bbbbb.....'],
+  cry:['kkkk.kkkk.','.bb...bb..','.bb...bb..','.lb...lb..','.bl...bl..','..........','...kkkk...','..........'],
+  smug:['....y.....','....y.....','..yyYyy...','....y...y.','....y..yYy','........y.','..y.......','.yYy......']};
+const ST_EMO_URL={};
+// 表情键（台本的 squint…）→ 气泡图（16×16 的 dataURL）；不认识的表情返回 null（对话框就不显示气泡）
+function stEmoUrl(ex){const id=CFG.story.emo&&CFG.story.emo[ex];if(!id||!ST_EMO_SYM[id])return null;if(ST_EMO_URL[id])return ST_EMO_URL[id];
+  const c=canvasOf(16,16),g=c.getContext('2d'),dot=(x,y,ch)=>{const col=ST_EMO_PAL[ch];if(col){g.fillStyle=col;g.fillRect(x,y,1,1)}};
+  ST_EMO_BUB.forEach((r,y)=>{for(let x=0;x<16;x++)if(r[x]!=='.')dot(x,y,r[x])});
+  ST_EMO_SYM[id].forEach((r,y)=>{for(let x=0;x<10;x++)if(r[x]!=='.')dot(3+x,2+y,r[x])});
+  return ST_EMO_URL[id]=c.toDataURL()}
 
 // ---------- 0.12.4 守望长城四位统领、可汗的占位小人（代理 B；代理 A 在 art/nb_art.js 画好登记后，这里的 if 就不生效；order.txt 里排在 A 的文件后面）----------
 if(!HD_ENEMY.nbPegasusCmd)HD_ENEMY.nbPegasusCmd=HD_ENEMY.obCavCmd;
@@ -79478,7 +79522,7 @@ HCOL.mysius='#f07a20';
 // 神骑突击：放的那一刻定下作用的骑兵（KL_SS / KL_SH），每 tick 秒各自朝前方扇形打一下（自身攻击 × k，物理），然后斩杀生命低于 th 的 tier 阶及以下亡灵
 // 这几项都不存档（存档只在准备阶段，技能都在一波里放完）
 let KL_H=null,KL_RC=false,KL_CH=0,KL_AT=0,KL_IG=0,KL_U=null,KL_JU=0,KL_JN=0,KL_JB=0,KL_JI=1,KL_SU=0,KL_SN=0,KL_SP=null;
-const KL_JS=[],KL_JH=[],KL_SS=[],KL_SH=[],KL_AS=[],KL_AH=[],KL_TO=[],KL_EF=new Map(),KL_L=[],KL_SL={pierce:1};
+const KL_RO=[],KL_JS=[],KL_JH=[],KL_SS=[],KL_SH=[],KL_AS=[],KL_AH=[],KL_TO=[],KL_EF=new Map(),KL_L=[],KL_SL={pierce:1};
 let KL_LO=null;   // 犁庭骑令近战那一下已经改过的 o（meleeSwing 一刀砍几只共用一个 o，只改一次）
 const klCavS=s=>!s.dead&&!!s.c&&!!s.c.cavalry&&!s.layer;
 const klCavH=h=>!h.dead&&!!(h.mnt||h.d.camel||h.d.camelRide||h.d.cavalry||h.elAccT>0);
@@ -79494,7 +79538,7 @@ function klGather(h,r,LS,LH){LS.length=0;LH.length=0;const all=r>=999,R2=r*16*r*
 // ===== 冲锋状态 =====
 function klArmH(h){if(h.elAccT>0){h.elMvT=Math.max(h.elMvT||0,h.elAccT);if(h.elChg){h.elChgOn=1;return}}const X=klHS(h);X.on=1}
 function klArmS(s){if(!(s.hornU>G.time))s.hornB=KL_JB;else s.hornB=Math.max(s.hornB||0,KL_JB);s.hornU=Math.max(s.hornU||0,KL_JU);s.hornSet=1}
-function klInit(h){const X=klHS(h);X.mv=0;X.st=0;X.on=0;X.ct=-1;X.b=0;X.bu=0}
+function klInit(h){klHS(h)}   // 审阅修：heroRecalc（换武器）每次都调 init，原来在这里清零，换一次武器备好的冲锋、回枪跃马的加速就没了；新英雄对象的 hxs 本来就是新建的（klHS 的默认值）
 // 克烈每帧（heroFx tick）：一直在走就攒冲锋（回枪跃马期间按 1 + b 倍攒），停下 stopT 秒还没备好就从头攒
 function klHTick(h,dt){const X=klHS(h),C=CFG.klKelie;if(X.on)return;
   if(h.walking){X.st=0;X.mv+=dt*(X.bu>G.time?1+X.b:1);if(X.mv>=C.chgT)X.on=1}else{X.st+=dt;if(X.st>=C.stopT)X.mv=0}}
@@ -79502,11 +79546,11 @@ function klHTick(h,dt){const X=klHS(h),C=CFG.klKelie;if(X.on)return;
 const klEff=v=>{let f=KL_EF.get(v);if(!f){f={mspd:v,atk:v,dr:v};KL_EF.set(v,f)}return f};
 function klAura(){const f=klEff(KL_H.psv.v),t=CFG.buffs.aura,S=G.soldiers;for(let k=0;k<S.length;k++){const s=S[k];if(klNq(s))bfAdd(s,'klSpd',f,t)}}
 // units/soldiers.solShootIn 射完调（KL_RC：克烈在场）：远程北原骑兵满速时的普通射击算冲锋
-function klRgChg(s,extra){if(extra||!s.cvFull||!s.c.ranged||!KL_H||s.ct!=='campNq')return;const P=KL_H.psv,m=P.rb+P.chg,L=G.proj;let n=0;
+function klRgChg(s,extra){if(extra||!s.cvFull||!s.c.ranged||!KL_H||s.ct!=='campNq')return;const P=KL_H.psv,m=P.rb+P.chg,L=G.proj;let n=0;   // KL_RO：审阅修，散射的几枚共用一个 o（units/nq_camp.nqPost），o 上的 hd / bd 每个 o 只乘一次（原来散射两枚的灼烧 / 流血 / 附带伤害按 hd 算会多乘一次）
   for(let k=L.length-1;k>=0;k--){const p=L[k];if(!p.o||p.o.su!==s||(p.lob?p.t>0:p.dist>0))break;n++;
-    p.dmg*=m;if(p.o.hd)p.o.hd*=m;if(p.o.bd)p.o.bd*=m;
+    p.dmg*=m;if(KL_RO.indexOf(p.o)<0){KL_RO.push(p.o);if(p.o.hd)p.o.hd*=m;if(p.o.bd)p.o.bd*=m}
     if(p.lob)p.T/=P.rs;else{p.vx*=P.rs;p.vy*=P.rs;p.kb=Math.max(p.kb||0,P.kb*16)}}
-  if(!n)return;s.cv*=1-P.slow;s.cvFull=false;
+  KL_RO.length=0;if(!n)return;s.cv*=1-P.slow;s.cvFull=false;
   if(inViewPt(s.x,s.y))for(let q=0;q<3;q++)pp(s.x-Math.cos(s.hd||0)*6+vr(-2,2),s.y+vr(-1,2),0,-Math.cos(s.hd||0)*20,vr(-6,0),vr(4,8),0,0.3,'#d8c8a0',1,0,1)}
 // ===== 伤害钩子 =====
 function klBaseE(i,d,o){if(o.dot)return d;const h=o.hk;
@@ -79619,7 +79663,7 @@ HCOL.kelie='#c8302a';
 let WH_ON=false,WH_RD=false,WH_T=0,WH_DH=null,WH_AN=0;   // WH_ON：这一局有兀昊（feat 的 on 设，heroAttack 读）；WH_RD：有单位挂着弓马骑射
 const WH_RM=new Map(),WH_DL=[],WH_EA=new Map(),WH_EB=new Map(),WH_BL={blunt:1};   // WH_RM：单位 → {u, v}；WH_EA / WH_EB：统一 buff 的 eff 按数值缓存（eff 要当常量用）
 const whS=h=>{const X=h.hxs||(h.hxs={});return X.wh||(X.wh={fcU:0,fp:0,fm:1,bvU:0,bpc:0,bsl:0,bslT:0,lo:null,lb:0,ln:0,linc:0,lst:0,lk:-1,lcdr:0,lmax:0})};
-function whInit(h){const x=whS(h);x.fcU=0;x.fp=0;x.bvU=0;x.lo=null;x.ln=0}
+function whInit(h){whS(h)}   // 审阅修：heroRecalc（换武器）每次都调 init，原来在这里清零，勇冠草原期间换武器就丢了无限穿透 / 减速，北原第一的冷却也被清掉；新英雄对象的 hxs 本来就是新建的（whS 的默认值）
 function whReset(){WH_RM.clear();WH_RD=false;WH_T=0}
 const WH_AP=new Set(['arrow','bolt','bigbolt','earrow','iarrow','ebolt']);   // 用户 11-11：弓骑兵算拿弩的（弓、弩的弹丸；e / i 开头的是转到我方的亡灵弓骑兵）
 function whHA(u){if(u.isHero)return u.id==='wuhao'||(!!u.mnt&&!!u.ws&&(u.ws.type==='bow'||u.ws.type==='crossbow'));const c=u.c;return!!(c&&c.cavalry&&c.ranged&&WH_AP.has(c.ranged.proj))}
@@ -79784,6 +79828,7 @@ function suleRaidTick(dt){let w=0;
     if(e.dt<=0&&(e.n>=e.N||G.phase!=='wave')&&!(u.jkSU>G.time)){suleHideEnd(u);continue}
     SULE_RD[w++]=e}
   SULE_RD.length=w}
+function suleRaidEnd(){for(let k=0;k<SULE_RD.length;k++){const u=SULE_RD[k].u;if(u.dead)continue;if(u.jkSU>G.time)u.jkSU=G.time;suleHideEnd(u)}SULE_RD.length=0}   // 审阅修：一波打完就结束匿影奇袭（准备阶段 tick 不走，原来没冲完的冲锋和隐身会带到下一波开头接着冲）
 // ===== 托管 =====
 const SULE_AJ=[],SULE_AW=[];let SULE_AN=0;
 const pfSuleAll=j=>{if(SULE_AJ.length<120){SULE_AJ.push(j);SULE_AW.push(ETC[E.t[j]].tier>=4?3:1)}};
@@ -79807,7 +79852,7 @@ function suleRaidAI(h,p){if(G.phase!=='wave')return null;suleList(h.x,h.y,(h.vis
   return h.hp<h.maxHp*0.4&&nearestEnemy(h.x,h.y,6*16,true)>=0?{x:h.x,y:h.y}:null}
 // ===== 登记 =====
 function suleTick(dt){SULE_ST-=dt;if(SULE_ST<=0){SULE_ST=0.5;suleSync()}if(SULE_RD.length)suleRaidTick(dt);if(SULE_QL)suleCutTick()}
-feat('sule',{on:()=>{const b=heroEver(SULE_ID);if(!b)suleReset();return b},hooks:{start:suleReset,tick:suleTick,waveStart:()=>{SULE_ST=0},
+feat('sule',{on:()=>{const b=heroEver(SULE_ID);if(!b)suleReset();return b},hooks:{start:suleReset,tick:suleTick,waveStart:()=>{SULE_ST=0},waveEnd:suleRaidEnd,
   friend:(u,dt,isH)=>{if(isH&&u.id===SULE_ID&&G.phase!=='wave'){SULE_ST-=dt;if(SULE_ST<=0){SULE_ST=0.5;suleSync()}}}}});   // 准备阶段 tick 钩子不走：由速勒自己每 0.5 秒同步一次（同米修斯）
 heroFx(SULE_ID,{g:83,init:suleInit});
 Object.assign(SK,{
@@ -83243,6 +83288,7 @@ function advHome(){ensureInside();
 // 波次结束：所有地道坍塌（没有赏金）
 function collapseTunnels(){for(let j=0;j<E.n;j++)if(E.alive[j]&&ETUN[E.t[j]])tunnelCollapse(j);G.tunnels.length=0;G.tunnelN=0}
 function saveRun(){
+  if(G.story&&G.phase==='wave')return;   // 剧情打到一半（对白里有人加入 / 离队、首领剧本）不存档，读档回到这一波开打前重打；不然存下的波次已经 +1，读回来会多打一波（最后一波变成「第 16 / 15 波」，首领剧本不触发）
   if(settleOn()||G.invade||metaLock||(G.mode==='survivor'&&!(G.sv&&!G.sv.end&&!G.sv.ext))||(G.mp2H&&mp2SaveP()))return;   // mp2SaveP：0.12.7 代理 MP 加，亡灵推磨的准备阶段不存档，只给上一次的存档补上「用过了」（heroes/merchant2）   // survivor：0.12.7b（用户定）幸存者模式也存档（结束了就不存）
      // metaLock：v0.10.1 读档出错锁定时什么都不存；v0.6.2 开拓地场景不存局内档（布局随时存进 META）；入侵战不存档（中途退出入侵还挂着，可以再打）
   try{
@@ -87161,13 +87207,13 @@ function elLkKid(x,a,b){const L=LKD(),r=elLkGen(x),o={};for(const k of['sk','hr'
 function elLook(x){if(!x)return null;if(x.lk&&x.lk.sk!=null)return x.lk;let lk=null;
   const p=x.par!=null?elById(x.par):null,q=x.par2!=null?elById(x.par2):p?elSpouse(p):null,pa=p?elLook(p):null,qa=q?elLook(q):null;
   if(pa||qa)lk=elLkKid(x,pa||qa,qa||pa);else lk=elLkGen(x);x.lk=lk;return lk}
-const elLkKey=lk=>`${lk.sk}${lk.hr}${lk.ey}${lk.ear}${lk.b}`;
+const elLkKey=lk=>`${lk.sk}${lk.hr}${lk.ey}${lk.ear}${lk.b}${lk.acc?'_'+lk.acc:''}`;   // acc：0.13.7.1 剧情配角的配饰（data/story_n1 的 npcLook，画法 art/st_npc.stLkAcc）
 const elLkTxt=x=>{const L=LKD(),k=elLook(x);return k?`${L.skinN[k.sk]}皮肤 · ${L.hairN[k.hr]} · ${L.eyeN[k.ey]} · ${L.ear[k.ear]} · ${L.body[k.b]}`:''};
 // 合成小人：返回 SPR.heroes 的键（没画过就画）
 // 0.12.8（用户定）孩子用孩子的小人：4 岁及以下 el_baby，5～14 岁男孩 el_kid、女孩 elf_kid（art/el_kid）；不按体型缩放
 const elKidSpr=x=>x&&x.kid&&x.age<EL().famKeep.adult&&HD_HEROES.el_kid?(x.age<EL().family.school[0]?'el_baby':x.sex==='f'?'elf_kid':'el_kid'):null;
 function elSprLk(x){const kb=elKidSpr(x),base=kb||elSpr(x.job||'recruit',x.sex),lk=elLook(x),fn=HD_HEROES[base];if(!lk||!fn||typeof SPR==='undefined'||!SPR.heroes)return base;const key=base+'~'+elLkKey(lk);
-  if(!SPR.heroes[key]){const L=LKD(),s=kb?1:L.bodyK[lk.b]||1;EL_LK={skin:L.skin[lk.sk],hair:L.hair[lk.hr],eye:L.eye[lk.ey],brow:elLkDark(L.hair[lk.hr]),ear:lk.ear};
+  if(!SPR.heroes[key]){const L=LKD(),s=kb?1:L.bodyK[lk.b]||1;EL_LK={skin:L.skin[lk.sk],hair:L.hair[lk.hr],eye:L.eye[lk.ey],brow:elLkDark(L.hair[lk.hr]),ear:lk.ear,acc:lk.acc||''};
     try{SPR.heroes[key]=[0,1].map(f=>elLkReg(elLkScale(fn(f),s)))}catch(e){console.warn('elSprLk',e);EL_LK=null;return base}EL_LK=null}
   return key}
 const elLkDark=c=>{const n=parseInt(c.slice(1),16),f=v=>Math.round(v*0.6).toString(16).padStart(2,'0');return'#'+f(n>>16)+f((n>>8)&255)+f(n&255)};
@@ -89524,7 +89570,11 @@ function ftTick(dt){FT.tt+=dt;const st=FT.tt;if(st<CFG.famTech.tick)return;FT.tt
 function ftSolBt(u){if(!(FT.on>0))return;   // units/soldiers.soldierBt 末尾：赤血统御的攻击（进士兵的伤害加成池子）、双防；元素秘法的施法范围（法术远程武器、治疗距离）
   if(FT.sol>0&&!FT_MECHC.has(u.c)){u.atkAdd+=FT.sol;u.mdef=(u.mdef||0)*(1+FT.sol);if(!FT_DW.has(u)){FT_DW.add(u);u.def=(u.def||0)*(1+FT.sol)}}   // mdef 每次 soldierBt 都从兵种数据重来；def 只在 makeSoldier 写，乘一次
   if(FT.cast>0){const k=1+FT.cast;if(u.rg&&u.rg.magic)u.rg=Object.assign({},u.rg,{range:u.rg.range*k});if(u.healer&&u.healer.range>0)u.healer=Object.assign({},u.healer,{range:u.healer.range*k})}
-  if(FT.bRng>0&&u.rg&&u.rg.range>0&&(ftBits(u)&FB_CAN))u.rg=Object.assign({},u.rg,{range:u.rg.range*(1+FT.bRng)})}   // 弹道学说：火炮士兵的远程武器射程 ×(1 + X)（同元素秘法改武器本身：加农炮、炮艇、对空炮卫各有自己的开火代码，都读 u.rg.range）
+  if(FT.bRng>0&&u.rg&&u.rg.range>0&&(ftBits(u)&FB_CAN))ftSolRng(u)}   // 弹道学说：火炮士兵的远程武器射程 ×(1 + X)（同元素秘法改武器本身：加农炮、炮艇、对空炮卫各有自己的开火代码，都读 u.rg.range）
+function ftSolRng(u){const k=1+FT.bRng,sc=w=>w&&w.range>0?Object.assign({},w,{range:w.range*k}):w,Q=u.nq,V=u.v8,r=u.rg;   // 审阅修：按距离换武器的兵（玄虎骑 nq.rgD / rgL、精械炮手 v8.w）两把都乘，原来只乘了当前那把，换一次武器射程加成就没了；nq / v8 每次 soldierBt 都新建，不会越乘越大
+  if(Q&&(Q.rgD||Q.rgL)){const d=Q.rgD,l=Q.rgL;Q.rgD=sc(d);Q.rgL=sc(l);u.rg=r===d?Q.rgD:r===l?Q.rgL:sc(r)}
+  else if(V&&V.w){const w0=V.w[0],w1=V.w[1];V.w=[sc(w0),sc(w1)];u.rg=r===w0?V.w[0]:r===w1?V.w[1]:sc(r)}
+  else u.rg=sc(r)}
 function ftSolDefRe(s){if(FT.sol>0&&!FT_MECHC.has(s.c)){FT_DW.add(s);s.def=(s.def||0)*(1+FT.sol);s.mdef=(s.mdef||0)*(1+FT.sol)}}   // units/units080.v8Saint：换形态时 def / mdef 按新兵种数据重写了，赤血统御的双防再乘一次
 const ftTowRng=s=>s.type!=='keep'&&(ftBits(s)&FB_CAN)?FT.bRng:0;   // structs/structs.towerW：弹道学说，火炮塔射程 +X%（和别的射程加成相加，再一起折算）
 function ftElRng(h){if(FT.bRng>0&&h.elite&&h.slot>=10&&(ftBits(h)&FB_CAN))h.elRng=(h.elRng||0)+FT.bRng}   // game/el_battle.elRecalc：弹道学说，精英重炮手射程 +X%（elRng 是精英射程加成，进 heroRange 的加算池子）；只算局内的精英（同 ftElGear）
@@ -93202,7 +93252,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.6',GAME_TAG='稳定版',GAME_CODE=242,GAME_BUILD="d4d8305+",GAME_BUILT=1794372148080,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.7.2',GAME_TAG='稳定版',GAME_CODE=247,GAME_BUILD="1552096",GAME_BUILT=1794382344586,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -94413,7 +94463,7 @@ const hvMore=(n,what)=>n>0?`<p class="meta hvmore">还有 ${n} ${what}，通关�
 // ---------- 界面（四）：设置、弹窗按钮分发（onSheetClick）、开局、暂停、强化卡选择、结算 ----------
 let setFrom='menu',devAsk=false,setSec='av',resetAsk=false,devShow=false,devTaps=[];   // devShow：0.12.2（用户定）「调试」分区默认藏起来，「问题报告」里 10 秒内连点 10 次「复制调试信息」后显示（这次打开游戏有效）
 // v0.3.3 设置改成整屏：左边分区（声音画面 / 战斗 / 触屏操控 / 存档 / 按键 / 调试），右边是这一区的选项
-// 家族时间流速（用户 11-10 定）：两档，小时数取 CFG.elite.speeds
+// 家族时间流速（用户 11-10 定）：0.13.7 起四档 1× / 2× / 3× / 4×，小时数取 CFG.elite.speeds
 function elSpdRow(){const S=EL().speeds,cur=S[SET.elSpd]?SET.elSpd:CFG.settingsDefault.elSpd,h=k=>Math.round(S[k].yearMs/3.6e6);
   return`<div class="sr"><span>家族时间流速${ui2Q('家族时间流速','精英和家族成员的年龄、生育、训练所、相亲 / 提亲的冷却按这个推进。'+Object.keys(S).map(k=>`${S[k].n} = ${h(k)} 小时 1 年`).join('，')+'。现实时间每满一年的长度推进 1 年；攒下的时间至多记 1 年，离线再久上线也只推进 1 年。换档时这一年已经过去的几成、还没到期的冷却按比例换算(所有存档位共用这项设置)')}</span><span class="row2">${Object.keys(S).map(k=>`<button class="px${cur===k?' on':''}" type="button" data-act="selspd" data-v="${k}">${S[k].n}</button>`).join('')}</span></div>`}   // 0.13.6.1 用户 11-10：四档 1× / 2× / 3× / 4×，几小时 1 年和「离线至多存 1 年」收进问号
 const SET_SECS=[['av','声音画面'],['play','战斗'],['touch','触屏操控'],['save','存档'],['misc','其它'],['lang','语言'],['keys','按键'],['rep','问题报告'],['dev','调试']];   // rep：v0.6.8（ui/perfrep）
@@ -97327,15 +97377,18 @@ function dlgPick(o){const q=dlgQ[dlgK];if(!dlgOpt||!q||q[0]!=='opt')return;sfx('
   dlgShow()}
 function dlgShowOpt(L){dlgOpt=L;dlgEl.classList.add('ask');dlgOptEl.innerHTML=L.map((o,i)=>`<button class="px dlgop" type="button" data-o="${i}"><em>${i+1}</em>${i18nT(o[0])}</button>`).join('');dlgOptEl.hidden=false;dlgNextI.hidden=true}
 const dlgNextI=dlgEl.querySelector('.dlgnext');
+// 0.13.7.1b 表情气泡：对白行带表情（npc 行第 4 项、英雄行第 3 项，tools/story3/n1build 从台本「名字（表情）：」来）就在头像右上角贴一个（art/st_emo，CSS .dlgemo）；没头像不显示
+const dlgEmo=document.createElement('img');dlgEmo.className='dlgemo';dlgEmo.alt='';dlgEmo.hidden=true;dlgEl.querySelector('.dlgbox').appendChild(dlgEmo);
+function dlgEmoSet(Q){const ex=Q&&!dlgPor.hidden?Q[Q[0]==='npc'?3:2]:null,u=typeof ex==='string'&&typeof stEmoUrl==='function'?stEmoUrl(ex):null;dlgEmo.hidden=!u;if(u)dlgEmo.src=u}
 // 0.12.2 新剧情的特殊行：['tod', 时段] 当场换时段（不显示，直接下一句）；['fade', 文字] 黑屏转场字幕（「二日后」）
-function dlgShow(fast){const r=dlgRun(fast);if(!r)return;if(r[0]==='opt'){if(dlgK===0||!dlgLine.textContent){dlgEl.classList.add('narr');dlgPor.hidden=true;dlgName.textContent='';dlgLine.textContent=''}dlgShowOpt(r[1]);return}
+function dlgShow(fast){const r=dlgRun(fast);if(!r)return;if(r[0]==='opt'){if(dlgK===0||!dlgLine.textContent){dlgEl.classList.add('narr');dlgPor.hidden=true;dlgEmo.hidden=true;dlgName.textContent='';dlgLine.textContent=''}dlgShowOpt(r[1]);return}
   dlgEl.classList.remove('ask');dlgNextI.hidden=false;
   const Q=r,npc=Q[0]==='npc',w=Q[0],fd=w==='fade',tx=i18nT(stFmt(npc?Q[2]:Q[1])),n=w==='n'||fd;dlgEl.classList.toggle('fade',fd);   // i18nT：v0.10.0 英文模式先整句翻好再逐字打（原来逐字打的是半截中文，每截各翻一次，闪成中英夹杂的碎片）   // stFmt：v0.7.6 {dead} / {deadR} 换成阵亡数
- dlgEl.classList.toggle('narr',n);const pu=npc&&typeof stNpcPor==='function'?stNpcPor(Q[1]):null;dlgPor.hidden=n||(npc&&!pu);dlgPor.classList.toggle('spr',!!pu);if(pu)dlgPor.src=pu;else if(!n&&!npc)dlgPor.src=heroPortrait(w);dlgName.textContent=npc?Q[1]:dlgWho(w);   // pu：0.12.2 新剧情的配角用精英模板画的小人当头像（game/st_new）
+ dlgEl.classList.toggle('narr',n);const pu=npc&&typeof stNpcPor==='function'?stNpcPor(Q[1]):null;dlgPor.hidden=n||(npc&&!pu);dlgPor.classList.toggle('spr',!!pu);if(pu)dlgPor.src=pu;else if(!n&&!npc)dlgPor.src=heroPortrait(w);dlgName.textContent=npc?Q[1]:dlgWho(w);dlgEmoSet(Q);   // pu：0.12.2 新剧情的配角用精英模板画的小人当头像（game/st_new）
   dlgLine.style.minHeight='';dlgLine.textContent=tx;dlgLine.style.minHeight=dlgLine.offsetHeight+'px';   // v0.10.0（用户要）对话框高度按这一句整句的行数定：短句矮、长句高，打字时不再一行一行往上撑
   dlgFull=tx;dlgLine.textContent='';clearInterval(dlgTyping);let i=0;dlgTyping=setInterval(()=>{i+=2;dlgLine.textContent=tx.slice(0,i);if(i>=tx.length){clearInterval(dlgTyping);dlgTyping=null}},30)}
 function dlgNext(){if(!dlgOn)return;if(dlgTyping){clearInterval(dlgTyping);dlgTyping=null;dlgLine.textContent=dlgFull;return}if(dlgOpt)return;sfx('click');if(++dlgK>=dlgQ.length)dlgEnd();else dlgShow()}
-function dlgEnd(){if(!dlgOn)return;clearInterval(dlgTyping);dlgTyping=null;dlgOn=false;dlgEl.hidden=true;dlgEl.classList.remove('fade','ask');dlgOpt=null;dlgOptEl.hidden=true;dlgOptEl.innerHTML='';dlgMenu=[];const f=dlgDone;dlgQ=null;dlgDone=null;if(running&&!modalState)paused=false;if(f)f()}
+function dlgEnd(){if(!dlgOn)return;clearInterval(dlgTyping);dlgTyping=null;dlgOn=false;dlgEl.hidden=true;dlgEmo.hidden=true;dlgEl.classList.remove('fade','ask');dlgOpt=null;dlgOptEl.hidden=true;dlgOptEl.innerHTML='';dlgMenu=[];const f=dlgDone;dlgQ=null;dlgDone=null;if(running&&!modalState)paused=false;if(f)f()}
 // 跳过（按钮、Esc、返回键）：一路跳到下一个选项（0.13：选项不能跳过，后面的记下 / 好感 / 学会 / 换时段照样做）；没有选项就放完
 function dlgSkip(){if(!dlgOn)return;clearInterval(dlgTyping);dlgTyping=null;if(dlgOpt)return;dlgK++;dlgShow(true)}
 dlgEl.addEventListener('click',e=>{const b=e.target.closest('[data-o]');if(b){if(dlgOpt)dlgPick(dlgOpt[+b.dataset.o]);return}if(e.target.closest('[data-d=skip]')){sfx('click');dlgSkip();return}dlgNext()});
