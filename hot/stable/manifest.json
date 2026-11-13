@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.7.2",
- "code": 247,
- "size": 21021428,
- "sha256": "459067c05b30817b5618d6df74a392965b1cfbe5f1d240c6a075578f8e29b95e",
+ "ver": "0.13.9.1",
+ "code": 253,
+ "size": 21362061,
+ "sha256": "4cbde6a940f94fda017e12eb2b8e3b406f460019c18338948a7b9c9ce3dbb1a7",
  "minLoader": 1,
- "sig": "CpVNGy9lt4A79hAgJkeYbUy+Q5eWHojZbDvvMH9IOTAg5LsEu5w7lJwuyKLrYVHjYg6YqgzWGidStXqGA2OAQw==",
- "note": "0.13.7.2 稳定版",
- "at": "2026-11-11 07:19 UTC"
+ "sig": "4rZ9NjyZqsb47xMDrRrINMGmbMqJh/K8Yr2tKPltvBBNQAPX7CLgaEkemQXKYkrg35Tpi+QeNPatPnazJ6I/+w==",
+ "note": "0.13.9.1 稳定版：版本号（安卓 253）、更新日志归档",
+ "at": "2026-11-13 13:47 UTC"
 }
