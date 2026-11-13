@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.8.1",
- "code": 251,
- "size": 21284415,
- "sha256": "16235f6f71857cdcfac7ebfac9275315438ca1d0b15a0e9dc4372fad89a4329b",
+ "ver": "0.13.9",
+ "code": 252,
+ "size": 21361408,
+ "sha256": "902bdd758a564016e0e597a8f45d656433d83334940b7c920da4f31b05a7e95a",
  "minLoader": 1,
- "sig": "HU44MWwgcRbJnf03rr3l5fH8k2PCyXRT76ASnBebrE6CPPh9PpQJ0uUoJ2EUfiIWFAgkXgb2f70KXhMSXH0+mg==",
- "note": "0.13.8.1 测试版：版本号（安卓 251）",
- "at": "2026-11-13 03:55 UTC"
+ "sig": "eI6QOYDrHrxjY73gm9w3lcTV+ZhASojBDOsGoWgOVjRGex9IVtKz+oEDB26ynEaRtQpyR4aLvLQ/Yhu1ugR5RQ==",
+ "note": "0.13.9 测试版：版本号（安卓 252）",
+ "at": "2026-11-13 05:54 UTC"
 }
