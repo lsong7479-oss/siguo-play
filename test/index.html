@@ -52447,7 +52447,8 @@ function shFinal(j,part,o,im){if(!(part>0))return 0;if(SH_I<0||!(SH_RAW>0))retur
   if(SH_EI<0)SH_EI=eEstPre(SH_I,SH_RAW,O)*eEstImm(SH_I);const ej=eEstPre(j,SH_RAW,O)*eEstImm(j,im);return SH_EI>0?part*Math.min(1,ej/SH_EI):part}
 // 还要经过 dealE（真实伤害，dealE 会再乘一遍免伤类倍率和统一 buff 的易伤）的：先除掉
 function shPre(j,part,o){const V=ueBV(j),k=eEstImm(j)*(V!==null&&V[6]?Math.max(0.1,1+V[6]):1);return k>0?shFinal(j,part,o)/k:0}
-function dealE(i,raw,o){const k0=DRK,m0=IMK,z0=XZK,v0=XZV,g0=UE_G,s0=UE_S,n0=UE_N;DRK=drKOf(i,o);IMK=o.igImm>0?1-Math.min(1,o.igImm):1;XZK=XZ_ON&&raw>0&&!o.tru?xzKeep(o):1;XZV=0;const id=E.id[i];
+function dealE(i,raw,o){if(HF_DEP>0&&!(raw>=1))return 0;   // 同 engine/combat.hurtF：受击后效果里打出来的不足 1 点不算（用户 11-13，反伤来回弹）
+  const k0=DRK,m0=IMK,z0=XZK,v0=XZV,g0=UE_G,s0=UE_S,n0=UE_N;DRK=drKOf(i,o);IMK=o.igImm>0?1-Math.min(1,o.igImm):1;XZK=XZ_ON&&raw>0&&!o.tru?xzKeep(o):1;XZV=0;const id=E.id[i];
   const a0=AR3_IG,hv=AR3_ON?ar3Pre(raw,o):0,a1=AR3_IG;   // 0.12.6 代理 R 加：联盟共主-亚瑟「正义之心」——光环里出手的这一下拿出 hv 另算神圣伤害、无视减伤（heroes/arthur3：ar3Pre / ar3After）
   const r=dealE_(i,raw-hv,o);const xv=XZV;XZK=z0;XZV=v0;if(xv>0)xzLoseE(i,id,xv);DRK=k0;IMK=m0;UE_G=g0;UE_S=s0;UE_N=n0;AR3_IG=a0;const ar=AR3_ON&&r>0&&!o.ar3?ar3After(i,id,o,r,hv,a1):0;return(xv>0?r+xv:r)+ar}   // z0 / v0：dealE_ 里还会套着别的 dealE（反伤、爆炸……），各算各的   // r + xv：返回值（「造成的伤害」，灼烧、血池、削最大生命按它算）算上转化的那份（Claude 定）
 function dealE_(i,raw,o){
@@ -67867,7 +67868,8 @@ function ufDrS(s,o,mD){let dr=s.bfV?s.bfV[4]:0;if(mD&&s.cfg&&s.cfg.mdr)dr+=s.cfg
 // min(1, a 挨这一下的估算 ÷ b 挨这一下的估算)：b 那边已经实际算出来的伤害乘它，就是两边取小（整次转走：a = 被保护者、b = 替伤者；按比例分走：a = 替伤者、b = 被保护者）；a、b 可以是建筑（v0.10.11）
 function fShK(a,b,raw,o){if(!(raw>0))return 1;const eb=fEst(b,raw,o);if(!(eb>0))return 1;return Math.min(1,fEst(a,raw,o)/eb)}
 let HF_DEP=0;   // hurtF 受击后效果的嵌套层数（game/game.update 每帧清零，防止中途报错没减回去）
-function hurtF(u,raw,o){eRevealHit(o);{const j=o.src;if(j>=0&&!o.dot&&(o.sid===undefined||E.id[j]===o.sid)){E.aiF[j]=G.time;E.aiU[j]=u}}   // 0.13.2.x 托管英雄索敌：这只亡灵正在打我方单位（heroes/heroai.heroTgtK）
+function hurtF(u,raw,o){if(HF_DEP>0&&!(raw>=1))return 0;eRevealHit(o);   // 用户 11-13：受击后效果里再打出来的伤害（反伤、反弹……）不足 1 就不算，来回弹自然停
+{const j=o.src;if(j>=0&&!o.dot&&(o.sid===undefined||E.id[j]===o.sid)){E.aiF[j]=G.time;E.aiU[j]=u}}   // 0.13.2.x 托管英雄索敌：这只亡灵正在打我方单位（heroes/heroai.heroTgtK）
   if(u.dead||u.hp<=0||u.npc)return 0;if(HK.immF.length&&hkAny('immF',u,o))return 0;   // npc：v0.7.0 道观废墟的张道成免疫伤害
   if(u.isHero&&(u.inv>0||u.reviveT>0))return 0;if(u.v8&&u.v8.unyT>G.time)return 0;   // unyT：v0.8.0 圣堂骑士「不屈意志」   // stImm：v0.6.3 剧情「卷土重来」全盛毒师在场，免疫中毒、爆炸；reviveT：v0.4.2 复活保护
   // v0.4.0 圣骑士「圣光屏障」：屏障范围内友军受到的伤害整次转给圣骑士（heroes/holy）；「圣光护盾」/ 教堂圣骑士「圣佑」：免疫接下来几次伤害（持续伤害不算；v0.4.1 斩杀是清除单位，也挡不住）
@@ -94423,7 +94425,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.7.2',GAME_TAG='稳定版',GAME_CODE=247,GAME_BUILD="a9eb073+",GAME_BUILT=1794574418821,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.9.1',GAME_TAG='稳定版',GAME_CODE=253,GAME_BUILD="cd745d5",GAME_BUILT=1794578466660,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
