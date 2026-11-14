@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.11.1",
- "code": 260,
- "size": 21730963,
- "sha256": "0ff227132cbd8ac159e0ff13a2a196810542f6f9c8150e4bac9ed388d54338c6",
+ "ver": "0.13.11.2",
+ "code": 262,
+ "size": 21731039,
+ "sha256": "29e38e4f5c05bc6c1121f0488aaf9baf286e1f342db6a93344406b4943fcb8f3",
  "minLoader": 1,
- "sig": "ESQvq0ZkpNvw9y0UMjwDjLsgHJxkSHmNgb/+Zp+rkS08Hxiwx4WB7Si1O5pdCNAilAwcZKIdrOc51oa9PH1Iaw==",
- "note": "0.13.11.1 测试版（260）：0.13.11 加 Fable 的成片画 / 弹道性能优化",
- "at": "2026-11-14 07:47 UTC"
+ "sig": "eJ0bVEL6p6Kti7hzvNmp48vpzwWl8oaM+iDhb6TwTHXlwlJRUr9JlJh2mJoHzGFHkivhpeJMEy3l6DH8rP6jWg==",
+ "note": "0.13.11.2 测试频道（262）",
+ "at": "2026-11-14 14:59 UTC"
 }
