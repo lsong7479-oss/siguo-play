@@ -69552,7 +69552,7 @@ function drawUnderFx(x0,y0,x1,y1){if(FXK<=0)return;
   for(let i_3=0,a_3=G.heroes;i_3<a_3.length;i_3++){const h=a_3[i_3];const F=HFX[h.id];if(F&&F.under&&!h.dead&&inBox(h.x,h.y,64,x0,y0,x1,y1)){FX_DT=hSkD(h);F.under(h)}}}finally{FX_DT=null}}   // FX_DT：v0.11.2 皮肤色调（上面 fxSkD）
 function drawGlowPass(V,x0,y0,x1,y1){if(FXK<=0)return;GV=V;R.blend(true);
   try{for(let i_4=0,a_4=G.zones;i_4<a_4.length;i_4++){const z=a_4[i_4];const F=zfx(z.k);if(F&&F.glow&&(F.free||inBox(z.x,z.y,(z.r||8)+40,x0,y0,x1,y1)||z.k==='swave'||z.k==='tornado'||z.k==='h7beam')){FX_DT=z.skd||null;F.glow(z)}}
-    FX_DT=null;fuGlow();   // 0.13.11 火坑成片的柔光（ui/draw）
+    FX_DT=null;fuGlowAll();   // 0.13.11 成片画的柔光（ui/draw）
     for(let i_5=0,a_5=G.heroes;i_5<a_5.length;i_5++){const h=a_5[i_5];if(h.dead||!inBox(h.x,h.y,64,x0,y0,x1,y1))continue;const F=HFX[h.id];FX_DT=hSkD(h);if(F&&F.glow)F.glow(h);heroGlowAll(h);if(FX_DT&&FX_DT.halo)skinHalo(h,FX_DT)}   // skinHalo：皮肤的常驻光环（heroes/skinfx）
     FX_DT=null;projGlow(x0,y0,x1,y1);
     for(let i_6=0,a_6=G.fx;i_6<a_6.length;i_6++){const f=a_6[i_6];if(f.t<0)continue;FX_DT=f.skd||null;if(f.v){if(f.v.a)f.v.a(f,f.t/f.life)}else if(FXG[f.k])FXG[f.k](f,f.t/f.life)}
@@ -74020,10 +74020,11 @@ zoneDef('blizzard',{under(z){const u=Math.min(1,(z.dur-z.t)/0.5,z.t/0.15);vDisc(
 zoneDef('tornado',{glow(z){const T=G.time;for(let lv=0;lv<9;lv++){const r=2+lv*1.6,yy=z.y-lv*3.4,n=6+lv;for(let k=0;k<n;k++){if(k%2)continue;const a=k/n*6.2832+T*(13-lv)+lv;rectW(Math.round(z.x+Math.cos(a)*r),Math.round(yy+Math.sin(a)*r*0.35),2,1,vc(lv%2?'#bfefe6':'#ffffff'),0.6)}}vGlow(z.x,z.y-10,14,vc('#7fe0c8'),0.4,1)}});
 zoneDef('wind',{glow(z){const e=Math.min(1,(z.dur-z.t)*2);vRing(z.x,z.y,z.r,vc('#bfefe6'),0.5*e,VSQ,2,G.time*4,6);vGlow(z.x,z.y,z.r*0.7,vc('#7fe0c8'),0.2*e)}});
 // 酸液池：冒泡的绿光
-{const o={glow(z){const u=1-Math.max(0,z.t-z.dur+1),T=G.time,n=Math.round(4+z.r*0.15);for(let k=0;k<n;k++){const ph=(T*1.3+hash2(k,3,z.x|0))%1,a=hash2(k,5,z.y|0)*6.2832,r=Math.sqrt(hash2(k,7,(T*1.3+hash2(k,3,z.x|0))|0))*z.r*0.85;
-    vGlow(z.x+Math.cos(a)*r,z.y+Math.sin(a)*r*VSQ-ph*3,2+ph*3,vc(z.k==='acid'?'#b8e05a':'#86e05a'),0.7*u*(1-ph),1)}vGlow(z.x,z.y,z.r,vc('#5d7a22'),0.2*u)}};zoneDef('hacid',o);zoneDef('acid',o)};
+{const o={glow(z){const crowd=fuCrowdK(fuPoolL(z)),u=1-Math.max(0,z.t-z.dur+1),T=G.time,n0=Math.round(4+z.r*0.15),n=crowd<1?Math.max(3,Math.round(n0*crowd)):n0;   // 毒池多（ui/draw「成片画」）：泡泡留 3 个起、每个只画一层（原来三层柔光 20 来个矩形），大的柔光成片画
+    for(let k=0;k<n;k++){const ph=(T*1.3+hash2(k,3,z.x|0))%1,a=hash2(k,5,z.y|0)*6.2832,r=Math.sqrt(hash2(k,7,(T*1.3+hash2(k,3,z.x|0))|0))*z.r*0.85;
+    const bx=z.x+Math.cos(a)*r,by=z.y+Math.sin(a)*r*VSQ-ph*3,bc=vc(z.k==='acid'?'#b8e05a':'#86e05a'),ba=0.7*u*(1-ph);if(crowd<1)vDisc(bx,by,(2+ph*3)*0.6,bc,ba*0.45,1);else vGlow(bx,by,2+ph*3,bc,ba,1)}if(!(crowd<1&&fuTakes(z,u)))vGlow(z.x,z.y,z.r,vc('#5d7a22'),0.2*u)}};zoneDef('hacid',o);zoneDef('acid',o)};
 // 火坑
-zoneDef('fire',{glow(z){const u=Math.min(1,(z.dur-z.t)/0.8);if(fuCrowd()&&fuTakes(z,u))return;vGlow(z.x,z.y,z.r,vc('#ff5a2a'),0.3*u)}});   // 火坑多时柔光成片画（ui/draw 的 fuGlow）
+zoneDef('fire',{glow(z){const u=Math.min(1,(z.dur-z.t)/0.8);if(fuCrowdK(FU_FIRE)<1&&fuTakes(z,u))return;vGlow(z.x,z.y,z.r,vc('#ff5a2a'),0.3*u)}});   // 火坑多时柔光成片画（ui/draw 的 fuGlow）
 // 震慑领域：紫色的光圈一呼一吸，中间一只眼睛
 zoneDef('dread',{glow(z){const pu=0.5+0.5*Math.sin(G.time*4),h=z.h,x=h&&!h.dead?h.x:z.x,y=h&&!h.dead?h.y:z.y;vRing(x,y-2,z.r,vc('#b05ad8'),0.45+0.3*pu,VSQ,2);vGlow(x,y,z.r,vc('#6a2a9a'),0.18+0.1*pu);
   vDisc(x,y-2,5,vc('#e8b8ff'),0.5*pu,0.5);vDisc(x,y-2,1.5,vc('#ffffff'),0.9*pu,1)}});
@@ -95667,10 +95668,11 @@ function drawTrap(t){
 }
 // v0.10.11 魔导阵塔导弹的蓝色尾焰：喷口一段亮的焰心 + 两侧淡光（随机闪烁长短），后面沿着抛物线往回画 0.15 秒的拖尾，越远越暗
 const M2_TAIL=['#bfeaff','#8fd4ff','#5fb0ff','#3f88ff','#2f64e8','#2a4cc8'].map(C),M2_TA=[0.85,0.75,0.6,0.45,0.32,0.2],M2_K={glow:C('#5fb0ff'),core:C('#7fd0ff'),hot:C('#ffffff'),nose:C('#c9a8ff')};   // rectW / pline 要 C() 过的颜色对象（直接给字符串画出来是黑的）
-function m2MslTail(p,x,yy,c,s){const f=fxr()*2,ex=x-c*(8+f),ey=yy-s*(8+f);
-  let px=x-c*5,py=yy-s*5;for(let k=1;k<=6;k++){const t=p.t-k*0.025;if(t<=0)break;const u=t/p.T,X=lerp(p.x0,p.x1,u),Y=lerp(p.y0,p.y1,u)-p.arc*4*u*(1-u);pline(px,py,X,Y,M2_TAIL[k-1],M2_TA[k-1]);px=X;py=Y}
-  pline(x-c*5-s,yy-s*5+c,ex-s*0.5,ey+c*0.5,M2_K.glow,0.5);pline(x-c*5+s,yy-s*5-c,ex+s*0.5,ey-c*0.5,M2_K.glow,0.5);
+function m2MslTail(p,x,yy,c,s){const f=fxr()*2,ex=x-c*(8+f),ey=yy-s*(8+f),st=PJ_NL>PJ_CAP?2:1;   // st：0.13.11 一屏弹道超过 PJ_CAP 个时拖尾两段并一段画、不画尾焰两侧的光晕（一发导弹约 33 → 19 个矩形）
+  let px=x-c*5,py=yy-s*5;for(let k=st;k<=6;k+=st){const t=p.t-k*0.025;if(t<=0)break;const u=t/p.T,X=lerp(p.x0,p.x1,u),Y=lerp(p.y0,p.y1,u)-p.arc*4*u*(1-u);pline(px,py,X,Y,M2_TAIL[k-1],M2_TA[k-1]);px=X;py=Y}
+  if(st===1){pline(x-c*5-s,yy-s*5+c,ex-s*0.5,ey+c*0.5,M2_K.glow,0.5);pline(x-c*5+s,yy-s*5-c,ex+s*0.5,ey-c*0.5,M2_K.glow,0.5)}
   pline(x-c*5,yy-s*5,ex,ey,M2_K.core,0.95);rectW(Math.round(x-c*5),Math.round(yy-s*5),1,1,M2_K.hot)}
+let PJ_N=0,PJ_NL=0;const PJ_CAP=64,PJ_VM=48;   // 0.13.11：这一帧 / 上一帧画了几个我方弹道；PJ_VM：镜头外多少像素以内的还画（拖尾、抛射的高度）
 function drawProj(p){
   const x=Math.round(p.x),y=Math.round(p.y);
   if(p.lob){rectW(x-1,Math.round(p.gy),3,1,SHC,0.35);const yy=Math.round(p.y-p.z);
@@ -95788,7 +95790,11 @@ function zoneDraw_blizzard(z){const u=Math.min(1,(z.dur-z.t)/0.5,z.t/0.15);fillC
       x=Math.round(z.x+Math.cos(a)*r+Math.sin(G.time*3+k)*1.5),y=Math.round(z.y+Math.sin(a)*r-10+ph*12);rectW(x,y,k%4?1:2,1,k%3?K.blade:K.ice,0.95*u*Math.min(1,(1-ph)*4))}}
 zoneDef('blizzard',{draw:zoneDraw_blizzard});
 // v0.6.1（用户定）毒池、火坑：地上一圈「坑圈」一直画；里面的粒子（散点、火苗）数量按特效丰度（FXK 0～200%）缩放，0% 只剩坑圈
-function zoneDraw_acid(z){const u=1-Math.max(0,z.t-z.dur+1),n=Math.round(Math.max(8,Math.round(z.r/2))*FXK*ZFX);fillEll(z.x,z.y,z.r,K.ink,0.16*u);ring2(z.x,z.y,z.r,K.ink,z.k==='acid'?K.acid:K.psn,0.55*u);for(let k=0;k<n;k++){const a=k/n*Math.PI*2+Math.sin(G.time+k)*0.2,rr=z.r*(0.55+0.45*((k*37)%10)/10);rectW(Math.round(z.x+Math.cos(a)*rr),Math.round(z.y+Math.sin(a)*rr*0.6),2,1,z.k==='acid'?K.acid:K.psn,0.55*u)}
+function zoneDraw_acid(z){const L=fuPoolL(z),u=1-Math.max(0,z.t-z.dur+1);L.nd++;
+    if(fuCrowdK(L)<1&&fuTakes(z,u)){fuAdd(L,z);return}   // 毒池多：记进表里，底色、外圈成片画，散点等底色画完再画（下面「成片画」的 fuDrawAll）
+    fillEll(z.x,z.y,z.r,K.ink,0.16*u);ring2(z.x,z.y,z.r,K.ink,z.k==='acid'?K.acid:K.psn,0.55*u);acidBits(z,u)}
+function acidBits(z,u){const n=Math.round(Math.max(8,Math.round(z.r/2))*FXK*ZFX);   // 毒池里的散点、转圈的亮点
+    for(let k=0;k<n;k++){const a=k/n*Math.PI*2+Math.sin(G.time+k)*0.2,rr=z.r*(0.55+0.45*((k*37)%10)/10);rectW(Math.round(z.x+Math.cos(a)*rr),Math.round(z.y+Math.sin(a)*rr*0.6),2,1,z.k==='acid'?K.acid:K.psn,0.55*u)}
     for(let k=0;k<(FXK>0?3:0);k++){const a=G.time*1.5+k*2.1,rr=z.r*0.5*((k+1)/3);rectW(Math.round(z.x+Math.cos(a)*rr),Math.round(z.y+Math.sin(a*1.3)*rr*0.6),1,1,K.acid,0.8*u)}}
 zoneDef('acid',{draw:zoneDraw_acid});
 zoneDef('hacid',{draw:zoneDraw_acid});
@@ -95798,42 +95804,59 @@ function zoneDraw_tfog(z){const u=Math.min(1,(z.dur-z.t)/0.8,z.t/0.3),n=FXK>0?6:
   for(let k=0;k<n;k++){const a=k/n*Math.PI*2+G.time*0.6,rr=z.r*0.45;fillEll(z.x+Math.cos(a)*rr,z.y+Math.sin(a)*rr*0.6-4,z.r*0.45,K.psn,0.09*u)}ring2(z.x,z.y,z.r,K.ink,K.psn,0.35*u)}
 zoneDef('tfog',{draw:zoneDraw_tfog});
 const COS_T=new Float32Array(1024),SIN_T=new Float32Array(1024);for(let i=0;i<1024;i++){COS_T[i]=Math.cos(i/1024*Math.PI*2);SIN_T[i]=Math.sin(i/1024*Math.PI*2)}   // P2 加（0.12.2d）：火星这类按随机角度撒的点查表用
-let FIRE_N=0,FIRE_NL=0;   // P2 加（0.12.2d 画面性能，用户：特效 100% 后期火坑多一帧 10 毫秒）：这一帧 / 上一帧画了几个火坑；超过 FIRE_CAP 个时火星按比例减少、只画一圈（画面稀一点，逻辑不受影响）
-const FIRE_CAP=16;
-// 0.13.11 火坑成片（用户定：同类火坑多了画成「一片」，特效从这一片长出来）。只改画法：逻辑上仍是一个一个的火坑，结算、叠加规则（engine/combat 的 pitStack）不变。
-//   一屏超过 FIRE_CAP 个火坑时，外圈和柔光不再一个一个画（一个火坑外圈约 50 个点、柔光三层约 70 行；800 个火坑一帧 10 万个矩形，还层层叠着画），
-//   而是把这一屏的火坑记进 FU，按行求并集（fuUnion：同一行里相交的横段并成一段），外圈只描这一片的边（fuOutline），柔光三层各画一遍并集（fuGlow，engine/vfx 的 drawGlowPass 调）。
-//   矩形数只跟这一片占多大屏幕有关，跟火坑个数无关。正在熄灭的（最后 0.8 秒要单独变淡）和换了皮肤颜色的照旧单独画；焦痕、火星仍然每个火坑自己画（一个 9 个矩形）。
-const FU={n:0,x:new Float32Array(256),y:new Float32Array(256),r:new Float32Array(256),ord:new Int32Array(256),y0:0,rows:0,cnt:new Int16Array(0),sp:new Int32Array(0),sw:new Int32Array(0)},FU_RUNS=24;   // cnt[行]：这一行并出几段；sp[行×FU_RUNS×2…]：每段的左、右（右不含）；sw[行×FU_RUNS…]：并进这一段的各段原长之和（÷ 段长 = 这一段平均叠了几层）
-const fuTakes=(z,u)=>u>=1&&!FX_DT;   // 这个火坑归不归「成片」画（zoneDraw_fire 和 heroes/skillfx2 的柔光用同一个判断）
-const fuCrowd=()=>FIRE_NL>FIRE_CAP;
-function fuAdd(z){const n=FU.n;if(n>=FU.x.length){for(const k of['x','y','r']){const a=new Float32Array(n*2);a.set(FU[k]);FU[k]=a}FU.ord=new Int32Array(n*2)}FU.x[n]=z.x;FU.y[n]=z.y;FU.r[n]=z.r;FU.n=n+1}
-// 把 FU 里的火坑（半径 × m，压扁 VSQ，同 engine/vfx 的 vDisc 一行一行的算法）按行求并集，结果在 FU.cnt / FU.sp。
+// —— 成片画（0.13.11，用户定：同类的区域效果多了画成「一片」，特效从这一片长出来）——
+// 只改画法：逻辑上仍是一个一个的区域，结算、叠加规则不变。一屏同一类超过 FU_CAP 个时，每个区域的底色、外圈、柔光不再一个一个画
+//   （一个火坑外圈约 50 个点、柔光三层约 70 行，一个毒池连冒泡三百多个矩形；几百个挤在一屏就是一帧十万个矩形，还层层叠着画），
+//   而是记进这一类的表（fuAdd），按行求并集（fuUnion：同一行里相交的横段并成一段），底色（fuFill）、外圈（fuOutline，只描这一片的边）、柔光（fuGlow）各画一遍并集。
+//   矩形数只跟这一片占多大屏幕有关，跟区域个数无关。叠在一起的地方亮度 / 深浅按「这一段平均叠了几层」算，总量和原来一个一个画相同，只是沿着这一段摊匀了。
+//   正在消失的（最后一秒左右要单独变淡）和换了皮肤颜色的照旧单独画；里面的小东西（火星、焦痕、毒池的散点和泡泡）仍然每个区域自己画，超过 FU_CAP 时按比例减少。
+//   2026-11 以前只有火坑有「多了就减火星」（P2，0.12.2d，FIRE_CAP）；现在火坑、毒池（毒师 / 炼毒塔 / 亡灵酸液）共用这一套。要给别的区域效果加：建一张表，画法里照 zoneDraw_acid 那样分流
+const FU_CAP=16,FU_RUNS=24;
+const fuList=()=>({n:0,nd:0,ndL:0,zs:[],x:new Float32Array(256),y:new Float32Array(256),r:new Float32Array(256),ord:new Int32Array(256)});   // n：这一屏归成片画的有几个（zs：是哪些）；nd / ndL：这一帧 / 上一帧画了几个这一类的（归不归成片都算）
+const FU_FIRE=fuList(),FU_PSN=fuList(),FU_TP=fuList(),FU_ACID=fuList(),FU_ALL=[FU_FIRE,FU_PSN,FU_TP,FU_ACID];   // 火坑；毒师的毒池（hacid / pp2Pool）；炼毒塔的毒液池（tpool，没有柔光）；亡灵的酸液（acid）
+const FUS={y0:0,rows:0,cnt:new Int16Array(0),sp:new Int32Array(0),sw:new Int32Array(0)};   // 并集的结果（各张表共用，并完马上画）：cnt[行] 这一行并出几段；sp[行×FU_RUNS×2…] 每段的左、右（右不含）；sw[行×FU_RUNS…] 并进这一段的各段原长之和（÷ 段长 = 平均叠了几层）
+const fuCrowdK=L=>L.ndL>FU_CAP?FU_CAP/L.ndL:1;   // < 1：这一类太多了，成片画；数值 = 小东西留下的比例
+const fuTakes=(z,u)=>u>=1&&!FX_DT;   // 这个区域归不归成片画（画法和柔光用同一个判断）
+const fuPoolL=z=>z.k==='acid'?FU_ACID:z.k==='tpool'?FU_TP:FU_PSN;
+function fuFrame(){for(let i=0;i<FU_ALL.length;i++){const L=FU_ALL[i];L.ndL=L.nd;L.nd=0}}   // 每帧开头（render_）
+function fuView(){for(let i=0;i<FU_ALL.length;i++){FU_ALL[i].n=0;FU_ALL[i].zs.length=0}}   // 每个镜头画区域之前（drawWorld）
+function fuAdd(L,z){const n=L.n;if(n>=L.x.length){for(const k of['x','y','r']){const a=new Float32Array(n*2);a.set(L[k]);L[k]=a}L.ord=new Int32Array(n*2)}L.x[n]=z.x;L.y[n]=z.y;L.r[n]=z.r;L.zs[n]=z;L.n=n+1}
+// 把表里的区域（半径 × m，压扁 VSQ，同 engine/vfx 的 vDisc / 上面 fillEll 一行一行的算法）按行求并集，结果在 FUS。
 //   按圆心从左到右加：新来的一段一定不在这一行最后一段的左边，只要和末尾的几段比（相交就并掉），不用排序
-function fuUnion(m){const n=FU.n,X=FU.x,Y=FU.y,Rr=FU.r,O=FU.ord,S=FU_RUNS*2;if(!n){FU.rows=0;return}
+function fuUnion(L,m){const n=L.n,X=L.x,Y=L.y,Rr=L.r,O=L.ord,S=FU_RUNS*2;if(!n){FUS.rows=0;return}
   let ya=1e9,yb=-1e9;for(let i=0;i<n;i++){O[i]=i;const ry=Math.max(1,Math.round(Rr[i]*m*VSQ)),y=Math.round(Y[i]);if(y-ry<ya)ya=y-ry;if(y+ry>yb)yb=y+ry}
   O.subarray(0,n).sort((a,b)=>X[a]-X[b]);
-  const rows=yb-ya+1;if(FU.cnt.length<rows){FU.cnt=new Int16Array(rows);FU.sp=new Int32Array(rows*S);FU.sw=new Int32Array(rows*FU_RUNS)}else FU.cnt.fill(0,0,rows);FU.y0=ya;FU.rows=rows;const cnt=FU.cnt,sp=FU.sp,sw=FU.sw;
+  const rows=yb-ya+1;if(FUS.cnt.length<rows){FUS.cnt=new Int16Array(rows);FUS.sp=new Int32Array(rows*S);FUS.sw=new Int32Array(rows*FU_RUNS)}else FUS.cnt.fill(0,0,rows);FUS.y0=ya;FUS.rows=rows;const cnt=FUS.cnt,sp=FUS.sp,sw=FUS.sw;
   for(let q=0;q<n;q++){const i=O[q],r=Rr[i]*m,ry=Math.max(1,Math.round(r*VSQ)),cx=Math.round(X[i]),cy=Math.round(Y[i]);
     for(let dy=-ry;dy<=ry;dy++){const w=Math.round(Math.sqrt(Math.max(0,1-dy*dy/(ry*ry)))*r);if(w<=0)continue;let a=cx-w,b=cx+w,len=w*2;const row=cy+dy-ya,base=row*S,bw=row*FU_RUNS;let c=cnt[row];
       while(c>0&&a<=sp[base+c*2-1]){c--;if(sp[base+c*2]<a)a=sp[base+c*2];if(sp[base+c*2+1]>b)b=sp[base+c*2+1];len+=sw[bw+c]}
-      if(c<FU_RUNS){sp[base+c*2]=a;sp[base+c*2+1]=b;sw[bw+c]=len;c++}cnt[row]=c}}}   // 一行并完还超过 FU_RUNS 段（二十几团互不相连的火排成一排，几乎碰不到）：多出来的不画
+      if(c<FU_RUNS){sp[base+c*2]=a;sp[base+c*2+1]=b;sw[bw+c]=len;c++}cnt[row]=c}}}   // 一行并完还超过 FU_RUNS 段（二十几团互不相连的排成一排，几乎碰不到）：多出来的不画
 const fuDot=(x,y)=>((x+2*y)%3+3)%3===0;   // 描边每 3 个像素点一个点（和原来一圈虚线差不多密）
-function fuEdgeDots(a,b,y,orow,col,al){const sp=FU.sp,c=orow<0||orow>=FU.rows?0:FU.cnt[orow],base=orow*FU_RUNS*2;let x=a;   // [a,b) 里邻行 orow 没盖住的部分 = 这一片的上沿 / 下沿
+function fuEdgeDots(a,b,y,orow,col,al){const sp=FUS.sp,c=orow<0||orow>=FUS.rows?0:FUS.cnt[orow],base=orow*FU_RUNS*2;let x=a;   // [a,b) 里邻行 orow 没盖住的部分 = 这一片的上沿 / 下沿
   for(let k=0;k<=c&&x<b;k++){const e=k<c?Math.min(b,sp[base+k*2]):b;for(let p=x;p<e;p++)if(fuDot(p,y)){for(;p<e;p+=3)rectW(p,y,1,1,col,al)}if(k<c&&sp[base+k*2+1]>x)x=sp[base+k*2+1]}}
-function fuOutline(){if(!FU.n)return;fuUnion(1);const cnt=FU.cnt,sp=FU.sp,S=FU_RUNS*2,col=K.boomD,al=0.5;
-  for(let row=0;row<FU.rows;row++){const c=cnt[row],y=FU.y0+row,base=row*S;
+function fuOutline(L,col,al){if(!L.n)return;fuUnion(L,1);const cnt=FUS.cnt,sp=FUS.sp,S=FU_RUNS*2;   // 外圈：只描这一片的边
+  for(let row=0;row<FUS.rows;row++){const c=cnt[row],y=FUS.y0+row,base=row*S;
     for(let k=0;k<c;k++){const a=sp[base+k*2],b=sp[base+k*2+1];if(fuDot(a,y))rectW(a,y,1,1,col,al);if(b-1>a&&fuDot(b-1,y))rectW(b-1,y,1,1,col,al);
       fuEdgeDots(a+1,b-1,y,row-1,col,al);fuEdgeDots(a+1,b-1,y,row+1,col,al)}}}
-// 柔光：同 vGlow 的三层（半径 1 / 0.6 / 0.28），每层画并集。原来叠在一起的火坑是加色一层层叠亮的，这里一段只画一次、亮度乘上这一段平均叠了几层：
-//   单独一个火坑和原来逐像素一样，挤在一起的总亮度和原来相同、只是沿着这一段摊匀了（「一片火」）
-function fuGlow(){if(!FU.n)return;const col=vc('#ff5a2a'),S=FU_RUNS*2;
-  for(let L=0;L<3;L++){fuUnion(FU_GM[L]);const cnt=FU.cnt,sp=FU.sp,sw=FU.sw,al=0.3*FU_GA[L];
-    for(let row=0;row<FU.rows;row++){const c=cnt[row],y=FU.y0+row,base=row*S,bw=row*FU_RUNS;for(let k=0;k<c;k++){const a=sp[base+k*2],w=sp[base+k*2+1]-a,ex=sw[bw+k]-w;rectW(a,y,w,1,col,al);   // 整段先画一层（边上和单个火坑一样淡）
-        if(ex>0){const d1=Math.min(FU_IN1,w>>3),d2=Math.min(FU_IN2,w>>2),w1=w-d1*2,w2=w-d2*2;rectW(a+d1,y,w1,1,col,Math.min(1,al*ex*0.3/w1));rectW(a+d2,y,w2,1,col,Math.min(1,al*ex*0.7/w2))}}}}}   // 叠出来的那部分亮度分两层往里缩着画（三成缩 FU_IN1 像素、七成缩 FU_IN2 像素），这一片的左右边缘是渐亮的、不是一刀切
+function fuFill(L,col,al){if(!L.n)return;fuUnion(L,1);const cnt=FUS.cnt,sp=FUS.sp,sw=FUS.sw,S=FU_RUNS*2,q=1-al;   // 底色（普通混合，叠 k 层透出来的比例 = (1 − al)^k）：整段先画一层，多叠的几层分两层往里缩着画（同下面柔光的做法）
+  for(let row=0;row<FUS.rows;row++){const c=cnt[row],y=FUS.y0+row,base=row*S,bw=row*FU_RUNS;
+    for(let k=0;k<c;k++){const a=sp[base+k*2],w=sp[base+k*2+1]-a,ex=sw[bw+k]-w;rectW(a,y,w,1,col,al);
+      if(ex>0){const d1=Math.min(FU_IN1,w>>3),d2=Math.min(FU_IN2,w>>2),w1=w-d1*2,w2=w-d2*2;rectW(a+d1,y,w1,1,col,1-Math.pow(q,ex*0.3/w1));rectW(a+d2,y,w2,1,col,1-Math.pow(q,ex*0.7/w2))}}}}
+// 柔光（加色混合，engine/vfx 的 drawGlowPass 里调）：同 vGlow 的三层（半径 1 / 0.6 / 0.28），每层画并集，亮度 = 单层 × 平均叠了几层。
+//   单独一个和原来逐像素一样；整段先画一层（边上和单个的一样淡），叠出来的那部分亮度分两层往里缩着画（三成缩 FU_IN1 像素、七成缩 FU_IN2 像素），这一片的左右边缘是渐亮的、不是一刀切
 const FU_GM=[1,0.6,0.28],FU_GA=[0.13,0.2,0.32],FU_IN1=5,FU_IN2=14;
-function zoneDraw_fire(z){const u=Math.min(1,(z.dur-z.t)/0.8),crowd=FIRE_NL>FIRE_CAP?FIRE_CAP/FIRE_NL:1,n=Math.max(4,Math.round(Math.max(8,Math.round(z.r*0.9))*FXK*ZFX*crowd)),fr=Math.floor(G.time*10);FIRE_N++;
-    if(crowd<1){if(fuTakes(z,u))fuAdd(z);else dotRing(z.x,z.y,z.r,K.boomD,0.5*u,0,0.6)}else ring2(z.x,z.y,z.r,K.ink,K.boomD,0.5*u);   // 火坑多：外圈交给「成片」画（下面 FU）
+function fuGlow(L,col,a0){if(!L.n)return;const S=FU_RUNS*2;
+  for(let g=0;g<3;g++){fuUnion(L,FU_GM[g]);const cnt=FUS.cnt,sp=FUS.sp,sw=FUS.sw,al=a0*FU_GA[g];
+    for(let row=0;row<FUS.rows;row++){const c=cnt[row],y=FUS.y0+row,base=row*S,bw=row*FU_RUNS;
+      for(let k=0;k<c;k++){const a=sp[base+k*2],w=sp[base+k*2+1]-a,ex=sw[bw+k]-w;rectW(a,y,w,1,col,al);
+        if(ex>0){const d1=Math.min(FU_IN1,w>>3),d2=Math.min(FU_IN2,w>>2),w1=w-d1*2,w2=w-d2*2;rectW(a+d1,y,w1,1,col,Math.min(1,al*ex*0.3/w1));rectW(a+d2,y,w2,1,col,Math.min(1,al*ex*0.7/w2))}}}}}
+function fuDrawAll(){fuOutline(FU_FIRE,K.boomD,0.5);   // 区域循环之后（drawWorld）：火坑的外圈；毒池的底色和外圈
+  fuPool(FU_PSN,K.psn);fuPool(FU_TP,K.psn);fuPool(FU_ACID,K.acid)}
+function fuPool(L,col){if(!L.n)return;fuFill(L,K.ink,0.16);fuOutline(L,col,0.55);   // 一类毒池：底色 → 这一片的边 → 每个池子自己稀疏的一圈 12 个点（成片以后里面还看得出一个个池子）和散点
+  for(let i=0;i<L.n;i++){const z=L.zs[i];dotRing(z.x,z.y,z.r,col,0.55,12,0.6);acidBits(z,1)}}
+function fuGlowAll(){fuGlow(FU_FIRE,vc('#ff5a2a'),0.3);fuGlow(FU_PSN,vc('#5d7a22'),0.2);fuGlow(FU_ACID,vc('#5d7a22'),0.2)}   // 颜色、亮度同 heroes/skillfx2 里各自的 vGlow
+function zoneDraw_fire(z){const L=FU_FIRE,u=Math.min(1,(z.dur-z.t)/0.8),crowd=fuCrowdK(L),n=Math.max(4,Math.round(Math.max(8,Math.round(z.r*0.9))*FXK*ZFX*crowd)),fr=Math.floor(G.time*10);L.nd++;
+    if(crowd<1){if(fuTakes(z,u))fuAdd(L,z);else dotRing(z.x,z.y,z.r,K.boomD,0.5*u,0,0.6)}else ring2(z.x,z.y,z.r,K.ink,K.boomD,0.5*u);   // 火坑多：外圈成片画
     for(let dy=-2;dy<=2;dy++){const w=Math.round(Math.sqrt(Math.max(0,1-dy*dy/6.25))*z.r);rectW(Math.round(z.x)-w,Math.round(z.y+dy*z.r*0.12),w*2,1,K.scorch,0.35*u)}
     for(let k=0;k<n;k++){const h=hash2(k,fr,z.x|0),ai=(h*1024)|0,r=Math.sqrt(hash2(k,fr+1,z.y|0))*z.r,x=Math.round(z.x+COS_T[ai]*r),y=Math.round(z.y+SIN_T[ai]*r*0.6),hh=1+((h*7)|0)%3;
       rectW(x,y-hh,1,hh,h<0.4?K.flY:h<0.8?K.boomC:K.boomD,0.85*u)}}   // COS_T / SIN_T：P2 改（0.12.2d）查 1024 格的表，角度差不到 0.35°（原来每个火星两次三角函数）
@@ -96112,7 +96135,7 @@ function followTo(c,h,dt){const tx=h.dead?G.base.x:h.x,ty=(h.dead?G.base.y:h.y)+
 function useView(k){const V=VIEWS[k];CX=V.CX;CY=V.CY;OX=V.OX;OY=V.OY}
 function setView(k,x,y,w,h,c,sx,sy){const V=VIEWS[k];clampCamTo(c,w,h);Object.assign(V,{x,y,w,h,OX:x+(w>>1),OY:y+(h>>1),CX:Math.round(c.x)+sx,CY:Math.round(c.y)+sy});useView(k)}
 function render(dt){const d0=IN_DRAW;IN_DRAW=1;try{render_(dt)}finally{IN_DRAW=d0}}   // v0.8.10 画面期间的 vr / chance / vpick 用特效随机数（core/core.IN_DRAW）
-function render_(dt){FIRE_NL=FIRE_N;FIRE_N=0;SHDW=SET.shadows!==false;ZFX=SET.zoomFx===false||!(zoomBase>0)?1:clamp((zoom/zoomBase)**2,1/16,1);ZFL=Math.sqrt(ZFX);
+function render_(dt){fuFrame();PJ_NL=PJ_N;PJ_N=0;SHDW=SET.shadows!==false;ZFX=SET.zoomFx===false||!(zoomBase>0)?1:clamp((zoom/zoomBase)**2,1/16,1);ZFL=Math.sqrt(ZFX);
   const t0=performance.now(),h=G.hero;applyZoom();WP_BUD=WP_MAX;
   if(G.bgDirty){G.bgDirty=false;bgAllDirty()}if(BGD.n&&BGC){if(R.updateBG)R.updateBG(BGC,BGD);bgUploaded()}   // 0.13.4 地面分块：只传改到的块（engine/map 的 BGD）
   const split=splitOn(),h2=split?G.heroes.find(x=>x.ctl==='p2'):null;
@@ -96177,13 +96200,13 @@ function drawWorld(dt,vk){
       case 5:{const t=LMt[i],x=LMx[i],y=LMy[i],r=SPR.enemies[t][LMf[i]],hv=ETC[t].hover,lf=hv?hv.h:0,sk=G.csOn&&csSinkSet(5,i);if(hv){if(SHDW)rectW(Math.round(x)-6,Math.round(y)-1,12,1,SHC,0.3)}else shadow(x,y,ETC[t].cavalry?16:9);sprW(r,Math.round(x)-(r.w>>1),Math.round(y-lf)-r.h,LMd[i]===1,false);if(LMh[i])drawCarriedHive(x,y,LMd[i]===1?-1:1,0);if(sk){SNK_DY=0;SNK_WL=1e9}break}
       case 6:{if(i>=32768){extDrawE(i);break}const L=G.legions[i];if(!L)break;const x=Math.round(L.x),y=Math.round(L.y-L.rows*4.5-16);rectW(x,y,1,14,K.pole);rectW(x+1,y,6,4,K.purple);rectW(x+1,y+4,4,1,K.purple);rectW(x+1,y+1,6,1,K.ink,0.5);break}
     }}
-  for(let i_7=0,a_7=G.proj;i_7<a_7.length;i_7++){const p=a_7[i_7];if(p.skd){FX_DT=p.skd;drawProj(p);FX_DT=null}else drawProj(p);}
+  for(let i_7=0,a_7=G.proj;i_7<a_7.length;i_7++){const p=a_7[i_7];if(p.x<cx0-PJ_VM||p.x>cx1+PJ_VM||p.y<cy0-PJ_VM||p.y-(p.z||0)>cy1+PJ_VM)continue;PJ_N++;if(p.skd){FX_DT=p.skd;drawProj(p);FX_DT=null}else drawProj(p);}   // 0.13.11 镜头外的弹道不画（原来每个都画，一发导弹三十多个矩形）
   if(settleOn())drawDuMarks(cx0,cy0,cx1,cy1);   // v0.10.1 耐久低于 50% 的建筑头上一个小扳手
   for(const s of st)if(s.beam&&G.time-s.beam.t<(s.beam.life||0.2))drawBeam(s.beam);   // v0.3.4 激光塔；life：v0.11.0 圣焰喷射两发之间不断（structs/holyflame）
   for(let i_8=0,a_8=G.eproj;i_8<a_8.length;i_8++){const p=a_8[i_8];if(visAt(p.x,p.y))drawEProj(p);}
-  FU.n=0;
+  fuView();
   for(let i_9=0,a_9=G.zones;i_9<a_9.length;i_9++){const z=a_9[i_9];if(z.x+(z.r||8)>cx0&&z.x-(z.r||8)<cx1&&z.y+(z.r||8)>cy0&&z.y-(z.r||8)<cy1+16||z.k==='swave'||z.k==='tornado'||ZONE_FX[z.k]&&ZONE_FX[z.k].free)drawZone(z);}   // free：v0.11.2 修——没有 x y、跟着单位走的区域（heroes/skinfx 登记）原来一直被筛掉没画
-  fuOutline();   // 0.13.11 火坑成片：这一屏归「成片」画的火坑，外圈在这里一起描
+  fuDrawAll();   // 0.13.11 成片画：这一屏归成片画的火坑、毒池，底色和外圈在这里一起画
   if(G.qsands&&G.qsands.length)for(const q of G.qsands){if(q.x+q.r<cx0||q.x-q.r>cx1||q.y+q.r<cy0||q.y-q.r>cy1)continue;
     for(let k=0;k<3;k++){const rr=q.r-((G.time*6+k*q.r/3)%q.r),n=Math.max(16,Math.round(rr*1.4));for(let m=0;m<n;m++){const a=m/n*Math.PI*2,x=q.x+Math.cos(a)*rr,y=q.y+Math.sin(a)*rr*0.8;if(qsAt(x,y))rectW(Math.round(x),Math.round(y),1,1,K_SAND[2],0.35*(1-rr/q.r))}}}   // v0.3.0 流沙：向中心收缩的波纹（v0.4.0 清掉的格子上不画）
   if(G.miasma&&G.miasma.length)for(const q of G.miasma)if(q.x+q.r>cx0&&q.x-q.r<cx1&&q.y+q.r>cy0&&q.y-q.r<cy1)drawMiasma(q);   // v0.3.2 丛林：紫色瘴气
@@ -96552,7 +96575,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.10.1',GAME_TAG='稳定版',GAME_CODE=257,GAME_BUILD="651b3c2",GAME_BUILT=1794641439896,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.10.1',GAME_TAG='稳定版',GAME_CODE=257,GAME_BUILD="1f95147",GAME_BUILT=1794642668908,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');

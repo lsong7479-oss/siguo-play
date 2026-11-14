@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.11",
- "code": 259,
- "size": 21729421,
- "sha256": "dbfc2e0efd606f8e7a2026bb04d9ca6785959b8ca13ec1b92353792f7a13b545",
+ "ver": "0.13.11.1",
+ "code": 260,
+ "size": 21730963,
+ "sha256": "0ff227132cbd8ac159e0ff13a2a196810542f6f9c8150e4bac9ed388d54338c6",
  "minLoader": 1,
- "sig": "5IU7OfSg5Mxop/3qEnApDR8JCClfvLyEs9kYaTdLmIJjtij8RARzK8qDAIgM1dFatIAzk8qONJQoZm24eQXDFg==",
- "note": "0.13.11 测试版（259）",
- "at": "2026-11-14 07:27 UTC"
+ "sig": "ESQvq0ZkpNvw9y0UMjwDjLsgHJxkSHmNgb/+Zp+rkS08Hxiwx4WB7Si1O5pdCNAilAwcZKIdrOc51oa9PH1Iaw==",
+ "note": "0.13.11.1 测试版（260）：0.13.11 加 Fable 的成片画 / 弹道性能优化",
+ "at": "2026-11-14 07:47 UTC"
 }
