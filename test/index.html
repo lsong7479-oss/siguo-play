@@ -89957,7 +89957,7 @@ function elSpawnRun(list){if(!G||!META||G.story)return;const m=elSt();G.elites=[
   G.elMem=elMemLv()+elHallLv();   // 0.13.1 英灵碑另加的层数（game/el_hall）
   L.forEach((e,i)=>{const sp=elSpec(e),slot=P[i][1];HERO_FX[sp.id]=EL_FX;const h=makeHero(sp,slot);h.elite=e.id;h.ai=true;h.ctl=null;
     const a=i/Math.max(1,L.length)*Math.PI*2;h.x=G.base.x+Math.cos(a)*22;h.y=G.base.y+24+Math.sin(a)*8;
-    G.heroes.push(h);G.elites.push({id:e.id,slot});if(!G.heroModes)G.heroModes={};G.heroModes[h.id]=e.cmd==='guard'?'guard':'sortie'});
+    G.heroes.push(h);G.elites.push(list&&list.find(x=>x.id===e.id&&x.dn)?{id:e.id,slot,dn:1}:{id:e.id,slot});if(!G.heroModes)G.heroModes={};G.heroModes[h.id]=e.cmd==='guard'?'guard':'sortie'});
   {const H=G.heroes.filter(h=>h.elite);for(const h of H){const e=elById(h.elite);h.elRel=H.filter(o=>o!==h&&elBondRel(e,elById(o.elite))).map(o=>o.elite);const g=G.elites.find(x=>x.id===h.elite);h.elGrief=list&&list.find(x=>x.id===h.elite&&x.gr)?1:0;if(g&&h.elGrief)g.gr=1;if(h.elRel.length||h.elGrief)heroRecalc(h,true)}}
   G.heroes.sort((a,b)=>a.slot-b.slot);hkBuild();f18aSpawn(list)}   // f18aSpawn：0.13.2 八阶代理 18a 加，罗斯福「罗斯福的慷慨」初始铜币、经济循环的记账起点（game/el_fam18a）
 // 地形减速（0.12.0 用户定：精英属于士兵，吃士兵的地形减速）：同 units/soldiers.terrMul，再加训练特性「越野训练」（terrain）
@@ -89966,7 +89966,7 @@ function elTerrMul(h){const b=TERR_SLOW[G.terrain[tidx(clamp(h.x,0,MW-1),clamp(h
 function elBondRel(a,b){if(!a||!b)return false;const P=x=>[x.par,x.par2].filter(Boolean),pa=P(a),pb=P(b);return a.spId===b.id||b.spId===a.id||pa.includes(b.id)||pb.includes(a.id)||pa.some(x=>pb.includes(x))}
 // 读档：按存档里的 G.elites 放回来（状态由 game.loadRun 按 slot 恢复）
 function elLoad(d){if(Array.isArray(d.elites)&&d.elites.length)elSpawnRun(d.elites)}
-const elSave=()=>G&&G.elites&&G.elites.length?G.elites.map(x=>x.gr?{id:x.id,slot:x.slot,gr:1}:{id:x.id,slot:x.slot}):undefined;   // gr：亲人倒下过
+const elSave=()=>G&&G.elites&&G.elites.length?G.elites.map(x=>{const o={id:x.id,slot:x.slot};if(x.gr)o.gr=1;if(x.dn)o.dn=1;return o}):undefined;   // gr：亲人倒下过；dn：这一局倒下过（0.13.11.2，结算时判一次伤病）
 // —— 回城（性格，Claude 定的线）：heroAI 的「血少回主堡」换成按性格的；回到主堡旁每秒回 backRegen ——
 function elRetreat(h){if(f4NoBack(h)){h.retreat=false;return true}const e=elById(h.elite),P=e&&EL().personality[e.pers];if(!P)return false;   // f4NoBack：0.13.1 代理 A 加，希克「古老之咒」夜里不回城（game/el_fam14a）
  let back=P.back;
@@ -89977,10 +89977,10 @@ function elDie(u){const S=u.d.elS||{},U=S.und;
   if(!(U&&!(u.elUndT>G.time))&&f19Die(u))return true;   // f19Die：0.13.3 九阶工坊加，泰「泉水眷顾」每波一次 3 秒后原地复活（免死先判；game/el_fam19）
   if(U&&!(u.elUndT>G.time)){u.hp=1;u.inv=Math.max(u.inv||0,U[0]);u.elUndT=G.time+U[1];if(inViewPt(u.x,u.y))addFx({k:'ring',x:Math.round(u.x),y:Math.round(u.y-6),r:14,life:0.5,c:'#f0d070'});sayT(`${u.d.name}：免死 ${U[0]} 秒`);return true}
   u.dead=true;u.respawn=1e9;u.shieldHp=0;u.dashT=0;u.whirlT=0;u.stealthT=0;u.stealthed=false;u.volQ=null;u.blinkQ=null;u.retreat=false;
-  const e=elById(u.elite);if(SV_ON)toast(`${u.d.name}倒下了，${CFG.survivor.squad.respawn} 秒后在队长身边复活`);else{if(e&&!e.stLv)elInjure(e);if(e&&e.stLv&&typeof stElDown==='function')stElDown(e);toast(`精英${u.d.name}倒下了，这一局不会再出现`)}   // SV_ON：0.12.7b 幸存者模式的队员不受伤、会复活（game/sv_squad）   // stLv：剧情精英不受伤，记下倒下（读档不再出来）
+  const e=elById(u.elite);if(SV_ON)toast(`${u.d.name}倒下了，${CFG.survivor.squad.respawn} 秒后在队长身边复活`);else{if(e&&!e.stLv){const g=G.elites.find(x=>x.id===u.elite);if(g)g.dn=1}if(e&&e.stLv&&typeof stElDown==='function')stElDown(e);toast(`精英${u.d.name}倒下了，这一局不会再出现`)}   // SV_ON：0.12.7b 幸存者模式的队员不受伤、会复活（game/sv_squad）   // stLv：剧情精英不受伤，记下倒下（读档不再出来）
   {const W=[];for(const o of G.heroes)if(o.elite&&o!==u&&!o.dead&&o.elRel&&o.elRel.includes(u.elite)&&!o.elGrief){o.elGrief=1;const g=G.elites.find(x=>x.id===o.elite);if(g)g.gr=1;heroRecalc(o);W.push(o.d.name)}   // 0.12.0 亲人倒下：双攻 +20%、双防 −10%，整局
     if(W.length)sayT(`${W.join('、')}看着亲人倒下：双攻 +${Math.round(EL().bond.griefAtk*100)}%、双防 −${Math.round(EL().bond.griefDef*100)}%`)}sfx('thump',u.x,u.y);return true}
-// 伤病（用户定）：死亡 50% 伤残；已经伤残的再死 50% 变残疾；科技「紧急抢救」× (1 − X)
+// 伤病（用户定）：0.13.11.2（用户 11-14）不在倒下时判，战斗结算时这一局倒下过的才判一次（被复活再倒下也只判一次，elAward）；死亡 50% 伤残；已经伤残的再死 50% 变残疾；科技「紧急抢救」× (1 − X)
 function elInjure(e){const I=EL().injury,k=1-Math.min(0.9,elTM().elRescue||0),parts=Object.keys(EL().injuries),now=metaNow();
   const hurt=Object.keys(e.inj).filter(x=>e.inj[x].lv===1);
   if(hurt.length&&Math.random()<I.worseP*k){const p=elPick(hurt);e.inj[p]={lv:2,t:now};e.lastInj=p;return}
@@ -90028,8 +90028,8 @@ function elMemRecalc(h){h.clStK=h.id==='scribe'?clStK():0;h.gDmg+=h.clStK;if(h.i
 function elAward(got){elAllySync();if(G&&!G.invade&&!G.story)got.rep=elRepBattle(G.map,got.cleared||0,((typeof DIFF!=='undefined'&&DIFF.reward)||1)*(1+((pm&&pm.repUp)||0))*(1+mp2Rep()),got.repF={});   // 0.12.0 打地区地图给本地家族声望（game/el_mar）；0.12.5 代理 F：× (1 + pm.repUp) 卡牌「名声大噪 / 四海名扬」   // mp2Loot：0.12.7 代理 MP 加，进阶-马可·波罗「攫财之道」家族声望 ×(1 + X)（heroes/merchant2）
   if(!G||!G.elites||!G.elites.length)return;const now=metaNow(),out=[],MT=elMeritTot(),MK={k:elMeritDiffK(),d:elMeritDone(got.cleared||0)};got.elMK=MK;   // 0.13.4 之后（用户 11-09 定）功勋按占比、难度、完成度算（game/el_merit）
   for(const x of G.elites){const e=elById(x.id);if(!e)continue;if(!e.log||!Array.isArray(e.log.L))e.log={n:0,k:0,d:0,t:0,h:0,c:0,L:[]};   // 0.12.0 防御：记录不全的也能结算
- const r=DSK['h:el'+x.id]||{dmg:0,tak:0,heal:0,cc:0,kill:0},h=G.heroes.find(q=>q.elite===x.id);
-    const L={at:now,map:G.map,w:got.cleared||0,k:r.kill|0,d:Math.round(r.dmg),t:Math.round(r.tak),h:Math.round(r.heal),c:Math.round(r.cc*10)/10,dead:h&&h.dead?1:0};
+ const r=DSK['h:el'+x.id]||{dmg:0,tak:0,heal:0,cc:0,kill:0},h=G.heroes.find(q=>q.elite===x.id);if(x.dn&&!e.stLv)elInjure(e);
+    const L={at:now,map:G.map,w:got.cleared||0,k:r.kill|0,d:Math.round(r.dmg),t:Math.round(r.tak),h:Math.round(r.heal),c:Math.round(r.cc*10)/10,dead:(h&&h.dead)||x.dn?1:0};
     const mb=elMeritBase(r,MT),mg=Math.round(mb*MK.k*MK.d);e.merit+=mg;L.m=mg;
     const lg=e.log;lg.n++;lg.k+=L.k;lg.d+=L.d;lg.t+=L.t;lg.h+=L.h;lg.c+=L.c;lg.L.unshift(L);if(lg.L.length>30)lg.L.length=30;out.push({id:e.id,name:elName(e),m:mg,b:mb,dead:L.dead,inj:L.dead&&e.lastInj?e.lastInj:null});delete e.lastInj}
   got.elites=out;return out}
@@ -96575,7 +96575,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.10.1',GAME_TAG='稳定版',GAME_CODE=257,GAME_BUILD="1f95147",GAME_BUILT=1794642668908,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.10.1',GAME_TAG='稳定版',GAME_CODE=257,GAME_BUILD="2da02be",GAME_BUILT=1794665024146,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -99285,7 +99285,7 @@ function chCss(){if(typeof document==='undefined'||document.getElementById('chcs
 .chsub{margin-top:4px}.chptabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
 .chwall{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:none}
 .chwall::-webkit-scrollbar{display:none}
-.chpage{flex:0 0 100%;box-sizing:border-box;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));align-content:start;gap:10px;padding:4px;max-height:max(180px,calc(100vh - 250px));overflow-y:auto;overscroll-behavior-y:contain}
+.chpage{flex:0 0 100%;box-sizing:border-box;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));align-content:start;gap:10px;padding:4px}
 .chb{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;background:var(--plate-solid);border:1px solid rgba(255,255,255,.08);border-radius:6px;text-align:center}
 .chb.on{border-color:rgba(232,184,74,.55)}.chb img{width:64px;height:64px;image-rendering:pixelated}.chb b{font-size:.95rem}.chb small{opacity:.7;font-size:.75rem}.chb:not(.on) b{opacity:.55}
 .chrec{overflow-x:auto}.chrec table{width:100%;border-collapse:collapse}.chrec th,.chrec td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;vertical-align:top}.chrec small{opacity:.7}`;document.head.appendChild(s)}
