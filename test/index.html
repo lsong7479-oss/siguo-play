@@ -23799,7 +23799,7 @@ CFG.btech.towers.campBw={base:CFG.olv.lists.camp.slice(), baseOld:['ctrain','chp
    兵种字段 bj（units/bianjun.bjBt 读，合进 u.bj）：
      k 种类：tiger 白虎骑 / phoenix 火凰射 / tortoise 玄武卫 / dragon 火龙车
      tiger   cut {def, pdr, vuln, t, max}   每次命中叠一层：物理防御 −def(比例，按没吃 buff 的防御)、物理减伤 −pdr、易伤 +vuln，t 秒，最多 max 层（命中刷新时间）
-             fear 冲锋命中的恐惧秒数；leap {r, t, aoe, mul, stun, cd} 技能「虎跃」：r 格内的目标，t 秒跃过去，落地 aoe 格内 mul 倍伤害(无视物理防御和物理减伤)并眩晕 stun 秒，冷却 cd
+             fear 冲锋命中的恐惧秒数；leap {r, t, aoe, mul, stun, cd} 技能「虎跃」：r 格内的目标，t 秒跃过去，落地 aoe 格内 mul 倍伤害(无视物理防御，物理减伤 −drP：按百分点算，1 = −100 个百分点，超出 100% 的部分照样生效，v0.13.12 用户定)并眩晕 stun 秒，冷却 cd
      phoenix chg {min, max} 蓄力：攻击间隔可以提前到 min 倍、蓄到 max 倍，伤害 × 间隔倍数；pit {r, t, dps, fr} 命中处留下火坑(每秒 dps × 攻击)，站在里面的亡灵火焰抗性 −fr(不叠加，持续 t 秒)
              fall {r, pitR, pitT, dps, clrT, mul, cd} 技能「凰落」：射程内的目标，r 格爆炸 mul 倍伤害，留下 pitR 格、pitT 秒的火坑(每秒 dps × 攻击)，站在里面的亡灵火焰抗性清空 clrT 秒；冷却 cd
      tortoise bkSh {pct, max, t, cd} 格挡时获得 pct 最大生命的护盾(t 秒)，最多 max，冷却 cd；
@@ -23825,8 +23825,8 @@ CFG.camps.campBj={name:'边军大营', tier:4, units:['bjTiger','bjPhoenix','bjT
   note:'星阳边军的大营：带一门火炮(攻击 80，命中处 2.5 格爆炸 50% 伤害，射程 7 格，装填 3 秒)；四种兵都占 2 个驻军位'};
 Object.assign(CFG.units,{
   bjTiger:   {name:'星阳白虎骑', tier:4, hp:850, def:25, mdef:10, speed:4, capW:2, melee:{dmg:90, int:1, reach:1.5}, charge:2.5, cavalry:true, hitRun:{back:2.6, t:0.9},
-              weapon:'spear', bj:{k:'tiger', cut:{def:0.2, pdr:0.2, vuln:0.1, t:3, max:3}, fear:3, leap:{r:6, t:1, aoe:1.25, mul:2, stun:2, cd:10}},
-              note:'冲锋伤害 ×2.5，冲锋命中时目标恐惧 3 秒；每次命中让目标物理防御 −20%、物理减伤 −0.2、易伤 +10%，持续 3 秒，最多叠 3 层；技能「虎跃」：跃向 6 格内的目标，落地 1.25 格内 200% 伤害(无视物理防御和物理减伤)并眩晕 2 秒，冷却 10 秒'},
+              weapon:'spear', bj:{k:'tiger', cut:{def:0.2, pdr:0.2, vuln:0.1, t:3, max:3}, fear:3, leap:{r:6, t:1, aoe:1.25, mul:2, stun:2, cd:10, drP:1}},
+              note:'冲锋伤害 ×2.5，冲锋命中时目标恐惧 3 秒；每次命中让目标物理防御 −20%、物理减伤 −0.2、易伤 +10%，持续 3 秒，最多叠 3 层；技能「虎跃」：跃向 6 格内的目标，落地 1.25 格内 200% 伤害(无视物理防御和 100% 物理减伤)并眩晕 2 秒，冷却 10 秒'},
   bjPhoenix: {name:'星阳火凰射', tier:4, hp:650, def:18, mdef:8, speed:2.5, capW:2, melee:{dmg:30, int:1.2, reach:0.8},
               ranged:{dmg:140, int:1/1.5, range:10,   // 0.13.2（用户和界碑定）150 → 140
  spread:2, mag:0, reload:0, proj:'arrow', speed:20, kb:0.5, blast:{r:1, mul:0.2, mix:{fire:1}}},
@@ -75070,7 +75070,7 @@ function bjLeapStep(s,Q,dt){const L=Q.B.leap;Q.at+=dt;s.stag=Math.max(s.stag,1e-
   const p=Math.min(1,Q.at/L.t),e=p*p*(3-2*p),nx=Q.ax+(Q.bx-Q.ax)*e,ny=Q.ay+(Q.by-Q.ay)*e,x0=s.x,y0=s.y;moveFriend(s,nx-s.x,ny-s.y);s.elev=Math.sin(p*Math.PI)*14;
   if(inViewPt(s.x,s.y)&&chance(0.6))pp(x0,y0-s.elev,4,vr(-6,6),vr(-6,2),vr(2,6),0,0.3,vpick(['#f4f0e4','#c8d8e8','#ffffff']),1,2,1);
   if(p<1)return;
-  s.elev=0;Q.act=0;s.cvFull=false;const R=L.aoe*16,dmg=bjAtkM(s)*L.mul,o={penP:1,t1DrP:99,mix:s.mmix,fu:s,bd:dmg,ua:1,bjX:1},x=s.x,y=s.y;
+  s.elev=0;Q.act=0;s.cvFull=false;const R=L.aoe*16,dmg=bjAtkM(s)*L.mul,o={penP:1,t1DrP:L.drP,mix:s.mmix,fu:s,bd:dmg,ua:1,bjX:1},x=s.x,y=s.y;
   eQuery(x,y,R,j=>{if(E.air[j])return;dealE(j,dmg,o);if(E.alive[j])eStun(j,L.stun)});
   if(inViewPt(x,y)){vfx('wave',{x,y,r:R,c:'#f4f0e4',c2:'#3a3a48',gnd:1,life:0.45});vfx('crack',{x,y,r:R*0.8,n:6,sd:(G.tick%97)+1,c:'#fff3c4',life:0.6});G.shake=Math.max(G.shake||0,1.5);sfx('thump',x,y)}}
 // 神兽白虎：白虎自己咬身边最近的地面亡灵（攻击间隔按近战攻击速度加成）
@@ -96781,7 +96781,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.11.2',GAME_TAG='稳定版',GAME_CODE=261,GAME_BUILD="16c5c36",GAME_BUILT=1794712031698,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.11.2',GAME_TAG='稳定版',GAME_CODE=261,GAME_BUILD="00e7906+",GAME_BUILT=1794712669983,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
