@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.11.2",
- "code": 261,
- "size": 21731039,
- "sha256": "82cf6718dc8ded270d6b665e2f3eefc249413693ca072b0b6139d48090de5296",
+ "ver": "0.13.12",
+ "code": 264,
+ "size": 22068945,
+ "sha256": "1a396b950c3ee9e9fef9348c7adae2191ac78a568a64e474482ecc630db1c705",
  "minLoader": 1,
- "sig": "QA20iUQOfjEu6CdijjgspDISxvGHpiQtk5j+pZ3omAM9wEFLJP7kAZdSB0Ws5I9X28wvE4di/5px8/RUvt1+Ow==",
- "note": "0.13.11.2 稳定版（261）：改动说明归档、版本简史",
- "at": "2026-11-14 14:44 UTC"
+ "sig": "sLO555bC/STrfuVCWMDYbJHT9/u+s9fxi/UdseRzuBL+BmIYy3qB7TD3xgG09KfUfKjFbmaMXYKuUbV4mg1qCg==",
+ "note": "0.13.12：九阶新地图教廷神国（分类免伤、出场减伤、16 种亡灵、神之目 / 臂 / 躯 / 足与大首领神、神骨装备、神之心）；新兵营神国圣堂（魔剑士 / 魔狙手 / 魔盾卫 / 魔导师、魔能）；新魔法塔魔光阵塔；新剧情第二卷第一～六章与四个家族兵种；新手序章；AI 协助；星阳白虎骑虎跃改为减 100 个百分点物理减伤；北原王庭统领、可汗恢复掉符文石",
+ "at": "2026-11-15 14:22 UTC"
 }
