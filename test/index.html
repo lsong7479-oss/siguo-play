@@ -70484,6 +70484,9 @@ const fxTintCol=c=>fxTintD(FX_TINT,c);
 function fxDc(c){const D=FX_DT;let v=D.mc.get(c);if(!v){v=c&&typeof c.css==='string'&&c.css[0]==='#'?C(fxTintD(D,c.css)):c;D.mc.set(c,v)}return v}   // ui/draw 的 rectW 调（FX_DT 有值时）
 const FX_NOTINT={corpse:1,coin:1,miss:1,crit:1,block:1};   // 亡灵尸体、飘字不换色
 function fxTintO(o){if(FX_TINT&&!FX_NOTINT[o.k]){for(const k of['c','c2','c3','col'])if(typeof o[k]==='string')o[k]=fxTintCol(o[k]);o.skd=FX_TINT}return o}
+// 0.13.12.1 特效预算：同一类来源每 0.1 秒至多 n 个（× 特效丰度）；大量同类建筑 / 兵一起放时只画一部分，伤害照算。id 见下面 FXB_*
+const FXB_MGT=0,FXB_SHT=1,FXB_SHTT=2,FXB_N=new Int32Array(4);let FXB_W=-1,FXB_G=null;
+function fxBud(id,n){const w=Math.floor(G.time*10);if(w!==FXB_W||FXB_G!==G){FXB_W=w;FXB_G=G;FXB_N.fill(0)}if(FXB_N[id]>=Math.max(1,Math.round(n*FXK)))return false;FXB_N[id]++;return true}
 function vfx(k,o){if(FXK<=0)return null;o.k=k;if(FX_TINT)fxTintO(o);o.v=VFX[k];o.t=-(o.delay||0);if(!o.life)o.life=0.5;G.fx.push(o);return o}
 const fxX=f=>f.h?f.h.x+(f.x||0):f.x,fxY=f=>f.h?f.h.y-(f.h.elev||0)+(f.y||0):f.y;
 // 淡入淡出：前 i、后 o 的比例
@@ -70499,8 +70502,17 @@ function vRing(x,y,r,c,a,sq,w,ph,gap){if(r<1||a<=0.003)return;sq=sq||VSQ;w=w||1;
       if(wi<0)rectW(X-wo,Y+dy,wo*2,1,c,a);else{const t=Math.max(1,wo-wi);rectW(X-wo,Y+dy,t,1,c,a);rectW(X+wo-t,Y+dy,t,1,c,a)}}return}
   for(let i=0;i<w;i++){const rr=r-i,n=Math.max(12,Math.round(rr*3.4*ZFL));
     for(let k=0;k<n;k++){if(((k*gap/n)|0)%2)continue;const t=k/n*6.2832+(ph||0);rectW(Math.round(x+Math.cos(t)*rr),Math.round(y+Math.sin(t)*rr*sq),1,1,c,a)}}}
-function vLine(x0,y0,x1,y1,c,a,w){w=w||1;if(w<=1){pline(x0,y0,x1,y1,c,a);return}const dx=x1-x0,dy=y1-y0,l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l;
-  for(let i=0;i<w;i++){const o=i-(w-1)/2;pline(x0+nx*o,y0+ny*o,x1+nx*o,y1+ny*o,c,a)}}
+// 粗线：0.13.12.1 改成沿主方向一步一段（横着走的线每列画一条竖段、竖着走的每行画一条横段，同一行 / 列连着的并成一个矩形），段长 = w ÷ cos 让垂直于线的粗细还是 w；
+//   原来画 w 条平行的细线，斜线每个像素一个矩形，矩形数是现在的 w 倍（大量魔狙手、长光束卡）
+function vLine(x0,y0,x1,y1,c,a,w){w=w||1;if(w<=1){pline(x0,y0,x1,y1,c,a);return}const dx=x1-x0,dy=y1-y0,adx=Math.abs(dx),ady=Math.abs(dy),l=Math.hypot(dx,dy);
+  if(l<1){const k=Math.round(w);rectW(Math.round(x0-k/2),Math.round(y0-k/2),k,k,c,a);return}
+  const xm=adx>=ady,h=Math.max(1,Math.round(w*l/(xm?adx:ady))),o=(h-1)/2;
+  if(xm){const X0=Math.round(x0),n=Math.abs(Math.round(x1)-X0),sx=dx>=0?1:-1;let rx=X0,ry=Math.round(y0-o),run=1;
+    for(let k=1;k<=n;k++){const y=Math.round(y0+dy*k/n-o);if(y===ry){run++;continue}rectW(sx>0?rx:rx-run+1,ry,run,h,c,a);rx=X0+sx*k;ry=y;run=1}
+    rectW(sx>0?rx:rx-run+1,ry,run,h,c,a)}
+  else{const Y0=Math.round(y0),n=Math.abs(Math.round(y1)-Y0),sy=dy>=0?1:-1;let ry=Y0,rx=Math.round(x0-o),run=1;
+    for(let k=1;k<=n;k++){const x=Math.round(x0+dx*k/n-o);if(x===rx){run++;continue}rectW(rx,sy>0?ry:ry-run+1,h,run,c,a);ry=Y0+sy*k;rx=x;run=1}
+    rectW(rx,sy>0?ry:ry-run+1,h,run,c,a)}}
 // 闪电：seed 定形状（同一个 seed 同一道），jag 折的幅度，br 分叉数，glow 外面加一圈粗光
 function vBoltPts(x0,y0,x1,y1,seed,jag){const L=Math.hypot(x1-x0,y1-y0)||1,n=Math.max(3,Math.round(L/9)),nx=-(y1-y0)/L,ny=(x1-x0)/L,P=[x0,y0];
   for(let k=1;k<n;k++){const s=k/n,j=(hash2(seed,k,7)-0.5)*2*jag*Math.sin(s*Math.PI)*1.2;P.push(x0+(x1-x0)*s+nx*j,y0+(y1-y0)*s+ny*j)}P.push(x1,y1);return P}
@@ -76507,8 +76519,8 @@ function shtLaser(s,Q,a,j0,rd,len){const B=Q.B,Cr=B.crit,G2=Q.t2,L=shtLine(s.x,s
     if(shtHit(s,Q,j,d,o)&&G2){SHT_GI[j]=E.id[j];SHT_GU[j]=t+G2.t;E.mdP[j]=Math.max(E.mdU[j]>t?E.mdP[j]:0,G2.mdef);E.mdU[j]=Math.max(E.mdU[j],t+G2.t)}}
   if(first>=0)shtBoomAt(s,Q,E.x[first],E.y[first],rd);
   if(inViewPt(s.x,s.y)){const x0=s.x+s.facing*6,y0=s.y-9,x1=s.x+Math.cos(a)*len,y1=s.y+Math.sin(a)*len-6;
-    vfx('beam',{x0,y0,x1,y1,c:'#6a4cff',c2:cr?'#ffffff':'#e0d4ff',w:cr?4:3,life:0.4});vfx('beam',{x0,y0,x1,y1,c:'#2a1a70',c2:'#7a5cff',w:1,life:1.4,delay:0.1});   // 激光 + 慢慢消散的痕迹
-    vfx('flare',{x:x0,y:y0,r:8,c:'#8a6cff',life:0.2});sfx('zap',s.x,s.y)}}
+    const big=fxBud(FXB_SHT,SHT_FXB.beam);vfx('beam',{x0,y0,x1,y1,c:'#6a4cff',c2:cr?'#ffffff':'#e0d4ff',w:big?(cr?4:3):1,life:big?0.4:0.25});if(fxBud(FXB_SHTT,SHT_FXB.trail))vfx('beam',{x0,y0,x1,y1,c:'#2a1a70',c2:'#7a5cff',w:1,life:1.4,delay:0.1});   // 激光 + 慢慢消散的痕迹；fxBud：0.13.12.1，魔狙手多的时候超出预算的激光画细的、短的，痕迹不画（伤害照算）
+    if(big)vfx('flare',{x:x0,y:y0,r:8,c:'#8a6cff',life:0.2});sfx('zap',s.x,s.y)}}
 // 极境之炮：n 轮，每轮在前方 arc° 扇形里找 k 只不同方向的亡灵各打一发（不耗弹匣、不扣魔能）
 const SHT_GA=[];
 function shtGunStep(s,Q){const T=Q.t3,iv=uShotInt(s)/uCmdK(s);s.aim=Q.ang;
@@ -76609,6 +76621,7 @@ function shtRedF(u,d,o){const Q=u.sht;if(!Q||Q.k!=='shield'||!(d>0)||o.exec)retu
   return d}
 
 // —— 画面 ——
+const SHT_FXB={beam:6,trail:3};   // 画面预算（engine/vfx 的 fxBud，× 特效丰度）：每 0.1 秒至多几道粗激光、几条消散痕迹；超出的激光画细的
 const SHT_K={bar:C('#8a6cff'),barD:C('#1a1430'),link:C('#9a7cff'),linkL:C('#e8dcff'),ir:C('#ff2a3a'),sh:C('#b8a4ff'),shL:C('#f0e8ff')};
 function shtDrawWorld(cx0,cy0,cx1,cy1){const B=CFG.shtHall.bar,t=G.time;
   for(let k=0;k<SHT_L.length;k++){const s=SHT_L[k],Q=s.sht;if(s.dead||!Q)continue;const x=Math.round(s.x),y=Math.round(s.y);
@@ -86307,7 +86320,7 @@ function tpcInfo(s){const T=towerW(s),ev=tpcEv(s),P=s.cfg.weapon.tpc,e3=btEvo3(s
 const MGT_E0={},MGT_L=[],MGT_MIX={arcane:0.5,holy:0.5};
 const MGT_CI=new Int32Array(512),MGT_RI=new Int32Array(512),MGT_HI=new Int32Array(256),MGT_HD=new Int32Array(256),MGT_HV=new Float64Array(256);
 let MGT_CN=0,MGT_RN=0,MGT_HN=0,MGT_J0=-1;
-const MGT_K={a:'#5a3cd8',a2:'#c8b8ff',w:'#8a6cff',w2:'#e8dcff',p:'#6a4cff'};
+const MGT_K={a:'#5a3cd8',a2:'#c8b8ff',w:'#8a6cff',w2:'#e8dcff',p:'#6a4cff'},MGT_FXB=40;   // MGT_FXB：画面预算，每 0.1 秒至多画几道魔光的光柱（engine/vfx 的 fxBud，× 特效丰度），一半以内才加闪光
 const mgtEv=s=>btEvoS(s)||MGT_E0;
 const mgtR=(ev,P)=>P.r+(ev.mgWide?ev.mgWide.r:0)+(ev.mgField?ev.mgField.r:0);   // 法阵半径（格）：3 + 法阵扩张 1 + 魔光领域 1
 const mgtN=(ev,P)=>(P.n+(ev.mgWide?ev.mgWide.n:0)+(ev.mgField?ev.mgField.n:0))*(ev.mgCover?ev.mgCover.nK:1);   // 每轮至多几道：(5 + 2 + 3) × 魔域覆盖 2
@@ -86362,7 +86375,7 @@ function mgtRay(c,x,y,j0){MGT_HN=0;MGT_J0=j0;eQuery(x,y,c.rr,pfMgtH);const n=MGT
   for(let a=1;a<n;a++){const j=MGT_HI[a],id=MGT_HD[a],v=MGT_HV[a];let b=a-1;while(b>=0&&MGT_HV[b]>v){MGT_HI[b+1]=MGT_HI[b];MGT_HD[b+1]=MGT_HD[b];MGT_HV[b+1]=MGT_HV[b];b--}MGT_HI[b+1]=j;MGT_HD[b+1]=id;MGT_HV[b+1]=v}   // 插入排序（一道光里没几只）
   const o=c.o,P=c.pi;
   for(let k=0;k<n;k++){const j=MGT_HI[k];if(!eOk(j,MGT_HD[k]))continue;const f=c.ind+(P?P.per*Math.min(k,P.max):0),d=c.d*f;o.hd=d;o.am=c.am*f;dealE(j,d,o)}
-  if(inViewPt(x,y)){vfx('pillar',{x,y,w:Math.max(3,c.rr/4),hh:110,c:MGT_K.p,c2:MGT_K.w2,life:0.4});if(c.n<=10)vfx('flare',{x,y:y-4,r:c.rr+6,c:MGT_K.w,life:0.3})}}
+  if(inViewPt(x,y)&&fxBud(FXB_MGT,MGT_FXB)){vfx('pillar',{x,y,w:Math.max(3,c.rr/4),hh:110,c:MGT_K.p,c2:MGT_K.w2,life:0.4});if(c.n<=10&&FXB_N[FXB_MGT]<=MGT_FXB/2)vfx('flare',{x,y:y-4,r:c.rr+6,c:MGT_K.w,life:0.3})}}   // fxBud：0.13.12.1，塔多的时候每 0.1 秒至多画 MGT_FXB 道光柱（伤害照算）
 // 每帧：到点就落一轮；持续时间满了（或塔被拆了）就移除
 function mgtTick(){if(!MGT_L.length)return;const now=G.time,dc=DS_CUR;let w=0;
   for(let i=0;i<MGT_L.length;i++){const c=MGT_L[i];if(c.s.dead)continue;DS_CUR=c.s;
@@ -98598,7 +98611,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.12',GAME_TAG='测试版',GAME_CODE=265,GAME_BUILD="228ca8c",GAME_BUILT=1794753496946,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.12',GAME_TAG='稳定版',GAME_CODE=264,GAME_BUILD="5630872+",GAME_BUILT=1794784876717,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
