@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.12",
- "code": 265,
- "size": 22068945,
- "sha256": "065b4cd41171e8daf5f0d1c51d7173d9d6a09b4eec719b02c6a1458d0ee0534e",
+ "ver": "0.13.12.1",
+ "code": 266,
+ "size": 22070193,
+ "sha256": "44b35cba240352f088042c6725a9ac735e53ac40398e0b85b6677d232bb152fc",
  "minLoader": 1,
- "sig": "W1xM4a/yaf3NSf9b+2PPEm7CRA5xF0M/Y4k89xtU16AnMsdF/XQFNJgZ+Ea79t0fk8bdZ8ZAXSuzCXv0VnjtuQ==",
- "note": "0.13.12 测试频道（同 0.13.12 稳定版内容）：九阶新地图教廷神国；新兵营神国圣堂；新魔法塔魔光阵塔；新剧情第二卷第一～六章与四个家族兵种；新手序章；AI 协助；神之躯再生之躯改为护盾转生命；大首领神整组一次只放一个技能",
- "at": "2026-11-15 14:33 UTC"
+ "sig": "woqGfViEet8l+6f9RVgFaa091H0m4iDPGkf6taI/Sn37nX34kMk152z7RTNHO780w/hVi1RO4am9pk7q6HCajQ==",
+ "note": "0.13.12.1 测试版：修大首领神不会往前走（部件把神往反方向推）；神之躯、神的受击护盾 0.1 秒内至多算 5 次；大量魔光阵塔、魔狙手同屏的画面优化（粗光束改成一段一段画，特效预算）",
+ "at": "2026-11-15 23:55 UTC"
 }
