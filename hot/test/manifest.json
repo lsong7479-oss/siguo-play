@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.11.2",
- "code": 262,
- "size": 21731039,
- "sha256": "29e38e4f5c05bc6c1121f0488aaf9baf286e1f342db6a93344406b4943fcb8f3",
+ "ver": "0.13.12",
+ "code": 263,
+ "size": 22067591,
+ "sha256": "71f7add9d81ac51c48cc58583e7b2ef90de36666981d7e382ca69bb422b18844",
  "minLoader": 1,
- "sig": "eJ0bVEL6p6Kti7hzvNmp48vpzwWl8oaM+iDhb6TwTHXlwlJRUr9JlJh2mJoHzGFHkivhpeJMEy3l6DH8rP6jWg==",
- "note": "0.13.11.2 测试频道（262）",
- "at": "2026-11-14 14:59 UTC"
+ "sig": "GB5QYnWbZL+ULx0jnUIgpZ8NwkT4hBAj+JJ3Eaz6eA0wGVZBaAsEL97HYvGLxQ9j9IgSM1HIy7i7JFxSisgDqQ==",
+ "note": "0.13.12 测试版：新九阶地图教廷神国（分类免伤、出场减伤、16 种亡灵、神之目 / 臂 / 躯 / 足和大首领神、神骨装备与神之心）；新兵营神国圣堂（魔剑士 / 魔狙手 / 魔盾卫 / 魔导师、魔能）；新魔法塔魔光阵塔；新剧情第二卷第一～六章（幽影高原、秘法工厂）与四个家族兵种；新手序章；AI 协助；星阳白虎骑虎跃改为减 100 个百分点物理减伤；北原王庭统领、可汗恢复掉符文石",
+ "at": "2026-11-15 06:02 UTC"
 }
