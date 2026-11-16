@@ -1,11 +1,11 @@
 {
  "ch": "test",
  "ver": "0.13.12.1",
- "code": 266,
+ "code": 268,
  "size": 22070193,
- "sha256": "44b35cba240352f088042c6725a9ac735e53ac40398e0b85b6677d232bb152fc",
+ "sha256": "96d318150a5d7d7c88017c101dd1e048341df772108912115868557bdafb5457",
  "minLoader": 1,
- "sig": "woqGfViEet8l+6f9RVgFaa091H0m4iDPGkf6taI/Sn37nX34kMk152z7RTNHO780w/hVi1RO4am9pk7q6HCajQ==",
- "note": "0.13.12.1 测试版：修大首领神不会往前走（部件把神往反方向推）；神之躯、神的受击护盾 0.1 秒内至多算 5 次；大量魔光阵塔、魔狙手同屏的画面优化（粗光束改成一段一段画，特效预算）",
- "at": "2026-11-15 23:55 UTC"
+ "sig": "aZPmcKNO3Dx/xwzYUtFFHLe9FRQCqPQz7W0JSANatm3aA4ryaQr30HNp1RhbssOs+QKD0EQhh4CriKIuoss2uQ==",
+ "note": "0.13.12.1 测试频道（同 0.13.12.1 稳定版内容）：修大首领神不会往前走；神之躯、神的受击护盾 0.1 秒内至多算 5 次；大量魔光阵塔、魔狙手同屏的画面优化",
+ "at": "2026-11-16 01:29 UTC"
 }
