@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.12.1",
- "code": 268,
- "size": 22070193,
- "sha256": "96d318150a5d7d7c88017c101dd1e048341df772108912115868557bdafb5457",
+ "ver": "0.13.12.4",
+ "code": 272,
+ "size": 22090626,
+ "sha256": "3579ca6b3314517cea0a6ac0dc394a987d205828a8341e17669d49cab10c0e14",
  "minLoader": 1,
- "sig": "aZPmcKNO3Dx/xwzYUtFFHLe9FRQCqPQz7W0JSANatm3aA4ryaQr30HNp1RhbssOs+QKD0EQhh4CriKIuoss2uQ==",
- "note": "0.13.12.1 测试频道（同 0.13.12.1 稳定版内容）：修大首领神不会往前走；神之躯、神的受击护盾 0.1 秒内至多算 5 次；大量魔光阵塔、魔狙手同屏的画面优化",
- "at": "2026-11-16 01:29 UTC"
+ "sig": "gSRwwq6wzmt3fpDefX5TehjBLf5k66UTO39SWO3zzfYq8C6mE9Tr9qgvVWLHEadjiAzOWMTft/XoiRbe8gUOBQ==",
+ "note": "0.13.12.4 测试频道（同 0.13.12.4 稳定版内容）：修不同兵营的兵混成一个阵；商店购买先确认、宝石打孔器每日限购；家族图鉴（含血脉特性）；新剧情各章能造的建筑按台本累计；神国碎片掉率提高",
+ "at": "2026-11-16 13:45 UTC"
 }
