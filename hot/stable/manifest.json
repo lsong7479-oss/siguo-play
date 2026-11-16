@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.12.1",
- "code": 267,
- "size": 22070193,
- "sha256": "f51bfd18485d248f2535459d4635aec235e30a283c7536ca93141c13a140a056",
+ "ver": "0.13.12.2",
+ "code": 269,
+ "size": 22070283,
+ "sha256": "4da8d7362e6281153e1f56f7e6b4c43fb1ea64c4d7ada82782b67d5233918f9c",
  "minLoader": 1,
- "sig": "/v2ee7bgN0lTUMzN/2g1qTdsbVcSoLKJeQ3vFZdLHbwQ4GYvYf6NI5DdxB99DvbcheuvkJc9fB7LZvlZzpg/yA==",
- "note": "0.13.12.1：修大首领神不会往前走（部件把神往反方向推）；神之躯、神的受击护盾 0.1 秒内至多算 5 次；大量魔光阵塔、魔狙手同屏的画面优化",
- "at": "2026-11-16 01:19 UTC"
+ "sig": "hlAQ27aDowzcPT31pe7n9GAf5uvO80vmioEz8WYVl4BAl8gCu6P02fw+f+2kmFdJv2PcUgj+ErKpYeslvDJSXQ==",
+ "note": "0.13.12.2（热更新）：修不同兵营的兵混在一个阵里（长枪之阵、反骑方阵等阵型只和同一座兵营 / 同一出击编组结阵，各兵营的驻守点、出击路线不再被拽走）",
+ "at": "2026-11-16 03:14 UTC"
 }
