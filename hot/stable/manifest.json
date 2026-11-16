@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.12.2",
- "code": 269,
- "size": 22070283,
- "sha256": "4da8d7362e6281153e1f56f7e6b4c43fb1ea64c4d7ada82782b67d5233918f9c",
+ "ver": "0.13.12.3",
+ "code": 270,
+ "size": 22089505,
+ "sha256": "89161459c5e40793c0670791823acc14437815a94ccc641a9834301b4a615842",
  "minLoader": 1,
- "sig": "hlAQ27aDowzcPT31pe7n9GAf5uvO80vmioEz8WYVl4BAl8gCu6P02fw+f+2kmFdJv2PcUgj+ErKpYeslvDJSXQ==",
- "note": "0.13.12.2（热更新）：修不同兵营的兵混在一个阵里（长枪之阵、反骑方阵等阵型只和同一座兵营 / 同一出击编组结阵，各兵营的驻守点、出击路线不再被拽走）",
- "at": "2026-11-16 03:14 UTC"
+ "sig": "V6i12/7zZT6P2gqp7R934IUe1Y7HfCSLjFeJHY1Mce5qJ888/anL5tXaP+5kD94jxUrGw68I6mDAaq2owvVEyg==",
+ "note": "0.13.12.3（热更新）：商店购买先弹窗确认；宝石打孔器每阶每天限购 50 个；家族页新增家族图鉴；剧情模式各章能造的建筑按剧情累计、放开同系列高级建筑",
+ "at": "2026-11-16 07:08 UTC"
 }
