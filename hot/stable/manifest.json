@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.12.3",
- "code": 270,
- "size": 22089505,
- "sha256": "89161459c5e40793c0670791823acc14437815a94ccc641a9834301b4a615842",
+ "ver": "0.13.12.4",
+ "code": 271,
+ "size": 22090626,
+ "sha256": "f03461c1835bd1722174f9bc1d4d15f21f04d327d94fe8c6559891ba48a9ff14",
  "minLoader": 1,
- "sig": "V6i12/7zZT6P2gqp7R934IUe1Y7HfCSLjFeJHY1Mce5qJ888/anL5tXaP+5kD94jxUrGw68I6mDAaq2owvVEyg==",
- "note": "0.13.12.3（热更新）：商店购买先弹窗确认；宝石打孔器每阶每天限购 50 个；家族页新增家族图鉴；剧情模式各章能造的建筑按剧情累计、放开同系列高级建筑",
- "at": "2026-11-16 07:08 UTC"
+ "sig": "t70LLE1IxU5qEO7/4+OWitWzWAoJghdCqlavSlTQhboi9+Wd7doIrvNgEmbk32MpcWX7NwlHkxv0+DU8a+fOwg==",
+ "note": "修不同兵营的兵混成一个阵；商店购买先确认、宝石打孔器每日限购；家族图鉴（含血脉特性）；新剧情各章能造的建筑按台本累计；神国碎片掉率提高",
+ "at": "2026-11-16 13:32 UTC"
 }
