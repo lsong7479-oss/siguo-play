@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.12.4",
- "code": 271,
- "size": 22090626,
- "sha256": "f03461c1835bd1722174f9bc1d4d15f21f04d327d94fe8c6559891ba48a9ff14",
+ "ver": "0.13.12.5",
+ "code": 273,
+ "size": 22090951,
+ "sha256": "ab3a330648469682f2d3ae9c127321a97a61eb9c8d7a654d350779fae5a0b1dd",
  "minLoader": 1,
- "sig": "t70LLE1IxU5qEO7/4+OWitWzWAoJghdCqlavSlTQhboi9+Wd7doIrvNgEmbk32MpcWX7NwlHkxv0+DU8a+fOwg==",
- "note": "修不同兵营的兵混成一个阵；商店购买先确认、宝石打孔器每日限购；家族图鉴（含血脉特性）；新剧情各章能造的建筑按台本累计；神国碎片掉率提高",
- "at": "2026-11-16 13:32 UTC"
+ "sig": "AZoU9HdwjNJXGs+kRGaqU5E/KL7miS7JKJ64+lXiqxAfdZhcSeTj5+xdLFQ/DZqtrJM0ceuqT/FyhMABlt0Atg==",
+ "note": "神国碎片改成每波打完时掷（有「神」25%、有小首领 15%）",
+ "at": "2026-11-16 14:26 UTC"
 }
