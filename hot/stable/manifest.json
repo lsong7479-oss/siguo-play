@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.12.5",
- "code": 273,
- "size": 22090951,
- "sha256": "ab3a330648469682f2d3ae9c127321a97a61eb9c8d7a654d350779fae5a0b1dd",
+ "ver": "0.13.13.1",
+ "code": 276,
+ "size": 22122313,
+ "sha256": "5893d984f624801d242d3f10df65d59981706018ba656f7e7c68d7783a9770c7",
  "minLoader": 1,
- "sig": "AZoU9HdwjNJXGs+kRGaqU5E/KL7miS7JKJ64+lXiqxAfdZhcSeTj5+xdLFQ/DZqtrJM0ceuqT/FyhMABlt0Atg==",
- "note": "神国碎片改成每波打完时掷（有「神」25%、有小首领 15%）",
- "at": "2026-11-16 14:26 UTC"
+ "sig": "Mi9R9K32TPEHwdrdzCmzRCP5UeYMltIYMMPmc+eW65LPs1RmV3zKTDtNfU7lOHzgYhOqI0IcncUYdU43io3MsA==",
+ "note": "塔楼进阶（联合箭塔、铁血弩炮、机簧投石、要塞火炮）；新陷阱玄钢地刺、木龙荆棘；陷阱放置范围 +3；研发花费按地区阶放大；家族宴会人选血脉按档位；魔剑士扇形攻击、魔光不叠加",
+ "at": "2026-11-17 06:52 UTC"
 }
