@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.12.5",
- "code": 274,
- "size": 22090951,
- "sha256": "b6ba304ce7b310bb7816faada70bb4339051425f8fcae1ebd6dd8f826ab41071",
+ "ver": "0.13.13.1",
+ "code": 277,
+ "size": 22122313,
+ "sha256": "495a12dde7073b213d01f4257b38efd5ba40e0d4244ab696d41f4581ab968c4b",
  "minLoader": 1,
- "sig": "q5AEX56Zav/zSmbk5UCOpvjDlSl/+l6YT09pfMTW22NV+ezi50V6fvYTvZK4gRnzAU552S+R9Gkj/3zCzmGdjw==",
- "note": "0.13.12.5 测试频道：神国碎片改成每波打完时掷（有「神」25%、有小首领 15%）",
- "at": "2026-11-16 14:32 UTC"
+ "sig": "bHUBdxHzkVafQ00ICAAWacsxemnICFe0bSxcUeCIu5a58k9ZajyiEQVPjDMe6CDo56xTGRSuEeQXBWExB6o49Q==",
+ "note": "0.13.13.1 测试频道（同 0.13.13.1 稳定版内容）：塔楼进阶；新陷阱玄钢地刺、木龙荆棘；陷阱放置范围 +3；研发花费按地区阶放大；家族宴会人选血脉按档位；魔剑士扇形攻击、魔光不叠加",
+ "at": "2026-11-17 06:57 UTC"
 }
