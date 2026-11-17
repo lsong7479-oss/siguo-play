@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.13.1",
- "code": 276,
- "size": 22122313,
- "sha256": "5893d984f624801d242d3f10df65d59981706018ba656f7e7c68d7783a9770c7",
+ "ver": "0.13.13.2",
+ "code": 278,
+ "size": 22122766,
+ "sha256": "2a5b9af9f4739dbf46a578a889921ac2816bb5820f681b7a15fc718bdcff6f7b",
  "minLoader": 1,
- "sig": "Mi9R9K32TPEHwdrdzCmzRCP5UeYMltIYMMPmc+eW65LPs1RmV3zKTDtNfU7lOHzgYhOqI0IcncUYdU43io3MsA==",
- "note": "塔楼进阶（联合箭塔、铁血弩炮、机簧投石、要塞火炮）；新陷阱玄钢地刺、木龙荆棘；陷阱放置范围 +3；研发花费按地区阶放大；家族宴会人选血脉按档位；魔剑士扇形攻击、魔光不叠加",
- "at": "2026-11-17 06:52 UTC"
+ "sig": "DFEjLNsuZ9plNKcwZOc9i/pktxufEQqpXmr4FQmapIj71RxUJmvVc+Aml8x7kAu8pod2VlS7UrWL5ktLr5kXlw==",
+ "note": "补丁：要塞火炮的「要塞」不罩主堡；TapTap 版去掉「去官网」；家族宴会一档血脉 5%～25%",
+ "at": "2026-11-17 13:36 UTC"
 }
