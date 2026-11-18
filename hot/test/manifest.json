@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.13.2",
- "code": 279,
- "size": 22122766,
- "sha256": "bb331c74162faa6998687b1e16024713ec53085a271feb7cb2b2f17980fbe29b",
+ "ver": "0.13.13.3",
+ "code": 280,
+ "size": 22138804,
+ "sha256": "5ac9a112a5f6048ff273e885b10fc4ea48b1bf96a1ea46de68831244efffeb4c",
  "minLoader": 1,
- "sig": "tut/DVobK08J5r+b/Mj0Z/YMX0TPpn0KFpZRdjtiCRNebG1ZKTvQ8zHokLXQOmkrAi4demwKnIZl206eJ0/LnQ==",
- "note": "补丁：要塞火炮的「要塞」不罩主堡；家族宴会一档血脉 5%～25%",
- "at": "2026-11-17 13:42 UTC"
+ "sig": "eNfUUItMeEF9qyFvXjZygwoZP31n0Itp5C5urEOTUJac72RboDtQbnkfi8RdejYYYYG8Lxr8zbaQe7U/w/kRPw==",
+ "note": "神国魔导师 / 魔狙手调整并能上城墙、魔剑士每 10 次命中回血加免伤；购买前确认可关、确认弹窗美化；拒绝参与冷却跟时间流速",
+ "at": "2026-11-18 14:43 UTC"
 }
