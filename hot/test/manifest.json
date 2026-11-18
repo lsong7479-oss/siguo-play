@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.13.3",
- "code": 280,
- "size": 22138804,
- "sha256": "5ac9a112a5f6048ff273e885b10fc4ea48b1bf96a1ea46de68831244efffeb4c",
+ "ver": "0.13.14",
+ "code": 281,
+ "size": 22160937,
+ "sha256": "b4e158cb972c2f5e939df8f5d9de20c8d721d96806112fbd7f181b9eea874322",
  "minLoader": 1,
- "sig": "eNfUUItMeEF9qyFvXjZygwoZP31n0Itp5C5urEOTUJac72RboDtQbnkfi8RdejYYYYG8Lxr8zbaQe7U/w/kRPw==",
- "note": "神国魔导师 / 魔狙手调整并能上城墙、魔剑士每 10 次命中回血加免伤；购买前确认可关、确认弹窗美化；拒绝参与冷却跟时间流速",
- "at": "2026-11-18 14:43 UTC"
+ "sig": "o22JyJkMoOBIP15p4/YMQZUnLx4oqD3RIQX14mC5LRiUhCy2/VBHwIzgI8w/wVNCC31jtMVt1HgVEXZulRtAFg==",
+ "note": "装备锻造(进阶、工艺、重锻石)、补签卡、皮肤商店第一个货位保底",
+ "at": "2026-11-18 23:25 UTC"
 }
