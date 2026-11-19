@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.13.2",
- "code": 278,
- "size": 22122766,
- "sha256": "2a5b9af9f4739dbf46a578a889921ac2816bb5820f681b7a15fc718bdcff6f7b",
+ "ver": "0.13.15.1",
+ "code": 283,
+ "size": 22168703,
+ "sha256": "b40dc8b6d3cf0e61e03fe500518711d48de49e70573d41d53f332c15b6c5bf68",
  "minLoader": 1,
- "sig": "DFEjLNsuZ9plNKcwZOc9i/pktxufEQqpXmr4FQmapIj71RxUJmvVc+Aml8x7kAu8pod2VlS7UrWL5ktLr5kXlw==",
- "note": "补丁：要塞火炮的「要塞」不罩主堡；TapTap 版去掉「去官网」；家族宴会一档血脉 5%～25%",
- "at": "2026-11-17 13:36 UTC"
+ "sig": "+u9g5N2fEKJdG8XsRcoPxGSV96KrSiNnpdCKjtrdsQv95zjaP4ed6X0WZp+QtJ1QuuD28fKt8Or50fZzyIrGNA==",
+ "note": "建筑详情分页、兵营默认兵种、塔楼进阶修复；含装备锻造、补签卡、闪电强化、联发火枪 / 转轮炮塔、神国平衡",
+ "at": "2026-11-19 06:15 UTC"
 }
