@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.15.1",
- "code": 284,
- "size": 22168703,
- "sha256": "f6874afff4a020fd3315d0e3b4bb589c07efd947288faa147c8b0aa59f43b6bb",
+ "ver": "0.13.15.2",
+ "code": 285,
+ "size": 22171632,
+ "sha256": "5da61afb09486532f5b87c5d4dba3b3c4bc30a40456fed9503565f13194d9251",
  "minLoader": 1,
- "sig": "PDiCU+KVS46Sqq5xCs/NynkY44O6hcqw+auSd6YksGCSQRNIaC3DmOLOZJldZg1FLiJPl0O6ePlX6WzNdhgfOQ==",
- "note": "建筑详情分页、兵营默认兵种、塔楼进阶修复（和 0.13.15.1 稳定版同内容）",
- "at": "2026-11-19 06:20 UTC"
+ "sig": "KIxZMYVkIF5ZSoPaZODHHo8If2YSpTC3q79AfbV8DryugBnC6fB/fz2BpB7sJyge2gFyIyWrAsOC+z11H+uICA==",
+ "note": "训练所教官名额、关注家族、族谱折叠 / 招募族人、锻造两个功能分开",
+ "at": "2026-11-19 13:37 UTC"
 }
