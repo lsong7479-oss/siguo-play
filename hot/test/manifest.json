@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.13.15",
- "code": 282,
- "size": 22164899,
- "sha256": "64048b1f34894b2685ae8fc440c21f13566097338af30ce50f7a7df0f0f80309",
+ "ver": "0.13.15.1",
+ "code": 284,
+ "size": 22168703,
+ "sha256": "f6874afff4a020fd3315d0e3b4bb589c07efd947288faa147c8b0aa59f43b6bb",
  "minLoader": 1,
- "sig": "PX3MKx1QABYC7uGfDUU+h7ThJBh+9R1ATYEaMEBVC7WWAR8DZYpjiWa8sl4frCz0OrZZNwjj/yb83QVilpLQDg==",
- "note": "卡「闪电强化 / 电闪雷鸣」；塔楼进阶：联发火枪、转轮炮塔",
- "at": "2026-11-19 03:05 UTC"
+ "sig": "PDiCU+KVS46Sqq5xCs/NynkY44O6hcqw+auSd6YksGCSQRNIaC3DmOLOZJldZg1FLiJPl0O6ePlX6WzNdhgfOQ==",
+ "note": "建筑详情分页、兵营默认兵种、塔楼进阶修复（和 0.13.15.1 稳定版同内容）",
+ "at": "2026-11-19 06:20 UTC"
 }
