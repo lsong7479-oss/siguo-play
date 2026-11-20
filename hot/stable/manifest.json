@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.13.15.1",
- "code": 283,
- "size": 22168703,
- "sha256": "b40dc8b6d3cf0e61e03fe500518711d48de49e70573d41d53f332c15b6c5bf68",
+ "ver": "0.14.0",
+ "code": 286,
+ "size": 22260622,
+ "sha256": "7cac1c5e9ae4aed4ee9e4cdc9a28f354d2fdec9ac7547ec82483543394d0e180",
  "minLoader": 1,
- "sig": "+u9g5N2fEKJdG8XsRcoPxGSV96KrSiNnpdCKjtrdsQv95zjaP4ed6X0WZp+QtJ1QuuD28fKt8Or50fZzyIrGNA==",
- "note": "建筑详情分页、兵营默认兵种、塔楼进阶修复；含装备锻造、补签卡、闪电强化、联发火枪 / 转轮炮塔、神国平衡",
- "at": "2026-11-19 06:15 UTC"
+ "sig": "2VXnziCdk5eDi4XxUI4bkc9ZdnmNBOGg+oMEUerI88qz82IefIhUcXcybnQsS8i1Mqg0QYja8WuCeJTk0qf7yw==",
+ "note": "英雄 / 精英体魄、九阶三家族补全、阵塔皮肤、城墙坚硬、雾隐沼泽、装备改造分页、威廉·退尔进阶、塔楼进阶第三批、魔光阵塔 2×2",
+ "at": "2026-11-20 02:40 UTC"
 }
