@@ -50926,7 +50926,31 @@ function hdSniper2(fr){return hdFig(32,32,S=>{
   S.ln(16.4,9.2,15.8,13.6,[cloakD,1]);   // 兜帽的边
   hdFace(S,{skin,ey:11,brow:'#8a8478',eye:'#3a7a4a'});
 })}
-Object.assign(HD_HEROES,{sniper2:hdSniper2});
+// 跪姿（贯甲阵列架狙时，heroes/sniper2.tl2Kneel 换 h.spr = 'sniper2k'）：照立绘——前腿（右）屈膝立着、后腿（左）膝盖着地、小腿平贴地面往后伸，
+//   上半身整体比站姿低 dy 像素（hdHead / hdFace 的坐标是写死的，用 tl2Dy 包一层把 y 往下挪）；两只手举到肩前托枪（枪由 ui/draw 画在手上，朝 h.aimA），斗篷拖到地上
+function tl2Dy(S,dy){const P=p=>({ell:(x,y,rx,ry)=>p.ell(x,y+dy,rx,ry),rect:(x,y,w,h,r)=>p.rect(x,y+dy,w,h,r),poly:pts=>p.poly(pts.map(q=>[q[0],q[1]+dy])),cap:(x0,y0,x1,y1,r0,r1)=>p.cap(x0,y0+dy,x1,y1+dy,r0,r1)});
+  return{part:(m,o,fn)=>S.part(m,o,p=>{const q=P(p);q.cut=P(p.cut);fn(q)}),ell:(x,y,rx,ry,m,o)=>S.ell(x,y+dy,rx,ry,m,o),rect:(x,y,w,h,m,o,r)=>S.rect(x,y+dy,w,h,m,o,r),poly:(pts,m,o)=>S.poly(pts.map(q=>[q[0],q[1]+dy]),m,o),
+    cap:(x0,y0,x1,y1,r0,r1,m,o)=>S.cap(x0,y0+dy,x1,y1+dy,r0,r1,m,o),px:(x,y,c)=>S.px(x,y+dy,c),ln:(x0,y0,x1,y1,c,w)=>S.ln(x0,y0+dy,x1,y1+dy,c,w),dt:(x,y,r,c)=>S.dt(x,y+dy,r,c),rc:(x,y,w,h,c)=>S.rc(x,y+dy,w,h,c)}}
+function hdSniper2K(fr){return hdFig(32,32,S=>{
+  const cloak=hm('#5e6a4a','cloth'),cloakD=hm('#434b36','cloth'),rag=hm('#cfc8b0','cloth'),coat=hm('#3a3436','cloth'),pants=hm('#38323a','cloth'),lea=hm('#6e4628','leather'),boot=hm('#5c3a22','leather'),brass=hdM('brass'),skin=hm(SKIN,'skin'),hair=hm('#bdbab2','hair'),T=tl2Dy(S,3);
+  S.part(cloakD,{R:2},p=>p.poly([[9,16.5],[16,17.5],[14.5,31],[9,30.4],[4.5,31],[1.5,27.5],[4,21]]));   // 斗篷拖到地上
+  for(const[x,y]of[[2.5,28],[5,30.4],[8.5,30],[12,30.6]])S.px(x,y,[rag,2]);
+  S.cap(12.5,26.5,11.6,29.6,2.5,2.3,pants);S.cap(11.4,29.8,6.4,30,2.1,1.9,pants);S.rect(2.6,28.4,4.4,2.8,boot,{R:1});S.px(4.6,29.4,[brass,3]);   // 后腿：膝盖着地、小腿往后平贴地面、靴子
+  T.cap(10.5,16.5,15,18.5,2.3,2,coat);   // 后手（托枪身，大半被身子挡住）
+  T.part(coat,{R:2},p=>p.rect(9,15,14,9,3));
+  T.part(lea,{},p=>p.poly([[10,15.5],[12.5,15.5],[22,22.5],[21,24]]));T.px(16,19.2,[brass,3]);   // 斜挎皮带 + 黄铜扣
+  T.rect(9,22,14,2,lea,{R:1});T.rc(15,22,3,2,brass);T.px(10.5,22.6,[brass,3]);   // 腰带
+  S.cap(17,26.8,23.6,26.4,2.6,2.4,pants);S.part(boot,{R:1},p=>{p.rect(21.4,26.8,4.4,4.4,1);p.rect(24.6,29.2,2.8,2,1)});S.ln(21.4,27,25.8,27,[boot,3]);S.px(23.4,28.6,[brass,3]);   // 前腿：大腿往前平放、小腿立着、靴子（靴尖朝前）
+  T.rect(19.6,22.4,3.2,2.6,lea,{R:1});   // 右腰皮袋
+  T.ell(26.4,15.6,1.9,1.8,lea);T.cap(21,16.4,26,15.8,2.1,1.8,coat);T.ell(26.4,15.6,1.9,1.8,lea);   // 前伸托枪的手（前面那只，袖子 + 手套）
+  T.part(cloak,{R:2},p=>p.poly([[8.5,14],[23.5,14],[22,19.5],[10,19.5]]));T.px(21,15.4,[brass,3]);T.px(22,16,[brass,2]);   // 披肩 + 肩上的金扣
+  T.cap(22,16.8,23.6,14.6,2.2,1.9,coat);T.ell(24,14.4,1.9,1.8,lea);   // 扣扳机的手（贴在脸颊前，枪托抵肩）
+  hdHead(T,{skin,noEar:true});
+  T.part(hair,{},p=>p.poly([[15.4,8.2],[22.4,9.2],[21.4,11.4],[19,10.2],[17,11]]));
+  T.part(cloak,{},p=>{p.ell(14.6,8.4,7.8,6.8);p.cut.poly([[16.2,9.2],[24.5,8.8],[24.5,18],[16,18]]);p.rect(7.6,10,5.4,7.5,2)});T.ln(16.4,9.2,15.8,13.6,[cloakD,1]);   // 兜帽
+  hdFace(T,{skin,ey:11,brow:'#8a8478',eye:'#3a7a4a'});
+})}
+Object.assign(HD_HEROES,{sniper2:hdSniper2,sniper2k:hdSniper2K});
 // 技能图标：绿灰 + 黄铜 + 暗红（这一形态的配色）
 Object.assign(SKI,{
   // 狙击教官（被动）：一顶绿灰兜帽前面交叉两支黄铜枪管，正中一枚子弹
@@ -83199,8 +83223,10 @@ function tl2Line(x0,y0,a,L,hw,out,vis){const ux=Math.cos(a),uy=Math.sin(a);out.l
 function tl2Best(h,a0,half,L,hw){let best=NaN,bn=0,bt=0;const R=Math.min(L,25*16);   // 扇形（a0 ± half；half ≥ π = 不限）里一条线串起最多亡灵的方向；没有 = NaN
   eQuery(h.x,h.y,R,j=>{const a=Math.atan2(E.y[j]-h.y,E.x[j]-h.x);if(half<Math.PI&&angDiff(a,a0)>half)return;const n=tl2Line(h.x,h.y,a,L,hw,TL2_HL,true).length,t=ETC[E.t[j]].tier;if(n>bn||(n===bn&&t>bt)){bn=n;bt=t;best=a}},true);
   TL2_BH=bn;return best}
+// 跪姿（用户 11-20 补）：架狙期间小人换成 art/hd_sniper2 的跪姿图 sniper2k（h.spr；原来的存在 h.hxs.kn），停火 / 阵亡 / 波次结束换回；枪照常由 ui/draw 画在手上、朝 h.aimA
+function tl2Kneel(h,on){if(on){if(h.spr!=='sniper2k'){if(h.hxs)h.hxs.kn=h.spr;h.spr='sniper2k'}}else if(h.spr==='sniper2k')h.spr=(h.hxs&&h.hxs.kn)||h.id}
 function tl2ArrCast(h,p,a){const a0=Math.atan2(a.y-h.y,a.x-h.x),T=p.first+p.gap*(p.n-1)+0.15;
-  h.busyT=T;h.walking=false;h.moveTo=null;h.cv=0;h.facing=Math.cos(a0)>=0?1:-1;h.aimA=a0;
+  h.busyT=T;h.walking=false;h.moveTo=null;h.cv=0;h.facing=Math.cos(a0)>=0?1:-1;h.aimA=a0;tl2Kneel(h,true);
   addZone({k:'tl2Arr',h,hk:h,p,a0,a:a0,half:p.fan/2*DEG,left:p.n,nx:p.first,x:h.x,y:h.y,t:0});if(inViewPt(h.x,h.y))sfx('clank',h.x,h.y);return true}
 function tl2ArrDir(h,z){let a=NaN;const hy=h.y-9-(h.elev||0);
   if(h.ctl==='p1'){if(aimUI.active&&aimUI.kind==='atk'){const q=aimPoint();if(q)a=Math.atan2(q.y-hy,q.x-h.x)}else if(mouseW.ok)a=Math.atan2(mouseW.y-hy,mouseW.x-h.x)}
@@ -83210,9 +83236,10 @@ function tl2ArrShot(h,z){const p=z.p,a=tl2ArrDir(h,z),L=tl2Len(p),ux=Math.cos(a)
   const o={crit:h.crit,critMul:heroCritMul(h),igDef:1,t1DrP:p.dr,mix:w.mix||{pierce:1},hk:h},L2=tl2Line(h.x,h.y,a,L,p.w*16,TL2_HL).slice();
   for(let k=0;k<L2.length;k++)dealE(L2[k],d,o);
   const V=Math.min(L,30*16);traceFx(mx,my,mx+ux*V,my+uy*V);h.facing=ux>=0?1:-1;h.aimA=a;h.recoil=0.3;if(inViewPt(h.x,h.y)){sfx('gun',h.x,h.y);G.shake=Math.max(G.shake,0.5)}}
-function tl2ArrTick(z){const h=z.h;if(h.dead||!(h.busyT>0)){z.dead=true;return}h.walking=false;
+function tl2ArrTick(z){const h=z.h;if(h.dead||!(h.busyT>0)){z.dead=true;tl2Kneel(h,false);return}h.walking=false;
   while(z.left>0&&z.t>=z.nx){z.nx+=z.p.gap;z.left--;tl2ArrShot(h,z);if(h.dead)break}
-  if(z.left<=0){z.dead=true;h.busyT=0}}
+  h.aimA=z.a;h.facing=Math.cos(z.a)>=0?1:-1;if(!(h.atkCd>0))h.atkCd=0;   // 两枪之间枪口也朝当前方向（ui/draw：atkCd > −0.6 才按 aimA 画枪）
+  if(z.left<=0||h.dead){z.dead=true;h.busyT=0;tl2Kneel(h,false)}}
 function tl2ArrDraw(z){const h=z.h;if(h.dead||!inViewPt(h.x,h.y))return;const hy=h.y-9-(h.elev||0),R=Math.min(tl2Len(z.p),10*16);   // 扇形两条边 + 当前方向（虚线）
   for(const[a,c,al]of[[z.a0-z.half,K_TL2D,0.35],[z.a0+z.half,K_TL2D,0.35],[z.a,K_TL2,0.6]]){const ux=Math.cos(a),uy=Math.sin(a);for(let s=10;s<R;s+=6)rectW(Math.round(h.x+ux*s),Math.round(hy+uy*s),1,1,c,al)}}
 function tl2ArrAuto(h,p){const a=tl2Best(h,0,Math.PI,Math.min(tl2Len(p),20*16),p.w*16);return Number.isNaN(a)?null:{x:h.x+Math.cos(a)*64,y:h.y+Math.sin(a)*64}}
@@ -83230,8 +83257,9 @@ function tl2FrzCast(h,p,a){const j=snipeTarget(h,p,a);if(j<0){if(h.ctl)toast('�
 function tl2FrzAI(h,p){const dm=skD(h,p);let n=0,kill=false;eQuery(h.x,h.y,p.range*16,j=>{n++;if(E.hp[j]<=dm*0.8)kill=true},true);if(!n)return null;
   return n>=3||kill||n>=1&&(h.hxs&&h.hxs.fn>0)?snipeAI(h,p,j=>E.hp[j]<=dm*0.8?100+E.hp[j]/1e4:(ETC[E.t[j]].tier>=4?3:0)+E.hp[j]/1e5):null}
 // ================= 登记 =================
+function tl2WaveEnd(){const H=G.heroes;for(let k=0;k<H.length;k++)if(tl2Is(H[k]))tl2Kneel(H[k],false)}   // 波次结束 chanCut 停火了，准备阶段不跑区域，这里把跪姿换回
 zoneDef('tl2Arr',{tick:tl2ArrTick,draw:tl2ArrDraw});
-feat('sniper2',{ord:500,on:()=>{const b=heroEver('sniper2');if(!b)tl2Reset();return b},hooks:{start:tl2Reset,loadAfter:tl2Sync,tick:tl2Tick}});   // on() 关着也清：fireAng / dealE_ / ueDen 直接读 TL2_ON
+feat('sniper2',{ord:500,on:()=>{const b=heroEver('sniper2');if(!b)tl2Reset();return b},hooks:{start:tl2Reset,loadAfter:tl2Sync,tick:tl2Tick,waveEnd:tl2WaveEnd}});   // on() 关着也清：fireAng / dealE_ / ueDen 直接读 TL2_ON
 feat('tl2Trial',{on:()=>heroEver('sniper')&&!!(META.tl2&&META.tl2.on)&&!advDone('sniper'),hooks:{eDie:tl2Die,waveEnd:tl2TrialWave}});
 heroFx('sniper2',{g:83,init:tl2Init,ampE:tl2Amp,dealtE:tl2Dealt});
 Object.assign(SK,{
@@ -99478,7 +99506,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.13.15.2',GAME_TAG='测试版',GAME_CODE=285,GAME_BUILD="bc51253",GAME_BUILT=1795137154342,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.13.15.2',GAME_TAG='测试版',GAME_CODE=285,GAME_BUILD="fa66af5",GAME_BUILT=1795137474093,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
