@@ -17198,12 +17198,12 @@ CFG.tl2Snipe={units:['archer','musketeer','eArcher','mechGunner','bloodGunner','
      连锁炸药：投向 7.5 格内至多 n 个亡灵（最近的优先、不重复），落地在 2 格内爆炸；以爆炸点为圆心 4 格（爆炸半径 200%）内至多 4 个亡灵身上再炸一次，伤害每传一层 ×0.5，最多传 depth 层；
        同一颗炸弹（含它引出的所有连锁）里同一只亡灵只当一次爆炸点；连锁一层一层炸开（每层延迟 gapT 秒）；
      武器宗师：照原版每 0.2 秒按 弓 → 弩 → 火枪 → 投石 → 暗器 → 火炮 换一次武器，各对 r 格内所有亡灵打一轮（共 6 轮、1.2 秒）；
-       弩「削弱 100% 物理防御」= 物理防御 −100%（bkEDefDn）、火枪「削弱 100(%) 物理减伤」= 移除减伤 100%（bkERmDR）各 3 秒；火炮 = 命中点半径 2 格 100% 伤害的爆炸（主目标不重复吃）；
+       弩「削弱 100% 物理防御」= 物理防御 −100%（bkEDefDn）、火枪「削弱 100(%) 物理减伤」= 物理减伤 −100%，不足从通用减伤扣（用户 11-21 定，heroes/versatile2.vs2PdrDn）各 3 秒；火炮 = 命中点半径 2 格 100% 伤害的爆炸（主目标不重复吃）；
      伤害都走 skV / skD（+X%AD），算他的（hk），物理；按攻击间隔出手的规矩（hWpK）不乘（固定间隔）
    Claude 定：被动轮换的位置按单位各自记，触发清空以后从下一种接着轮（不从头：不然攻击频繁的士兵永远只拿到淬毒）；
      器无虚发持续 dur 秒共射 dur ÷ 0.5 轮（放下立刻射第一轮），暗器飞过去才结算（飞行中目标死了就作废）；
      连锁炸药挑下一层爆炸点按离爆炸点由近到远；武器宗师的弓「灼烧 50%」、暗器「中毒 50%」持续 3 秒（同弩、火枪）；
-     爆炸（连锁炸药、火炮）不吃范围加成（积木的用户规矩：群体技能默认不吃 pm.aoe），不衰减（100% 伤害）；
+     爆炸：连锁炸药吃范围加成（用户 11-21 定，同原版连环爆炸），武器宗师火炮的爆炸不吃（积木的用户规矩：群体技能默认不吃 pm.aoe），不衰减（100% 伤害）；
      基础属性：原版蓝往上提一档（同进阶罗兰 蓝 → 紫：生命 +30、防御 +0.4、暴击 +1%、视野 +0.5、韧性 +3、物攻 +1、法攻 +0.3、法防 +0.8、防御成长 +0.01、法防成长 +0.01）；
      其余细节见 heroes/versatile2.js 开头 */
 Object.assign(CFG.skills,{
@@ -17222,7 +17222,7 @@ Object.assign(CFG.skills,{
     byStar:{n:[2,2,3,3,4], b:[200,300,400,500,600], ad:[2.4,2.5,2.6,2.7,2.8], depth:[4,4,5,5,6]},
     desc:p=>`向 ${p.range} 格内的至多 ${p.n} 个亡灵投掷炸弹，炸弹爆炸造成半径 ${p.r} 格 ${sv_(p.b,p.ad)} 伤害，爆炸范围半径 ${pc_(p.chainK)} 格内至多 ${p.fan} 个亡灵的身上也发生一次爆炸，伤害每次衰减一半，可传导 ${p.depth} 次；冷却 ${p.cd} 秒`},
   // 每 gap 秒按 kinds 的顺序换一种武器，向 r 格内所有亡灵各打一次 b(+ad×AD) × mul[武器]：
-  //   bow 灼烧 burn（这一下伤害的比例）dt 秒、xbow 物理防御 −def dt 秒、gun 移除减伤 drm dt 秒、sling 晕眩 stun 秒、dart 中毒 psn dt 秒、cannon 命中点 boom 格内其它亡灵吃一样的伤害
+  //   bow 灼烧 burn（这一下伤害的比例）dt 秒、xbow 物理防御 −def dt 秒、gun 物理减伤 −drm dt 秒（不足扣通用减伤）、sling 晕眩 stun 秒、dart 中毒 psn dt 秒、cannon 命中点 boom 格内其它亡灵吃一样的伤害
   vs2Wm:{name:'武器宗师', cd:15, aim:'self', gap:0.2, ad:1, dt:3, burn:0.5, def:1, drm:1, psn:0.5, boom:2, kinds:['bow','xbow','gun','sling','dart','cannon'],
     mul:{bow:1, xbow:1.1, gun:1.2, sling:2, dart:0.8, cannon:1.5},
     byStar:{r:[7.5,8.5,10,12.5,15], b:[100,150,200,250,300], stun:[1,1.5,2,2.5,3]},
@@ -29620,6 +29620,7 @@ CFG.towerAdv={
      reloadMul / magMul  装填时间 ×X、弹匣 ×X
      side         攻击时朝 ± side° 各多射一支箭（同一下的伤害，不耗弹药）
      weak {v, t}  命中时虚弱 v，持续 t 秒
+   第二批数值（用户 11-21：「神机营的数值要提升，数值你先定」，Claude 定，同骑兵营的提法）：生命一律 ×1.2 取整十；基础攻击 火枪手 60 → 70（攻速已经 ×2，只加 17%）、盾弩手 33.5 → 40、神射手 32 → 40、火炮手 90 → 110
    第二批（用户 11-21 策划第 5 条：神机营 50 级，每个兵种 50 万银币 + 100 影砂 + 100 元素精华；用户没写基础攻击、生命 = 不改，atk / hpMul 不写）：
      silver / ware 这个兵种自己的花费（不写 = 用上面顶层的）
      aspd         远程攻速 ×X（攻击间隔、装填时间都 ÷X，改在兵种数据上 = 独立乘区，用户定）
@@ -29632,7 +29633,7 @@ CFG.towerAdv={
      aim {int, dmg, critDmg}  狙击瞄准：攻击间隔 ×int（近射、远射都算；用户定），伤害 ×dmg（独立乘区）、必定暴击、暴击伤害 +critDmg
      rngMul       基础射程 ×X（改在兵种数据上，不进射程折算 rvFold；用户定）。Claude 定：远射的分界（基本射程 8 格）一起 ×X
      apb {dr, def}  穿甲箭矢：这名兵造成的伤害无视 dr 减伤（同 o.m2Dr）、def 物理防御（同 o.penP）
-     arr {r, dmg, aspd, dmax, amax}  阵列炮击：半径 r 格内每有 1 名别的阵列炮手（火炮手且是进阶版，用户定），伤害 +dmg（和别的伤害加成相加）、攻速 ×(1 + aspd)（攻击间隔、装填，统一 buff），至多 dmax / amax
+     arr {r, dmg, aspd, dmax, amax}  阵列炮击：半径 r 格内每有 1 名别的阵列炮手（火炮手且是进阶版，用户定），伤害 +dmg（和别的伤害加成相加）、攻速 +aspd（用户 11-21 定：和别的攻速加成相加，攻击间隔、装填都算），至多 dmax / amax
      boomK        火药爆炸的半径、伤害 ×X（伤害：火炮手的炮弹全是爆炸伤害，乘在远程伤害上）
      kbAdd        爆炸击退 +X 格（Claude 定：火炮手的爆炸原来不到 2 格不推人，改成把爆炸范围里的亡灵强制推开 X 格，吃霸体和击退抗性，同震爆闪光 kbForce）
    外观（用户 11-21「兵种进阶需要绘制新皮肤 + 对应皮肤兵营的换色皮肤」）：不在这里配——图在 art/hd_units_adv.js（键 = 兵种 + 'UA'，武器 UAR_WPN、盾 UAR_SHK），
@@ -29648,13 +29649,13 @@ CFG.unitAdv={lv:50, silver:500000, ware:{saltpeter:200},
       fx:[['火药爆破','攻击时附带半径 1.5 格 35% 伤害的爆炸'],['命中要害','命中时附带 30% 易伤，持续 2 秒，不可叠加'],['轻捷弹匣','装填时间 ×70%，弹匣数量 ×2']]},
     horseArcher:{camp:'campC', name:'游击骑兵', atk:30, hpMul:1.2, mom:{per:0.1, max:1}, side:15, weak:{v:0.3, t:2},
       fx:[['游击之风','每移动 1 格，下一击伤害 +10%，至多 +100%'],['弓骑散射','攻击时朝 ±15° 各散射一枚箭矢'],['致残打击','命中造成 30% 虚弱，持续 2 秒']]},
-    musketeer:  {camp:'campG', name:'沙海镖客', silver:500000, ware:{shadeSand:100, elemEssence:100}, aspd:2, crit:0.25, hit:25, critDmg:0.5, pierceX:2,
+    musketeer:  {camp:'campG', name:'沙海镖客', atk:70, hpMul:1.2, silver:500000, ware:{shadeSand:100, elemEssence:100}, aspd:2, crit:0.25, hit:25, critDmg:0.5, pierceX:2,
       fx:[['双持火枪','拥有两把火枪：攻速 ×2(独立乘区)'],['精准打击','暴击率、命中 +25%，暴击伤害 +50%'],['穿透弹丸','最大穿透数 ×2，至少 +1']]},
-    shieldXbow: {camp:'campG', name:'重盾弩卫', silver:500000, ware:{shadeSand:100, elemEssence:100}, dr:0.5, guard:{r:4, dr:0.35, cd:3, win:0.1, vis:10}, bone:{weak:0.3, vuln:0.3, pdr:0.3, def:0.3, t:2},
+    shieldXbow: {camp:'campG', name:'重盾弩卫', atk:40, hpMul:1.2, silver:500000, ware:{shadeSand:100, elemEssence:100}, dr:0.5, guard:{r:4, dr:0.35, cd:3, win:0.1, vis:10}, bone:{weak:0.3, vuln:0.3, pdr:0.3, def:0.3, t:2},
       fx:[['重盾守护','自身减伤 +50%，半径 4 格内的友军减伤 +35%(不叠加)'],['防守反击','自身和半径 4 格内的友军受到伤害时，伤害来源在攻击范围内就立刻朝它发射 1 发弩箭，同一个伤害来源冷却 3 秒'],['蚀骨之矢','命中时使目标虚弱 30%、易伤 30%，物理减伤 −30(%)、物理防御 −30%，持续 2 秒']]},
-    marksman:   {camp:'campG', name:'神箭狙手', silver:500000, ware:{shadeSand:100, elemEssence:100}, aim:{int:1.3, dmg:1.5, critDmg:0.3}, rngMul:1.2, apb:{dr:0.5, def:0.5},
+    marksman:   {camp:'campG', name:'神箭狙手', atk:40, hpMul:1.2, silver:500000, ware:{shadeSand:100, elemEssence:100}, aim:{int:1.3, dmg:1.5, critDmg:0.3}, rngMul:1.2, apb:{dr:0.5, def:0.5},
       fx:[['狙击瞄准','攻击间隔 ×130%(瞄准时间)，但伤害 ×150%、必定暴击，暴击伤害 +30%'],['远距打击','基础射程 ×120%(不折算衰减)'],['穿甲箭矢','造成伤害时无视目标 50% 减伤和 50% 物理防御']]},
-    gunner:     {camp:'campG', name:'阵列炮手', silver:500000, ware:{shadeSand:100, elemEssence:100}, arr:{r:4, dmg:0.1, aspd:0.05, dmax:2, amax:1}, boomK:1.3, kbAdd:1,
+    gunner:     {camp:'campG', name:'阵列炮手', atk:110, hpMul:1.2, silver:500000, ware:{shadeSand:100, elemEssence:100}, arr:{r:4, dmg:0.1, aspd:0.05, dmax:2, amax:1}, boomK:1.3, kbAdd:1,
       fx:[['阵列炮击','半径 4 格内每有 1 名别的阵列炮手，伤害 +10%、攻速 +5%，至多 +200%、+100%'],['爆裂火药','火药爆炸的伤害、半径 +30%'],['冲击火药','爆炸击退 +1 格']]},
   }};
 
@@ -72344,7 +72345,7 @@ function uIntr(s){const rg=s.rg;if(!rg)return;s.g1Aim=0;
   if(s.rel>0){s.rel=rg.reload;return}
   if(s.shotCd>0)s.shotCd=uShotInt(s)}
 // v0.8.11（用户定：临时加成都相加）士兵身上的临时攻速：统御全军 +100%、军令（装备）、拿破仑、振奋之风、傀儡核心、先登之志——和卡牌、科技、战鼓的攻速加成相加（攻击间隔、装填都算）
-const solAspT=s=>(s.cmdU>G.time?1:0)+(s.ordU>G.time?s.ordF:0)+(s.coU>G.time?s.coF:0)+rwK(s)+(s.gcU>G.time?s.gcV.spd:0)+(s.bpSpU>G.time?s.bpSp:0);
+const solAspT=s=>(s.uaX?s.uaX.as:0)+(s.cmdU>G.time?1:0)+(s.ordU>G.time?s.ordF:0)+(s.coU>G.time?s.coF:0)+rwK(s)+(s.gcU>G.time?s.gcV.spd:0)+(s.bpSpU>G.time?s.bpSp:0);
 const uCmdK=s=>s.mkA||s.wtOvU>G.time?mkK(s):1;   // 冷却倒数的倍率（瓦特、过载超频）
 const uShotInt=s=>s.rg.int/(1+pmNC(s,pm.atkSpd)+(s.rg.magic?0:pmNC(s,pm.rgAtk))+drumF(s)+(s.rg.magic?TM.uCast||0:TM.uRgSpd||0)+solAspT(s))/ENV.fslow/ENV.ourAtk/fAtkK(s);   // uCast：v0.8.1 科技「施法训练」（法术攻击的兵）
 // 我方重型器械瞄准：目标脚下一个收缩的金圈
@@ -83860,11 +83861,11 @@ HCOL.sniper2='#8fa86a';
 //   同一次攻击（同一个 o、同一帧）打中的其它目标也吃同样的效果（VS2_LO / VS2_LT / VS2_LM / VS2_LP 记着上一下）。局内存档不存（用户说可以），波次之间保留。
 // 器无虚发：区域 vs2Th 跟着他，放下立刻射第一轮、之后每 gap 秒一轮，共 dur ÷ gap 轮；每轮挑 range 格内最近的 n 个看得见的亡灵，一轮一个区域 vs2V（暗器飞过去才结算，必中；
 //   飞行中目标死了作废）；命中：b(+ad×AD) 物理伤害 + sts 里随机一种异常 t 秒（恐惧 / 禁锢 / 沉默走 ccMul；中毒、灼烧 = 这一下实际伤害 × pct 每秒；减速 pct）。
-// 连锁炸药：range 格内最近的 n 个亡灵各一颗炸弹（区域 vs2Bt，抛物线追着目标飞），落地 vs2Chain：r 格内爆炸（vs2Boom：不衰减、不吃范围加成），
+// 连锁炸药：range 格内最近的 n 个亡灵各一颗炸弹（区域 vs2Bt，抛物线追着目标飞），落地 vs2Chain：r 格内爆炸（vs2Boom：不衰减；用户 11-21 定连锁炸药吃范围加成（同原版），火炮的爆炸不吃），
 //   再从爆炸点 r × chainK 格内挑至多 fan 个、这颗炸弹还没当过爆炸点的亡灵（由近到远），各排一个区域 vs2Bc（gapT 秒后在它身上炸，伤害 × fade，层数 +1）；层数到 depth 不再传。
 //   每颗炸弹一个 Set（S）记当过爆炸点的亡灵 id，整串连锁共用。
 // 武器宗师：区域 vs2Wm 跟着他，每 gap 秒按 kinds 打一轮（r 格内所有看得见的亡灵，一轮一个 vs2V），伤害 skV(b, ad) × mul[武器]；
-//   弓 灼烧 burn × 实际伤害 dt 秒、弩 bkEDefDn(def) dt 秒、火枪 bkERmDR(drm) dt 秒、投石 eStun(stun)、暗器 中毒 psn × 实际伤害 dt 秒、火炮 命中点 boom 格内其它亡灵（主目标不重复吃）一样的伤害。
+//   弓 灼烧 burn × 实际伤害 dt 秒、弩 bkEDefDn(def) dt 秒、火枪 vs2PdrDn(drm) dt 秒（用户 11-21：只削物理减伤 100(%)，不足的从通用减伤扣——dmgPreE 里 ueDrP，同塔楼进阶「破甲」）、投石 eStun(stun)、暗器 中毒 psn × 实际伤害 dt 秒、火炮 命中点 boom 格内其它亡灵（主目标不重复吃）一样的伤害。
 // 他倒下了：还在飞的暗器 / 炸弹照样落下（伤害算无主），还没射的轮次作废。
 // 托管（Claude 定）：器无虚发 range 格内 ≥ 2 只；连锁炸药 range 格内 ≥ 3 只或有精英 / 首领；武器宗师 r 格内 ≥ 4 只（crowd：好了冲进扎堆的地方）
 const VS2_ST=new WeakMap(),VS2_BL=[],VS2_TL=[];
@@ -83896,7 +83897,7 @@ function vs2VolTick(z){const L=z.L;for(let q=0;q<L.length;q+=3){const id=L[q+1];
   if(z.n<=0)z.dead=true}
 function vs2Land(z,j){const h=z.hk&&!z.hk.dead?z.hk:null,p=z.p,k=z.kind,o=k==='sling'?VS2_OS:VS2_O;o.hk=h;o.crit=z.crit;o.critMul=z.cm;const x=E.x[j],y=E.y[j],id=E.id[j];
   const d=dealE(j,z.d,o);if(k==='cannon'){vs2Boom(x,y,p.boom*16,z.d,h,id,z.crit,z.cm);return}if(!E.alive[j])return;
-  if(k==='th')vs2St(j,d,p,h);else if(k==='bow'){if(d>0)burnE(j,d*p.burn,p.dt)}else if(k==='xbow')bkEDefDn(j,p.def,p.dt);else if(k==='gun')bkERmDR(j,p.drm,p.dt);
+  if(k==='th')vs2St(j,d,p,h);else if(k==='bow'){if(d>0)burnE(j,d*p.burn,p.dt)}else if(k==='xbow')bkEDefDn(j,p.def,p.dt);else if(k==='gun')vs2PdrDn(j,p.drm,p.dt);
   else if(k==='sling')eStun(j,p.stun);else if(k==='dart'){if(d>0)poisonE(j,d*p.psn,p.dt)}}
 // 器无虚发的随机异常
 function vs2St(j,d,p,h){const S=p.sts,n=S[(Math.random()*S.length)|0],t=p.t;
@@ -83932,8 +83933,8 @@ function vs2BtTick(z){if(eOk(z.j,z.id)){z.tx=E.x[z.j];z.ty=E.y[z.j]}const u=Math
 function vs2BtDraw(z){const x=Math.round(z.x),y=Math.round(z.y-z.z);if(!inViewPt(x,y))return;rectW(x-1,Math.round(z.y)+2,3,1,SHC,0.35);rectW(x-2,y-2,4,4,K.ink);rectW(x-1,y-1,2,2,K.iron);rectW(x+1,y-3,1,1,fxr()<0.5?K.flY:K.boomC)}
 zoneDef('vs2Bt',{tick:vs2BtTick,draw:vs2BtDraw});
 // 在 (x,y) 炸一次（第 lv 层），再往下传；z：带着 p / hk / crit / cm 的区域（炸弹或上一层）
-function vs2Chain(x,y,d,lv,S,z){const p=z.p,h=z.hk&&!z.hk.dead?z.hk:null;vs2Boom(x,y,p.r*16,d,h,-1,z.crit,z.cm);if(lv>=p.depth)return;
-  const T=[];eQuery(x,y,p.r*p.chainK*16,(j,dd)=>{if(!S.has(E.id[j]))T.push([dd,j])});if(!T.length)return;T.sort(VS2_NS);
+function vs2Chain(x,y,d,lv,S,z){const p=z.p,h=z.hk&&!z.hk.dead?z.hk:null,ak=1+pm.aoe;vs2Boom(x,y,p.r*16*ak,d,h,-1,z.crit,z.cm);if(lv>=p.depth)return;   // ak：用户 11-21 定连锁炸药吃范围加成（同原版连环爆炸），爆炸和传导的范围一起放大
+  const T=[];eQuery(x,y,p.r*p.chainK*16*ak,(j,dd)=>{if(!S.has(E.id[j]))T.push([dd,j])});if(!T.length)return;T.sort(VS2_NS);
   for(let k=0;k<T.length&&k<p.fan;k++){const j=T[k][1];S.add(E.id[j]);addZone({k:'vs2Bc',x:E.x[j],y:E.y[j],j,id:E.id[j],delay:p.gapT,d:d*p.fade,lv:lv+1,S,p,hk:z.hk,crit:z.crit,cm:z.cm,t:0})}}
 function vs2BcTick(z){if(eOk(z.j,z.id)){z.x=E.x[z.j];z.y=E.y[z.j]}if(z.t>=z.delay){z.dead=true;vs2Chain(z.x,z.y,z.d,z.lv,z.S,z)}}
 function vs2BcDraw(z){if(!inViewPt(z.x,z.y))return;const u=Math.min(1,z.t/z.delay);dotRing(z.x,z.y,3+u*5,K.flY,0.75*u,10)}
@@ -83949,7 +83950,11 @@ function vs2WmTick(z){const h=z.h;if(h.dead){z.dead=true;return}const p=z.p,K=p.
   if(z.k2>=K.length)z.dead=true}
 zoneDef('vs2Wm',{tick:vs2WmTick});
 // ================= 登记 =================
-feat('versatile2',{on:()=>{const b=heroEver('versatile2');if(!b)vs2Reset();return b},hooks:{start:vs2Reset,afterHitE:vs2Hit}});
+// 武器宗师 · 火枪：物理减伤 −f（不足从通用减伤扣，ueDrP），t 秒；同一只取大、刷新时间
+const VS2_PU=new Float64Array(ECAP),VS2_PF=new Float32Array(ECAP),VS2_PI=new Int32Array(ECAP);
+function vs2PdrDn(j,f,t){if(!(f>0)||!E.alive[j])return;const on=VS2_PU[j]>G.time&&VS2_PI[j]===E.id[j];VS2_PF[j]=Math.max(on?VS2_PF[j]:0,f);VS2_PU[j]=Math.max(on?VS2_PU[j]:0,G.time+t);VS2_PI[j]=E.id[j]}
+const vs2PreE=(i,d,o)=>{if(VS2_PU[i]>G.time&&VS2_PI[i]===E.id[i])ueDrP(o,-VS2_PF[i]);return d};
+feat('versatile2',{on:()=>{const b=heroEver('versatile2');if(!b)vs2Reset();return b},hooks:{start:()=>{vs2Reset();VS2_PU.fill(0);VS2_PI.fill(-1)},afterHitE:vs2Hit,dmgPreE:vs2PreE}});
 heroFx('versatile2',{g:83});
 Object.assign(SK,{
   vs2Mod:PASSIVE_SK,
@@ -87904,7 +87909,7 @@ const uaCardDef=k=>UAD().units[k]&&(running?uaOn(k):uaMetaOn(k))?uaClone(k):CFG.
 // ===== 士兵 =====
 const UA_BM={impact:1};
 function uaBt(u,rg){const A=UA_A.get(u.c)||null;if(!A){u.uaX=null;return rg}
-  if(!u.uaX||u.uaX.A!==A){u.uaX={A,px:u.x,py:u.y,m:0,n:0,cd:null,w:0,wn:0};if(A.hit)u.hitAdd+=A.hit}   // n：阵列炮击身边几名；cd：防守反击每个来源的冷却（亡灵 id → 时间）；w / wn：防守反击 0.1 秒窗口的开始时间、射了几支   // hitAdd 只在 makeSoldier 定，建 uaX 时加一次（soldierBt 重跑不会重复加）
+  if(!u.uaX||u.uaX.A!==A){u.uaX={A,px:u.x,py:u.y,m:0,n:0,as:0,cd:null,w:0,wn:0};if(A.hit)u.hitAdd+=A.hit}   // n：阵列炮击身边几名；cd：防守反击每个来源的冷却（亡灵 id → 时间）；w / wn：防守反击 0.1 秒窗口的开始时间、射了几支   // hitAdd 只在 makeSoldier 定，建 uaX 时加一次（soldierBt 重跑不会重复加）
   if(!rg)return rg;const r0=rg;
   if(A.side)rg=Object.assign({},rg,{s3Sc:{n:2,ang:A.side,mul:1}});   // 弓骑散射：同一下的伤害朝 ±side° 各多一支（units/s3_mage.s3Post）
   if(A.boom)rg=Object.assign({},rg,{blast:{r:A.boom.r,mul:A.boom.k,mix:UA_BM}});   // 火药爆破：命中点爆炸（engine/combat.updateProj_ 的 w.blast）
@@ -87953,13 +87958,13 @@ function uaBaseE(i,d,o){const u=o.su;if(!u||o.uaP)return d;const X=u.uaX;if(!X||
 // 每 0.25 秒：重盾弩卫的光环（统一 buff 'uaSG'，同一个 id = 几名不叠加；重盾弩卫自己不吃）、阵列炮手数身边几名（统一 buff 'uaAr'）
 const UA_SG=[],UA_GN=[],UA_CQ=[],UA_AE=[];let UA_TK=0;
 const uaNotG=u=>!(u.uaX&&u.uaX.A.guard);
-const uaArE=(A,n)=>{let e=UA_AE[n];if(!e){const R=A.arr,a=Math.min(R.amax,n*R.aspd);e=UA_AE[n]={atk:Math.min(R.dmax,n*R.dmg),aspd:a,rld:a}}return e};   // 攻速：攻击间隔（aspd）和装填（rld）都算
+const uaArE=(A,n)=>{let e=UA_AE[n];if(!e){const R=A.arr,a=Math.min(R.amax,n*R.aspd);e=UA_AE[n]={atk:Math.min(R.dmax,n*R.dmg)}}return e};   // 攻速不在这里：用户 11-21 定和别的攻速加成相加，放 uaX.as（units/soldiers.solAspT 读，攻击间隔、装填都算）
 function uaTickG(dt){if(UA_CQ.length)uaCounterRun();UA_TK-=dt;if(UA_TK>0)return;UA_TK=0.25;UA_SG.length=0;UA_GN.length=0;
   for(let i=0;i<G.soldiers.length;i++){const s=G.soldiers[i],X=s.uaX;if(!X||s.dead)continue;if(X.A.guard)UA_SG.push(s);else if(X.A.arr)UA_GN.push(s)}
   for(let q=0;q<UA_SG.length;q++){const s=UA_SG[q],Q=s.uaX.A.guard;bfAuraF(s.x,s.y,Q.r*16,'uaSG',uaEf('dr',Q.dr),{only:uaNotG})}
   for(let q=0;q<UA_GN.length;q++){const s=UA_GN[q],A=s.uaX.A,R=A.arr.r*16;let n=0;
     for(let k=0;k<UA_GN.length;k++){const t=UA_GN[k];if(t!==s&&Math.hypot(t.x-s.x,t.y-s.y)<=R)n++}
-    if(n!==s.uaX.n){s.uaX.n=n;if(n>0)bfAdd(s,'uaAr',uaArE(A,n));else bfDel(s,'uaAr')}}}
+    if(n!==s.uaX.n){s.uaX.n=n;s.uaX.as=Math.min(A.arr.amax,n*A.arr.aspd);if(n>0)bfAdd(s,'uaAr',uaArE(A,n));else bfDel(s,'uaAr')}}}
 // 防守反击：自己或 r 格内的友军受到亡灵的直接伤害 → 来源在射程内就记一发（下一帧 tick 里射，不在别人的弹道 / 受伤结算中途加弹道）
 function uaHurtF(u,dmg,o,raw){const j=o.src;if(!(raw>0)||o.dot||!(j>=0)||!E.alive[j]||(o.sid!==undefined&&E.id[j]!==o.sid)||!UA_SG.length)return;const id=E.id[j];
   for(let q=0;q<UA_SG.length;q++){const s=UA_SG[q];if(s.dead||!s.rg)continue;const X=s.uaX,Q=X.A.guard;
@@ -100702,7 +100707,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.0',GAME_TAG='测试版',GAME_CODE=287,GAME_BUILD="cbe7831+",GAME_BUILT=1795222359019,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.0',GAME_TAG='测试版',GAME_CODE=287,GAME_BUILD="4ef13e9+",GAME_BUILT=1795222854955,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
