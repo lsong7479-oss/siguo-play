@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.1.1",
- "code": 292,
- "size": 22521417,
- "sha256": "083f1881248ee4bf3d3fc638301e486c36c903bf16c7a9e9fa27ceac659082e9",
+ "ver": "0.14.1.2",
+ "code": 293,
+ "size": 22532163,
+ "sha256": "2146a3f4634fb1ab0756028897b116ead2a87661dd1846d95748acf9bca644e6",
  "minLoader": 1,
- "sig": "5nQfMTJqpJWouA3U23MjVP/cilqRmsG3uiBMpun+DImYAYCrfhF8d4zTVnmTHGXLc4ET2jLsjWtbPKINQwlG3g==",
- "note": "维修卡包的维修量扩到所有单位、自动修理算下一波",
- "at": "2026-11-21 06:33 UTC"
+ "sig": "8KBBynqNPkh5mn4DCWvoRBweRWLpCecTmVddniEKQr7vBlUfXiytZ7jJdmizjq0MScHp212cvXL1ekGNV5Ku8g==",
+ "note": "第二卷不开开拓地、只结盟（本地家族声望补到信任）；德雷克重炮船改用坎的炮艇；亡灵卡牌图标",
+ "at": "2026-11-21 13:37 UTC"
 }
