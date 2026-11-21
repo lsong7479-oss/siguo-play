@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.1",
- "code": 289,
- "size": 22481898,
- "sha256": "385ee304334d93811e2cb025641f8472ab83ad746b6eb560fa2ca3fb513b8867",
+ "ver": "0.14.1.1",
+ "code": 292,
+ "size": 22521417,
+ "sha256": "083f1881248ee4bf3d3fc638301e486c36c903bf16c7a9e9fa27ceac659082e9",
  "minLoader": 1,
- "sig": "lErr6hxKIH/Q/ZZ/24NA1LR4k28+5C/TTiBq3+Kd3xoQ3TT5ulbttq57gT2cWN8SzOwNbhHnQj/bCQQvt1ftdQ==",
- "note": "与 0.14.1 稳定版同内容",
- "at": "2026-11-21 02:15 UTC"
+ "sig": "5nQfMTJqpJWouA3U23MjVP/cilqRmsG3uiBMpun+DImYAYCrfhF8d4zTVnmTHGXLc4ET2jLsjWtbPKINQwlG3g==",
+ "note": "维修卡包的维修量扩到所有单位、自动修理算下一波",
+ "at": "2026-11-21 06:33 UTC"
 }
