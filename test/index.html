@@ -29590,7 +29590,9 @@ CFG.towerAdv={
      vuln {v, t}  命中时易伤 +v，持续 t 秒，不叠加（刷新时间）
      reloadMul / magMul  装填时间 ×X、弹匣 ×X
      side         攻击时朝 ± side° 各多射一支箭（同一下的伤害，不耗弹药）
-     weak {v, t}  命中时虚弱 v，持续 t 秒 */
+     weak {v, t}  命中时虚弱 v，持续 t 秒
+   外观（用户 11-21「兵种进阶需要绘制新皮肤 + 对应皮肤兵营的换色皮肤」）：不在这里配——图在 art/hd_units_adv.js（键 = 兵种 + 'UA'，武器 UAR_WPN、盾 UAR_SHK），
+     units/unit_adv.uaSprK 取图：有新图就用新图（装了兵营皮肤时按皮肤主题把新图换色），没有就用原图 */
 CFG.unitAdv={lv:50, silver:500000, ware:{saltpeter:200},
   follow:{maidenGuard:'knight'},   // 用户 11-21：圣女侍从（奥薇尔在场时代替重骑兵）跟着重装骑兵进阶——在重装骑兵的属性上加它原来比重骑兵多的那些（生命、攻击），效果同重装骑兵，名字不变
   units:{
@@ -29603,8 +29605,6 @@ CFG.unitAdv={lv:50, silver:500000, ware:{saltpeter:200},
     horseArcher:{camp:'campC', name:'游击骑兵', atk:30, hpMul:1.2, mom:{per:0.1, max:1}, side:15, weak:{v:0.3, t:2},
       fx:[['游击之风','每移动 1 格，下一击伤害 +10%，至多 +100%'],['弓骑散射','攻击时朝 ±15° 各散射一枚箭矢'],['致残打击','命中造成 30% 虚弱，持续 2 秒']]},
   }};
-// 进阶兵的外观（没装兵营皮肤时）：按兵营皮肤的换色做法（art/tskin_sol），主题名「精锐」直接当 u.tsk；暗铁布、鎏金甲、浅金边、胸前金星（Claude 定）
-CFG.towerSkinSol['精锐']={cloth:'#34303c', metal:'#d2ac52', trim:'#fff0b0', mark:'star', mc:['#fff0b0','#e05a2a']};
 
 /* ---------- 0.13.13 两种新陷阱「玄钢地刺」xgSpike、「木龙荆棘」wdThorn（用户 2026-11-17 策划，原文《策划-塔楼进阶（用户 2026-11-17）.md》第 2、3 条；逻辑 structs/traps2.js，图 art/hd_traps2.js）----------
    用户定：
@@ -36516,6 +36516,7 @@ function shArt(o,size){const[W,H]=SH_SZ[size];return icN(W,H,S=>{const x0=1,y0=1
     case'snow':S.line(cx,ey-3,cx,ey+3,c);S.line(cx-2,ey-2,cx+2,ey+2,c);S.line(cx-2,ey+2,cx+2,ey-2,c);break}})}
 function hdShieldSprites(){const o={};for(let z=1;z<=4;z++)o['g'+z]=reg(shArt(SHD['g'+z],z),2);
   for(const k in CFG.weapons){const w=CFG.weapons[k];if(w.type==='shield'&&SHD[k])o[k]=reg(shArt(SHD[k],w.size||2),2)}
+  for(const k in UAR_SHD)o[k]=reg(shArt(UAR_SHD[k],UAR_SHD[k].size),2);   // UAR 加：0.14.1 进阶重装骑兵的盾（art/hd_units_adv）
   return o}
 
 // ---------- 0.5.7 建筑高清重绘（用户：原来 16×16 改成 32×32；升到 1、3、5 级换样子）----------
@@ -37408,12 +37409,12 @@ function tssMark(o,at,Q){if(!at)return;const k=o._k||2,g=o.getContext('2d'),P=TS
   if(Q.mark==='cross'){g.fillStyle=Q.mc[0];g.fillRect(ox+k,oy-k,k,k*4);g.fillRect(ox,oy+k,k*3,k)}   // 十字竖长一格
   for(let i=0;i<9;i++){const v=P[i];if(!v)continue;g.fillStyle=v===2?Q.mc[1]:Q.mc[0];g.fillRect(ox+(i%3)*k,oy+((i/3)|0)*k,k,k)}}
 // 画一套：src = SPR.units[兵种]（[帧0, 帧1(, 帧2)]），返回 {fr, gen}；没有原图返回 null
-function tssMake(src,id,cav){if(!src||!src[0]||!src[0].c)return null;const S=CFG.towerSkins[id],P=S?CFG.towerSkinSol[S.theme]:CFG.towerSkinSol[id];if(!P)return null;   // 不是皮肤 id 就当主题名（0.14.1 兵种进阶的「精锐」）
+function tssMake(src,id,cav){if(!src||!src[0]||!src[0].c)return null;const S=CFG.towerSkins[id],P=S&&CFG.towerSkinSol[S.theme];if(!P)return null;
   const Q=tssPal(P),at=tssMarkAt(src[0].c,cav),fr=[];
   for(const r of src){const o=tssRecolor(r.c,Q);tssMark(o,at,Q);const k=r.k||o._k||2;o._k=k;fr.push({c:o,k,w:o.width/k,h:o.height/k,pw:o.width,ph:o.height,x:0,y:-1,u0:0,v0:0,u1:0,v1:0})}
   return{fr,gen:-1}}
-// 士兵用的帧（ui/draw.drawSoldier，s.tsk 不为空时）：第一次画到时生成；不在图集里（新画的 / 动态区清过）就补进去
-function tssFr(s){const k=s.hbJyK||s.type;let M=TSS.get(s.tsk);if(!M)TSS.set(s.tsk,M=new Map());let F=M.get(k);
+// 士兵用的帧（ui/draw.drawSoldier，s.tsk 不为空时）：按 units/unit_adv.uaSprK 取原图（进阶兵是进阶的新图、狄龙在场的锦衣卫是 hbJyK）；第一次画到时生成；不在图集里（新画的 / 动态区清过）就补进去
+function tssFr(s){const k=uaSprK(s);let M=TSS.get(s.tsk);if(!M)TSS.set(s.tsk,M=new Map());let F=M.get(k);
   if(F===undefined){F=tssMake(SPR.units[k],s.tsk,!!s.c.cavalry);M.set(k,F)}
   if(!F)return SPR.units[k];
   if(F.gen!==TSS_G.gen){if(typeof atlasAdd!=='function'||!ATLAS.canvas)return SPR.units[k];
@@ -46959,6 +46960,168 @@ HD_BUILD.campBj=t=>hdFig(64,80,S=>{const m=hbm(),wall=t===0?hdMat('#c0a070','pla
   for(const[x,lf]of t===0?[[8,false]]:[[8,false],[56,true]]){S.rect(x,0,1.4,11,m.woodD,{R:0.6});const fx=lf?x-9:x+1.4;S.part(red,{R:0.8},p=>p.poly(lf?[[x,0.6],[fx,1.6],[fx+1.4,4.6],[fx,7.6],[x,8.4]]:[[x+1.4,0.6],[fx+9,1.6],[fx+7.6,4.6],[fx+9,7.6],[x+1.4,8.4]]));
     bjSunMark(S,lf?x-4.4:x+5.8,4.6,1.4,BJ_K.gold)}
   if(t===2)for(const x of[21,43]){S.rect(x-1,63,2,6,m.iron,{R:0.4});S.ell(x,62,2.6,1.4,m.iron);hbGlow(S,x,60.4,'#ffd25a','#ff7a2e');S.px(x,59.4,'#fff3c4')}});   // 门口的火盆
+
+// ---------- 0.14.1 兵种进阶的新小人（用户 11-21「兵种进阶需要绘制新皮肤」；骑兵营四个 + 神机营四个，键 = 兵种 + 'UA'，取图 units/unit_adv.uaSprK：有图就用、没有用原图）----------
+// 照原版的画法和尺寸（art/hd_units 的 hdU_lightCav、hdU_musketeer 等：骑兵 48×46、步兵 32×32，两帧 0 站 / 1 迈步；马 hdU_horse、骑手用 hdU_shift 平移后的步兵零件、步兵 hdU_body）。
+// 武器、盾照旧由代码画在手上（ui/draw.drawSoldier）：进阶兵换成下面 WPG 里的样子（UAR_WPN → uaWpD）、盾换 UAR_SHD（UAR_SHK → uaShK）。
+// 金色故意偏黄（色相 47°）、沙色故意偏灰：art/tskin_sol 把色相 5～44°、饱和、偏亮的颜色当成人的皮肤（不换色，还会把它当成脸来放胸前标志），金色要能换成皮肤主题的镶边色。
+// 一套的记号（Claude 定）：墨绿布 + 金边 + 黑钢，胸前一枚金色翼徽（V 字双翼），鞍毯下摆一排金穗；和原版（蓝 / 红 / 棕）一眼分开。
+// 装了兵营皮肤：art/tskin_sol 照样按像素换色（墨绿布 → 主题布色、黑钢 → 主题金属、金边 → 主题镶边，马的棕色毛、皮革不换）。
+const UAR={grn:'#1e6a50',grnD:'#134434',grnL:'#2f8a68',gold:'#e6c44a',blk:'#5c6576',blkD:'#3c424e',stl:'#c4cad4'};
+// 翼徽：V 字两翼 + 中间一颗亮点（S 坐标 cx, cy）
+function uarWing(S,cx,cy,g){S.ln(cx-2.6,cy-1.2,cx,cy+1,[g,3]);S.ln(cx+2.6,cy-1.2,cx,cy+1,[g,3]);S.ln(cx-2.6,cy-0.2,cx-1,cy+1,[g,2]);S.ln(cx+2.6,cy-0.2,cx+1,cy+1,[g,2]);S.px(cx,cy-0.4,[g,5])}
+// 鞍毯下摆的金穗（hdU_horse 的鞍毯：big 大鞍毯 / 普通）
+function uarFringe(S,big,g){const y=big?38.4:35.6,x0=big?11.6:15,x1=big?30.4:28.2;for(let x=x0;x<=x1;x+=2)S.ln(x,y,x,y+1.2,[g,3])}
+// ===== 疾刃骑兵：精良的黑钢鳞甲 + 墨绿金边罩衫、亮钢闭盔（金翼冠、墨绿长缨），身后飘一条墨绿长巾；栗色马、墨绿鞍毯金穗；手持弯刃骑刀（uaSaber）=====
+function hdU_lightCavUA(fr){return hdFig(48,46,S=>{
+  const bright=hm('#d8dde6','metal'),blk=hm(UAR.blk,'metal'),grn=hm(UAR.grn,'cloth'),grnL=hm(UAR.grnL,'cloth'),gold=hm(UAR.gold,'metal'),glove=hm('#5a3a25','leather'),pants=hm('#2a2e36','cloth'),lea=hm('#3a2418','leather');
+  hdU_horse(S,fr,{coat:hm('#9a5a34','leather'),far:hm('#64391f','leather'),mane:hm('#2a1a10','hair'),cloth:grn,trim:[gold,3],hoof:hm('#2a2024','leather')});
+  uarFringe(S,false,gold);uarWing(S,21.4,31,gold);S.ln(38.6,19.6,43.6,26.4,[gold,3]);   // 鞍毯上的翼徽、缰绳上的金饰
+  S.part(grn,{R:1},p=>p.poly(fr?[[19,19],[22,20.4],[13,24.4],[4.4,23.4],[9,21.4]]:[[19,19],[22,20.6],[13,25.6],[4,26],[8.6,23]]));S.ln(19,19.6,6,23.6,[grnL,3]);   // 身后飘的长巾（迈步帧飘高一点）
+  const R=hdU_shift(S,8,4);
+  hdArmBack(R,{sleeve:blk,hand:glove});
+  R.part(blk,{R:2},p=>p.rect(9,15,14,10,3));for(const y of[16.6,18.8,21])for(let x=9.8;x<22.6;x+=2.2)R.px(x+(y===18.8?1.1:0),y,[blk,4]);   // 黑钢鳞甲（鳞片高光）
+  R.part(grn,{R:2},p=>p.poly([[12.4,15],[19.6,15],[20.4,25],[11.6,25]]));R.ln(12.4,15.2,11.6,24.8,[gold,3]);R.ln(19.6,15.2,20.4,24.8,[gold,3]);   // 墨绿罩衫（金边）
+  uarWing(R,16,18.4,gold);
+  hdBelt(R,23,lea,[gold,4]);
+  hdU_riderLeg(S,{leg:pants,boot:lea});S.ln(25.2,34.2,30.8,34.2,[gold,3]);   // 靴口金边
+  hdArmFront(R,{sleeve:blk,hand:glove,pad:bright});R.ln(7.4,17.4,12.6,17.4,[gold,3]);R.ln(19.4,17.4,24.6,17.4,[gold,3]);   // 护肩金边
+  hdU_helm(R,bright,{crest:R=>{R.part(grnL,{R:0.6},p=>{p.cap(13,3.4,5,6.4,1.5,0.7);p.cap(12,4.4,6.4,9,1.2,0.6)});R.part(gold,{},p=>p.poly([[12,5.4],[15.4,1.4],[20,2.6],[16.6,4],[16,5.4]]))}});   // 金翼冠 + 往后飘的长缨
+  R.ln(12.8,16.6,21.8,16.4,[gold,3]);   // 面甲下沿金边
+})}
+// ===== 重装骑兵：全身黑钢板甲（宽肩甲、腰甲裙，金边）、黑钢桶盔（金冠 + 墨绿高缨）；马披全甲：黑钢面甲（金角）、颈甲、胸甲、臀甲，外罩墨绿金边马衣（锯齿下摆、侧面大翼徽）=====
+function hdU_knightUA(fr){return hdFig(48,46,S=>{
+  const blk=hm(UAR.blk,'metal'),blkD=hm(UAR.blkD,'metal'),gold=hm(UAR.gold,'metal'),grn=hm(UAR.grn,'cloth'),grnD=hm(UAR.grnD,'cloth'),grnL=hm(UAR.grnL,'hair');
+  hdU_horse(S,fr,{coat:hm('#7a5034','leather'),far:hm('#4e321e','leather'),mane:grnL,cloth:grn,trim:[gold,3],big:true,barded:true,plate:blk,crest:grnL,hoof:blkD});
+  S.ln(38.6,17,41.6,18.4,[gold,3]);S.ln(41.6,18.4,45.6,24,[gold,3]);S.part(gold,{R:0.4},p=>p.poly([[42.4,19.4],[45.6,16.4],[43.6,20.4]]));   // 面甲金边、额前金角
+  // 马衣：从颈根盖到尾根，下摆到膝上（马腿下半截露出来），下摆一道金边、一排金穗；迈步帧下摆往后飘一点
+  const hm_=fr?0.6:0;S.part(grn,{R:2},p=>p.poly([[5.4,29],[9,25.8],[20,25.4],[29.4,25.8],[32.6,29.4],[32.4,39.4],[6+hm_,39.4],[4.4,35.6]]));S.ln(6.4,30,5.6,37,[grnD,2]);S.ln(30.6,27.4,30.6,38,[grnD,2]);
+  S.ln(6,38.6,32.2,38.6,[gold,3]);S.ln(32.4,29.6,32.4,38.6,[gold,3]);for(let x=7;x<=31.6;x+=2)S.ln(x-hm_,39.6,x-hm_,40.8,[gold,2]);   // 下摆金边、金穗
+  uarWing(S,19,33,gold);uarWing(S,19,30.8,gold);   // 侧面的双层翼徽
+  S.part(blk,{R:1},p=>p.ell(9.6,27.4,5.4,2.8));S.ln(4.6,28.6,14.4,28.6,[gold,3]);   // 臀甲
+  S.part(hm('#3a2418','leather'),{R:1},p=>p.poly([[17,24.6],[19,26.8],[25.6,26.8],[28,24.4],[28.4,28],[16.6,28]]));   // 马鞍（被马衣盖住了，重画）
+  const R=hdU_shift(S,8,4);
+  hdArmBack(R,{sleeve:blkD,hand:blkD});
+  R.part(blk,{R:2},p=>p.rect(8.6,14.6,14.8,10.4,3));R.ln(16,15.6,16,23.4,[blk,4]);R.ln(9.4,15,22.6,15,[gold,3]);for(const y of[20.2,22.4])R.ln(9.6,y,22.4,y,[blk,1]);   // 胸甲：中脊、领口金边、甲片缝
+  uarWing(R,16,17.6,gold);
+  R.ln(9,23.4,23,23.4,[gold,2]);
+  hdU_riderLeg(S,{leg:blkD,boot:blk});S.ell(28,30.4,2.3,2,gold);S.ln(25.2,34.2,30.8,34.2,[gold,3]);   // 护膝、铁靴金边
+  R.part(blk,{R:1},p=>{p.rect(10,24,4.4,3.6,0.8);p.rect(14.6,24.2,4.4,3.8,0.8);p.rect(19.2,24,4.2,3.6,0.8)});for(const x of[10,14.6,19.2])R.ln(x+0.4,27.4,x+3.8,27.4,[gold,3]);   // 腰甲裙
+  hdArmFront(R,{sleeve:blkD,hand:blkD});R.part(blk,{R:1.4},p=>{p.ell(9.6,15.8,4,3.2);p.ell(22.4,15.8,4,3.2)});R.ln(6,17.8,13.2,17.8,[gold,3]);R.ln(18.8,17.8,26,17.8,[gold,3]);R.ln(19.6,15.6,25.6,15.2,[blk,4]);   // 宽肩甲
+  hdU_helm(R,blk,{crest:R=>{R.part(grnL,{R:0.6},p=>{p.cap(15,1.6,9,-1.6,1.8,1);p.cap(13,2.4,6.4,3.4,1.6,0.8)});R.part(gold,{R:0.4},p=>{p.rect(11.6,3.2,8,1.6,0.4);for(const x of[11.8,14.8,17.8])p.poly([[x,3.4],[x+0.8,1],[x+1.6,3.4]])})}});   // 金冠 + 墨绿高缨
+  R.ln(12.8,16.6,21.8,16.4,[gold,3]);R.ln(13.4,9.8,23.4,9.6,[gold,3]);   // 面甲下沿、视缝上沿的金边
+})}
+// ===== 火炮骑兵：墨绿军装外套（金色胸饰）外罩黑钢胸甲、斜挎弹药带（黄铜弹筒），腰挂火药角和弹药包；黑宽檐帽（金帽带、墨绿大羽）；深棕马、墨绿鞍毯金穗、鞍前枪套；手持粗口径马铳（uaCannon）=====
+function hdU_dragoonUA(fr){return hdFig(48,46,S=>{
+  const hat=hm('#2a1e16','leather'),grn=hm(UAR.grn,'cloth'),grnL=hm(UAR.grnL,'cloth'),blk=hm(UAR.blk,'metal'),gold=hm(UAR.gold,'metal'),white=hm('#ece8de','cloth'),skin=hm(SKIN,'skin'),hair=hm('#3a2418','hair'),lea=hm('#3a2418','leather'),leaL=hm('#6a4428','leather'),horn=hm('#e6dcc2','bone');
+  hdU_horse(S,fr,{coat:hm('#4a3226','hair'),far:hm('#2e1e16','hair'),mane:hm('#16110e','hair'),cloth:grn,trim:[gold,3],hoof:hm('#2a1a10','leather')});
+  uarFringe(S,false,gold);uarWing(S,21.4,31,gold);
+  S.part(leaL,{R:1},p=>p.poly([[29.4,25.6],[32,25],[33.4,31.6],[30.4,32.4]]));S.dt(31,25.6,1.2,[gold,3]);   // 鞍前枪套（露出黄铜枪柄头）
+  const R=hdU_shift(S,8,4);
+  hdArmBack(R,{sleeve:grn,hand:lea});
+  R.part(grn,{R:2},p=>p.rect(9,15,14,10,3));
+  R.part(blk,{R:2},p=>p.poly([[10.4,15.6],[21.6,15.6],[21,22.6],[16,24],[11,22.6]]));R.ln(16,16.2,16,23,[blk,4]);R.ln(10.6,15.8,21.4,15.8,[gold,3]);   // 黑钢胸甲（金边）
+  uarWing(R,16,18,gold);
+  R.part(white,{R:1},p=>p.poly([[13.4,14.4],[18.6,14.4],[17.4,16.8],[14.6,16.8]]));   // 白领巾
+  R.part(lea,{},p=>p.poly([[20.4,15],[22.6,15.4],[12.4,24.6],[10.2,24]]));for(let k=0;k<4;k++)R.px(19.6-k*2.4,17.4+k*2.1,[gold,4]);   // 斜挎弹药带（黄铜弹筒）
+  hdBelt(R,23,lea,[gold,4]);
+  S.part(horn,{R:1},p=>p.poly([[16.6,27.6],[19.6,28.6],[19,31.6],[16.4,33.4],[15.4,32.6],[17,30.6]]));S.part(gold,{R:0.4},p=>p.rect(16.2,27,3.2,1.2,0.4));S.ln(17.4,27.6,19.6,26.6,lea);   // 腰挂的火药角（金口）
+  S.part(leaL,{R:1},p=>p.rect(20,27.6,3.6,3.2,0.8));S.ln(20.2,28.6,23.4,28.6,[gold,3]);   // 弹药包
+  hdU_riderLeg(S,{leg:white,boot:lea});
+  hdArmFront(R,{sleeve:grn,hand:lea});R.ln(20.4,16.4,23,17,[gold,3]);R.ln(21.6,20.2,24.4,20.2,[gold,3]);   // 肩章、袖口金边
+  hdHead(R,{skin});
+  R.part(hair,{},p=>p.ell(11.8,11.6,2.4,3.2));
+  hdU_plumeHat(R,hat,gold,grnL);R.part(grnL,{R:0.6},p=>p.cap(18,4.4,12,1.4,1.4,0.7));R.dt(20.6,6,0.9,[gold,4]);   // 金帽带、墨绿大羽（往后飘一截）、金帽徽
+  hdFace(R,{skin,ey:10.6,brow:'#2a1a10'});R.ln(18.4,13.6,21.2,13.4,'#2a1a10');   // 小胡子
+})}
+// ===== 游击骑兵：轻便的皮甲（金铆钉）、墨绿兜帽 + 墨绿金边披风（往后飘）、皮护腕；背上一只插满箭的箭袋、马鞍边再挂一只；栗色马、墨绿鞍毯金穗；手持大弓（uaWarBow）=====
+function hdU_horseArcherUA(fr){return hdFig(48,46,S=>{
+  const grn=hm(UAR.grn,'cloth'),grnD=hm(UAR.grnD,'cloth'),gold=hm(UAR.gold,'metal'),tun=hm('#8a5a36','leather'),tunD=hm('#5e3c24','leather'),skin=hm(SKIN,'skin'),lea=hm('#4a2e1c','leather'),fl='#e8e0d0',sh='#5a3a22';
+  hdU_horse(S,fr,{coat:hm('#7a4a2a','leather'),far:hm('#4e2e1a','leather'),mane:hm('#1e140e','hair'),cloth:grn,trim:[gold,3],quiver:lea});
+  for(const[x,y]of[[9.2,21],[12.8,21.2]]){S.ln(x+2,y+4,x,y,sh);S.px(x,y,fl);S.px(x+1,y,fl)}S.ln(11,26.6,14.6,25.8,[gold,3]);S.ln(12.2,33.6,15.2,33,[gold,3]);   // 鞍边箭袋插满箭、金箍
+  uarFringe(S,false,gold);uarWing(S,21.4,31,gold);
+  S.part(grn,{R:2},p=>p.poly(fr?[[17.6,18.6],[21.4,19.2],[17,24.6],[9.4,26.4],[5.6,24.6],[11,21]]:[[17.6,18.6],[21.4,19.4],[17.4,25.6],[9.6,27.6],[5.4,26],[10.6,21.8]]));S.ln(9.6,fr?26:27.2,17,fr?24.4:25.4,[gold,3]);S.ln(15.4,20.6,8.6,25,[grnD,2]);   // 披风（从肩上往后飘，金边下摆）
+  const R=hdU_shift(S,8,4);
+  R.part(lea,{R:1},p=>p.poly([[3,11.4],[6.4,10],[11.4,21],[8.4,22.4]]));R.ln(3.8,13.4,7.2,12,[gold,3]);R.ln(8,19.6,10.6,18.4,[gold,3]);   // 背上的箭袋（斜背，从肩后露出来，金箍）
+  for(const[x,y]of[[1.4,7.6],[3,6.4],[4.6,5.6],[6.2,5.8],[7.4,7]]){R.ln(x+1.4,y+4,x,y,sh);R.px(x,y,fl);R.px(x+1,y,fl)}   // 插满的箭
+  hdArmBack(R,{sleeve:tunD,hand:skin});R.ln(8.2,20.6,10.6,20.6,[lea,3]);
+  R.part(tun,{R:2},p=>p.rect(9,15,14,10,3));for(const y of[17.6,20.2])R.ln(9.6,y,22.4,y,[tunD,1]);for(const[x,y]of[[11,16.4],[21,16.4],[11,21.6],[21,21.6]])R.px(x,y,[gold,4]);   // 皮甲：甲片缝、金铆钉
+  uarWing(R,16,18.6,gold);
+  hdBelt(R,23,hm('#2a1a10','leather'),[gold,4]);
+  hdU_riderLeg(S,{leg:hm('#3a3430','cloth'),boot:lea});
+  hdArmFront(R,{sleeve:tunD,hand:skin});R.ln(21.8,20.6,24.4,20.6,[lea,3]);R.ln(21.6,21.2,24.6,21.2,[gold,3]);   // 皮护腕（金边）
+  R.part(grn,{R:2},p=>p.poly([[9,14],[23,14],[21,18.4],[11,18.4]]));R.ln(11.4,18,20.6,18,[gold,3]);   // 披风的领子（金边）
+  hdHead(R,{skin,noEar:true});
+  hdU_hood(R,grn,{tip:1});R.ln(16.6,9.8,16.2,16.8,[gold,3]);
+  hdFace(R,{skin,ey:10.8,brow:'#3a2418'});
+})}
+// ===== 神机营（32×32 步兵，照 art/hd_units 的 hdU_musketeer 等：hdU_body 骨架、两帧 0 站 / 1 迈步）=====
+// 沙海镖客：沙色头巾（缠两道、金珠、往后飘的尾巾）+ 围在脖子上的面巾（不遮脸：兵营皮肤的胸前标志按脸的位置放，art/tskin_sol.tssMarkAt）、墨绿短马甲（金边、翼徽）、斜挎弹药带、沙色披风；双持两把短火枪（前手 uaPistol 由代码画，后手那把画在图里）
+function hdU_musketeerUA(fr){return hdFig(32,32,S=>{
+  const sand=hm('#c2b8a0','cloth'),sandD=hm('#9a8a6c','cloth'),grn=hm(UAR.grn,'cloth'),gold=hm(UAR.gold,'metal'),blk=hm(UAR.blk,'metal'),lea=hm('#5a3a24','leather'),pants=hm('#5a4a38','cloth'),boot=hm('#3a2418','leather'),skin=hm(SKIN,'skin'),wood=hm('#5a3a24','wood');
+  S.part(sand,{R:2},p=>p.poly(fr?[[9,14],[15,14],[12,27],[5,28],[2.4,25],[5,19]]:[[9,14],[15,14],[13,28],[6,29],[3,27],[5.4,19]]));S.ln(4,fr?26:27.6,11.6,fr?27:28,[gold,3]);   // 身后的沙色披风（金边下摆）
+  hdU_body(S,fr,{pants,boot,bootH:5,cuff:true,sleeve:sandD,hand:lea,body:grn,belt:lea,buckle:[gold,4],
+    torso:S=>{S.part(sand,{R:1},p=>p.poly([[14,15],[18,15],[17.4,23],[14.6,23]]));S.ln(13.8,15.2,13.2,23,[gold,3]);S.ln(18.2,15.2,18.8,23,[gold,3]);uarWing(S,16,17.6,gold);   // 马甲（金边）、里面的沙色衬衣
+      S.part(lea,{},p=>p.poly([[10,15.5],[12.5,15.5],[22,22.5],[21,24]]));for(const k of[0.25,0.5,0.75])S.rc(Math.round(11+k*10),Math.round(16+k*7),1,2,[gold,3])},   // 斜挎弹药带
+    after:S=>{S.part(wood,{R:0.6},p=>p.poly([[8,22],[10.6,21.8],[10.6,24.2],[8.6,25]]));S.part(blk,{R:0.4},p=>p.rect(10,21.6,8,1.6,0.4));S.px(17.6,22,[gold,4]);S.px(10.6,23.4,[gold,4])}});   // 后手那把短火枪（枪口朝前）
+  hdHead(S,{skin});
+  S.part(sand,{},p=>{p.ell(15.6,8,7,4.8);p.cut.rect(0,9.8,32,9);p.ell(10.6,10.6,2.6,3.4)});S.ln(9.4,6.6,21.8,6,[sandD,1]);S.ln(9,8.4,22.4,8.2,[sandD,1]);S.dt(20.4,7.4,0.9,[gold,4]);   // 头巾（缠两道、金珠）
+  S.part(sand,{R:1},p=>p.poly(fr?[[9.4,9],[3.6,11.6],[4.4,13.6],[10,11.6]]:[[9.4,9],[3.4,13],[4.6,14.6],[10,11.8]]));   // 往后飘的尾巾
+  hdFace(S,{skin,ey:10.4,brow:'#3a2418'});S.ln(18.4,13.6,21.2,13.4,'#3a2418');   // 小胡子
+  S.part(sandD,{R:1},p=>p.poly([[12,15.2],[21.6,15],[20.6,17.2],[16.6,18.6],[12.4,17]]));S.ln(13,16.6,20.4,16.4,[sandD,4]);   // 围在脖子上的面巾
+})}
+// 重盾弩卫：黑钢板甲（宽肩甲金边）、墨绿罩袍（翼徽）、黑钢闭盔（金脊、墨绿短缨）；手持重弩（uaHXbow），大塔盾（uaTower）由代码画
+function hdU_shieldXbowUA(fr){return hdFig(32,32,S=>{
+  const blk=hm(UAR.blk,'metal'),blkD=hm(UAR.blkD,'metal'),grn=hm(UAR.grn,'cloth'),grnL=hm(UAR.grnL,'hair'),gold=hm(UAR.gold,'metal'),lea=hm('#3a2418','leather');
+  hdU_body(S,fr,{pants:blkD,boot:blkD,bootH:5,cuff:true,sleeve:blkD,hand:blkD,body:blk,belt:lea,buckle:[gold,4],
+    torso:S=>{S.part(grn,{R:2},p=>p.poly([[11.6,15],[20.4,15],[21,25.6],[11,25.6]]));S.ln(11.6,15.2,11,25.4,[gold,3]);S.ln(20.4,15.2,21,25.4,[gold,3]);uarWing(S,16,18,gold)},   // 罩袍（金边）
+    after:S=>{S.part(blk,{R:1.4},p=>{p.ell(9.8,15.8,4,3);p.ell(22.2,15.8,4,3)});S.ln(6.2,17.6,13.4,17.6,[gold,3]);S.ln(18.6,17.6,25.8,17.6,[gold,3]);S.rect(21.4,19.6,3.6,1.8,blkD,{edge:false})}});   // 宽肩甲（金边）、护腕
+  hdU_helm(S,blk,{crest:S=>{S.part(grnL,{R:0.6},p=>p.cap(14,3.4,8.4,5.6,1.4,0.7));S.ln(12.4,3.6,19,2.8,[gold,3])}});S.ln(12.8,16.6,21.8,16.4,[gold,3]);   // 金脊、墨绿短缨、面甲下沿金边
+})}
+// 神箭狙手：炭黑兜帽 + 长斗篷（金边、墨绿里子）、炭黑围巾（不遮脸，同沙海镖客）、额头上一副金框护目镜、墨绿上衣（翼徽）、背后金羽箭袋；手持长弓（uaLongbow）
+function hdU_marksmanUA(fr){return hdFig(32,32,S=>{
+  const char=hm('#2c3038','cloth'),charD=hm('#1e2128','cloth'),grn=hm(UAR.grn,'cloth'),gold=hm(UAR.gold,'metal'),pants=hm('#2a2c30','cloth'),boot=hm('#3a2418','leather'),skin=hm(SKIN,'skin'),lea=hm('#4a2e1c','leather');
+  S.part(lea,{R:1},p=>p.poly([[4.6,10],[7.6,9],[12,21],[9,22]]));S.ln(5.4,12,8.4,11,[gold,3]);for(const[x,y]of[[3,6.2],[4.6,5.4],[6.2,5.6]]){S.ln(x+1.4,y+4,x,y,'#5a3a22');S.px(x,y,[gold,4]);S.px(x+1,y,[gold,4])}   // 背后的箭袋（金羽）
+  S.part(grn,{R:2},p=>p.poly(fr?[[9,13],[16,14],[13,28],[9.5,26.5],[6,28],[2.6,25],[5,18]]:[[9,13],[16,14],[14,29],[10.5,27.5],[7,29],[3.6,26],[6,18]]));   // 斗篷的墨绿里子
+  S.part(char,{R:2},p=>p.poly(fr?[[9,13],[16,14],[12.6,27.4],[9.5,26],[6.6,27.4],[4,24.6],[5.6,18]]:[[9,13],[16,14],[13.6,28.4],[10.5,27],[7.6,28.4],[4.6,25.6],[6.6,18]]));S.ln(16,14.4,fr?12.8:13.8,fr?27:28,[gold,3]);   // 炭黑斗篷（金边）
+  hdU_body(S,fr,{pants,boot,bootH:5,cuff:true,sleeve:char,hand:lea,body:grn,belt:hm('#2a1a10','leather'),buckle:[gold,4],
+    torso:S=>{uarWing(S,16,18,gold);S.part(lea,{},p=>p.poly([[19.5,15.5],[21.5,15.5],[13,23.5],[11,23]]))},
+    after:S=>{S.part(char,{R:2},p=>p.poly([[9,14],[23,14],[21.5,19],[11,19]]));S.ln(11.4,18.6,21,18.6,[gold,3])}});
+  hdHead(S,{skin,noEar:true});
+  hdU_hood(S,char,{tip:true});S.ln(16.6,9.8,16.2,16.8,[gold,3]);
+  hdFace(S,{skin,ey:10.6,brow:'#2a1a10'});
+  for(const[x,r]of[[19.2,1.4],[22,1.2]]){S.dt(x,8.4,r,[gold,3]);S.dt(x,8.4,r*0.55,'#8ad8f0')}S.px(18.8,8,'#e8fbff');   // 推到额头上的狙击护目镜（金框、浅蓝镜片；不挡脸：兵营皮肤的胸前标志按脸的位置放）
+})}
+// 阵列炮手：成套军装——黑色高筒军帽（金色翼徽帽章、墨绿帽缨）、墨绿军装外套（金纽扣、下摆）、金肩章、白色交叉背带、深色裤长靴、腰间火药角；手持更大的手炮（uaBigCannon）
+function hdU_gunnerUA(fr){return hdFig(32,32,S=>{
+  const grn=hm(UAR.grn,'cloth'),grnL=hm(UAR.grnL,'hair'),gold=hm(UAR.gold,'metal'),white=hm('#ece8de','cloth'),shako=hm('#26201c','leather'),pants=hm('#2e2a34','cloth'),boot=hm('#1e1610','leather'),skin=hm(SKIN,'skin'),hair=hm('#3a2418','hair'),horn=hm('#e6dcc2','bone');
+  hdU_body(S,fr,{pants,boot,bootH:6,cuff:true,sleeve:grn,hand:hm('#4a3020','leather'),body:grn,belt:hm('#2a1a10','leather'),buckle:[gold,4],pad:gold,
+    torso:S=>{hdSkirt(S,grn,27,{slit:true});S.part(white,{},p=>{p.poly([[10.5,15.5],[12.5,15.5],[21,23],[19.5,23.5]]);p.poly([[19.5,15.5],[21.5,15.5],[13,23.5],[11,23]])});uarWing(S,16,19.2,gold);for(const y of[16.4,21.8])S.px(16,y,[gold,4])},   // 外套下摆、白色交叉背带、翼徽、金纽扣
+    after:S=>{S.rect(21.2,20.4,3.6,1.6,gold,{edge:false});S.part(horn,{R:1},p=>p.poly([[8,22],[10.4,23],[9.6,26],[7.6,27.4],[7,26.4],[8.4,25]]))}});   // 金袖口、腰间火药角
+  hdHead(S,{skin});
+  S.part(hair,{},p=>p.ell(11.8,11.6,2.4,3));
+  S.part(shako,{R:1},p=>{p.rect(10.4,0.6,11.2,8.4,1);p.poly([[16,8.4],[24.4,8.4],[23,10],[16,9.6]])});S.ln(10.6,8.2,21.4,8.2,[gold,3]);S.ln(10.6,1.2,21.4,1.2,[gold,2]);uarWing(S,17,4.6,gold);   // 高筒军帽（金边、帽檐、翼徽帽章）
+  S.part(grnL,{R:0.6},p=>p.cap(13.4,1,11,-2.4,1.3,0.8));S.dt(13.6,1.2,0.8,[gold,4]);   // 帽缨
+  hdFace(S,{skin,ey:10.8,brow:'#2a1a10'});S.ln(18.4,13.6,21.2,13.4,'#2a1a10');   // 小胡子
+})}
+// 图：键 = 兵种 + 'UA'（units/unit_adv.uaSprK 看 HD_UNIT 里有没有这个键：有就用新图、没有就用原图）
+Object.assign(HD_UNIT,{lightCavUA:hdU_lightCavUA,knightUA:hdU_knightUA,dragoonUA:hdU_dragoonUA,horseArcherUA:hdU_horseArcherUA,musketeerUA:hdU_musketeerUA,shieldXbowUA:hdU_shieldXbowUA,marksmanUA:hdU_marksmanUA,gunnerUA:hdU_gunnerUA});
+HB_JY_SPR.push('lightCavUA','knightUA','dragoonUA','horseArcherUA','musketeerUA','shieldXbowUA','marksmanUA','gunnerUA');   // 不是兵种的样子：art/art.buildSprites 照兵种的画法做成 SPR.units[键]
+// 手持武器（art/hd_weapons 的 wpDraw：drawWeapon 的 des = 这里的键；握法、大小照兵种原来的武器种类）
+Object.assign(WPG,{
+  uaSaber:S=>icSword(S,{L:28,g:5,gc:MAT.black,pc:MAT.gold,gd:{w:3.6,c:MAT.gold,t:'bar'},b:{w:2.2,c:MAT.silver,f:MAT.steel,tip:'curve',curve:2.4}}),   // 疾刃：弯刃骑刀（金护手）
+  uaLance:S=>icSpear(S,{kind:'lance',c:'#5a6070',hc:MAT.steel,pennant:UAR.grn,bands:[6,12],bc:MAT.gold}),   // 重装：黑钢骑枪、金箍、墨绿小旗
+  uaCannon:S=>icGun(S,{kind:'hand',L:28,sc:MAT.wood,bc:'#4a5060',bands:MAT.gold}),   // 火炮：粗口径马铳（短管、喇叭口、金箍）
+  uaWarBow:S=>icBow(S,{L:31,A:5.8,c:'#5a3a24',recurve:1,tips:MAT.gold,grip:UAR.grn,seg:1}),   // 游击：反曲大弓（金弓梢）
+  uaPistol:S=>icGun(S,{kind:'arq',L:23,sc:MAT.dwood,bc:'#4a5060',lock:MAT.gold,bands:MAT.gold}),   // 沙海镖客：短火枪（金机、金箍）
+  uaHXbow:S=>icXbow(S,{c:MAT.dwood,pc:'#4a5060'}),   // 重盾弩卫：黑钢弩臂的重弩
+  uaLongbow:S=>icBow(S,{L:31,A:4.6,c:'#3a2a20',tips:MAT.gold,grip:UAR.grn,seg:1}),   // 神箭狙手：深色长弓（金弓梢）
+  uaBigCannon:S=>icGun(S,{kind:'hand',L:31,sc:MAT.wood,bc:'#4a5060',bands:MAT.gold})});   // 阵列炮手：更长的手炮（金箍）
+const UAR_WPN={lightCav:{longsword:'uaSaber'},knight:{lance:'uaLance'},dragoon:{musket:'uaCannon'},horseArcher:{bow:'uaWarBow'},
+  musketeer:{musket:'uaPistol',bayonet:'uaPistol'},shieldXbow:{crossbow:'uaHXbow'},marksman:{longbow:'uaLongbow'},gunner:{handcannon:'uaBigCannon'}};   // 兵种 → {武器种类: 样子}（units/unit_adv.uaWpD）
+// 盾（ui/draw.drawShield 的 key；开局 art/hd_weapons.hdShieldSprites 画，size = 画多大）：墨绿盾面、金边、金色 V 纹
+const UAR_SHD={uaKnight:{shape:'heater',face:UAR.grn,rim:UAR.gold,emb:'chev',ec:UAR.gold,size:1},uaTower:{shape:'tower',face:UAR.grn,rim:UAR.gold,emb:'chev',ec:UAR.gold,bands:UAR.gold,size:3}};
+const UAR_SHK={knight:'uaKnight',shieldXbow:'uaTower'};   // 兵种 → 盾（units/unit_adv.uaShK）
 
 // ---------- v0.12 地图徽章（代理 BD；成就「勋章墙」用）----------
 // 每张正式地图一枚：64×64 像素（hdFig 2 倍精度，逻辑 32×32，canvas._k = 2），金属边框 + 中间一块底色 + 地图标志物。
@@ -71720,7 +71883,7 @@ function makeSoldier(camp,type){
     taunt:c.taunt||0,vision:soldierVision(c),facing:1,dir:vr(0,6.28),anim:0,walking:false,flash:0,stag:0,atkCd:0.3,shotCd:0,ammo:c.ranged?c.ranged.mag:0,rel:0,
     think:0,ti:-1,tid:0,aim:NaN,hd:NaN,recoil:0,thrust:0,swing:0,calm:0,stealthed:false,chg:0,patrolT:0,px:camp.x,py:camp.y,slot:camp.slots++,statMul:sm*(ct?bbM(ct,'satk'):1),hitAdd:ct?bbA(ct,'hit'):0,critPt:ct?bbA(ct,'crit'):0,dead:false,lastHit:-9,slp:false,slA:0,
     layer:0,elev:0,post:null,nav:null,plate:CFG.plateInf.includes(type),blF:CFG.backline.units.includes(type)||(CFG.backline.cavalry&&!!c.cavalry),meleeInf:!c.cavalry&&!c.ranged&&!!c.melee&&!!c.weapon&&!c.summoned&&!c.decoy&&!c.repair,mmix:c.mmix||mixOf(c.ranged?(c.side||'dagger'):c.weapon)||{slash:1},rmix:c.ranged?(c.rmix||mixOf(c.weapon)):null});   // v0.6.4 new Soldier()：全部字段一次建好（形状统一，见 core/shape）   // mmix / rmix：v0.5.3 机械营没有手持武器的兵种   // meleeInf：v0.6.02 近战步兵 = 拿武器步行的近战兵（召唤物、宠物、假身、铁傀儡、维修工不算）
-  u.tsk=ct?tskSolOf(ct):'';if(!u.tsk&&c!==UDEF[type]&&!CFG.unitAdv.follow[type])u.tsk='精锐';   // 0.14.1 兵种进阶：uaDef 给的是进阶版（units/unit_adv），没装兵营皮肤就换「精锐」配色（圣女侍从保留自己的白金板甲）   // 0.13.6 兵营皮肤的士兵外观（game/tskin.tskSolOf；画法 art/tskin_sol）；tskDef：士兵防御 +（solDef）
+  u.tsk=ct?tskSolOf(ct):'';   // 0.13.6 兵营皮肤的士兵外观（game/tskin.tskSolOf；画法 art/tskin_sol）；tskDef：士兵防御 +（solDef）
   if(c.shLv)u.shield*=s1LvK(camp);   // S1 加：v0.10.11 大盾卫格挡防御随兵营等级提升（units/s1_evo3）
   if(c.ship)shipInit(u);if(c.abK)abInit(u);soldierBt(u);u.ammo=u.rg?u.rg.mag:0;u.vision=u.rgr?soldierVision(c,Object.assign({},u.rg,{range:u.rg.range-u.rgr.range}))+u.rgr.range:soldierVision(c,u.rg);s5Vis(u);return u}   // rgr：v0.7.0 森林游侠视野 +2 格（原来按射程推，只多 1.5 格）   // S5 加：s5Vis 甲板增高的视野
 // —— v0.3.4 兵营科技与进阶：按训练它的兵营（u.ct）算；u.rg = 这名士兵实际用的远程武器（进阶可能改射程、弹匣、抛射）——
@@ -87636,7 +87799,8 @@ function taDrawerHTML(t){const A=TAD()[t];if(!A||!A.name||!taShow(t))return'';co
 //   效果：soldierBt 调 uaBt（u.uaX = {A 数据, px py 上一帧的位置, m 攒的移动距离}、远程武器加散射 / 爆炸 / 命中效果）；
 //   soldierMelee 调 uaFan（扇形）、uaMelO（破甲、冲锋无视减伤 / 防御）、uaMomK（蓄势，进增伤加算池子）；solShootIn 调 uaMomK；
 //   engine/combat.applyStatus 调 uaHit（易伤、虚弱）；feat uadv 的 dmgInF（减伤、远程物理 ×(1 − rgImm)）、friend（攒移动距离）。
-//   外观：没装兵营皮肤的进阶兵按 CFG.towerSkinSol['精锐'] 换色（art/tskin_sol.tssMake 认主题名）。
+//   外观：进阶兵画新图（art/hd_units_adv，键 = 兵种 + 'UA'，没画的用原图）：ui/draw.drawSoldier、art/tskin_sol.tssFr 用 uaSprK 取图（装了兵营皮肤就把新图换色），
+//   武器 uaWpD、盾 uaShK；兵种卡、兵营训练菜单的小图 uaIconK。跟着进阶的圣女侍从外观不变。
 const UAD=()=>CFG.unitAdv;
 const uaTypes=()=>Object.keys(UAD().units);
 // ===== 局外 =====
@@ -87703,6 +87867,13 @@ const uaAnyG=()=>{if(!G||!G.btech)return false;for(const t of uaTypes())if(uaInG
 feat('uadv',{on:uaAnyG,hooks:{
   dmgInF:(u,d,o)=>{if(u.isHero)return d;const X=u.uaX;if(!X)return d;const A=X.A;if(A.dr)UF_DR+=A.dr;if(A.rgImm&&!o.melee&&!o.dot&&!ufMg(o))d*=1-A.rgImm;return d},   // 全甲防护
   friend:(u,dt,hero)=>{if(!hero&&u.uaX)uaMove(u)}}});
+// ===== 外观（图 art/hd_units_adv）=====
+const uaArtA=s=>{if(!UA_A.size)return null;const A=UA_A.get(s.c);return A&&UAD().units[s.type]===A?A:null};   // 这名兵是进阶版、而且是它自己进阶（跟着进阶的圣女侍从不算：外观不变）
+const UA_SK=new Map();const uaSK=t=>{let k=UA_SK.get(t);if(k===undefined){k=HD_UNIT[t+'UA']?t+'UA':t;UA_SK.set(t,k)}return k};   // 兵种 → 进阶图的键（兵种 + 'UA'，art/hd_units_adv 没画就用原图）
+const uaSprK=s=>s.hbJyK||(uaArtA(s)?uaSK(s.type):s.type);   // SPR.units 的键（hbJyK：狄龙在场时锦衣卫的样子，heroes/dilong）
+const uaWpD=(s,wk)=>{const W=uaArtA(s)&&UAR_WPN[s.type];return W?W[wk]:undefined};   // drawWeapon 的 des（没有 = 按武器种类的通用样子）
+const uaShK=s=>uaArtA(s)?UAR_SHK[s.type]:undefined;
+const uaIconK=(k,ct)=>{const A=UAD().units[k];return A&&(!ct||A.camp===ct)&&(running?uaOn(k):uaMetaOn(k))?uaSK(k):k};   // 小图：兵种卡（ui/hub.unitCardHTML，同 uaCardDef）、兵营训练菜单（ui/hud，ct = 这座兵营）
 // ===== 局外界面：兵营「兵种」页每张兵种卡下面 =====
 function uaRowHTML(k){const A=UAD(),U=A.units[k];if(!U||!uaShow(k))return'';const got=uaGot(k),on=uaMetaOn(k),T=testOn(),L=got||T?[]:uaLack(k),W=META.wares||{},lv=taOlv(U.camp);
   const cost=Object.keys(A.ware).map(w=>`<span class="${(W[w]||0)>=A.ware[w]?'':'warn'}">${taWareN(w)} ${W[w]||0}/${A.ware[w]}</span>`).join(' · ')+` · <span class="${(META.wallet.银币||0)>=A.silver?'':'warn'}">银币 ${A.silver}</span>`;
@@ -99195,13 +99366,13 @@ function drawSoldier(s){
   if(s.abS&&s.abS.k!=='aa'){abDraw(s);return}   // v0.10.0 热气球、战斗机（units/airbase）
   const c=s.c,cav=c.cavalry,a=c.decoy?0.5+0.15*Math.sin(G.time*8):s.stealthed?0.45:1,gy=s.y-s.elev;   // decoy：v0.6.0 瑟菲斯的假身（半透明）
   if(!s.elev)shadow(s.x,s.y,cav?16:9);else if(!SHDW){}else if(s.fly&&s.v8)rectW(Math.round(s.x)-3,Math.round(s.y)-1,7,1,SHC,0.3);else if(s.layer===2)rectW(Math.round(s.x)-3,Math.round(gy)-1,7,1,SHC,0.4);
-  drawUnitSpr(s.tsk?tssFr(s):SPR.units[s.hbJyK||s.type],s.x,gy,s.walking,s.anim,s.facing,s.flash,0,a,s.petT>G.time?T_STONE:s.fTint||null);drawRootF(s,Math.round(s.x),Math.round(gy));   // v0.3.0：被法老石化 = 灰色；v0.3.2：被藤蔓缠住；fTint：v0.8.6 换了阵营的（engine/faction）   // hbJyK：HB 加，狄龙在场时忍者 / 元素刀客换成锦衣卫 / 锦衣亲卫的样子（heroes/dilong）   // tsk：0.13.6 兵营皮肤的士兵外观（art/tskin_sol.tssFr）
+  drawUnitSpr(s.tsk?tssFr(s):SPR.units[uaSprK(s)],s.x,gy,s.walking,s.anim,s.facing,s.flash,0,a,s.petT>G.time?T_STONE:s.fTint||null);drawRootF(s,Math.round(s.x),Math.round(gy));   // v0.3.0：被法老石化 = 灰色；v0.3.2：被藤蔓缠住；fTint：v0.8.6 换了阵营的（engine/faction）   // hbJyK：HB 加，狄龙在场时忍者 / 元素刀客换成锦衣卫 / 锦衣亲卫的样子（heroes/dilong）   // tsk：0.13.6 兵营皮肤的士兵外观（art/tskin_sol.tssFr）   // uaSprK：0.14.1 进阶兵的新图（units/unit_adv）
   const f=s.facing,hx=Math.round(s.x)+f*(cav?4:3),hy=Math.round(gy)-(cav?12:7);
   const near=s.ti>=0&&eOk(s.ti,s.tid)&&Math.hypot(E.x[s.ti]-s.x,E.y[s.ti]-s.y)<=CFG.combat.meleeSwitch*16+E.r[s.ti];
   let wk=c.weapon;if(c.ranged&&near&&c.side)wk=c.side;else if(c.ranged&&near&&wk==='musket')wk='musket';
   const ang=Number.isNaN(s.aim)?(wk==='spear'||wk==='lance'?(f>0?-80:-100)*DEG:(f>0?0.35:Math.PI-0.35)):s.aim;
-  drawWeapon(wk,hx,hy,f,ang,s);if(s.v8&&s.v8.ag)v8DrawGuns(s,gy);   // v0.8.0 精械战士肩上的机炮（朝目标转）；无人机的影子
-  if(c.shieldSize)drawShield(c.shieldSize,Math.round(s.x)+f*(cav?2:1),hy-1,-f);
+  drawWeapon(wk,hx,hy,f,ang,s,uaWpD(s,wk));if(s.v8&&s.v8.ag)v8DrawGuns(s,gy);   // v0.8.0 精械战士肩上的机炮（朝目标转）；无人机的影子
+  if(c.shieldSize)drawShield(c.shieldSize,Math.round(s.x)+f*(cav?2:1),hy-1,-f,uaShK(s));   // uaWpD / uaShK：0.14.1 进阶兵的武器、盾（units/unit_adv）
   if(s.shieldHp>0){const r=cav?11:7,n=18;for(let k=0;k<n;k++){const a=k/n*Math.PI*2+G.time*2;rectW(Math.round(s.x+Math.cos(a)*r),Math.round(gy-(cav?10:7)+Math.sin(a)*r*1.1),1,1,K.brassHi,0.8)}}   // v0.4.0 真言之盾
   if(s.imU>G.time||s.wbU>G.time)h60SolDraw(s,gy);   // v0.6.0 霍恩：盾阵、战争壁垒
   if(s.mark)drawMark(Math.round(s.x),Math.round(gy)-(cav?27:20));
@@ -100222,7 +100393,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.0',GAME_TAG='测试版',GAME_CODE=287,GAME_BUILD="73ff197+",GAME_BUILT=1795221062506,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.0',GAME_TAG='测试版',GAME_CODE=287,GAME_BUILD="726f0fa+",GAME_BUILT=1795221276348,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -100473,7 +100644,7 @@ function refreshSel(force){
     selModes.innerHTML=(typeof bprKeepRow==='function'?bprKeepRow():'')+tabs+`<div class="hmrow"><b>全部${eT?'精英':''}${eT?'<i>锁定的不变</i>':''}</b>${Object.keys(HERO_MODES).map(m=>btn(m,'hg:'+KEEP_TAB+':'+m,all(m))).join('')}</div>`+
       HS.map(h=>`<div class="hmrow"><b>${h.d.name}${h.ctl&&!h.ai?'<i>手动</i>':''}</b>${Object.keys(HERO_MODES).map(m=>btn(m,'h:'+h.id+':'+m,heroModeOf(h)===m,m==='sortie'&&h.d.noSortie)).join('')}${h.elite?`<button type="button" class="px sm${elCmdLk(h)?' on':''}" data-m="elk:${h.elite}">${elCmdLk(h)?'已锁定':'锁定'}</button>`:''}</div>`).join('')+(eT?'':mshKeepRow())}}   // mshKeepRow：v0.10.10 马歇尔托管放不放技能（heroes/marshall）
   if(camp){const uOff=!!s.uLock||G.phase==='wave',key=s.tx+','+s.ty+s.unit+s.mode+s.locked+s.uLock+uOff+(s.cgId|0);if(force||key!==selKey){selKey=key;
-    selUnits.innerHTML=d.units.map(u=>`<button type="button" class="ub${u===s.unit?' on':''}" data-u="${u}"${uOff&&u!==s.unit?' disabled':''}><img alt="" src="${unitIcon(bwShow(u))}"><span>${CFG.units[bwShow(u)].name}</span></button>`).join('');   // bwShow：BW 加，布武阵屋变更后的兵种   // uOff：v0.10.0 锁定了兵种、战斗中不能换
+    selUnits.innerHTML=d.units.map(u=>`<button type="button" class="ub${u===s.unit?' on':''}" data-u="${u}"${uOff&&u!==s.unit?' disabled':''}><img alt="" src="${unitIcon(uaIconK(bwShow(u),s.type))}"><span>${CFG.units[bwShow(u)].name}</span></button>`).join('');   // bwShow：BW 加，布武阵屋变更后的兵种   // uOff：v0.10.0 锁定了兵种、战斗中不能换   // uaIconK：0.14.1 进阶兵种的小图（units/unit_adv）
     selModes.innerHTML=(s.cgId!==undefined?`<span class="meta">编组 ${s.cgId}(在这里改模式会离开编组)</span>`:'')+SOLD_MODES.map(m=>`<button type="button" class="px${m===s.mode?' on':''}" data-m="${m}">${SOLD_NAMES[m]}</button>`).join('')+
       `<button type="button" class="px${s.locked?' on':''}" data-m="lock">${s.locked?'已锁定':'锁定'}</button><button type="button" class="px${s.uLock?' on':''}" data-m="ulock">${s.uLock?'兵种已锁':'锁定兵种'}</button>`+
       `<button type="button" class="px" data-m="csame">同类套用</button><button type="button" class="px" data-m="cadj">相邻套用</button>`}}   // v0.10.8 兵营同类 / 相邻套用（玩家反馈）
@@ -101339,12 +101510,12 @@ function hubDesign(){
 let btOpen=null,btShown=null;
 const f1_=v=>Math.round(v*10)/10;   // pc_（百分比）在 data/heroes 里
 // 兵种卡片（兵营抽屉里）：基础属性（Lv1 兵营），高等级兵营按「士兵属性」倍率放大
-function unitCardHTML(k){const u=uaCardDef(k),r=u.ranged,M=u.melee,tr=[];   // M：v0.10.0 火箭楼船、铁甲炮艇没有近战（原来打开造船厂的兵种卡就报错）
+function unitCardHTML(k){const u=uaCardDef(k),r=u.ranged,M=u.melee,tr=[];   // uaCardDef / uaIconK：0.14.1 兵种进阶的数据、小图（units/unit_adv）   // M：v0.10.0 火箭楼船、铁甲炮艇没有近战（原来打开造船厂的兵种卡就报错）
   if(u.block)tr.push(`格挡 ${pc_(u.block)} 减 ${u.shield}`);if(u.dodge)tr.push(`偏斜 ${pc_(u.dodge)}`);if(u.crit)tr.push(`暴击 ${pc_(u.crit)}`);if(u.charge)tr.push(`冲锋首击 ×${u.charge}`);
   if(u.taunt)tr.push(`嘲讽 ${u.taunt} 格`);if(u.cleave)tr.push(`劈砍 ${u.cleave} 个`);if(u.antiCav)tr.push(`克骑 ×${u.antiCav}`);if(u.kite)tr.push('边退边射');if(u.stealth)tr.push('隐身');if(M&&M.pen)tr.push(`近战穿透 ${M.pen}`);
   if(u.mBlk)tr.push('能格挡法术');if(r&&!u.cavalry&&!u.noWall)tr.push('可驻防');if(u.cavalry)tr.push('骑兵');
   const melee=M?`近战 ${M.dmg} · ${atkRate(M.int)} · ${M.reach} 格`:'',ranged=r?`远程 ${r.dmg} · ${atkRate(r.int)} · 射程 ${r.range} 格 · 偏移 ${r.spread}°`+(r.mag?` · 弹匣 ${r.mag} / 装填 ${r.reload} 秒`:'')+(r.pen?` · 穿透 ${r.pen}`:'')+(r.aoe?` · ${r.proj==='stone'?'伤害半径':'爆炸'} ${r.aoe} 格${r.splashF?`，波及 ${Math.round(r.splashF*100)}%`:''}`:''):'';   // S2 加：v0.10.11 投石车写「伤害半径」、加农炮写波及比例
-  return`<div class="ucard"><img alt="" src="${unitIcon(k)}"><div><b>${u.name}</b><span class="ust">生命 ${u.hp} · 防御 ${u.def}${u.mdef?` · 法防 ${u.mdef}`:''} · 移速 ${u.speed}</span>
+  return`<div class="ucard"><img alt="" src="${unitIcon(uaIconK(k))}"><div><b>${u.name}</b><span class="ust">生命 ${u.hp} · 防御 ${u.def}${u.mdef?` · 法防 ${u.mdef}`:''} · 移速 ${u.speed}</span>
     ${r?`<span class="ust">${ranged}</span>`:''}${melee?`<span class="ust">${melee}</span>`:''}${tr.length?`<span class="meta">${tr.join(' · ')}</span>`:''}${u.note?`<span class="meta">${u.note}</span>`:''}</div></div>`}
 function bStatsHTML(t,noU){const b=BDEF[t],Ls=[0,1,2,3,4],row=(c)=>`<tr>${c.map(x=>`<td>${x}</td>`).join('')}</tr>`,
     tb=(h,rows)=>`<table class="bst"><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.join('')}</table>`,info=[`造价 ${b.cost} 铜币`];
