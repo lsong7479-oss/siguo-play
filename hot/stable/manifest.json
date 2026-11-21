@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.14.1",
- "code": 288,
- "size": 22481898,
- "sha256": "1507376d1e49ba9f268a9cd23de7347abc70848bfa3e39325d9a72aec3cf1e98",
+ "ver": "0.14.1.1",
+ "code": 290,
+ "size": 22520293,
+ "sha256": "f47a24358dcbca728b9fb0f6e95bbc258efb58d984b7e684562ac4c682d6814c",
  "minLoader": 1,
- "sig": "ZPTIGlHmJAKIrY4XQzw+1m1xbTj6ieorU7k+2DlfsMkc5RZgjyUr04Mv1MTFBidBat+4LF1FMm30gjHyD8FvaA==",
- "note": "兵种进阶(骑兵营、神机营)、卡包、主堡强化、进阶鲁滨逊、第二卷熔岩之地篇和黄沙海岸篇",
- "at": "2026-11-21 02:10 UTC"
+ "sig": "8cyO45/f4GEBsL5LwWru50XXkZJ3RX+cK+9MD8Tu+3ZO3o/UeMikFIuqJoQ4FCfvvM6JNJgY7fNk14ipDTNCkw==",
+ "note": "火炮卡包、维修卡包、幸运卡包；卡包商店改版；卡牌图标；科研点按开放阶涨价；进阶加设计点",
+ "at": "2026-11-21 06:05 UTC"
 }
