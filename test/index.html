@@ -28499,6 +28499,35 @@ CFG.cardPack={carry:2, buy:{base:500, per:100, up:1.5, round:100, opts:3},
     inf:  {name:'步兵卡包', gold:500, desc:'步兵单位(士兵、精英)'},
     xbow: {name:'弩箭卡包', gold:500, desc:'射弩箭的单位(士兵、精英、英雄、建筑)'},
     gun:  {name:'火枪卡包', gold:500, desc:'火枪单位(士兵、精英、英雄、建筑)'},
+  },
+  // 卡牌效果的数值（逻辑 game/card_pack_fx.js；口径写在那个文件开头）；距离单位都是格，时间秒
+  fx:{
+    chg:0.5,                                   // 冲锋之势：冲锋伤害倍率 +0.5（加在最后的倍率上）
+    ride:{per:0.05, max:0.5},                  // 游击骑行：每移动 1 格下一击 +5%，至多 +50%（进出手方的伤害加成池子）
+    hoof:{kb:3, boss:0.5},                     // 铁蹄撼山：强制击退 3 格，小首领 / 首领 × 0.5
+    wedge:0.3,                                 // 锥形突破：无视 30% 减伤
+    crush:2,                                   // 碾压之势：缴械 2 秒
+    wound:{v:0.1, t:3, max:10},                // 铁骑连创：受到骑兵单位的伤害 +10% / 层，3 秒，至多 10 层
+    wall:{r:5, def:0.3, blk:0.3, t:3, cd:0.25},// 盾阵壁垒：半径 5 格，防御 / 格挡防御 ×(1 + 30%)，格挡率 +30%（和格挡卡相加），3 秒；同一名格挡者 0.25 秒内只触发一次
+    taunt:{r:5, arc:90, t:3, keep:8},          // 阵前嘲讽：面前 90° 扇形 5 格，3 秒；被嘲讽的亡灵离嘲讽者超过 keep 格就不再追
+    goose:0.5,                                 // 雁行守御：减伤 +50%（减伤池子）
+    holy:{every:30, pct:0.3},                  // 神圣屏障：每波开始和之后每 30 秒，共享护盾 = 步兵最大生命合计 × 30%
+    thorn:0.2,                                 // 荆棘战盾：反弹原伤害的 20%
+    steel:{pierce:5, dmg:0.25},                // 钢铁弩箭
+    boomB:{r:1.5, mul:0.5, burn:0.3, t:3},     // 爆破弩箭
+    glow:3,                                    // 荧光弩箭：显形 3 秒
+    rapid:{as:1.5, mag:0.5},                   // 速射机匣：攻速 ×1.5（独立乘区），弹匣 ×(1 + 50%) 四舍五入
+    iceB:{f:0.3, t:3},                         // 寒冰弩箭
+    frostB:3,                                  // 霜冻弩箭：冰冻 3 秒（只有第一次被弩箭命中时）
+    holyB:0.15,                                // 圣光弩箭：附带这一下伤害 15% 的神圣伤害
+    ltnB:{r:1, mul:2, cd:2},                   // 闪电弩箭
+    tox:{psn:0.3, hw:0.5, t:2},                // 剧毒弹丸
+    burst:{n:3, arc:90, range:3, mul:0.5},     // 爆裂子弹
+    ap:{def:0.3, dr:0.3},                      // 破甲子弹
+    powder:0.25,                               // 火药推进：射程 ×1.25
+    drum:{mag:0.5, rld:1.5},                   // 转轮弹匣
+    rend:{weak:0.3, t:2},                      // 撕裂子弹
+    corr:{v:0.05, gap:2, n:2, max:0.5},        // 蚀骨弹壳
   }};
 CFG.cards.push(
   // —— 骑兵卡包 ——
@@ -55404,7 +55433,7 @@ const ueDrP=(o,x)=>{if(!o.magic&&!o.dot&&x){if(x>0)UE_S+=x;else UE_N+=x}};   // 
 const ueDrM=(o,x)=>{if(o.magic&&!o.dot&&x){if(x>0)UE_S+=x;else UE_N+=x}};   // 法术减伤（持续伤害不算）
 // dmgPreE 之后：把亡灵卡、秘法 / 熔岩 / 道观、统一 buff 的减伤也加进池子，返回 ÷ 的分母（lf：不算 UE_S）
 function ueDen(i,o,lf,V){const t=E.t[i];if(!lf&&!o.dot)ueCardDr(o,E.fsNc[i]);if(G.afOn||EAF_MOD[t])arcDrE(i,o);if(ELV_MOD[t])lvDmg(i);if(EZS[t])zsDmg(i,o);
-  if(E.drXU[i]>G.time)ueDr(E.drX[i]);if(V!==null)ueDr(V[4]);if(mc2D.on)mc2Cut(o);if(o.t1DrP>0&&!o.dot)m2DrCut(o.t1DrP);if(o.m2Dr>0)m2DrCut(o.m2Dr);if(TL2_ON&&!o.dot&&!o.magic)tl2DrCut(o);return 1+Math.max(0,drK(UE_G+(lf?0:UE_S))+UE_N)}   // 1 + max(0, …)：v0.10.11（用户定）减伤池子合计最低 0，被削弱成负数（UE_N）也不变成加伤   // V：这只亡灵统一 buff 的合计（EBL[i].V，没有 = null）   // m2DrCut：M2 加，v0.10.11 无视 X 减伤（structs/evo3_m2）   // mc2Cut：v0.10.11 商人的破法 / 穿甲武备（game/merchant094）   // tl2DrCut：0.13.16 进阶退尔「狙击教官」火枪单位的物理减伤忽略（heroes/sniper2，同 t1DrP）
+  if(E.drXU[i]>G.time)ueDr(E.drX[i]);if(V!==null)ueDr(V[4]);if(mc2D.on)mc2Cut(o);if(o.t1DrP>0&&!o.dot)m2DrCut(o.t1DrP);if(o.m2Dr>0)m2DrCut(o.m2Dr);if(TL2_ON&&!o.dot&&!o.magic)tl2DrCut(o);if(CPF_DRC&&!o.dot)cpfDrCut(o);return 1+Math.max(0,drK(UE_G+(lf?0:UE_S))+UE_N)}   // cpfDrCut：0.14.1 卡包「锥形突破」「破甲子弹」无视 30% 减伤（game/card_pack_fx）   // 1 + max(0, …)：v0.10.11（用户定）减伤池子合计最低 0，被削弱成负数（UE_N）也不变成加伤   // V：这只亡灵统一 buff 的合计（EBL[i].V，没有 = null）   // m2DrCut：M2 加，v0.10.11 无视 X 减伤（structs/evo3_m2）   // mc2Cut：v0.10.11 商人的破法 / 穿甲武备（game/merchant094）   // tl2DrCut：0.13.16 进阶退尔「狙击教官」火枪单位的物理减伤忽略（heroes/sniper2，同 t1DrP）
 const ueBV=i=>{const B=EBL[i];return B&&B.id===E.id[i]?B.V:null};
 // v0.11.1 玄奘「唯识无境」（heroes/xuanzang）：光环里的英雄、士兵造成伤害时，比例 f 的伤害转化成「无视物理 / 法术减伤和防御、无来源的生命流失」
 //   XZ_ON：场上有玄奘、光环生效（heroes/xuanzang 的 feat 每帧设；没有玄奘时为 false，下面只多一次判断）；XZK = 这一下没转化的比例（1 = 不转化）；XZV = dealE_ 算出来的转化部分，交给 xzLoseE
@@ -55487,7 +55516,7 @@ function dealE_(i,raw,o){
       if(!o.sure&&E.blk[i]>0&&Math.random()<E.blk[i]){const brk=(o.brk||0)+(o.mix&&o.mix.blunt?o.mix.blunt*CFG.blockBreak.blunt:0);   // 格挡：钝击与「武技训练」可破格挡
         if(!(brk>0&&Math.random()<brk)){bk=E.shd[i];if(!o.noFx&&inViewPt(E.x[i],E.y[i]))addFx({k:'block',x:E.x[i],y:E.y[i]-14,life:0.4});if(HK.blockE.length)bk=hkFirst('blockE',i,o,bk)??bk}}   // blockE：0.13.10 朱雀王城（格挡反弹、护盾、玄盾的格挡防御，maps/zq_units）
       const D=E.def[i]*(E.xDt[i]>0?1+E.xD[i]:1)*(BPW.U[i]>G.time?1-BPW.df[i]:1)*(E.pdU[i]>G.time?1-E.pdF[i]:1)*(G.eDefK||1)-(E.ddT[i]>0?E.ddv[i]:0);   // eDefK：v0.10.0 斗神大殿「御武」
-      arm=Math.max(0,(Math.max(0,D)+bk-(o.pen||0)-spA-(m?pm.penM:pm.penR))*(1-(m?pm.penMP:pm.penRP))*(1-(o.penP||0))*(LF?1-LF.def:1)*(o.igDef>0?1-o.igDef:1)*(RUNE_ON&&o.hk?runeDefK(o,i):1)*(TL2_ON?tl2DefK(o):1))}   // tl2DefK：0.13.16 进阶退尔「狙击教官」火枪单位的物理穿透（heroes/sniper2）   // igDef：v0.10.3 无视防御（萝拉斗兵·斧）   // runeDefK：六阶符文「摧城」忽略重型 / 首领的物理防御（game/rune，用户 11-11）
+      arm=Math.max(0,(Math.max(0,D)+bk-(o.pen||0)-spA-(m?pm.penM:pm.penR))*(1-(m?pm.penMP:pm.penRP))*(1-(o.penP||0))*(LF?1-LF.def:1)*(o.igDef>0?1-o.igDef:1)*(RUNE_ON&&o.hk?runeDefK(o,i):1)*(TL2_ON?tl2DefK(o):1)*(CPF_DF?cpfDefK(o):1))}   // cpfDefK：0.14.1 卡包「破甲子弹」火枪单位无视 30% 物理防御（game/card_pack_fx）   // tl2DefK：0.13.16 进阶退尔「狙击教官」火枪单位的物理穿透（heroes/sniper2）   // igDef：v0.10.3 无视防御（萝拉斗兵·斧）   // runeDefK：六阶符文「摧城」忽略重型 / 首领的物理防御（game/rune，用户 11-11）
     else{const md0=(EMDEF[E.t[i]]+(E.fsNc[i]?0:em.mdef))*(E.fsNc[i]?1:1+em.mdefP)*(E.mdU[i]>G.time?1-E.mdP[i]:1)*(G.eMdefK||1);if(md0>0)arm=Math.max(0,(md0-pm.penS-(o.spen||0)-spA)*(1-pm.penSP)*(LF?1-LF.def:1)*(o.igDef>0?1-o.igDef:1)*(o.spenP>0?1-o.spenP:1)*(o.hk&&o.hk.f18cS&&o.hk.f18cS.spen>0?1-o.hk.f18cS.spen:1))}   // v0.5.4 亡灵卡「魔抗」：法术防御；v0.6.0 亡灵自己的法防 mdef（腐化圣堂、元素森林）
     if(HM_JT>0&&!o.magic)arm*=hmJtArm(o);   // 0.12.6 代理 X 加：隐士仙法「劲透」，英雄、士兵的物理伤害无视 50% 物理防御（game/hermit）
     dmg=defF(raw/am,arm)*am*k0;if(XZK<1){const d0_=k0*raw;if(d0_>0){if(dmg>0)xu*=dmg/d0_;else{xz0=d0_/xu;xu=0}}}}   // defF：v0.8.24 防御公式   // xu / xz0：v0.11.1 唯识无境的转化部分不吃防御（防御把这一下减成 0 时记下减之前的）
@@ -70923,11 +70952,11 @@ function hurtF(u,raw,o){if(HF_DEP>0&&!(raw>=1))return 0;eRevealHit(o);   // 用�
   if(u.isHero&&!o.dot)holyArmorHit(u);   // v0.4.0 守护板甲（概率回血）、圣者法袍（概率减冷却）
   if(u.arrowGuard&&!magic&&!o.melee&&!o.dot&&Math.random()<u.arrowGuard.p)dmg*=1-u.arrowGuard.red;   // v0.4.0 皇家明光甲：远程物理伤害概率大减
   const cPt=(eSrc?em.critPt:0)+(GKB_IN.size&&eSrc?gkbInP(u):0);if((o.crit||cPt>0)&&!defl&&!o.dot&&!tru){const T=(u.tough||100)*(pm.starTough>0?1+pm.starTough:1),pc=(o.crit>=1||T<=0?1:(100+100*(o.crit||0)+cPt-T)/T)/(1+((u.ax&&u.ax.critRes)||0));if(pc>0&&Math.random()<pc)hk*=1+Math.max(0,K_.critMul+(eSrc?em.critDmg:0)+(GKB_IN.size&&eSrc?gkbInD(u):0)-1-(u.isHero&&u.hxs&&u.hxs.gem?u.hxs.gem.cg:0))/(1+((u.ax&&u.ax.critDmgRes)||0))}   // hitPt / critPt / critDmg：v0.8.25 亡灵卡「精准命中」「残忍打击」   // 暴击率 = (暴击 − 韧性) ÷ 韧性（韧性默认 100：和原来概率一样）；暴击、偏斜都是命中系数，在减完防御后乘；v0.5.9 词条：暴击抗性、暴伤抗性   // hxs.gem.cg：0.13.5 守护宝石，暴击伤害 − 守护、至少 100%（game/gem）   // gkbInP / gkbInD：0.13.12 gkb 加，神之目「洞悉之目」被暴击率、暴击伤害 +（maps/gkb_boss）
-  const iwK=(u.plate&&G.iwV?1+G.iwV:1)*(u.meleeInf&&pm.infDef?1+pm.infDef:1)*HH_DFK;   // infDef：v0.6.01 卡「披坚执锐」近战步兵防御 +50%   // v0.6.0 霍恩被动「铜墙铁壁」：板甲步兵和他自己的防御、格挡防御 +X%   // HH_DFK：0.11.4 代理hh 加，黄虎「定四方」物防
+  const iwK=(u.plate&&G.iwV?1+G.iwV:1)*(u.meleeInf&&pm.infDef?1+pm.infDef:1)*HH_DFK*(CPF_WL&&cpfWl(u)?1+CPX().wall.def:1);   // CPF_WL：0.14.1 卡包「盾阵壁垒」防御、格挡防御 +30%（game/card_pack_fx）   // infDef：v0.6.01 卡「披坚执锐」近战步兵防御 +50%   // v0.6.0 霍恩被动「铜墙铁壁」：板甲步兵和他自己的防御、格挡防御 +X%   // HH_DFK：0.11.4 代理hh 加，黄虎「定四方」物防
   let bkD=0;   // v0.8.14 格挡：格挡防御加进防御一起扣（原来减完防御、乘完倍率之后再减）
-  const imF=u.imU>G.time,bkP=imF?1:Math.min(0.95,u.block*(1+pmNC(u,pm.block)));   // pmNC：v0.8.7 惩戒骑士移除了卡牌效果的士兵不吃减伤卡、格挡卡（maps/fallen）   // imF：v0.6.0「铁令动员」盾阵格挡率 100%、格挡防御 +X%；mBlk：v0.8.0 圣堂骑士、惩戒武士能格挡法术
+  const imF=u.imU>G.time,bkP=imF?1:Math.min(0.95,u.block*(1+pmNC(u,pm.block+(CPF_WL&&cpfWl(u)?CPX().wall.blk:0))));   // CPF_WL：0.14.1 卡包「盾阵壁垒」格挡率 +30%（和格挡卡相加）   // pmNC：v0.8.7 惩戒骑士移除了卡牌效果的士兵不吃减伤卡、格挡卡（maps/fallen）   // imF：v0.6.0「铁令动员」盾阵格挡率 100%、格挡防御 +X%；mBlk：v0.8.0 圣堂骑士、惩戒武士能格挡法术
   const hsP=!!(o.ep&&u.v8&&u.v8.projK<1);if(hsP)dmg*=u.v8.projK;   // v0.8.0 赤血禁卫「赤血屏障」：飞行物一定格挡，只受 50%（ep = 亡灵的飞行物）
-  if((!magic||u.mBlk||hsP)&&!o.dot&&!o.sure&&!tru&&!o.blast&&(hsP||bkP>0&&Math.random()<bkP)){blocked=true;if(u.fxBlockOn)fxBlock(u,o);if(u.v8&&u.v8.hs)v8Block(u);if(u.type==='bigShield')s1Block(u);if(u.bj)bjBlock(u);if(u.sht)shtBlock(u);bkD=u.shield*iwK*(imF?1+u.imB:1)*(!u.isHero&&pm.shieldDef>0?1+pmNC(u,pm.shieldDef):1);if(inViewPt(u.x,u.y))for(let k=0;k<3;k++)pp(u.x+u.facing*4,u.y-7,0,vr(-20,20),vr(-20,5),vr(5,15),120,0.25,'#f3d47c',1,0,0)}   // s1Block：S1 加，v0.10.11 重盾屏障（步兵营三阶）格挡护盾   // BJ 加：bjBlock 0.12.4 玄武卫格挡护盾（units/bianjun）   // SHT 加：shtBlock 0.13.12 魔盾卫格挡叠免伤、盾牌虚影（units/sht_hall）
+  if((!magic||u.mBlk||hsP||(CPF_MB&&cpfInf(u)))&&!o.dot&&!o.sure&&!tru&&!o.blast&&(hsP||bkP>0&&Math.random()<bkP)){blocked=true;if(CPF_BK)cpfBlk(u,raw,o);if(u.fxBlockOn)fxBlock(u,o);if(u.v8&&u.v8.hs)v8Block(u);if(u.type==='bigShield')s1Block(u);if(u.bj)bjBlock(u);if(u.sht)shtBlock(u);bkD=u.shield*iwK*(imF?1+u.imB:1)*(!u.isHero&&pm.shieldDef>0?1+pmNC(u,pm.shieldDef):1);if(inViewPt(u.x,u.y))for(let k=0;k<3;k++)pp(u.x+u.facing*4,u.y-7,0,vr(-20,20),vr(-20,5),vr(5,15),120,0.25,'#f3d47c',1,0,0)}   // s1Block：S1 加，v0.10.11 重盾屏障（步兵营三阶）格挡护盾   // BJ 加：bjBlock 0.12.4 玄武卫格挡护盾（units/bianjun）   // SHT 加：shtBlock 0.13.12 魔盾卫格挡叠免伤、盾牌虚影（units/sht_hall）   // CPF_MB / cpfBlk：0.14.1 卡包「法盾屏障」步兵格挡法术、「盾阵壁垒」「荆棘战盾」格挡后（game/card_pack_fx）
   const mk_=o.mk>1?o.mk:1;   // mk：v0.8.25 亡灵合并的这一下按单发扣防御、格挡，再 × 发数
   if(o.dot||OATH_WRATH||tru){}else if(!magic)dmg=mk_*defF(dmg/mk_,Math.max(0,(bkD+((u.def||0)+(u.isHero?0:TM.uDef||0)+(u.bfV?u.bfV[7]:0)-(u.corU>G.time?u.corN:0))*iwK*(u.wdDU>G.time?1+u.wdDf:1))*(1-Math.min(1,ePenPOf(eSrcT(o))+(G.ePenX&&eSrcT(o)>=0?G.ePenX:0)+(o.igDef||0)))-(o.src>=0&&G.ePen&&!ETC[E.t[o.src]].noMarshal?G.ePen:0)-ePenOf(eSrcT(o)))+(u.adU>G.time?u.adDef:0));else{const md=((u.mdef||0)+(u.isHero?0:TM.uMDef||0))*HH_DFK*(1-(G.eMPenX&&eSrcT(o)>=0?G.eMPenX:0))*(u.mdDU>G.time?1-u.mdDP:1);if(md+bkD>0&&!o.dot)dmg=mk_*defF(dmg/mk_,md+bkD)}   // defF：v0.8.24 防御公式   // uDef / uMDef：v0.8.12 科技「护甲训练」「抗魔训练」（士兵）   // v0.5.7 英雄法防（和亡灵的法术防御一样，持续伤害不算）   // HH_DFK：0.11.4 代理hh 加，黄虎「定四方」法防
   dmg*=hk;   // v0.8.14 命中系数（偏斜 / 暴击）在减完防御之后乘
@@ -71068,9 +71097,10 @@ function fireAng(x,y,ang,dist,w,dmg,o,rangePx,elev,pierceN,tid,hj){   // hj：�
   const spd=w.speed*16,aoe=(w.aoe||0)*16*(1+pm.aoe+(o.aoeAdd||0));
   if(w.lob){const tx=x+Math.cos(ang)*dist,ty=y+Math.sin(ang)*dist;
     projPush({k:w.proj,lob:true,x,y,x0:x,y0:y,x1:tx,y1:ty,gy0:y+8,t:0,T:w.lobT||Math.max(0.3,dist/spd),z:0,arc:Math.min(60,dist*0.35),dmg,o,aoe,w,tid:tid||0,hj:hj===undefined?-1:hj,ds:DS_CUR});return}
-  const pn=TL2_ON?tl2Pn(pierceN||w.pierce||1,o):pierceN||w.pierce||1;   // tl2Pn：0.13.16 进阶退尔「狙击教官」火枪单位最大穿透数 +100%（heroes/sniper2）
+  const pn0=TL2_ON?tl2Pn(pierceN||w.pierce||1,o):pierceN||w.pierce||1,pn=CPF_PN?cpfPn(pn0,w,o):pn0;   // cpfPn：0.14.1 卡包「钢铁弩箭」弩箭最大穿透数 +5（game/card_pack_fx）   // tl2Pn：0.13.16 进阶退尔「狙击教官」火枪单位最大穿透数 +100%（heroes/sniper2）
   projPush({k:w.proj,lob:false,x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,ang,dist:0,maxDist:(rangePx||dist)*CFG.combat.projMaxRange+16,
     bf:elev?dist*CFG.combat.elevatedIgnore:6,dmg,o,aoe,pierce:pn,hit:pn>1?new Set():null,w,kb:o.kb||0,tid:tid||0,th:hj===undefined?-1:hj,ds:DS_CUR,lx:undefined,ly:0});   // th：瞄准的那只的下标（0.14.1 贴墙的亡灵，projWallNear 用）   // lx / ly：v0.9.0 最后打中的位置（爆裂火药）
+  if(CPF_TWN)cpfTwin(x,y,ang,dist,w,dmg,o,rangePx,elev,pierceN,tid,hj);   // 0.14.1 卡包「双管火枪」：火枪单位再射一发（game/card_pack_fx）
 }
 // v0.3.2 丛林武器（英雄近战 / 弹道命中时）：tpsn 叠毒（毒刺；弹道走 applyStatus 的 tpsn）、vine 藤蔓缠绕（定身 root 秒，英雄每 cd 秒一次；精英、首领改为减速 50%）
 function jStatus(j,w,o){if(!E.alive[j])return;
@@ -71174,9 +71204,10 @@ function updateProj_(dt){
       if(p.kb&&E.alive[hj]){const l=Math.hypot(p.vx,p.vy)||1;knockback(hj,p.vx/l,p.vy/l,p.kb,0.18)}
       if(inViewPt(p.x,p.y))for(let k=0;k<2;k++)pp(p.x,p.y,0,vr(-20,20),vr(-10,10),vr(10,20),160,0.25,p.k==='ice'?'#bfefff':p.k==='arcane'?'#c9a8ff':'#ffd25a',1,0,0);
       if(p.hit){p.hit.add(E.id[hj]);if(--p.pierce<=0||pbk)p.dead=true}else p.dead=true;
+      if(CPF_PJ)cpfPj(p,hj,hx,hy,dd,p.dmg*hm*pbm);   // 0.14.1 卡包：弩箭、火枪单位的命中效果（game/card_pack_fx）
       if(p.w.lastBoom){if(p.dead)lastBoomAt(p,hx,hy);else{p.lx=hx;p.ly=hy}}   // v0.9.0 重弩炮塔「爆裂火药」：最后一次命中爆炸（structs/build090）
       continue}
-    if(p.dist>=p.maxDist){if(p.lx!==undefined&&p.w.lastBoom)lastBoomAt(p,p.lx,p.ly);if(p.aoe){explode(p.x,p.y+5,p.aoe,p.dmg,p.o,p.w,p.tid);if(p.w.frag)fragBurst(p.x,p.y+5,p)}if(p.wz)addZone(p.wz(p));p.dead=true}   // wz：v0.6.1 风刃飞到目标处形成旋风
+    if(p.dist>=p.maxDist){if(p.lx!==undefined&&p.w.lastBoom)lastBoomAt(p,p.lx,p.ly);if(CPF_PJ&&p.lx!==undefined)cpfPjEnd(p);if(p.aoe){explode(p.x,p.y+5,p.aoe,p.dmg,p.o,p.w,p.tid);if(p.w.frag)fragBurst(p.x,p.y+5,p)}if(p.wz)addZone(p.wz(p));p.dead=true}   // wz：v0.6.1 风刃飞到目标处形成旋风   // cpfPjEnd：0.14.1 卡包「爆破弩箭」飞完射程前最后打中的位置爆炸
     else if((p.k==='fire'||p.k==='arcane'||p.k==='holy')&&chance(0.6)&&inViewPt(p.x,p.y))pp(p.x,p.y,0,vr(-6,6),vr(-6,6),vr(2,8),0,0.4,p.k==='fire'?vpick(['#ff9a3c','#ffd25a']):p.k==='holy'?vpick(['#fff3c4','#f3d47c']):vpick(['#c9a8ff','#8f6ad8']),1,1,1);
   }
   compact(G.proj,pfLive);
@@ -72359,12 +72390,13 @@ function soldierMelee(s,j,poke){
   if(s.blust)bloodWave(s);const mD=M.dmg*(M.magic?1:tc6MelK(s))+drumA(s)*M.int,ax=(s.furyM||1)-1+fzHit(s)-1+(s.fDmg||1)-1+(s.fMel||1)-1+(s.blust?s.blK+bl*s.blust.dmg:0)+(s.assn&&ELIGHT[E.t[j]]?s.assn.light:0)+(s.v8?v8DmgX(s):0)+(s.uaX?uaMomK(s):0);let dmg=mD*unitDmgMul(c,s.statMul,s,!!M.magic,TM.uMelee+(s.meleeInf?pm.infDmg||0:0)+ax)*s.atkMul*mk;const bd=dmg;   // ax：v0.10.11（用户定，规则 2）这些「伤害 +X%」和别的伤害加成相加（原来各自单独乘）：陷阵之志 furyM、走火入魔、长枪之阵 / 铁骑突破 fDmg、智能芯片II 攻击者 fMel、嗜血屠戮、潜行刺杀打轻甲、惩戒武士的连击 / 杀戮意志（units/units080.v8DmgX）
   if(s.assn){if(Math.random()<s.assn.p)dmg*=s.assn.mul}   // v0.6.1 潜行刺杀   // auDm：v0.6.0 征服骑枪光环   // bd：v0.5.4 基础伤害（冲锋、隐身倍率之前；百分比灼烧的上限按它）
   const nqCf=s.nq?nqChgOn(s,poke):-1;   // NQ 加：0.13.7 天狼冲锋期间这一下按满速出手（冲锋倍率、冲锋附带的效果照常），出手后复原（units/nq_camp）
-  const chgOn=!!c.charge&&!poke&&(c.cavalry?s.cvFull:s.chg>=K_.chargeDist*16);if(chgOn)dmg*=(c.charge+(s.s2Chg||0)+(c.cavalry?TM.cavChgAdd||0:0))*(c.cavalry?1+pm.cavChg:1);if(!poke)s.chg=0;   // cavChgAdd：v0.8.1 科技「战马训练」冲锋伤害倍率 +X   // v0.4.6 骑兵：满速出手才算冲锋   // s2Chg：S2 加，v0.10.11 淬火骑枪改冲锋倍率（units/s2_camps）
+  const chgOn=!!c.charge&&!poke&&(c.cavalry?s.cvFull:s.chg>=K_.chargeDist*16);if(chgOn)dmg*=(c.charge+(s.s2Chg||0)+(c.cavalry?(TM.cavChgAdd||0)+CPF_CHG:0))*(c.cavalry?1+pm.cavChg:1);if(!poke)s.chg=0;   // cavChgAdd：v0.8.1 科技「战马训练」冲锋伤害倍率 +X   // v0.4.6 骑兵：满速出手才算冲锋   // s2Chg：S2 加，v0.10.11 淬火骑枪改冲锋倍率（units/s2_camps）   // CPF_CHG：0.14.1 卡包「冲锋之势」冲锋倍率 +0.5（game/card_pack_fx）
   const hc=s.hsC;if(hc){s.hsC=0;s.hsU=0}   // v0.6.0「隐秘之术」：隐身后第一次攻击必定暴击
   if(s.stealthed){if(c.stealth)dmg*=K_.stealthMul;if(!(s.jkSU>G.time))s.stealthed=false}s.calm=0;   // 隐身首击（×1.5，CFG.combat.stealthMul）只算忍者自己的隐身
   if(c.antiCav&&ETC[E.t[j]].cavalry)dmg*=s1AntiCav(s,c.antiCav);   // S1 加：s1AntiCav 反骑枪刃（三阶）×1.5 → ×2
   const o={pen:(M.pen||0)+TM.uPen+(s.fPen||0),crit:hc?1:(c.crit||0),critK:TM.uMCritV||0,critPt:s.critPt||0,hit:100+(s.hitAdd||0),critMul:TM.uMCDmg>0?(c.critMul||CFG.combat.critMul)+TM.uMCDmg:c.critMul,mix:s.mmix,brk:TM.uBreak,psn:psnFor(s),ua:1,atk:1,melee:1,fu:s,bd,am:dmg/Math.max(1e-6,mD*tc6SM(s)*(s.summon?1:uWave('atk'))*s.atkMul)};if(M.magic){o.magic=true;o.spen=(TM.uSpellPen||0)+(s.eIgn?999:0)}   // v0.8.22 修：这句原来被注释吞掉了，元素刀客的近战一直按物理打   // am：v0.8.14 增伤倍率（攻击 = 武器伤害 × 兵营等级 × 攻击倍率；其余加成先减防御再乘）   // v0.7.0 元素刀客：近战法术伤害；暗影之力无视防御   // ua / atk：v0.4.2 卡「灼烧」「淬毒」认这两个；melee / fu：v0.5.0 毒刺蝎回敬
   if(c.ignDef)s1IgnDef(s,o,bd/Math.max(1e-6,mD*mk));   // S1 加：v0.10.11 刺客、忍者 20% 概率无视 X 点物理防御（随伤害倍率）
+  if(CPF_SM&&chgOn&&c.cavalry)o.cpC=1;   // 0.14.1 卡包：冲锋命中（铁蹄撼山、碾压之势、铁骑连创，game/card_pack_fx）
   if(s.s3Sh)o.m2Dr=s.s3Sh.dr;if(s.uaX){uaMelO(s,o,chgOn);if(!poke)uaMomUse(s)}   // uaMelO：0.14.1 兵种进阶的破甲、冲锋无视减伤 / 防御；uaMomUse：蓄势用掉（units/unit_adv）   // S3 加：v0.10.11 暗影之刃无视减伤（engine/enemy.ueDen）
   let kills=0;
   if(s.nq&&s.nq.moon)kills=nqSweep(s,j,dmg,o);else if(s.uaX&&s.uaX.A.fan)kills=uaFan(s,j,dmg,o,M);else   // uaFan：0.14.1 疾刃骑兵扇形横扫（units/unit_adv）   // NQ 加：0.13.6 天狼月刃横扫（units/nq_camp）
@@ -72986,6 +73018,7 @@ function heroRecalc(h,fill){
   xnHeroHp(h,fill);   // 0.12.6 代理 H 加：希娜「龙之恩赐」英雄 / 精英的生命（heroes/xina）
   gemPost(h);   // 0.13.5 宝石：暴击、韧性、偏斜、暴伤、攻速、冷却、回血（game/gem）
   runePost(h);   // 0.13.6 符文：射程、视野、施法范围、破甲、嗜血、腾空中的飞行（game/rune）
+  if(CPF_TW)cpfHero(h);   // 0.14.1 卡包：弩箭 / 火枪英雄、精英的弹匣、射程（game/card_pack_fx）
   if(h.mhCut>0){h.mhBase=h.maxHp;h.maxHp=Math.max(1,h.maxHp-h.mhCut);if(h.hp>h.maxHp)h.hp=h.maxHp}   // v0.6.02 修复：腐化圣堂「断绝之力」削掉的生命上限，换武器 / 升主堡重算属性时原来会被抹掉，波次结束又加回去（上限变高）
 }
 // v0.6.3 全盛英雄（剧情里临时加入、玩家不能操控）：生命 ×hp、防御 / 法防 +、冷却时间 ×cd、技能参数按 CFG.story.prime.skills 放大
@@ -74741,7 +74774,7 @@ function wedgeFol(s,g,L,W,dt,spd,px,py,h,lv){const k=Math.min(CFG.formMove.gain,
   if(g.ph!=='form'&&s.cv>spd*0.55)wedgeHit(s,g,W);
   else if(s.atkCd<=0)ironPoke(s);
   s.aim=NaN;return true}
-function wedgeHit(s,g,W){const M=s.v8?v8MeleeP(s,-1):s.c.melee,dmg=M.dmg*unitDmgMul(s.c,s.statMul,s,false,TM.uMelee+(s.fDmg||1)-1)*s.atkMul*W.mul*(s.v8&&s.cvFull&&s.c.charge?(s.c.charge+(s.s2Chg||0)+(TM.cavChgAdd||0))*(1+pm.cavChg):1),h=s.hd||0,fx=Math.cos(h),fy=Math.sin(h),o={pen:(M.pen||0)+TM.uPen,mix:s.mmix,ua:1,atk:1,melee:1,fu:s,bd:dmg};   // s2Chg：S2 加，v0.10.11 淬火骑枪（units/s2_camps）
+function wedgeHit(s,g,W){const M=s.v8?v8MeleeP(s,-1):s.c.melee,dmg=M.dmg*unitDmgMul(s.c,s.statMul,s,false,TM.uMelee+(s.fDmg||1)-1)*s.atkMul*W.mul*(s.v8&&s.cvFull&&s.c.charge?(s.c.charge+(s.s2Chg||0)+(TM.cavChgAdd||0)+CPF_CHG)*(1+pm.cavChg):1),h=s.hd||0,fx=Math.cos(h),fy=Math.sin(h),o={pen:(M.pen||0)+TM.uPen,mix:s.mmix,ua:1,atk:1,melee:1,fu:s,bd:dmg,cpC:s.v8&&s.cvFull&&s.c.charge?1:0};   // s2Chg：S2 加，v0.10.11 淬火骑枪（units/s2_camps）   // CPF_CHG / cpC：0.14.1 卡包「冲锋之势」倍率、冲锋命中标记（game/card_pack_fx）
   // v0.8.0 赤血铁骑：满速时用骑枪，算冲锋倍率；fDmg = 铁骑突破的加伤（别的锥形阵是 1）
   eQuery(s.x,s.y,9,j=>{if(E.air[j]||g.hit.has(E.id[j]))return;g.hit.add(E.id[j]);dealE(j,dmg,o);if(!E.alive[j])return;
     eStun(j,W.stun);const side=(E.x[j]-s.x)*fy-(E.y[j]-s.y)*fx>=0?-1:1;knockback(j,-fy*side,fx*side,W.kb*16,0.2);
@@ -84985,11 +85018,11 @@ function towerW(s,add){   // add：v0.8.1 另外加进伤害加成里的（主�
   const tBA=s.bfV?s.bfV[BF_BA]:0;   // 塔楼的基础攻击（用户 11-09 定：基础攻击 +X% 一律加算）：武器攻击 × 塔等级 × (基础加成「锻造」 + 塔楼皮肤「攻击」atk + 三阶 bAtk（钢铁炮弹）+ 统一 buff 的 bAtk（格文、马歇尔）)，算在「攻击」里，不进 am
   const tRange=(gun?TM.gunRange:0)+(bow?TM.stringRange+(G&&G.gwK>0?G.gwK:0):0)+(stone?TM.stoneRange:0)+(mg?TM.arcRange||0:0);   // v0.4.6 投石塔不再吃「筋弦改良」；魔法塔「法阵延展」   // G.gwK：HA 加，v0.12 格文「风羽统帅」弓弩塔射程（heroes/ha_gwen）
   const evm=keep?1:((ev&&(ev.dmgMulSet||ev.dmgMul))||1)*(ev&&ev.dmgI?1+ev.dmgI:1),brt=keep?0:btv(t,'rate'),gx=mg?0:pm.gunDmg,rx=mg?0:pm.blastR+(pm.hiEx>0?F.hiEx.r:0);   // gx / rx：v0.8.23 建筑的爆炸伤害、范围（精制火药 + 高爆炸药）
-  return{w:techW(w,bow,stone),hit:100+(keep?0:bbA(t,'hit'))+(au?au.hit:0),critPt:keep?0:bbA(t,'crit'),dmg:(w.dmg+(w.magic&&!keep?mgcA(s):0)+(s.ydvAU>G.time?s.ydvA*w.int:0))*(keep?1+tBA:tlAtk(s)*(bbM(t,'atk')+(sk&&sk.atk||0)+(ev&&ev.bAtk||0)+tBA+(taA&&taA.bAtk||0)))*(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*(w.magic&&!keep?mgcK(s):1)*haFgS(s)*(taA?taDmgK(s,taA):1),bp,am:(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*haFgS(s)*(taA?taDmgK(s,taA):1),range:(w.range+(keep?0:s.cfg.lvRange?s.cfg.lvRange[L]:TL.rangeAdd[L]))*rvFold((ev&&ev.rangeMul||1)*(1+pm.towerRange+pm.rangeC+(au?au.range:0)+tRange+(G.caRng||0)+HH_RA+ZGX_W+GKB_RA+(sk&&sk.rng||0)+(FT.bRng>0?ftTowRng(s):0)+(NP2_R>0?np2TR(s):0))*(G.zsMu||1)*OATH_RK*HH_RK*(w.lob&&pm.lobRange>0?1+pm.lobRange:1))*16*(ENV.rngK||1),   // rvFold：0.12.6 射程加成合起来折算（engine/env）   // zsMu：v0.7.0 五神法「目」（独立乘区）   // evm：进化写成 × 的伤害倍率、写明独立的 dmgI（单独乘）；写「伤害 +X%」的 dmgAdd 在 bp 里相加（v0.10.11）   // udB：这座建筑伤害加成池子的 1 + 合计（engine/combat.ufAddK 用）   // haFgS：HA 加，v0.12 安德鲁「神锻」攻击（独立乘区）   // HH_RK：0.11.4 代理hh 加，御敌之策射程   // ydvA：0.12.5 第二轮代理 T，源能装置「源能动力」的攻击 +X × 武器倍率（structs/yn_tdev）   // sk.atk：0.13.6 塔楼皮肤「攻击 +」乘在攻击属性上（不进伤害加成 bp）   // ftTowRng：0.13.7 家族科技「弹道学说」火炮塔射程（game/fam_tech）   // np2TR：0.13.8 进阶拿破仑「弹道工程」「统帅全军」火炮塔射程（heroes/napoleon2）   // ZGX_W：0.13.10 诸葛闲「五行大阵」水的视野、射程、施法范围（heroes/zhugexian，诸葛闲代理加）
+  const T_={w:techW(w,bow,stone),hit:100+(keep?0:bbA(t,'hit'))+(au?au.hit:0),critPt:keep?0:bbA(t,'crit'),dmg:(w.dmg+(w.magic&&!keep?mgcA(s):0)+(s.ydvAU>G.time?s.ydvA*w.int:0))*(keep?1+tBA:tlAtk(s)*(bbM(t,'atk')+(sk&&sk.atk||0)+(ev&&ev.bAtk||0)+tBA+(taA&&taA.bAtk||0)))*(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*(w.magic&&!keep?mgcK(s):1)*haFgS(s)*(taA?taDmgK(s,taA):1),bp,am:(1+bp)*evm*(s.bfV?1+s.bfV[1]:1)*haFgS(s)*(taA?taDmgK(s,taA):1),range:(w.range+(keep?0:s.cfg.lvRange?s.cfg.lvRange[L]:TL.rangeAdd[L]))*rvFold((ev&&ev.rangeMul||1)*(1+pm.towerRange+pm.rangeC+(au?au.range:0)+tRange+(G.caRng||0)+HH_RA+ZGX_W+GKB_RA+(sk&&sk.rng||0)+(FT.bRng>0?ftTowRng(s):0)+(NP2_R>0?np2TR(s):0))*(G.zsMu||1)*OATH_RK*HH_RK*(w.lob&&pm.lobRange>0?1+pm.lobRange:1))*16*(ENV.rngK||1),   // rvFold：0.12.6 射程加成合起来折算（engine/env）   // zsMu：v0.7.0 五神法「目」（独立乘区）   // evm：进化写成 × 的伤害倍率、写明独立的 dmgI（单独乘）；写「伤害 +X%」的 dmgAdd 在 bp 里相加（v0.10.11）   // udB：这座建筑伤害加成池子的 1 + 合计（engine/combat.ufAddK 用）   // haFgS：HA 加，v0.12 安德鲁「神锻」攻击（独立乘区）   // HH_RK：0.11.4 代理hh 加，御敌之策射程   // ydvA：0.12.5 第二轮代理 T，源能装置「源能动力」的攻击 +X × 武器倍率（structs/yn_tdev）   // sk.atk：0.13.6 塔楼皮肤「攻击 +」乘在攻击属性上（不进伤害加成 bp）   // ftTowRng：0.13.7 家族科技「弹道学说」火炮塔射程（game/fam_tech）   // np2TR：0.13.8 进阶拿破仑「弹道工程」「统帅全军」火炮塔射程（heroes/napoleon2）   // ZGX_W：0.13.10 诸葛闲「五行大阵」水的视野、射程、施法范围（heroes/zhugexian，诸葛闲代理加）
     minRange:(w.minRange||0)*16,int:w.int/Math.max(0.2,1+TM.bRate-TM.bRateMinus+pm.bRateC+(bow?TM.boltRate:0)+brt+((ev&&ev.rateAdd)||0)+(mg?TM.arcRate||0:0)+(sk&&sk.aspd||0))/ENV.ourAtk/(ev?(1+(ev.rateI||0))*(ev.ovd&&s.ovU>G.time?1+ev.ovd.mul:1):1)/(taA&&(taA.link||taA.rateMul)?taRateK(s,taA):1),   // arcRate：v0.8.1 科技「法力爆发」   // rateI / ovd：v0.9.0 攻速独立乘区（精铁 / 精钢齿轮、精械改造、超能过载，structs/build090）
     mag:w.mag>0?(Math.floor(w.mag*(1+TM.bMag+(mg?TM.arcMag||0:0)+((ev&&ev.magPct)||0)))+pm.magAdd+(!keep&&s.cfg.lvMag?s.cfg.lvMag[L]:0)+((ev&&ev.magAdd)||0))*(taA&&taA.magMul||1):0,acc:pm.accuracy+(au?au.accuracy:0)+TM.bAcc,crit:TM.bCrit+(s.wk||0),   // magMul：0.13.14 转轮炮塔「弹链」弹匣 ×2（算完别的加成再乘）
     aoeAdd:(gun?TM.gunAoe:0)+rx+(ev&&ev.aoeMul?ev.aoeMul-1:0)+(sk&&sk.aoe&&w.aoe?sk.aoe/w.aoe:0),bx:gx>0?(1+bp+gx)/Math.max(0.05,1+bp):1,bxR:rx,frg:(gun||stone)&&pm.fragShot>0?1:0,spen:mg?(TM.arcPen||0)+((ev&&ev.spenAdd)||0):0,   // v0.8.22 卡「精制火药」：建筑的爆炸伤害（和别的伤害加成相加，所以按比值乘）、爆炸范围（魔法塔不算）
-    pierce:taA&&taA.pierceMul?taPierce(tskPierce(xb?xbPierce(towerPierce(w,L,ev)||techW(w,bow,stone).pierce||1):towerPierce(w,L,ev),w,sk),w,taA):tskPierce(xb?xbPierce(towerPierce(w,L,ev)||techW(w,bow,stone).pierce||1):towerPierce(w,L,ev),w,sk),penP:(ev&&ev.penP)||0,first:(ev&&ev.first)||0};   // v0.6.0 火枪塔：每级穿透 +1；进阶「穿甲」penP / pierceAdd、「狙击」first   // spen：v0.6.0 科技「秘法之源」魔法建筑的法术穿透
+    pierce:taA&&taA.pierceMul?taPierce(tskPierce(xb?xbPierce(towerPierce(w,L,ev)||techW(w,bow,stone).pierce||1):towerPierce(w,L,ev),w,sk),w,taA):tskPierce(xb?xbPierce(towerPierce(w,L,ev)||techW(w,bow,stone).pierce||1):towerPierce(w,L,ev),w,sk),penP:(ev&&ev.penP)||0,first:(ev&&ev.first)||0};if(CPF_TW)cpfTowW(s,T_);return T_;   // cpfTowW：0.14.1 卡包「速射机匣」「转轮弹匣」弹匣、「火药推进」射程（game/card_pack_fx）   // v0.6.0 火枪塔：每级穿透 +1；进阶「穿甲」penP / pierceAdd、「狙击」first   // spen：v0.6.0 科技「秘法之源」魔法建筑的法术穿透
 }
 // 0.13.1 塔楼皮肤「最大穿透数 +1」：0 = 用武器自己的 pierce
 const tskPierce=(p,w,sk)=>sk&&sk.pierce?(p||w.pierce||1)+sk.pierce:p;
@@ -85226,7 +85259,7 @@ function updateTowers(dt){
     if(s.mkA||s.mkC||s.wtOvU>G.time)bf*=(1+(s.mkA||0)+(s.mkC||0))*(s.wtOvU>G.time?1+s.wtOvK:1);if(s.bfV)bf*=Math.max(0.1,1+s.bfV[2]);   // v0.8.2 瓦特「精械重工」、超频芯片（相加）；「过载超频」独立乘区（heroes/heroes083.mkFrame）
     if(keep)updateKeepTurrets(s,dt,bf);
     if(s.recoil>0)s.recoil-=dt;
-    if(s.rel>0){s.rel-=dt*(1+TM.bReload+(!keep&&s.cfg.kind==='magic'?(TM.arcReload||0)+(pm.arcSeat>0?CFG.cardFx.arcSeat.reload:0):0))*ENV.ourSpd*bf*(s.bfV?Math.max(0.1,1+s.bfV[10]):1);if(s.rel<=0){s.rel=0;s.ammo=towerW(s).mag;s.cd=0}continue}
+    if(s.rel>0){s.rel-=dt*(1+TM.bReload+(!keep&&s.cfg.kind==='magic'?(TM.arcReload||0)+(pm.arcSeat>0?CFG.cardFx.arcSeat.reload:0):0))*ENV.ourSpd*bf*(s.bfV?Math.max(0.1,1+s.bfV[10]):1)*(CPF_TR?cpfTRl(s):1);if(s.rel<=0){s.rel=0;s.ammo=towerW(s).mag;s.cd=0}continue}   // cpfTRl：0.14.1 卡包「转轮弹匣」火枪塔装填速度 ×1.5（game/card_pack_fx）
     if(!keep&&HK.towerOff.length&&hkAny('towerOff',s))continue;   // swOn：v0.8.2 蒸汽重工的电磁干扰
    // v0.7.0 道观废墟：旱魃「灼土成牢」禁锢、不化骨「禁」   // v0.7.0 秘法工厂：电磁干扰、EMP、魔力风暴
     if(!keep&&HK.sAtkK.length){const L=HK.sAtkK;for(let j=0;j<L.length;j++)bf=L[j](s,bf)}   // 0.13.5 雾隐沼泽加：建筑攻速的地图倍率（毒坑上 ×0.7，maps/swamp.wzSAtkK；装填在上面，不吃）
@@ -89818,6 +89851,7 @@ function dimMigrate(M){const R={};for(const k of dimKeys())if(k in M&&M[k]>0){R[
 function applyCard(o){
   const c=o.c,m=o.mul,e=c.eff||{};
   const cap0=c.cap&&c.cap[0] in pm?pm[c.cap[0]]:0;
+  if(c.pk)cpfCard(c.id);   // 0.14.1 卡包：拿到卡包的卡，开关和钩子马上跟上（game/card_pack_fx）
   lymCardRec(o);   // 0.12.6 代理 M 加：龙神遗迹「龙之恩赐」记下这张卡实际加了多少（maps/lym_map，移除卡牌效果时原样减掉）
   const R=G.pmRaw||(G.pmRaw={});for(const k in e)if(k in pm)dimAdd(pm,R,k,hhCardV(o,haPowV(k,cardEff(o,k))));   // v0.8.22 折算   // haPowV：HA 加，v0.12 安德鲁「神锻之力」伤害、生命类卡面数值 +X%（heroes/ha_andrew）   // hhCardV：0.11.4 代理hh 加，运筹帷幄卡牌数值 +X%
   if(c.kcap)for(const k in c.kcap)if(k in pm){if(R[k]>c.kcap[k])R[k]=c.kcap[k];pm[k]=Math.min(pm[k],c.kcap[k])}   // kcap：v0.8.22 这个系列给的这一项最多多少（精制火药的爆炸范围、弱点瞄准的暴击伤害各 30%）
@@ -89979,6 +90013,7 @@ function loadRun(d){
   ecsLoad();   // 代理 EC 加：em 还原之后按新亡灵卡重建一次钩子（game/ecard_sg）
   G.weather=WX[d.weather]?d.weather:'sunny';G.dayIdx=dayIdxFor(d.wave+1);envApply();
   Object.assign(G,{heroCmd:d.heroCmd&&typeof d.heroCmd==='object'?d.heroCmd:{},wave:d.wave,gold:d.gold,kills:d.kills,kE:d.kE||0,kB:d.kB||0,picked:d.picked||[],epicked:d.epicked||[],globalMode:d.globalMode||'guard',towerMode:TWR_NAMES[d.towerMode]?d.towerMode:'free',heroMode:d.heroMode||(d.globalMode&&d.globalMode!=='guard'?'sortie':'guard'),heroModes:d.heroModes||{},autoNext:!!d.autoNext,meta:d.meta||G.meta,prepId:d.prepId||1,pickN:d.pickN||{},epickN:d.epickN||{},loot:d.loot||[],souls:d.souls||{},soulTgt:typeof d.soulTgt==='string'?d.soulTgt:G.soulTgt,soulPt:+d.soulPt||0,soulPtRaw:+d.soulPtRaw||0,soulDbl:d.soulDbl|0,soulSrcF:d.soulSrcF&&typeof d.soulSrcF==='object'?d.soulSrcF:{},bpPaid:!!d.bpPaid,bpGot:d.bpGot|0,skinFrag:d.skinFrag||{},mats:d.mats||{}});
+  cpfLoad();   // 0.14.1 卡包：pickN 还原以后按拿过的卡包卡设开关、重排钩子（士兵、英雄在下面才放出来；game/card_pack_fx）
   const list=[],mgtDrop=mgtFitLoad(d);let sk=-1;   // v0.6.02 存档里有已经不存在的建筑 / 陷阱种类就跳过（原来读档直接报错）；list 占位，士兵的兵营下标不错位   // mgtDrop：0.13.15.3 改成 2×2 后放不下的老魔光阵塔（structs/mgtower）
   for(const r of d.structs){sk++;if(mgtDrop.has(sk)){list.push(null);continue}if(r&&r.fu&&(r.type==='wall'||r.type==='gate'))r.type=r.type==='gate'?'taoGate':'taoWall';   // v0.7.3 老存档：道观废墟带标记的普通城墙 → 符墙
     if(!r||!BDEF[r.type]){list.push(null);continue}const s=makeStruct(r.type,r.tx,r.ty);s.level=r.level;s.xlv=r.xlv>0?r.xlv|0:0;s.maxHp=structMax(s);s.def=structDef(s);s.hp=Math.min(s.maxHp*1.2,r.hp);s.invested=r.invested;s.pid=r.pid||0;if(r.nu)s.noUpg=1;
@@ -90489,6 +90524,213 @@ feat('cardPack',{hooks:{
   start:()=>{G.cpk=G.prepEvOn?cpSt().on.slice(0,cpMax()):[]},   // 只有开着流浪商人的局能用（剧情、开拓、入侵战没有商人）
   save:o=>{if(G.cpk&&G.cpk.length)o.cpk=G.cpk},
   load:d=>{G.cpk=Array.isArray(d.cpk)?d.cpk.filter(k=>CPK().packs[k]):[]}}});
+
+// ---------- 0.14.1 卡包 28 张卡的效果（用户 2026-11-21 策划 part 1 第 4 条；卡的数据 data/card_pack.js（数值 CFG.cardPack.fx），框架 game/card_pack.js）----------
+// 卡效果按 cpOn(id)（这一局拿过，G.pickN）判断：拿到就生效、这一局一直有效；读档后照样生效（game/game.loadRun 还原 pickN 之后调 cpfLoad 重排钩子）。
+// 零开销：cpfSync 按拿过的卡设下面的开关（CPF_K 每张卡一个、CPF_* 内联开关）；没拿卡时开关全是 false / 0，特性 on() 为假，核心函数里只多读一次开关。
+//   cpfSync 在每次 hkBuild（特性 cpFx 的 on）、拿卡（game/game.applyCard → cpfCard）、读档（cpfLoad）时跑；拿卡后马上重排钩子、按新卡重算士兵的远程武器（soldierBt）和英雄的武器（heroRecalc）
+// 单位范围（用户 11-21：能用现成判定的就用；骑兵、步兵卡只对士兵和精英，英雄不算；弩箭、火枪卡士兵、精英、英雄、建筑都算）：
+//   骑兵单位 cpfCav：士兵 = 兵种带 cavalry（同家族科技「骑乘」、克烈的骑兵）；精英 = 骑兵职业（elAccT > 0，同王庭骑射 ftCav）；英雄不算
+//   步兵单位 cpfInf：士兵 = u.meleeInf（拿武器步行的近战兵：不骑马、不是远程，召唤物、宠物、假身、铁傀儡、维修工不算；同卡「披坚执锐」）；
+//     精英 = 转职页「轻步兵」「重步兵」两类职业（CFG.elite.jobCat 的 light / heavy，职业数据的 cat）、拿着近战武器、不是骑兵；新兵、远程、骑兵、特殊职业不算（Claude 定）
+//   弩箭单位 cpfBolt：士兵 = 远程武器的弹道是 bolt；英雄、精英 = 武器的弹道是 bolt（十字弩类）；建筑 = kind 'bolt' 或武器弹道 bolt（弩炮塔、重弩炮塔……）
+//   「弩箭」= 我方射出的 bolt 弹道（不管是谁射的），和弩箭单位射出的 bigbolt（弩炮塔、重弩炮塔的大弩箭；英雄技能扔的标枪也是 bigbolt，不算）：cpfBoltP / cpfBoltW
+//   火枪单位 cpfGun：家族科技的火枪判定 ftBits & FB_GUN（火枪兵种、拿火枪的英雄 / 精英（手炮类算火炮，不算）、火枪塔；主堡上的火枪手不算）；「火枪单位命中」= 它射出的弹道命中（近战不算，Claude 定）
+// 各卡怎么做（Claude 定的口径都在这里，汇报里单列）：
+//   冲锋之势 cpChg：+0.5 加在最后的冲锋倍率上（士兵：units/soldiers.soldierMelee 的 c.charge + 淬火骑枪 s2Chg + 战马训练 + 这张卡，兵种进阶的 +0.4 已经在 c.charge 里；
+//     锥形突破阵（units/formation.wedgeHit）同样；精英：dmgBaseE 里 ×(原倍率 + 马上征服者 + 0.5) ÷ (原倍率 + 马上征服者)）；没有冲锋倍率的骑兵（只加速的精英职业）不受影响
+//   游击骑行 cpRide：friend 钩子记骑兵单位走过的距离（一帧超过 1.5 格的瞬移不算），下一次造成伤害（不是持续伤害）时用掉：+5% × 整格数，至多 +50%，进出手方的伤害加成池子（UF_AX）；
+//     同一帧里的几下（横扫、劈砍多个目标）都吃这一份
+//   冲锋命中（下面三张卡）：士兵 = 冲锋倍率生效的那一下近战（soldierMelee 的 chgOn，给 o 标 cpC；锥形突破阵满速的骑枪一下），精英 = 冲锋职业冲锋就绪时的那一下近战（elChgOn）
+//   铁蹄撼山 cpHoof：强制击退（structs/evo2.forceKb：不看重型，看霸体、控制次数、同类抗性）3 格，小首领、首领 × 0.5；方向 = 骑兵 → 目标
+//   碾压之势 cpCrush：缴械 eDis 2 秒（走控制规则 engine/cc）
+//   铁骑连创 cpWound：冲锋命中后目标叠 1 层（刷新 3 秒，至多 10 层）；之后骑兵单位打它 ×(1 + 10% × 层数)，单独乘（只认骑兵单位出手，不进通用易伤池子）
+//   锥形突破 cpWedge：编入阵型（s.fg，units/formation）的骑兵士兵，造成的伤害无视目标 30% 减伤（engine/enemy.ueDen 的 m2DrCut，同进阶退尔「狙击教官」）
+//   盾阵壁垒 cpWall：步兵单位格挡（engine/combat.hurtF 的格挡分支）后，自身和半径 5 格内的步兵 3 秒内：防御、格挡防御 ×(1 + 30%)（同「披坚执锐」乘在 iwK 上）、
+//     格挡率 +30%（和格挡卡相加：格挡率 × (1 + 格挡卡 + 30%)，没有格挡的单位还是不能格挡）；不可叠加 = 刷新时间；同一名格挡者 0.25 秒内只触发一次
+//   法盾屏障 cpMBlk：步兵单位格挡判定也认法术伤害（同圣堂骑士 mBlk）；持续伤害、必中、爆炸照旧不能格挡
+//   阵前嘲讽 cpTaunt：步兵单位近战打中时（同一帧只算一次），以打的方向为中线，90° 扇形、5 格内的亡灵 3 秒内只打它（engine/enemy.pickFriend 的 ePick 钩子）；
+//     「没有被强制仇恨的」= 已经被别的步兵嘲讽着（3 秒内不转移）、或者在假身 / 盾阵 / 绝对防御这类吸引仇恨的范围里（tauntPick 挑得出目标）的不改；
+//     嘲讽者倒下、隐身、上墙（近战打不到）、离亡灵超过 8 格就不再生效
+//   雁行守御 cpGoose：编入阵型的步兵士兵减伤 +50%，进减伤池子（UF_DR）
+//   神圣屏障 cpHolySh：每波开始和之后每 30 秒，算一次全场步兵单位（士兵 + 步兵精英）最大生命合计 × 30% 当作共享护盾的池子（新的一层顶替旧的，不叠加）；
+//     任何步兵单位受到的伤害都先扣这个池子（dmgRedF 钩子，同进阶罗兰「圣光庇护」的共享护盾），打空为止；波次结束清掉；存档不存（每波重新给）
+//   荆棘战盾 cpThorn：步兵单位格挡时，把这一下原伤害（hurtF 的 raw）的 20% 打回攻击的亡灵（法术、穿刺类型，同装备「反伤」；o.src 是亡灵时才有）
+//   钢铁弩箭 cpSteel：所有弩箭最大穿透数 +5（engine/combat.fireAng）；弩箭直接命中的伤害 +25%，进出手方的伤害加成池子（爆炸、附带的伤害不算）
+//   爆破弩箭 cpBoomB：一支弩箭用完穿透数的那一下（同重弩炮塔「爆裂火药」lastBoom），或飞完射程前最后打中的位置，在半径 1.5 格内爆炸（吃范围加成），
+//     伤害 = 这一发弩箭伤害的 50%（爆炸照常中心 100%、边缘 50%），灼烧每秒 = 爆炸伤害的 30%，3 秒
+//   荧光弩箭 cpGlow：命中后 3 秒内显形、显示在视野里（同精英技能「破隐」：E.rvU / rvT / gr，强隐身也照出来）
+//   速射机匣 cpRapid：弩箭单位攻速 ×1.5（士兵、英雄 fAtkK 钩子；建筑 sAtkK 钩子，只乘攻击间隔），弹匣 ×1.5 四舍五入（1 → 2；士兵改远程武器、英雄改 ws、建筑改 towerW 的 mag）
+//   寒冰弩箭 cpIceB：命中后冰霜减速 30% 3 秒（frostE）
+//   霜冻弩箭 cpFrostB：每只亡灵第一次被弩箭命中时冰冻 3 秒（eFrz，走控制规则；按亡灵编号记，一只只冻一次）
+//   圣光弩箭 cpHolyB：命中时另外造成这一下（进伤害公式之前）15% 的神圣法术伤害（同家族科技「火焰兵器」的附带火焰）
+//   闪电弩箭 cpLtnB：命中点落雷，半径 1 格内造成这一发 200% 的闪电法术伤害；每个射手（士兵、英雄、建筑各算各的）2 秒一次
+//   剧毒弹丸 cpTox：中毒每秒 = 这一下实际伤害的 30%、禁疗 50%（来源 cpTox，各来源相乘），2 秒
+//   爆裂子弹 cpBurst：从命中点向弹道前方 90° 扇形均匀散出 3 颗子弹（−45°、0°、+45°），射程 3 格，各造成这一发 50% 的伤害、各打 1 个、不打刚命中的那只（同火枪塔「霰弹」）；
+//     散出的子弹不再散射，也不触发双管
+//   破甲子弹 cpAP：火枪单位造成的物理伤害（所有伤害，不只子弹）物理防御 ×(1 − 30%)（同 tl2DefK）、无视 30% 减伤（m2DrCut，同 tl2DrCut）
+//   双管火枪 cpTwin：火枪单位每射出一发弹道（fireAng，含散弹；霰弹、破片、爆裂子弹散出来的不算），紧挨着再射一发一样的（不耗弹匣）
+//   火药推进 cpPowder：火枪单位射程 ×1.25（士兵改远程武器、英雄改 ws.range、建筑乘在 towerW 算好的射程上）；士兵的视野不够时跟着放大
+//   转轮弹匣 cpDrum：火枪单位弹匣 ×1.5 四舍五入，装填速度 ×1.5（士兵、英雄 fRldK 钩子；建筑乘在 structs/structs.updateTowers 的装填上）
+//   撕裂子弹 cpRend：统一 buff 的虚弱 30%（id cpRend，再中只刷新时间、不叠加），2 秒
+//   蚀骨弹壳 cpCorr（Claude 的理解，待用户确认）：命中后 2 秒、4 秒各让目标物理减伤 −5%（ueDrP 的负数，进减伤池子；物理直接伤害才算），减下去的一直留着（到它死），合计至多 −50%；
+//     「不可叠加」= 正在跑的那一轮不另开一轮，再被命中只把剩下的次数补回 2 次（计时不重来）——一直被火枪打就每 2 秒 −5%，20 秒到 −50%
+const CPX=()=>CFG.cardPack.fx;
+const CPF_K={cpChg:false,cpRide:false,cpHoof:false,cpWedge:false,cpCrush:false,cpWound:false,cpWall:false,cpMBlk:false,cpTaunt:false,cpGoose:false,cpHolySh:false,cpThorn:false,
+  cpSteel:false,cpBoomB:false,cpGlow:false,cpRapid:false,cpIceB:false,cpFrostB:false,cpHolyB:false,cpLtnB:false,cpTox:false,cpBurst:false,cpAP:false,cpTwin:false,cpPowder:false,cpDrum:false,cpRend:false,cpCorr:false};
+// 内联开关（核心函数直接读）：CPF_CHG 冲锋倍率加多少；SM 士兵近战标冲锋命中；WL 盾阵壁垒；MB 法盾；BK 格挡钩子；DRC ueDen 无视减伤；DF 破甲防御；PN 弩箭穿透；TWN 双管；
+//   PJ 弹道命中钩子；TW towerW / 士兵远程武器 / 英雄武器要改；TR 建筑装填
+let CPF_CHG=0,CPF_SM=false,CPF_WL=false,CPF_MB=false,CPF_BK=false,CPF_DRC=false,CPF_DF=false,CPF_PN=false,CPF_TWN=false,CPF_PJ=false,CPF_TW=false,CPF_TR=false;
+let CPF_ANY=false,CPF_G=null,CPF_PEND='',CPF_TWI=false,CPF_U=new WeakMap();   // CPF_PEND：applyCard 时 pickN 还没 +1，先当这张卡拿到了；CPF_TWI：双管正在补射（不再补）；CPF_U：单位 → 状态
+// 亡灵（按下标，配编号 E.id 核对）：连创层数 / 到期、霜冻过的编号、嘲讽（编号、到期、嘲讽者）、蚀骨（编号、已减多少、还剩几次、下次时刻；CPF_CL 正在跑的下标）
+const CPF_WI=new Int32Array(ECAP),CPF_WN=new Uint8Array(ECAP),CPF_WU=new Float64Array(ECAP),CPF_FZ=new Int32Array(ECAP);
+const CPF_TI=new Int32Array(ECAP),CPF_TU=new Float64Array(ECAP),CPF_TF=new Array(ECAP).fill(null);
+const CPF_CI=new Int32Array(ECAP),CPF_CV=new Float32Array(ECAP),CPF_CN=new Uint8Array(ECAP),CPF_CT=new Float64Array(ECAP),CPF_CL=[];
+const CPF_SH={v:0,mx:0,nt:0};   // 神圣屏障的池子：剩下、给的时候多少、下次给的时刻
+const CPF_HOLY_O={magic:true,mix:{holy:1},noFx:true,sure:true,cpX:1},CPF_THORN_O={magic:true,mix:{pierce:1},noFx:true,cpX:1},CPF_LTN_MIX={lightning:1};   // cpX：卡包自己附带 / 反弹的一下，不再触发卡包效果
+const CPF_SHOT_W={proj:'bullet',speed:24,spread:0,mix:{pierce:1}};
+let CPF_BOOM_W=null,CPF_REND_E=null;
+function cpfReset(){CPF_WI.fill(0);CPF_WN.fill(0);CPF_FZ.fill(0);CPF_TI.fill(0);CPF_TF.fill(null);CPF_CI.fill(0);CPF_CV.fill(0);CPF_CN.fill(0);CPF_CL.length=0;CPF_SH.v=0;CPF_SH.mx=0;CPF_SH.nt=0;CPF_U=new WeakMap()}
+// 按拿过的卡设开关；返回这一局有没有卡包的卡
+function cpfSync(){const K=CPF_K;let any=false;for(const id in K){const v=cpOn(id)||CPF_PEND===id;K[id]=v;if(v)any=true}
+  if(CPF_G!==G){CPF_G=G;cpfReset()}
+  if(!CPF_BOOM_W){const X=CPX();CPF_BOOM_W={burn:{dps:0,dpsP:X.boomB.burn,t:X.boomB.t}};CPF_REND_E={weak:X.rend.weak}}
+  CPF_ANY=any;CPF_CHG=K.cpChg?CPX().chg:0;CPF_SM=K.cpHoof||K.cpCrush||K.cpWound;CPF_WL=K.cpWall;CPF_MB=K.cpMBlk;CPF_BK=K.cpWall||K.cpThorn;CPF_DRC=K.cpWedge||K.cpAP;CPF_DF=K.cpAP;
+  CPF_PN=K.cpSteel;CPF_TWN=K.cpTwin;CPF_PJ=K.cpBoomB||K.cpGlow||K.cpIceB||K.cpFrostB||K.cpHolyB||K.cpLtnB||K.cpTox||K.cpBurst||K.cpRend||K.cpCorr;CPF_TW=K.cpRapid||K.cpDrum||K.cpPowder;CPF_TR=K.cpDrum;
+  return any}
+// game/game.applyCard：拿到卡包的卡（pickN 还没 +1）
+function cpfCard(id){const tw0=CPF_TW;CPF_PEND=id;try{cpfSync();   // hkBuild 里会再跑 cpfSync：CPF_PEND 要一直留到重排、重算完
+    if(G.phase==='wave'){const g=G;setTimeout(()=>{if(G===g)hkBuild()},0)}else hkBuild();   // 同 game/ecard_sg：战斗中别在钩子遍历到一半时重排（到时候 pickN 已经 +1）
+    if(CPF_TW||tw0)cpfRefit()}finally{CPF_PEND=''}}
+function cpfLoad(){if(cpfSync())hkBuild()}   // game/game.loadRun：pickN 还原之后（士兵、英雄还没放出来）
+// 弹匣、射程类的卡：现有的士兵重算远程武器（同 heroes/napoleon2.np2SolAll），英雄重算武器
+function cpfRefit(){const L=G.soldiers;for(let k=0;k<L.length;k++){const s=L[k];if(s.dead||!s.c||!(s.rg||s.c.ranged))continue;const am=s.ammo;soldierBt(s);s.ammo=s.rg?Math.min(am,Math.max(0,s.rg.mag)):0;
+    if(CPF_K.cpPowder&&s.rg&&s.rg.range>0&&!s.rgr)s.vision=Math.max(s.vision||0,soldierVision(s.c,s.rg))}
+  rescaleHero()}
+// ================= 单位分类 =================
+const cpfSrc=o=>o.hk||o.fu||o.su||DS_CUR;   // 出手方（同家族科技、狙击教官）
+const cpfCav=u=>u.isHero===true?!!(u.elite&&u.elAccT>0):!!(u.c&&u.c.cavalry);
+const CPF_EI=new WeakMap();   // 精英 → 是不是轻步兵 / 重步兵职业（一局里职业不变）
+function cpfInf(u){if(u.isHero===true){if(!u.elite||u.elAccT>0||!u.ws||u.ws.cls!=='melee')return false;let r=CPF_EI.get(u);
+    if(r===undefined){const e=elById(u.elite),J=e&&EL().jobs[e.job];r=!!J&&(J.cat==='light'||J.cat==='heavy');CPF_EI.set(u,r)}return r}
+  return u.meleeInf===true}
+const cpfBolt=u=>u.isHero===true?!!(u.ws&&u.ws.proj==='bolt'):u.rg?u.rg.proj==='bolt':!!(u.cfg&&(u.cfg.kind==='bolt'||(u.cfg.weapon&&u.cfg.weapon.proj==='bolt')));
+const cpfGun=u=>!!u&&(ftBits(u)&FB_GUN)!==0;
+const cpfBoltP=p=>p.k==='bolt'||(p.k==='bigbolt'&&cpfBolt0(p.o.hk||p.o.fu||p.o.su||p.ds));   // 这一发是不是弩箭（弹道）
+const cpfBoltW=(w,o)=>w.proj==='bolt'||(w.proj==='bigbolt'&&cpfBolt0(cpfSrc(o)));   // 射出去之前（engine/combat.fireAng）
+const cpfBolt0=u=>!!u&&cpfBolt(u);
+function cpfSt(u){let s=CPF_U.get(u);if(s===undefined){s={rx:u.x,ry:u.y,rm:0,rv:0,rt:-1,wl:0,wt:-9,tt:-9,lt:-9};CPF_U.set(u,s)}return s}
+const cpfWl=u=>{const s=CPF_U.get(u);return s!==undefined&&s.wl>G.time};   // engine/combat.hurtF：盾阵壁垒还在
+// ================= 伤害（dmgBaseE / afterHitE / dmgPreE）=================
+function cpfDmgB(i,d,o){if(o.dot||o.cpX||o.src>=0)return d;const u=cpfSrc(o);if(!u)return d;const K=CPF_K,X=CPX();
+  if(K.cpSteel&&PROJ_HIT&&PJ_P!==null&&PJ_P.o===o&&cpfBoltP(PJ_P))UF_AX+=X.steel.dmg;   // 弩箭直接命中（updateProj_ 里 dealE 用的就是 p.o）
+  if(!cpfCav(u))return d;
+  if(K.cpRide){const s=cpfSt(u);if(s.rt===G.time)UF_AX+=s.rv;else if(s.rm>=16){s.rv=Math.min(X.ride.max,Math.floor(s.rm/16+1e-9)*X.ride.per);s.rt=G.time;s.rm=0;UF_AX+=s.rv}}
+  if(K.cpChg&&u.isHero===true&&u.elChgOn&&o.melee&&u.elChg&&u.elChg[0]>0){const S=u.d.elS,b=u.elChg[0]+(S&&S.f9Chg?S.f9Chg[0]:0);d*=(b+X.chg)/b}   // 精英冲锋：加在最后的倍率上
+  if(K.cpWound&&CPF_WI[i]===E.id[i]&&CPF_WN[i]>0&&CPF_WU[i]>G.time)d*=1+X.wound.v*CPF_WN[i];
+  return d}
+function cpfAftE(i,dmg,o){if(o.dot||o.cpX||o.src>=0||!o.melee)return;const u=cpfSrc(o);if(!u)return;const K=CPF_K,X=CPX();
+  if(K.cpTaunt&&E.alive[i]&&cpfInf(u))cpfTaunt(u,i);
+  if(!CPF_SM)return;const chg=u.isHero===true?!!(u.elite&&u.elChgOn&&u.elChg):o.cpC===1;if(!chg||!cpfCav(u))return;   // 精英：elJob（ord 520）的 afterHitE 才清 elChgOn，这里（ord 510）还看得到
+  if(K.cpWound){const id=E.id[i],on=CPF_WI[i]===id&&CPF_WU[i]>G.time;CPF_WI[i]=id;CPF_WN[i]=on?Math.min(X.wound.max,CPF_WN[i]+1):1;CPF_WU[i]=G.time+X.wound.t}
+  if(!E.alive[i])return;if(K.cpCrush)eDis(i,X.crush);
+  if(K.cpHoof&&E.alive[i]){const c=ETC[E.t[i]],dx=E.x[i]-u.x,dy=E.y[i]-u.y,l=Math.hypot(dx,dy)||1;forceKb(i,dx/l,dy/l,X.hoof.kb*16*(c.tier>=5||c.mini?X.hoof.boss:1))}}
+// 阵前嘲讽：面前扇形里的亡灵记下嘲讽者（ePick 钩子里挑它）
+let CPF_TA=0,CPF_TH=0,CPF_TX=0,CPF_TY=0,CPF_TT=0,CPF_TW_U=null;
+const cpfTauntQ=j=>{if(CPF_TI[j]===E.id[j]&&CPF_TU[j]>G.time){const v=CPF_TF[j];if(v!==null&&!v.dead)return}   // 已经被嘲讽着：3 秒内不转移
+  const dx=E.x[j]-CPF_TX,dy=E.y[j]-CPF_TY;if(dx*dx+dy*dy>64&&Math.abs(angDiff(Math.atan2(dy,dx),CPF_TA))>CPF_TH)return;   // 贴脸 4 像素内不看角度
+  if(G.tauntL&&G.tauntL.length&&tauntPick(E.x[j],E.y[j],true))return;   // 在别的吸引仇恨范围里（假身、盾阵、绝对防御）
+  CPF_TI[j]=E.id[j];CPF_TU[j]=CPF_TT;CPF_TF[j]=CPF_TW_U};
+function cpfTaunt(u,i){const s=cpfSt(u);if(s.tt===G.time)return;s.tt=G.time;const X=CPX().taunt;
+  CPF_TA=Math.atan2(E.y[i]-u.y,E.x[i]-u.x);CPF_TH=X.arc/2*DEG;CPF_TX=u.x;CPF_TY=u.y;CPF_TT=G.time+X.t;CPF_TW_U=u;eQuery(u.x,u.y,X.r*16,cpfTauntQ);CPF_TW_U=null}
+function cpfEPick(i,x,y,range,ranged){if(CPF_TI[i]!==E.id[i]||!(CPF_TU[i]>G.time))return;const u=CPF_TF[i];if(u===null||u.dead||fHid(u)||(!ranged&&(u.layer||u.fly)))return;
+  const dx=u.x-x,dy=u.y-y,R=CPX().taunt.keep*16;if(dx*dx+dy*dy>R*R)return;return u}
+// 蚀骨弹壳
+function cpfCorrPre(i,d,o){if(CPF_CI[i]===E.id[i]&&CPF_CV[i]>0)ueDrP(o,-CPF_CV[i]);return d}
+function cpfCorrHit(j){const X=CPX().corr,id=E.id[j];if(CPF_CI[j]!==id){CPF_CI[j]=id;CPF_CV[j]=0;CPF_CN[j]=0}if(CPF_CV[j]>=X.max-1e-9)return;
+  if(CPF_CN[j]===0){CPF_CT[j]=G.time+X.gap;CPF_CL.push(j)}CPF_CN[j]=X.n}
+function cpfCorrTick(){const L=CPF_CL;if(!L.length)return;const X=CPX().corr,t=G.time;let w=0;
+  for(let k=0;k<L.length;k++){const j=L[k];if(!E.alive[j]||CPF_CI[j]!==E.id[j]||CPF_CN[j]===0){CPF_CN[j]=0;continue}
+    if(t>=CPF_CT[j]){CPF_CV[j]=Math.min(X.max,CPF_CV[j]+X.v);CPF_CN[j]--;CPF_CT[j]+=X.gap}
+    if(CPF_CN[j]>0&&CPF_CV[j]<X.max-1e-9)L[w++]=j;else CPF_CN[j]=0}
+  L.length=w}
+// ================= 弹道 =================
+// engine/combat.fireAng：弩箭最大穿透数 +5
+const cpfPn=(pn,w,o)=>!(o.src>=0)&&cpfBoltW(w,o)?pn+CPX().steel.pierce:pn;
+// engine/combat.fireAng 末尾：双管火枪，紧挨着再射一发（横向错开 2 像素）
+function cpfTwin(x,y,ang,dist,w,dmg,o,rangePx,elev,pierceN,tid,hj){if(CPF_TWI||o.shot||o.cl||o.cpB||o.cpX||o.src>=0||w.proj==='frag')return;const u=cpfSrc(o);if(!u||!cpfGun(u))return;
+  CPF_TWI=true;try{fireAng(x-Math.sin(ang)*2,y+Math.cos(ang)*2,ang,dist,w,dmg,o,rangePx,elev,pierceN,tid,hj)}finally{CPF_TWI=false}}
+// engine/combat.updateProj_ 直接命中之后（穿透数已经扣过，p.dead = 这是最后一下）：raw = 这一发进伤害公式之前的伤害，dd = 实际伤害
+function cpfPj(p,j,x,y,dd,raw){const o=p.o;if(o.src>=0||o.cpX)return;const K=CPF_K,X=CPX();
+  if(cpfBoltP(p)){
+    if(E.alive[j]){
+      if(K.cpGlow){const u=G.time+X.glow;if(E.rvU[j]<u)E.rvU[j]=u;if(E.rvT[j]<X.glow)E.rvT[j]=X.glow;E.gr[j]=1}
+      if(K.cpIceB)frostE(j,X.iceB);
+      if(K.cpFrostB&&CPF_FZ[j]!==E.id[j]){CPF_FZ[j]=E.id[j];eFrz(j,X.frostB)}
+      if(K.cpHolyB&&raw>0)dealE(j,raw*X.holyB,CPF_HOLY_O)}
+    if(K.cpLtnB&&raw>0){const u=o.hk||o.fu||o.su||p.ds;if(u){const s=cpfSt(u);if(!(s.lt>G.time)){s.lt=G.time+X.ltnB.cd;cpfLtn(x,y,raw*X.ltnB.mul,o)}}}
+    if(K.cpBoomB){if(p.dead)cpfBoom(p,x,y);else{p.lx=x;p.ly=y}}
+    return}
+  const u=o.hk||o.fu||o.su||p.ds;if(!u||!cpfGun(u))return;
+  if(E.alive[j]){if(K.cpTox){if(dd>0)poisonE(j,dd*X.tox.psn,X.tox.t);bkEHw(j,X.tox.hw,X.tox.t,'cpTox')}
+    if(K.cpRend)bfAddE(j,'cpRend',CPF_REND_E,X.rend.t,{debuff:true});
+    if(K.cpCorr)cpfCorrHit(j)}
+  if(K.cpBurst&&!o.shot&&!o.cpB&&!p.lob)cpfBurst(p,j)}
+// 飞完射程：前面打中过、还没炸的弩箭在最后打中的位置爆炸（p.lx / ly 同爆裂火药）
+function cpfPjEnd(p){if(CPF_K.cpBoomB&&p.lx!==undefined&&!(p.o.src>=0)&&!p.o.cpX&&cpfBoltP(p))cpfBoom(p,p.lx,p.ly)}
+function cpfBoom(p,x,y){const B=CPX().boomB,d=p.dmg*B.mul,o=Object.assign({},p.o,{cpX:1,hd:d});explode(x,y,B.r*16*(1+pm.aoe),d,o,CPF_BOOM_W,p.tid)}
+function cpfLtn(x,y,d,o0){const R=CPX().ltnB.r*16,o={hk:o0.hk||null,fu:o0.fu||null,su:o0.su||null,magic:true,mix:CPF_LTN_MIX,noFx:true,cpX:1};disbandNear(x,y,R);eQuery(x,y,R,j=>{dealE(j,d,o)});
+  if(inViewPt(x,y)){addFx({k:'bolt',x:Math.round(x),y:Math.round(y),life:0.3,seed:(Math.random()*1e6)|0});sfx('zap',x,y)}}
+function cpfBurst(p,j){const X=CPX().burst,R=X.range*16,o=Object.assign({},p.o,{shot:1,cpB:1,first:0}),a0=Math.atan2(p.vy,p.vx),n=X.n,id=E.id[j],half=X.arc/2*DEG;
+  for(let k=0;k<n;k++){const a=a0+(n>1?(k/(n-1)*2-1)*half:0);fireAng(p.x,p.y,a,R,CPF_SHOT_W,p.dmg*X.mul,o,R/CFG.combat.projMaxRange,true,2);const q=G.proj[G.proj.length-1];if(q&&q.hit){q.hit.add(id);q.pierce=1}}}
+// ================= 弹匣、射程、装填、攻速 =================
+// game/fam_tech.ftSolBt 开头（units/soldiers.soldierBt 末尾，u.rg 定下来之后）：士兵的远程武器（按距离换武器的兵两把都改，同 ftSolRng）
+function cpfSolBt(u){if(!CPF_TW)return;const r=u.rg;if(!r)return;const K=CPF_K,X=CPX(),b=r.proj==='bolt',g=!b&&(ftBits(u)&FB_GUN)!==0;
+  const mk=b&&K.cpRapid?X.rapid.mag:g&&K.cpDrum?X.drum.mag:0,rk=g&&K.cpPowder?1+X.powder:1;if(!mk&&rk===1)return;
+  const sc=w=>w&&((w.mag>0&&mk>0)||(w.range>0&&rk!==1))?Object.assign({},w,{mag:w.mag>0?Math.round(w.mag*(1+mk)):w.mag,range:w.range>0?w.range*rk:w.range}):w,Q=u.nq,V=u.v8;
+  if(Q&&(Q.rgD||Q.rgL)){const d=Q.rgD,l=Q.rgL;Q.rgD=sc(d);Q.rgL=sc(l);u.rg=r===d?Q.rgD:r===l?Q.rgL:sc(r)}
+  else if(V&&V.w){const w0=V.w[0],w1=V.w[1];V.w=[sc(w0),sc(w1)];u.rg=r===w0?V.w[0]:r===w1?V.w[1]:sc(r)}
+  else u.rg=sc(r)}
+// heroes/hero.heroRecalc 末尾：英雄、精英的武器（ws 每次重算都是新对象）
+function cpfHero(h){if(!CPF_TW)return;const w=h.ws;if(!w)return;const K=CPF_K,X=CPX(),b=w.proj==='bolt',g=!b&&(ftBits(h)&FB_GUN)!==0;
+  if(w.mag>0&&((b&&K.cpRapid)||(g&&K.cpDrum)))w.mag=Math.round(w.mag*(1+(b?X.rapid.mag:X.drum.mag)));
+  if(g&&K.cpPowder&&w.range>0)w.range*=1+X.powder}
+// structs/structs.towerW 末尾：建筑（不含主堡；主堡上的箭塔 / 火枪手用的假建筑没有生命，不算）
+function cpfTowW(s,T){if(s.type==='keep'||!(s.maxHp>0))return;const K=CPF_K,X=CPX(),w=T.w,b=w.proj==='bolt'||s.cfg.kind==='bolt',g=!b&&(ftBits(s)&FB_GUN)!==0;
+  if(T.mag>0&&((b&&K.cpRapid)||(g&&K.cpDrum)))T.mag=Math.round(T.mag*(1+(b?X.rapid.mag:X.drum.mag)));
+  if(g&&K.cpPowder)T.range*=1+X.powder}
+const cpfTRl=s=>s.type!=='keep'&&(ftBits(s)&FB_GUN)!==0?CPX().drum.rld:1;   // structs/structs.updateTowers 的装填（CPF_TR 时才调）
+// ================= 步兵：格挡、阵型减伤、共享护盾 =================
+// engine/combat.hurtF 格挡分支（blocked 之后马上）
+function cpfBlk(u,raw,o){if(!cpfInf(u))return;const K=CPF_K,X=CPX();
+  if(K.cpThorn&&raw>0&&!o.cpX){const j=o.src;if(j>=0&&E.alive[j]&&(o.sid===undefined||E.id[j]===o.sid))dealE(j,raw*X.thorn,CPF_THORN_O)}
+  if(K.cpWall){const s=cpfSt(u),W=X.wall;if(s.wt>G.time-W.cd)return;s.wt=G.time;const R2=W.r*16*W.r*16,t=G.time+W.t,L=G.friends;
+    for(let k=0;k<L.length;k++){const f=L[k];if(f.dead)continue;const dx=f.x-u.x,dy=f.y-u.y;if(dx*dx+dy*dy>R2||!cpfInf(f))continue;cpfSt(f).wl=t}
+    if(inViewPt(u.x,u.y))addFx({k:'ring',x:Math.round(u.x),y:Math.round(u.y-8),r:10,life:0.35,c:'#f3d47c'})}}
+function cpfGooseF(u,dmg,o){if(u.meleeInf===true&&u.fg&&!u.fg.dead)UF_DR+=CPX().goose;return dmg}
+function cpfHolyGive(){const X=CPX().holy;let sum=0;for(const L of[G.soldiers,G.heroes])for(let k=0;k<L.length;k++){const u=L[k];if(!u.dead&&!u.npc&&cpfInf(u))sum+=u.maxHp>0?u.maxHp:0}
+  CPF_SH.v=CPF_SH.mx=sum*X.pct;CPF_SH.nt=G.time+X.every}
+function cpfHolyTick(){if(G.phase==='wave'&&G.time>=CPF_SH.nt)cpfHolyGive()}
+function cpfHolyRed(u,dmg,o){if(!(CPF_SH.v>0)||!(dmg>0)||!cpfInf(u))return dmg;const ab=dmg<CPF_SH.v?dmg:CPF_SH.v;CPF_SH.v-=ab;
+  if(inViewPt(u.x,u.y))pp(u.x+vr(-5,5),u.y-8,0,vr(-12,12),vr(-12,4),vr(4,12),0,0.3,'#fff3c4',1,0,1);return dmg-ab}
+// ================= 骑兵：游击骑行的移动距离 =================
+function cpfRideF(u,dt,isHero){if(u.dead||!cpfCav(u))return;const s=cpfSt(u),dx=u.x-s.rx,dy=u.y-s.ry;s.rx=u.x;s.ry=u.y;const d=Math.hypot(dx,dy);
+  if(d>0&&d<24){const R=CPX().ride,cap=R.max/R.per*16;s.rm=s.rm+d<cap?s.rm+d:cap}}   // 一帧超过 1.5 格 = 瞬移（传送、闪现），不算
+// ================= 登记 =================
+const cpfDrCut=o=>{if(o.src>=0||o.cpX)return;const u=cpfSrc(o);if(!u)return;   // engine/enemy.ueDen（CPF_DRC、不是持续伤害时才调）
+  if(CPF_K.cpAP&&!o.magic&&cpfGun(u))m2DrCut(CPX().ap.dr);
+  if(CPF_K.cpWedge&&u.fg&&!u.fg.dead&&u.c&&u.c.cavalry)m2DrCut(CPX().wedge)};
+const cpfDefK=o=>{if(o.src>=0)return 1;const u=cpfSrc(o);return u&&cpfGun(u)?1-CPX().ap.def:1};   // engine/enemy.dealE_ 物理防御（CPF_DF 时才调）
+feat('cpFx',{ord:510,on:()=>cpfSync()});   // 只负责在每次重排钩子时同步开关（要排在下面几个特性前面登记：它们的 on 读 CPF_K）
+feat('cpfDmg',{ord:510,on:()=>CPF_K.cpChg||CPF_K.cpRide||CPF_K.cpWound||CPF_K.cpSteel,hooks:{dmgBaseE:cpfDmgB}});   // 排在 ufAddE（999）前面：UF_AX 在那里乘
+feat('cpfAft',{ord:510,on:()=>CPF_K.cpHoof||CPF_K.cpCrush||CPF_K.cpWound||CPF_K.cpTaunt,hooks:{afterHitE:cpfAftE}});   // 排在 elJob（520）前面：精英的 elChgOn 还没清
+feat('cpfRide',{on:()=>CPF_K.cpRide,hooks:{friend:cpfRideF}});
+feat('cpfTaunt',{on:()=>CPF_K.cpTaunt,hooks:{ePick:cpfEPick}});
+feat('cpfGoose',{on:()=>CPF_K.cpGoose,hooks:{dmgInF:cpfGooseF}});
+feat('cpfHoly',{on:()=>CPF_K.cpHolySh,hooks:{waveStart:cpfHolyGive,tick:cpfHolyTick,dmgRedF:cpfHolyRed,waveEnd:()=>{CPF_SH.v=0;CPF_SH.mx=0}}});
+feat('cpfCorr',{on:()=>CPF_K.cpCorr,hooks:{dmgPreE:cpfCorrPre,tick:cpfCorrTick}});
+feat('cpfAs',{ord:900,on:()=>CPF_K.cpRapid,hooks:{fAtkK:(u,k)=>cpfBolt(u)?k*CPX().rapid.as:k,sAtkK:(s,k)=>s.type!=='keep'&&cpfBolt(s)?k*CPX().rapid.as:k}});   // 独立乘区（排在地图倍率后面）
+feat('cpfRl',{ord:900,on:()=>CPF_K.cpDrum,hooks:{fRldK:(u,k)=>cpfGun(u)?k*CPX().drum.rld:k}});
 
 // ---------- 0.12.6 准备阶段事件「隐士」与七种仙法（代理 X；数据 data/hermit.js 的 CFG.hermit，弹窗 / 战场详情 ui/hermit.js，头像 art/hermit_art.js）----------
 // 状态（G 上，存档走 hmEv 的 save / load）：G.hmSeen 这一局隐士来过（存档用它判断要不要写）、G.hmOpt 这一回合隐士带来的几种仙法（数组，还没答复；老存档是一个字符串）、
@@ -96641,7 +96883,7 @@ function ftTick(dt){FT.tt+=dt;const st=FT.tt;if(st<CFG.famTech.tick)return;FT.tt
   if(FT.druid>0){const L=G.soldiers,v=1+FT.druid;for(let k=0;k<L.length;k++){const s=L[k];if(s.dead||!s.summon||FT_DSU.has(s)||!(ftBits(s)&FB_DRU))continue;FT_DSU.add(s);s.statMul*=v;s.baseHp*=v;s.maxHp*=v;s.hp*=v;s.def=(s.def||0)*v;s.mdef=(s.mdef||0)*v}}
   if(FT.deep>0&&G.csW)for(const L of[G.heroes,G.soldiers])for(let k=0;k<L.length;k++){const u=L[k];if(u.dead||u.csSw||u.fly||u.npc||(ftBits(u)&FB_SEA))continue;u.csSw=true;FT_SWU.add(u)}}   // 非海洋单位可以进深海（同潮汐套装三件的 csSw；英雄换装备重算时会被清，下一次再给）
 // —— 不走钩子的几处 ——
-function ftSolBt(u){if(!(FT.on>0))return;   // units/soldiers.soldierBt 末尾：赤血统御的攻击（进士兵的伤害加成池子）、双防；元素秘法的施法范围（法术远程武器、治疗距离）
+function ftSolBt(u){if(CPF_TW)cpfSolBt(u);if(!(FT.on>0))return;   // units/soldiers.soldierBt 末尾：赤血统御的攻击（进士兵的伤害加成池子）、双防；元素秘法的施法范围（法术远程武器、治疗距离）   // cpfSolBt：0.14.1 卡包，弩箭 / 火枪士兵的弹匣、射程（game/card_pack_fx）
   if(FT.sol>0&&!FT_MECHC.has(u.c)){u.atkAdd+=FT.sol;u.mdef=(u.mdef||0)*(1+FT.sol);if(!FT_DW.has(u)){FT_DW.add(u);u.def=(u.def||0)*(1+FT.sol)}}   // mdef 每次 soldierBt 都从兵种数据重来；def 只在 makeSoldier 写，乘一次
   if(FT.cast>0){const k=1+FT.cast;if(u.rg&&u.rg.magic)u.rg=Object.assign({},u.rg,{range:u.rg.range*k});if(u.healer&&u.healer.range>0)u.healer=Object.assign({},u.healer,{range:u.healer.range*k})}
   if(FT.bRng>0&&u.rg&&u.rg.range>0&&(ftBits(u)&FB_CAN))ftSolRng(u)}   // 弹道学说：火炮士兵的远程武器射程 ×(1 + X)（同元素秘法改武器本身：加农炮、炮艇、对空炮卫各有自己的开火代码，都读 u.rg.range）
@@ -100460,7 +100702,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.0',GAME_TAG='测试版',GAME_CODE=287,GAME_BUILD="b508754+",GAME_BUILT=1795221513532,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.0',GAME_TAG='测试版',GAME_CODE=287,GAME_BUILD="cbe7831+",GAME_BUILT=1795222359019,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
