@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.2.3",
- "code": 299,
- "size": 23740063,
- "sha256": "bd1432ec24a49d885712ab27b9d4e35931623c62990f7f6e11345afa14e3e885",
+ "ver": "0.14.2.4",
+ "code": 300,
+ "size": 23741319,
+ "sha256": "f06223449c0127f9c4a85bfc80e0900f3217a0ceb53e85990c73da1dd423cf18",
  "minLoader": 1,
- "sig": "Bq/kJA5y16TGcZWM3++jXIfDD77e/TIIhyZARxZAzsj9QxYLQhhexzrKNxIJrNcNmAS6N11TnIDaFBFZCLEVDQ==",
- "note": "0.14.2.3 测试版",
- "at": "2026-11-22 18:06 UTC"
+ "sig": "C0DMruzTVlkF+gKabjTY19VeDHNYA+Cp0ixw9Z0q3pmIVP8KLup8LQe6OPwjtWWWC+Epkz69irYtMVCyw7v9Hw==",
+ "note": "0.14.2.4 测试版：战鼓 / 源能装置攻击加成不再重复乘等级、聚魔法阵按攻击间隔折算、雾沼炼毒不叠层、震爆魔光半径 +0.5",
+ "at": "2026-11-22 20:42 UTC"
 }
