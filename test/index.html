@@ -6906,7 +6906,7 @@ Object.assign(CFG.enemies,{
   ecMirrorKnight:{name:'镜像骑士',   tier:4, mini:true, smart:true, hp:22000, def:18, dmg:80, int:1.2, range:0, speed:1.2, dodge:0, aggro:5, bounty:80, cost:30, size:9, heavy:true, noLegion:true, resist:EC_RES,
                 ecMirrorK:{n:{easy:1, normal:1, hard:1, nightmare:2, inferno:2, abyss:99}}, mix:{slash:1},
                 note:'小首领：出场时复制输出最高的英雄——外形、普通攻击和随机 1 个技能，噩梦、炼狱 2 个，深渊全部'},
-  ecCurator:   {name:'藏馆老人',     tier:4, mini:true, smart:true, hp:18000, def:12, dmg:60, int:2.4, range:7, speed:0.7, dodge:0, aggro:7, bounty:80, cost:30, size:8, noLegion:true, resist:EC_RES, magic:true, proj:'eorb',
+  ecCurator:   {name:'藏馆老人',     tier:4, mini:true, smart:true, hp:18000, def:12, dmg:60, int:2.4, range:7, speed:0.95, dodge:0, aggro:7, bounty:80, cost:30, size:8, noLegion:true, resist:EC_RES, magic:true, proj:'eorb',   // 移速 0.7 → 0.95（0.14.2.3，用户 11-22 让改不合理的移速）：人形施法小首领，七阶施法亡灵一般 0.95、回声墓城别的小首领 1.2，没有写「走得慢」的设定
                 ecCurator:{barK:1.5}, mix:{shadow:1},
                 note:'小首领：在场时，全场非首领亡灵各有「最高层数 ÷ 2」次复活机会，向上取整；非首领亡灵身上的回声屏障减伤 ×1.5，和铭纹傀儡的相乘；打死他效果立刻消失'},
   // —— 大首领 ——
@@ -10744,7 +10744,7 @@ Object.assign(CFG.enemies,{
                  boom:{range:10, r:2.5, mul:2, sMul:3, delay:0.6, cd:10}}}, mix:{arcane:1},
                note:'精英，龙系的僵尸法师。普通攻击是法术弹(射程 8 格)；会四种魔法，各冷却 10 秒：激光(10 格，每秒 10 次 10% 伤害，持续 5 秒，同一个目标每次 +2% 伤害、至多 +100%)；'+
                  '雷电(10 格，150% 伤害，再弹到 2.5 格内至多 4 个单位各 100%，打中的电磁干扰 2 秒)；火环(自身 7.5 格，150% 火焰伤害、对建筑 ×2，士兵被击退到 7.5 格外)；爆破(10 格，预警后 2.5 格内 200% 伤害，对建筑 ×3)'},
-  lyRich:     {name:'氪金战士', tier:4, cls:'inf', lyU:true, armor:'plate', hp:80000, def:50, mdef:40, dmg:300, int:1, range:0, speed:1, dodge:0, aggro:4, bounty:45, cost:24, size:9, noLegion:true,
+  lyRich:     {name:'氪金战士', tier:4, cls:'inf', lyU:true, armor:'plate', hp:80000, def:50, mdef:40, dmg:300, int:1, range:0, speed:1.25, dodge:0, aggro:4, bounty:45, cost:24, size:9, noLegion:true,   // 移速 1 → 1.25（0.14.2.3，用户 11-22 让改不合理的移速）：人形近战精英，八阶近战亡灵一般 1.25、龙神遗迹步行亡灵一般 1.6；没有写「走得慢」（龙神侍卫、森龙写了慢的不动）
                lyK:{rich:{n:3, r:10, atk:0.3, dr:0.3, regen:0.05, self:{atk:2, dr:2, spd:2, hp:2}}}, mix:{slash:1},
                note:'精英(僵尸)。超高属性；出场随机拿七件宝物里的三件(选中它能看到)：1 周围 10 格友军伤害 +30%；2 周围 10 格友军减伤 +30%；3 周围 10 格友军每秒恢复 5% 最大生命；'+
                  '4 自身伤害 +200%；5 自身减伤 +200%；6 自身移速、攻速 +200%；7 自身生命上限 +200%(群体效果含自己，对首领无效)'},
@@ -11668,7 +11668,7 @@ Object.assign(CFG.enemies,{
             note:'首领(亡灵胡寒，双刃战斧)：濒死时 3 秒内不会倒下(冷却 10 秒)，损失生命的 80% 在 3 秒内回复，每损失 1% 生命增伤 +1.5%，受到伤害先扣护盾；'+
               '单兵救主——5 秒内承担周围 10 格内亡灵受到的全部伤害(承担的那份减半)，冷却 10 秒；殊死一搏——损失 2% 最大生命换 3% 的护盾，冲向 10 格内的敌人造成 300% 伤害并眩晕 4 秒，冷却 10 秒；'+
               '不屈潜能——5 秒内每秒损失 1% 最大生命、获得 1.5% 最大生命的护盾，冷却 15 秒；刘德清在场时跟在他身旁，替他承受伤害'},
-  zqbZhaoci:{name:'银枪·赵慈', tier:4, mini:true, armor:'plate', hp:170000, def:50, mdef:40, dmg:300, int:1, range:0, speed:1.3, dodge:0, aggro:7, bounty:80, cost:30, size:13, noLegion:true, unstop:true, resist:ZQB_RES,
+  zqbZhaoci:{name:'银枪·赵慈', tier:4, mini:true, armor:'plate', hp:170000, def:50, mdef:40, dmg:300, int:1, range:0, speed:1.8, dodge:0, aggro:7, bounty:80, cost:30, size:13, noLegion:true, unstop:true, resist:ZQB_RES,   // 移速 1.3 → 1.8（0.14.2.3，用户 11-22「龟速赵慈这种不合理的移速改成合适的值」）：0.14.2 朱雀王城把慢步兵按阶放大后胡寒 1.58、诸葛闲 1.42、刘德清 1.5，他 1.3 没吃到（spdMin 1.2）反而成了四位首领里最慢的；银甲长枪、带突进，和同样使枪的青龙卫一样 1.8
             mix:{pierce:1}, zqbZc:1,
             note:'首领(亡灵赵慈，银甲白袍长枪)：噩梦及以上每次普通攻击技能冷却 −1 秒；武神——每次放技能增伤、减伤 +10%(噩梦 15%、炼狱 20%、深渊 25%、死国绝境 30%)，10 秒，至多 10 层；'+
               '踏云决——向前突进 6 格(沿途 100% 伤害)，再 180° 横扫 2.5 格 200% 伤害，扫中就刷新冷却(至多 3 次)，冷却 6 秒；'+
@@ -19067,10 +19067,13 @@ CFG.smith.enhDmgAdd=0.005;
 //   成长线性、每轮提高增长率：第 m 轮（从 0 数）每波的成长 = 1 + 0.5m 份（第 2 轮 ×1.5、第 3 轮 ×2……，Claude 定，等机器人对「满养成打当阶 4 轮」再调）
 CFG.endless.budget.sq=0;CFG.endless.budget.perWave=16;
 CFG.enemyScale.roundStep=0.5;
-// 0.14.2.3（用户 11-22「亡灵的攻击跟着建筑涨」）地区阶的亡灵攻击倍率 tierAtk[地区阶 0～8]：乘在亡灵的攻击上（engine/enemy.enemyStats → eTierAtk；娱乐模式不乘，同 egNewOn）。
-//   来历（写进了《数值策划案》第 3.9 节，加新阶 / 改建筑等级曲线时照那里重算）：X 阶地区 ↔ 建筑 10X 级；倍率 = 建筑生命类基础加成（加固 / 体魄，CFG.olv.bSlopeHp）在 10X 级的倍率 ÷ 10 级的倍率，
-//   再 × (1 + 0.02 × (X − 1))——用户定「肯定按生命增长的曲线，高阶难度要稍微高一点」，一阶不变；九阶 = 4.11 × 1.16 ≈ 4.76
-CFG.enemyScale.tierAtk=[1,1,1,1,1,1,1,1,1];   // 11-22 用户：不是按现在的基础整体乘，而是「补差值」——口径待定（第 63 问），先全 1（= 没改之前）；原先算的整体乘法 [1,1.25,1.57,1.96,2.42,2.93,3.49,4.1,4.76]
+// 0.14.2.3（用户 11-22「亡灵的攻击跟着建筑涨」「不是按现在的基础涨，而是补差值」「防御按建筑攻击倍率增长速度的 50% 补差值」）地区阶的亡灵攻击 / 防御倍率 [地区阶 0～8]：
+//   tierAtk 乘在亡灵的攻击上、tierDef 乘在物理防御上（engine/enemy.enemyStats → eTierAtk / eTierDef；娱乐模式不乘，同 egNewOn）；法防按同样算法全是 1，没有单独的倍率。
+//   都只「补差」：倍率 = max(1, 目标 ÷ 现值)，已经够的阶是 1，一阶是 1。算法、每阶的现值 / 目标表写在《数值策划案》3.9，数是 node tools/stats/etier.js 算的（加新阶、改建筑等级曲线、加新地图 / 兵营以后重跑，按它最后两行改这里）。
+//   攻击：目标 = 一只亡灵打一名「这一阶的典型士兵」（这一阶和前一阶新解锁兵营的兵 × 兵营 Lv5 × 建筑生命类基础加成 10X 级）要几下，和一、二阶的平均（12.8 下）一样，高阶再 × (1 + 0.02(X − 1))
+//   防御：逐阶补——这一阶至少 = 上一阶（补过的）× (1 + 0.5 × 建筑攻击类基础加成从 10(X − 1) 级到 10X 级的涨幅)；现在五阶以前都够，六～九阶回落了（平均 25 / 11 / 22 / 28，五阶 30）
+CFG.enemyScale.tierAtk=[1,1,1.24,1,1.43,1.6,1.71,1.92,1.74];   // 11-22 先算的整体乘法 [1,1.25,1.57,1.96,2.42,2.93,3.49,4.1,4.76] 用户说过高、撤回
+CFG.enemyScale.tierDef=[1,1,1,1,1,1.34,3.27,1.8,1.55];   // 七阶 ×3.27：七阶各图亡灵平均防御只有 11（五阶 30），补到 37
 // 英雄之魄（用户定）：在别的地图击败首领拿到的，每位英雄每天最多 20 个；在它自己的来源地图拿的不限（game/meta.soulDayCap）
 CFG.drops.soulDay=20;
 // 攻速合并（用户定，《数值策划案》1.8）：快于每 0.1 秒一次的攻击合并成每 0.1 秒一下（core/core.mrgK）
@@ -24539,7 +24542,7 @@ Object.assign(CFG.shop.gear.bookSilver,{red:8500, ancient:14500, holy:24500});
 /* ---------- 0.14.2 朱雀王城亡灵增强（用户 11-22：「所有亡灵基础生命 +10/15/20/25%、攻击 +20/15/10/5%（一阶到四阶及以上），生命取整十、攻击取整；移速太低，一阶不变，二阶 0.9 → 1.1、三阶 → 1.3、四阶及以上 → 1.5」）----------
    按阶（tier 1～4，四阶及以上都用最后一档，含小首领、首领）：hp × (1 + hp[阶]) 取整十；dmg × (1 + atk[阶]) 取整；
    移速：Claude 定按比例放大「慢的步兵」——speed < spdMin 的乘 spd[阶] / 0.9（二阶 0.9 → 1.1、重甲 0.75 → 0.92；三阶 0.9 → 1.3、0.75 → 1.08；四阶 0.9 → 1.5、0.85 → 1.42），
-     保留兵种之间快慢的差别；本来就快的（骑兵 2.6～3、青龙 1.8、银枪赵慈 1.3）不动。只改 id 以 zq 开头的（星阳亡灵、四个首领）。 */
+     保留兵种之间快慢的差别；本来就快的（骑兵 2.6～3、青龙 1.8、银枪赵慈 1.3，0.14.2.3 改成 1.8，见 data/zq_boss）不动。只改 id 以 zq 开头的（星阳亡灵、四个首领）。 */
 CFG.zqBuff={hp:[0.10,0.15,0.20,0.25], atk:[0.20,0.15,0.10,0.05], spd:[0.9,1.1,1.3,1.5], spdMin:1.2};
 {const B=CFG.zqBuff;for(const k in CFG.enemies){if(!/^zq/.test(k))continue;const e=CFG.enemies[k],t=Math.min(4,Math.max(1,e.tier||1))-1;
   if(e.hp>0)e.hp=Math.round(e.hp*(1+B.hp[t])/10)*10;if(e.dmg>0)e.dmg=Math.round(e.dmg*(1+B.atk[t]));
@@ -57255,9 +57258,11 @@ const isTier3=()=>CFG.mapPages.findIndex(p=>p.maps.includes(G.map))>=CFG.enemySc
 // v0.8.24（用户定）借用别的地区的亡灵（模型、特效）时，数值按这张地图来：maps.X.eOver = {亡灵:{hp, dmg, def, int, speed, dodge, block, shield, lifesteal, note}}
 //   只盖 enemyStats 用到的基础数值（生命、攻击、防御、攻击间隔、移速、偏斜、格挡、吸血）；别的字段照原来的亡灵
 const EOV_C=new Map();function eOvC(ti){const MD=mapDef(),O=MD&&MD.eOver&&MD.eOver[ETYPES[ti]];if(!O)return ETC[ti];const k=G.map+':'+ti;let r=EOV_C.get(k);if(!r){r=Object.assign(Object.create(ETC[ti]),O);EOV_C.set(k,r)}return r}
-// 地区阶的亡灵攻击倍率（0.14.2.3，用户 11-22；数据 CFG.enemyScale.tierAtk，来历见那里的注释和《数值策划案》3.9）：娱乐模式（egNewOn 为假）不乘；按 G / 地图缓存，出怪时不用每只都查地图属于哪一阶
-let ETA_G=null,ETA_M='',ETA_V=1;
-function eTierAtk(){if(ETA_G!==G||ETA_M!==G.map){ETA_G=G;ETA_M=G.map;const A=CFG.enemyScale.tierAtk;ETA_V=A&&egNewOn()?A[Math.min(A.length-1,mapTierOf(G.map))]||1:1}return ETA_V}
+// 地区阶的亡灵攻击 / 防御倍率（0.14.2.3，用户 11-22「补差值」；数据 CFG.enemyScale.tierAtk / tierDef，来历见那里的注释和《数值策划案》3.9）：娱乐模式（egNewOn 为假）不乘；按 G / 地图缓存，出怪时不用每只都查地图属于哪一阶
+let ETA_G=null,ETA_M='',ETA_V=1,ETD_V=1;   // ETD_V：地区阶的亡灵防御倍率 tierDef（0.14.2.3，用户 11-22「防御按建筑攻击倍率增长速度的 50% 补差值」）
+function eTierUpd(){ETA_G=G;ETA_M=G.map;const S=CFG.enemyScale,A=S.tierAtk,D=S.tierDef,on=egNewOn(),t=mapTierOf(G.map);ETA_V=A&&on?A[Math.min(A.length-1,t)]||1:1;ETD_V=D&&on?D[Math.min(D.length-1,t)]||1:1}
+function eTierAtk(){if(ETA_G!==G||ETA_M!==G.map)eTierUpd();return ETA_V}
+function eTierDef(){if(ETA_G!==G||ETA_M!==G.map)eTierUpd();return ETD_V}   // 同 eTierAtk，乘在 enemyStats 的 def 上（取整到一位小数之前）
 function enemyStats(ti){
   const c=eOvC(ti),D=DIFF,n=Math.max(1,G.wave),S=CFG.enemyScale,elite=c.tier>=4;
   const reg=egNewOn(),gw=EGROW[ti],g=reg?egSum(n,S.regCycle):G.expand==null?endlessGrowth(n):n-1;let hpW=1+g*gw.hp;let dmgW=1+g*gw.dmg;   // 扩张战（2026-11-09 前线性）也走新规则；娱乐模式不会有 G.expand
@@ -57269,7 +57274,7 @@ function enemyStats(ti){
   if(c.tier===5&&MODE==='endless'){const cyc=Math.max(1,Math.floor(n/(mapDef().round||CFG.endless.bossEvery)));hp*=1+(cyc-1)*CFG.endless.bossHpPerCycle}
   // v0.5.4 亡灵卡的伤害加成按攻击方式：施法亡灵 sdmg、远程亡灵 rdmg、近战亡灵 mdmg（它的技能也跟着）；em.dmg 是 0.5.3 及以前的「锈刃」（老存档）；v0.11.0 两项相加（eCardAtk，原来相乘）
   const MK=c===ETC[ti]?mapDef().eStatK:null;if(MK)hp*=MK.hp;   // eOver 写的是这张地图的实际数值，不再乘地图修正   // eStatK：v0.7.0 地图整体的生命 / 伤害倍率（道观废墟，Claude 定）
-  return{hp,dmg:c.dmg*G.dDmg*dmgW*(1+eCardAtk(c))*(MK?MK.dmg:1)*eTierAtk(),ai:c.int/(D.atkFreq*(1+em.atkSpd+eAtkK(c))),sp:c.speed*D.speed*(1+em.speed)*16,def:Math.floor(Math.floor(c.def+em.def+1e-6)*(1+em.defP)*10+1e-6)/10,ls:(c.lifesteal||0)+em.lifesteal+(c.range>0||c.magic?0:em.mls),dodge:c.dodge||0,blk:c.block||0,shd:(c.shield||0)*G.dDmg*(1+(n-1)*CFG.enemyScale.shdGrow)};   // v0.8.25（用户：后期兵打不动）格挡盾值不再跟攻击一起成长（原来 × 攻击成长，第二轮起还乘轮次系数），改成每波 +shdGrow 线性、不乘轮次系数   // defP：v0.9.1 亡灵卡「盔甲强化」物理防御 %，乘在取整之后，保留一位小数（用户定；整数的话防御低的亡灵加了也没有）
+  return{hp,dmg:c.dmg*G.dDmg*dmgW*(1+eCardAtk(c))*(MK?MK.dmg:1)*eTierAtk(),ai:c.int/(D.atkFreq*(1+em.atkSpd+eAtkK(c))),sp:c.speed*D.speed*(1+em.speed)*16,def:Math.floor(Math.floor(c.def+em.def+1e-6)*(1+em.defP)*eTierDef()*10+1e-6)/10,ls:(c.lifesteal||0)+em.lifesteal+(c.range>0||c.magic?0:em.mls),dodge:c.dodge||0,blk:c.block||0,shd:(c.shield||0)*G.dDmg*(1+(n-1)*CFG.enemyScale.shdGrow)};   // v0.8.25（用户：后期兵打不动）格挡盾值不再跟攻击一起成长（原来 × 攻击成长，第二轮起还乘轮次系数），改成每波 +shdGrow 线性、不乘轮次系数   // defP：v0.9.1 亡灵卡「盔甲强化」物理防御 %，乘在取整之后，保留一位小数（用户定；整数的话防御低的亡灵加了也没有）   // eTierDef：0.14.2.3 地区阶的亡灵防御倍率，同 defP 乘在取整之后、保留一位小数之前
 }
 // v0.11.0（用户定，规则 2）亡灵造成的伤害的加算池子：亡灵卡的「伤害 +X%」（eCardAtk，已经乘在 E.dmg 里）+ 统一 buff 的 atk（engine/buff 乘进 E.dmg）+ 出手时另加的「伤害 +X%」（ueAtkK）
 //   ueAtkK(i, x)：亡灵 i 这一下另外「伤害 +x」进它的加算池子后的倍率 = (1 + 池子 + x) ÷ (1 + 池子)（池子没有别的项时就是 1 + x）；i < 0（来源已经不在）按 1 + x
@@ -104972,7 +104977,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.2.2',GAME_TAG='测试版',GAME_CODE=298,GAME_BUILD="66c6463+",GAME_BUILT=1795365082083,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.2.2',GAME_TAG='测试版',GAME_CODE=298,GAME_BUILD="e3bf965",GAME_BUILT=1795367024640,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
