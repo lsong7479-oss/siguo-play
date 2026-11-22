@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.14.1.1",
- "code": 290,
- "size": 22520293,
- "sha256": "f47a24358dcbca728b9fb0f6e95bbc258efb58d984b7e684562ac4c682d6814c",
+ "ver": "0.14.2",
+ "code": 294,
+ "size": 23068899,
+ "sha256": "c7e3d5b5fb27eb741f7146afce1df38fff60cbeec72042b03d0ac2e78be36393",
  "minLoader": 1,
- "sig": "8cyO45/f4GEBsL5LwWru50XXkZJ3RX+cK+9MD8Tu+3ZO3o/UeMikFIuqJoQ4FCfvvM6JNJgY7fNk14ipDTNCkw==",
- "note": "火炮卡包、维修卡包、幸运卡包；卡包商店改版；卡牌图标；科研点按开放阶涨价；进阶加设计点",
- "at": "2026-11-21 06:05 UTC"
+ "sig": "v/jZcKWlOn+0FYz6SpY6ytm5i5a+K5oBPDkdRnYYVYMO5Ukpu6WyEGl8mxbuR814717eI95QT7eTFKTnx2yNRA==",
+ "note": "0.14.2 稳定版",
+ "at": "2026-11-22 05:18 UTC"
 }
