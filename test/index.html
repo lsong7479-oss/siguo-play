@@ -19070,7 +19070,7 @@ CFG.enemyScale.roundStep=0.5;
 // 0.14.2.3（用户 11-22「亡灵的攻击跟着建筑涨」）地区阶的亡灵攻击倍率 tierAtk[地区阶 0～8]：乘在亡灵的攻击上（engine/enemy.enemyStats → eTierAtk；娱乐模式不乘，同 egNewOn）。
 //   来历（写进了《数值策划案》第 3.9 节，加新阶 / 改建筑等级曲线时照那里重算）：X 阶地区 ↔ 建筑 10X 级；倍率 = 建筑生命类基础加成（加固 / 体魄，CFG.olv.bSlopeHp）在 10X 级的倍率 ÷ 10 级的倍率，
 //   再 × (1 + 0.02 × (X − 1))——用户定「肯定按生命增长的曲线，高阶难度要稍微高一点」，一阶不变；九阶 = 4.11 × 1.16 ≈ 4.76
-CFG.enemyScale.tierAtk=[1,1.25,1.57,1.96,2.42,2.93,3.49,4.1,4.76];
+CFG.enemyScale.tierAtk=[1,1,1,1,1,1,1,1,1];   // 11-22 用户：不是按现在的基础整体乘，而是「补差值」——口径待定（第 63 问），先全 1（= 没改之前）；原先算的整体乘法 [1,1.25,1.57,1.96,2.42,2.93,3.49,4.1,4.76]
 // 英雄之魄（用户定）：在别的地图击败首领拿到的，每位英雄每天最多 20 个；在它自己的来源地图拿的不限（game/meta.soulDayCap）
 CFG.drops.soulDay=20;
 // 攻速合并（用户定，《数值策划案》1.8）：快于每 0.1 秒一次的攻击合并成每 0.1 秒一下（core/core.mrgK）
@@ -104972,7 +104972,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.2.2',GAME_TAG='测试版',GAME_CODE=298,GAME_BUILD="66c6463",GAME_BUILT=1795364807043,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.2.2',GAME_TAG='测试版',GAME_CODE=298,GAME_BUILD="66c6463+",GAME_BUILT=1795365082083,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
