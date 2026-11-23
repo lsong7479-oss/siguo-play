@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.2.5",
- "code": 301,
- "size": 23749811,
- "sha256": "663063d2811e53f4006124d3feb39e3792a3ff4667c422c1d762d69fd982ea8e",
+ "ver": "0.14.2.6",
+ "code": 302,
+ "size": 23754437,
+ "sha256": "20605a8e4a1344067841e1e2faa84ff1712d5a2679bfb4ccd3e610cc18c2f747",
  "minLoader": 1,
- "sig": "NMF/u9WqihV9kcAUmO8hTdJ1TicMIgELTKioumUqm350SOhoefcVkVqY5HDv8neIBqVGO1PIhfnvsmkS2NhiIA==",
- "note": "0.14.2.5 测试版：科技、建筑基础加成和进化加图标",
- "at": "2026-11-23 02:21 UTC"
+ "sig": "nBZvySI7kj31+daRWKXwUbaPLGj3yxRHVKZfif9pIO4ixskxzNTfeKth7qq2HFtcYMiEeSUCwafdAu5Oh20/Mg==",
+ "note": "0.14.2.6 测试版：开拓地一键清障、一键升级不再卡、进化图标校对",
+ "at": "2026-11-23 02:52 UTC"
 }
