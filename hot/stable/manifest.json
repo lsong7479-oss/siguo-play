@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.14.2.7",
- "code": 303,
- "size": 23754954,
- "sha256": "2e77c0bbc7504c827c71b1022978ced9a161a27b556b8988571d44db044137c2",
+ "ver": "0.14.2.8",
+ "code": 307,
+ "size": 23782720,
+ "sha256": "356dfc72c8ba6c77cfdaa58d55daf82efeabd23d388edaf92cf4ff718e26ce30",
  "minLoader": 1,
- "sig": "5+BIKO5GdJVlUZ/wt6ljhapZ4eYyjcKpKJ1sZ6fbdP0IaXJtiXdFKer5nRWY3fVxh6GQMeQ8NSi+kCWH5H/SSg==",
- "note": "0.14.2.7 稳定版：修圣火祭坛亡灵越打越多；亡灵攻防按地区阶补差、战鼓 / 源能装置加成修复、科技图标、开拓地一键清障",
- "at": "2026-11-23 04:28 UTC"
+ "sig": "7ozzyYEl0qzF/OR/sk83vKm8RC9aZN8xxzKGpPcB/6TnjyxwB5iCgJVMwWwD5onsbcZhkOLH/TY5yK+aZPlABQ==",
+ "note": "0.14.2.8 稳定版：修圣火祭坛亡灵越打越多、补经济卡包、新画面选项光影 / 水面反射 / 昼夜天气渐变、迷海涨水不卡",
+ "at": "2026-11-23 07:44 UTC"
 }
