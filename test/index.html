@@ -103773,7 +103773,7 @@ let VW=0,VH=0,DPR=1,zoom=4,zoomBase=4,zoomDelta=0,zoomMin=1,zoomMax=8,CX=0,CY=0,
 const cam={x:512,y:336,follow:true};
 const CLR_BG=C('#0f0d14');
 function resize(){
-  DPR=window.devicePixelRatio||1;VW=Math.round(innerWidth*DPR);VH=Math.round(innerHeight*DPR);cv.width=VW;cv.height=VH;ov.width=VW;ov.height=VH;
+  DPR=window.devicePixelRatio||1;VW=Math.round(innerWidth*DPR);VH=Math.round(innerHeight*DPR);cv.width=VW;cv.height=VH;ov.width=VW;ov.height=VH;OVP_OK=false;
   zoomBase=Math.max(1,Math.round(Math.min(VW,VH)/(TILE*17)));zoomMin=Math.max(1,Math.ceil(VW/MW),Math.ceil(VH/MH));zoomMax=Math.max(zoomMin,zoomBase+3);applyZoom();
   const m=$('#mini');if(m){m.width=Math.round(m.clientWidth*DPR)||176;m.height=Math.round(m.clientHeight*DPR)||110}
   checkRotate();
@@ -104385,7 +104385,7 @@ function drawSpawnMarks(){
 let ovUsed=false;
 // v0.5.8（用户：选中塔楼时攻击范围更明显）实线 + 半透明填充 + 外侧光晕；rgb = 'r,g,b'
 function ovOrder(x,y,r,rgb){const cx=X(x),cy=Y(y),R=r*zoom,t=G.time*4;octx.save();octx.setLineDash([4*zoom,3*zoom]);octx.lineDashOffset=-t*zoom;octx.strokeStyle=`rgba(${rgb},0.9)`;octx.lineWidth=Math.max(1,zoom);octx.beginPath();octx.arc(cx,cy,R,0,Math.PI*2);octx.stroke();octx.setLineDash([]);   // v0.5.9 指挥标记：虚线圈 + 十字
-  const k=Math.min(R*0.5,6*zoom);octx.beginPath();octx.moveTo(cx-k,cy);octx.lineTo(cx+k,cy);octx.moveTo(cx,cy-k);octx.lineTo(cx,cy+k);octx.stroke();octx.restore()}
+  const k=Math.min(R*0.5,6*zoom);octx.beginPath();octx.moveTo(cx-k,cy);octx.lineTo(cx+k,cy);octx.moveTo(cx,cy-k);octx.lineTo(cx,cy+k);octx.stroke();octx.restore();ovUsed=true}
 function ovRingS(x,y,r,rgb,fa){const cx=X(x),cy=Y(y),Rr=r*zoom;octx.beginPath();octx.arc(cx,cy,Rr,0,Math.PI*2);octx.fillStyle=`rgba(${rgb},${fa??0.08})`;octx.fill();
   octx.lineWidth=Math.max(5,Math.round(zoom*2.6));octx.strokeStyle=`rgba(${rgb},0.16)`;octx.stroke();octx.lineWidth=Math.max(2,Math.round(zoom*0.9));octx.strokeStyle=`rgba(${rgb},0.95)`;octx.stroke();ovUsed=true}
 // v0.10.0 方形范围（瞭望塔、聚魔法阵）：h = 半边长（像素）
@@ -104444,12 +104444,31 @@ function drawAimOverlay(){
   else if(A.slot>=0&&h.skills[A.slot]==='backstep'){ovBeam(h.x,hy,a+Math.PI,p.dist*16,8,F,S);ovBeam(h.x,hy,a,R,4,null,S)}
   else ovBeam(h.x,hy,a,R,12,F,S);
 }
-function drawOverlay(){
+// 叠加画布没变就不重画（0.14.2.4 之后的性能优化，用户 11-22）：战斗中叠加画布上通常只有「镜头外亡灵的方向箭头」，原来每帧整张清掉、每个箭头重画一遍
+//   （一次路径 + 两次 fillText）。箭头的位置只跟方向和画面大小有关、数字是那个方向的亡灵数，大多数帧和上一帧一模一样。现在：
+//   ① 先把这一帧的箭头算出来记在 OVA 里（ovArrowsPlan，不画）；② 画布上现在只有箭头（OVP_OK）、这批箭头和画着的那批（OVP）逐项相同 → 先让别的东西画
+//   （drawOverlayView：瞄准、范围圈、头顶名字……都没有的话什么也不会画），确实什么都没画就整张不动，这一帧不清不画；
+//   ③ 别的东西画了（画在了旧画面上）、或箭头变了 → 照原来的办法整张清掉重画。画出来的每一帧和原来一样。
+//   OVP_AGE：最多连着 30 帧不画，到了重画一次（画布万一被系统清掉、字体刚加载完，半秒内自己恢复）；resize 换画布大小会清空画布，那里把 OVP_OK 关掉
+//   ④ 战斗中箭头上的数字隔 OVA_DT 秒重数一次（原来每帧数；顶栏的数字也是 0.1 秒刷一次）：数一次要把全场亡灵过一遍，而且数字每帧都在跳的话上面 ② 就用不上。
+//      箭头的位置是固定的 16 个方向，不受影响；准备阶段的出兵口箭头跟着镜头走，照旧每帧算。画面大小、分屏、换了一局（OVA_G）变了马上重算
+const OVA_DT=0.1;
+const OVA=[],OVP=[];let OVA_N=0,OVA_T=0,OVA_G=null,OVA_VW=0,OVA_VH=0,OVA_NV=0,OVP_N=0,OVP_OK=false,OVP_AGE=0,OVP_K=0;   // OVA / OVP：每个箭头 6 项（视图、px、py、角度、颜色、文字）；OVP_K：画那一批时的 DPR、字号倍率
+function ovaPut(vk,px,py,a,col,label){const i=OVA_N++*6;OVA[i]=vk;OVA[i+1]=px;OVA[i+2]=py;OVA[i+3]=a;OVA[i+4]=col;OVA[i+5]=label}
+function ovaSame(){if(OVA_N!==OVP_N||OVP_K!==DPR*1000+UI_FK)return false;for(let i=OVA_N*6-1;i>=0;i--)if(OVA[i]!==OVP[i])return false;return true}
+function drawOverlay(dt){
+  if(G.phase!=='wave'||!(dt>0)||(OVA_T-=dt)<=0||OVA_G!==G||OVA_VW!==VW||OVA_VH!==VH||OVA_NV!==NVIEW){OVA_T=G.phase==='wave'?OVA_DT:0;OVA_G=G;OVA_VW=VW;OVA_VH=VH;OVA_NV=NVIEW;
+    OVA_N=0;for(let k=0;k<NVIEW;k++){useView(k);ovArrowsPlan(k,VIEWS[k])}useView(0)}
+  if(OVP_OK&&NVIEW===1&&OVP_AGE<30&&ovaSame()){ovUsed=false;drawOverlayView(0,VIEWS[0]);if(!ovUsed){ovUsed=OVA_N>0;OVP_AGE++;return}}   // 别的东西也没画：画布原样留着
   if(ovUsed){octx.clearRect(0,0,VW,VH);ovUsed=false}
+  let oth=false;   // 这一帧除了箭头还画了别的
   for(let k=0;k<NVIEW;k++){const V=VIEWS[k];useView(k);
     if(NVIEW>1){octx.save();octx.beginPath();octx.rect(V.x,V.y,V.w,V.h);octx.clip();ovUsed=true}
-    drawOverlayView(k,V);if(NVIEW>1)octx.restore()}
-  useView(0)}
+    drawOverlayView(k,V);oth=oth||ovUsed;
+    for(let i=0;i<OVA_N*6;i+=6)if(OVA[i]===k)ovArrow(OVA[i+1],OVA[i+2],OVA[i+3],OVA[i+4],OVA[i+5]);
+    if(NVIEW>1)octx.restore()}
+  useView(0);
+  OVP_OK=!oth;if(!oth){OVP_N=OVA_N;OVP_AGE=0;OVP_K=DPR*1000+UI_FK;for(let i=OVA_N*6-1;i>=0;i--)OVP[i]=OVA[i]}}
 function drawOverlayView(vk,V){
   if(G.phase==='prep'&&!G.noBuild&&!settleOn()&&!terrAll())drawTerrEdge();   // v0.6.33 常规 / 无尽 / 剧情：可建造范围的虚线
   if(vk===0)drawAimOverlay();
@@ -104473,16 +104492,19 @@ function drawOverlayView(vk,V){
     for(let i_4=0,a_4=G.heroes;i_4<a_4.length;i_4++){const h=a_4[i_4];if(h.dead||!h.stEl||!inViewPt(h.x,h.y))continue;   // 0.12.2（用户定）新剧情的剧情精英头上写名字
       if(!on){on=true;octx.font=`${Math.round(12*DPR*UI_FK)}px "ZCOOL QingKe HuangYou", sans-serif`;octx.textAlign='center';octx.textBaseline='bottom'}
       const x=X(h.x),y=Y(h.y-(h.elev||0)-28);octx.fillStyle='#0a090d';octx.fillText(h.stEl,x+DPR,y+DPR);octx.fillStyle='#d9e8b8';octx.fillText(h.stEl,x,y)}if(on)ovUsed=true}
+}
+// 这一帧视图 vk 的方向箭头：只算、不画，一个个记进 OVA（准备阶段指向下一波的出兵口；战斗中按 16 个方向数镜头外看得见的亡灵）。画在 drawOverlay 里
+function ovArrowsPlan(vk,V){
   const m=34*DPR,hw=V.w/2,hh=V.h/2,ox=V.x+hw,oy=V.y+hh;
   const edgeAt=a=>{const c=Math.cos(a),s=Math.sin(a),t=Math.min((hw-m)/Math.abs(c||1e-6),(hh-m)/Math.abs(s||1e-6));return[ox+c*t,oy+s*t]};
   const inV=(sx,sy)=>sx>=V.x&&sx<=V.x+V.w&&sy>=V.y&&sy<=V.y+V.h;
   if(G.phase==='prep'&&G.nextPlan){
-    for(const i of G.nextPlan.sides){const s=G.spawns[i],sx=X(s.x*16+8),sy=Y(s.y*16+8);if(inV(sx,sy))continue;const a=Math.atan2(sy-oy,sx-ox),[px,py]=edgeAt(a);ovArrow(px,py,a,'#ff9a3c',s.name)}
+    for(const i of G.nextPlan.sides){const s=G.spawns[i],sx=X(s.x*16+8),sy=Y(s.y*16+8);if(inV(sx,sy))continue;const a=Math.atan2(sy-oy,sx-ox),[px,py]=edgeAt(a);ovaPut(vk,px,py,a,'#ff9a3c',s.name)}
   }else if(G.phase==='wave'){
     ARC.fill(0);const N=16,add=(x,y,k)=>{if(!visAt(x,y))return;const sx=X(x),sy=Y(y);if(inV(sx,sy))return;const a=Math.atan2(sy-oy,sx-ox);ARC[Math.floor((a+Math.PI)/(Math.PI*2)*N)%N]+=k};
     for(let j=0;j<E.n;j++)if(E.alive[j]&&eVis(j)&&!(EXT_ON&&EX_S[j]!==1))add(E.x[j],E.y[j],1);   // EXT_ON：0.13 搜打撤睡着的亡灵不算（game/ext）
     for(let i_4=0,a_4=G.legions;i_4<a_4.length;i_4++){const L=a_4[i_4];add(L.x,L.y,L.n);}
-    for(let k=0;k<N;k++)if(ARC[k]){const a=(k+0.5)/N*Math.PI*2-Math.PI,[px,py]=edgeAt(a);ovArrow(px,py,a,'#e0533f',String(ARC[k]))}
+    for(let k=0;k<N;k++)if(ARC[k]){const a=(k+0.5)/N*Math.PI*2-Math.PI,[px,py]=edgeAt(a);ovaPut(vk,px,py,a,'#e0533f',String(ARC[k]))}
   }
 }
 // 分屏时玩家 2 的技能条（画在右半屏右下角）：小键盘 1 普攻、2/3/4 技能
@@ -104550,7 +104572,7 @@ function render_(dt){fuFrame();PJ_NL=PJ_N;PJ_N=0;SHDW=SET.shadows!==false;ZFX=SE
   if(split){R.clip(null);const D=Math.max(2,Math.round(2*DPR));if(side)R.rect((VW>>1)-(D>>1),0,D,VH,K.ink,1);else R.rect(0,(VH>>1)-(D>>1),VW,D,K.ink,1)}
   useView(0);
   R.end();
-  drawOverlay();
+  drawOverlay(dt);
   PS.render=PS.render*0.9+(performance.now()-t0)*0.1;
 }
 function drawWorld(dt,vk){
@@ -104996,7 +105018,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.2.4',GAME_TAG='测试版',GAME_CODE=300,GAME_BUILD="0a8baa2",GAME_BUILT=1795398191996,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.2.4',GAME_TAG='测试版',GAME_CODE=300,GAME_BUILD="0f700b2",GAME_BUILT=1795399510292,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
