@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.14.2.2",
- "code": 297,
- "size": 23186024,
- "sha256": "d9bbba04366a588e986b9c2ea4692565c480d43fe8a5f78724759d0498a7ff6b",
+ "ver": "0.14.2.7",
+ "code": 303,
+ "size": 23754954,
+ "sha256": "2e77c0bbc7504c827c71b1022978ced9a161a27b556b8988571d44db044137c2",
  "minLoader": 1,
- "sig": "aIUSKQC0B4gzHQPYX+oN+8vF+rQeJGvEUEnVOwl7vA7O16BXJi2I12vU0ywU5umSqzwv5J3KGVO8NWklGdAdSQ==",
- "note": "0.14.2.2 稳定版",
- "at": "2026-11-22 14:19 UTC"
+ "sig": "5+BIKO5GdJVlUZ/wt6ljhapZ4eYyjcKpKJ1sZ6fbdP0IaXJtiXdFKer5nRWY3fVxh6GQMeQ8NSi+kCWH5H/SSg==",
+ "note": "0.14.2.7 稳定版：修圣火祭坛亡灵越打越多；亡灵攻防按地区阶补差、战鼓 / 源能装置加成修复、科技图标、开拓地一键清障",
+ "at": "2026-11-23 04:28 UTC"
 }
