@@ -61952,11 +61952,12 @@ function facBackU(en,i){const cp=en.camp&&!en.camp.dead?en.camp:null,u=makeSoldi
   if(!friendPassPt(u.x,u.y)){const p=walkableNear(u.x,u.y,3);if(p){u.x=p.x;u.y=p.y}}
   G.soldiers.push(u);return u}
 // 我方士兵 → 新的亡灵（xf_ 亡灵种类；亡灵换过来的 xe_ 换回原来的种类）
+let FAC_NEWE=false;   // 0.14.2.7（用户 11-23「死国绝境第 22 波 400 只怪涨到 8000」）：facNewE 生成转过去的那只时为 true
 function facNewE(u,f,o){const c=u.c,ti=EIDX[c.xe||'xf_'+u.type];if(ti===undefined)return -1;
   const ec=ETC[ti],rg=u.rg,M=c.melee,bv=u.bfV,mg=!!(rg&&rg.magic);u.bfV=null;const k=unitDmgMul(c,u.statMul,u,mg,c.xe?0:rg?(mg?TM.uSpell||0:TM.uRanged||0):TM.uMelee||0)*(u.atkMul||1)*(rg&&!c.xe?u.rgMul||1:1);u.bfV=bv;   // 不含 buff；0.12.5 代理 K：科技「远程 / 近战 / 法术训练」、兵营进化的远程伤害倍率 rgMul 也带过去（原来漏了）
   const ai=c.xe?ec.int:rg?rg.int/(1+pmNC(u,pm.atkSpd)+(mg?0:pmNC(u,pm.rgAtk))+(mg?TM.uCast||0:TM.uRgSpd||0)):M?M.int/(1+pmNC(u,pm.atkSpd)+(TM.uMeleeSpd||0)):ec.int;   // 0.12.5 代理 K：攻速的卡牌、科技也带过去（同 units/soldiers 的 uShotInt / 近战间隔，不含临时加成）
   const st={hp:Math.max(1,u.maxHp),dmg:(c.xe?ec.dmg:rg?rg.dmg:M?M.dmg:ec.dmg)*k,ai,sp:c.speed*16,def:Math.max(0,(u.def||0)+(c.xe?0:TM.uDef||0)),ls:0,dodge:u.dodge||0,blk:u.block||0,shd:u.shield||0,fac:f};   // TM.uDef：0.12.5 代理 K，科技「士兵防御」（我方挨打时才加，原来没带过去）
-  const j=eSpawn(ti,u.x,u.y,st);if(j<0)return -1;
+  let j=-1;FAC_NEWE=true;try{j=eSpawn(ti,u.x,u.y,st)}finally{FAC_NEWE=false}if(j<0)return -1;   // FAC_NEWE：0.14.2.7 正在把我方单位换成亡灵阵营（地图的出怪钩子据此跳过，maps/sf_map 圣火祭坛的词缀）
   E.hp[j]=Math.max(1,Math.min(st.hp,u.hp));E.ng[j]=1;E.smn[j]=1;E.fcv[j]=1;if(!c.xe)E.lk[j]=UIDX[u.type]??-1;E.face[j]=u.facing||1;E.stun[j]=CFG.factions.turn.stun;
   const en={k:2,i:j,id:E.id[j],until:o.dur>0?G.time+o.dur:Infinity,type:u.type,camp:u.camp,ct:u.ct,sm:u.statMul,bh:u.baseHp,chp:u.chp,summon:u.summon,owner:u.owner,keepW:u.keepW,pet:u.pet,nm:u.mName,f0:u.fac,t0:u.fTint};
   FCVE.set(en.id,en);facPush(en);return j}
@@ -92826,7 +92827,7 @@ const SF_POOL={};   // 阶 → 圣火祭坛的亡灵种类下标（轮回换成�
 for(let t=0;t<ETYPES.length;t++){const k=ETYPES[t],c=CFG.enemies[k];if(!/^(sf|adl)[A-Z]/.test(k)||sfBossC(c))continue;(SF_POOL[c.tier]||(SF_POOL[c.tier]=[])).push(t)}
 const sfAfOk=i=>SF_AI[i]===E.id[i];
 function sfAfN(){const N=SF_AFC.n;let n=G.sg?N.sg:diffAtLeast('nightmare')?N.nightmare:N.base;if(DIFF&&DIFF.id==='abyss')n+=N.abyss;return n}
-function sfESpawn(i,c){SF_AI[i]=E.id[i];SF_AB[i]=0;SF_RC[i]=0;SF_UDT[i]=0;if(SF_NOAF||E.fac[i]!==FAC_U||ESTRU[E.t[i]]||c.tomb)return;
+function sfESpawn(i,c){SF_AI[i]=E.id[i];SF_AB[i]=0;SF_RC[i]=0;SF_UDT[i]=0;if(SF_NOAF||FAC_NEWE||E.fac[i]!==FAC_U||ESTRU[E.t[i]]||c.tomb)return;   // FAC_NEWE：0.14.2.7 被转成亡灵阵营的士兵（死国「征服之力」、圣火咒祭……engine/faction.facNewE）不带词缀：原来带了轮回、往生，死了还在圣殿换出一只真亡灵，亡灵越多转得越多，雪球滚到几千只
   const n=Math.min(4,sfAfN()),L=[0,1,2,3];for(let k=0;k<n;k++){const j=k+((Math.random()*(4-k))|0),t=L[k];L[k]=L[j];L[j]=t;sfAfSet(i,c,L[k])}}
 function sfAfSet(i,c,a){if(a===0){const k=sfBossC(c)?SF_AFC.long.boss:SF_AFC.long.k;E.mhp[i]*=k;E.hp[i]*=k;SF_AB[i]|=1}else if(a===1)SF_AB[i]|=2;else if(a===2)SF_AB[i]|=4;else SF_RC[i]=Math.min(SF_AFC.reinc.max,SF_RC[i]+1)}
 // 给亡灵加词缀（别的机制用：狂热信仰「轮回」+n 层，至多 reinc.max）；k = 'long' / 'rev' / 'undy' / 'reinc'
@@ -105134,7 +105135,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.2.7',GAME_TAG='测试版',GAME_CODE=304,GAME_BUILD="3e0c9ac",GAME_BUILT=1795408941367,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.2.7',GAME_TAG='测试版',GAME_CODE=304,GAME_BUILD="99314c2+",GAME_BUILT=1795410855268,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
