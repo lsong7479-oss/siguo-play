@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.2.7",
- "code": 304,
- "size": 23754954,
- "sha256": "78897f78a9f7907d29f522d04b3dfd8ff96ec14d4c65b7298f4fa1372a74a25c",
+ "ver": "0.14.2.8",
+ "code": 305,
+ "size": 23755155,
+ "sha256": "06ab20e1dbacfd307725b095178497248174eaae623f4293f8b0c2a325ff3386",
  "minLoader": 1,
- "sig": "ehYayjVjyUKZzPKGRijHVDSzrx7kPb2WI6b6+NDEF6cX3fPFtHbRQHJdKXKVDAGNnWQ0KY8+pniTTChAsQWjBA==",
- "note": "0.14.2.7 测试版：同 0.14.2.7 稳定版（修圣火祭坛亡灵越打越多）",
- "at": "2026-11-23 04:38 UTC"
+ "sig": "nCk/J/OXV6N4tlPG/8RWsjkR4Sc3LGcYtBcHK/f9S9099p+pVura3uzDmF7MgmDrmZtMYZ4v944OWS5pT4M5TA==",
+ "note": "0.14.2.8 测试版：圣火祭坛只有波次出的亡灵带词缀（修分裂、转化导致越打越多）",
+ "at": "2026-11-23 05:41 UTC"
 }
