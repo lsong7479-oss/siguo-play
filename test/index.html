@@ -31050,14 +31050,16 @@ CFG.vfx={
   // 光影：画面暗的时候（滤镜透明度 × (1 − 滤镜颜色的亮度) 超过 dark0，到 dark0 + dark1 时算全暗）在光源处给滤镜开亮洞、再叠一层光源颜色的柔光
   //   hole：光源中心去掉滤镜的比例；glow：柔光的强度；cell：光照图一格 = 屏幕上几个像素（越大越省，边缘越糊）；max：一帧最多画几个光源（多了后面的不画：先收英雄、建筑，再收火坑、落雷）
   //   r 半径（世界像素），c 颜色，i 强度（0～1），fl 闪烁幅度，g 柔光再乘几（没写 = 1；主堡、英雄主要是照亮，柔光淡一点，不然本体发白）
-  light:{dark0:0.05, dark1:0.2, hole:0.9, glow:0.25, cell:8, max:240,
-    keep:{r:90, c:'#ffc070', i:1, fl:0.04, g:0.5}, hero:{r:52, c:'#ffe8c8', i:0.75, fl:0, g:0.3},
-    fire:{r:56, c:'#ff9a40', i:0.9, fl:0.12}, torch:{r:48, c:'#ffb860', i:0.75, fl:0.1}, magic:{r:46, c:'#8ab8ff', i:0.7, fl:0.05}, frost:{r:42, c:'#a8e0ff', i:0.6, fl:0.03},
-    zap:{r:46, c:'#b8d8ff', i:0.75, fl:0.25}, arcane:{r:46, c:'#c89aff', i:0.7, fl:0.05}, holy:{r:50, c:'#fff0a0', i:0.8, fl:0.04}, poison:{r:36, c:'#9aff80', i:0.5, fl:0.05}, blood:{r:40, c:'#ff5050', i:0.55, fl:0.05},
-    pit:{k:1.6}, bolt:{r:130, c:'#dcecff', i:1}, zapFx:{r:30, c:'#b8d8ff', i:0.8},
-    // 建筑：按名字指定，没写的按伤害类型（mix 里占比最大的）；元素都没有的不发光
-    byType:{keep:'keep', watchtower:'torch', vcLamp:'torch', bcHeater:'fire', bloodPool:'blood', holyWall:'holy', holyCircle:'holy', holyFlameTower:'holy', mgTower:'arcane', radarBase:'magic', magCircle:'arcane', laserTower:'arcane', repairCenter:'torch'},
-    byMix:{fire:'fire', lightning:'zap', frost:'frost', arcane:'arcane', holy:'holy', poison:'poison'}},
+  //   用户 11-23：只有部分建筑发光、柔和低亮度——「类似神圣城墙的发光会非常刺眼，建议改成柔和的低亮度光线或者无光；只有部分建筑会发光，比如瞭望塔之类的，其它建筑不发光」。
+  //     发光的只剩真的带火 / 灯的：主堡、瞭望塔、长明灯、暖炉、火坑，喷火 / 火焰类塔一点小火光（ember），英雄身边很弱的一圈；闪电、落雷只在出现的那一下闪亮。
+  //     神圣城墙、魔法 / 奥术 / 冰霜 / 毒 / 神圣类建筑、血池、雷达、维修中心都不再发光。亮洞 hole、柔光 glow、各自的半径 r、强度 i 都调低了（原来 hole 0.9、glow 0.25、主堡 r 90 / i 1）。数是 Claude 定
+  light:{dark0:0.05, dark1:0.2, hole:0.62, glow:0.11, cell:8, max:240,
+    keep:{r:66, c:'#ffc070', i:0.7, fl:0.04, g:0.5}, hero:{r:30, c:'#ffe8c8', i:0.32, fl:0, g:0.2},
+    fire:{r:42, c:'#ff9a40', i:0.62, fl:0.1}, torch:{r:40, c:'#ffb860', i:0.6, fl:0.08}, ember:{r:24, c:'#ff9040', i:0.38, fl:0.1},
+    pit:{k:1.3}, bolt:{r:100, c:'#dcecff', i:0.8}, zapFx:{r:24, c:'#b8d8ff', i:0.55},
+    // 建筑：按名字指定，没写的按伤害类型（mix 里占比最大的）；表里没有的不发光
+    byType:{keep:'keep', watchtower:'torch', vcLamp:'torch', bcHeater:'fire'},
+    byMix:{fire:'ember'}},
   // 水面反射：站在水边 / 水里的单位、建筑、树在水面上画一份上下翻转的倒影（只画在水格上：有水的地图 G.csW > 0，以及冰湖 T_ICE）
   //   a 透明度（离水面越远越淡，fade = 倒影末端还剩几成）；tint 倒影的色调（Canvas 渲染不支持色调，只用透明度）；strip 一条几像素高（每条单独找水格、单独晃）；wave 晃动的幅度（像素）；maxQ 一帧最多画几条
   refl:{a:0.34, fade:0.25, tint:'#9cc4dc', iceA:0.22, strip:2, wave:1.2, maxQ:6000},
@@ -31078,6 +31080,18 @@ CFG.vfx={
   // 极夜、极光（纬度 ≥ lat 的地图，太阳在地平线下时）：滤镜再压暗 dark（只是画面）；屏幕上方 top 那一截画 bands 条缓慢飘动的极光带（颜色 cols，强度 a），
   //   开着光影时地面再加一点 amb 的绿色环境光
   aurora:{lat:60, dark:0.2, top:0.6, bands:3, a:0.34, amb:0.035, cols:['#50ffa0','#48d8ff','#b070ff']},
+  // —— 2.5D 光影原型（用户 11-23：「光影没有做出充分的质感」；逻辑 ui/vfx_25d.js、着色器 engine/render.js；挂在「光影」开关下，只有 WebGL 有）。数全是 Claude 定，等用户实机看 ——
+  //   on：false = 关掉这一套、退回旧版光影（对比用）；genMs：法线图一帧算几毫秒（分帧算，没算到的图先按平面打光）
+  //   法线：bev 斜角宽 = 图的短边 × bev（最少 bevMin、最多 bevMax 世界像素）、bevK 斜角的陡度、det 按颜色明暗加的细节起伏；wallBev 城墙外露的边的斜角宽
+  //   白天：环境光 = amb × ambK，太阳光 = 太阳颜色（ui/vfx_sun 的早晚橙 / 午白 / 高纬冷）× sun × max(0, 法线 · 太阳方向)；背阳面再压暗 back × 背过去多少；
+  //   ao / aoH：建筑的图最下面 aoH 像素往下渐渐压暗 ao（贴地的地方）
+  //   夜里的点光源（画面滤镜的透明度超过 nt0 开始有，到 nt0 + nt1 全开）：最多 ptN 个（上限 8）、半径 = 光源半径 × ptR、高度 ptH（世界像素）、强度 × ptK，背着光源的面压暗 ptBack
+  //   影子层：shA 整层的透明度；silH 剪影影子的长度再乘几、silTop 影子末端还剩几成；wallH 城墙的高度（世界像素，决定墙影多长）；
+  //     贴地暗边：ctA 透明度（再乘 shA）、ctF 往外淡出几像素、ctIn 比占地往里收几像素、ctD 深几像素
+  d25:{on:true, genMs:3, bev:0.22, bevMin:1.2, bevMax:4, bevK:1.1, det:1.4, wallBev:2.5,
+    amb:'#a9b4d2', ambK:0.82, sun:0.8, back:0.3, ao:0.25, aoH:5,
+    nt0:0.1, nt1:0.25, ptN:8, ptR:1.5, ptH:12, ptK:1.0, ptBack:0.45,
+    shA:0.5, silH:1, silTop:0.75, wallH:9, ctA:0.75, ctF:3.5, ctIn:1, ctD:5},
 };
 Object.assign(CFG.settingsDefault,{envFade:false, vfxLight:false, vfxRefl:false});
 
@@ -49274,7 +49288,7 @@ function makeGL(canvas){
   const ibo=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ibo);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,ib,gl.STATIC_DRAW);
   const at=(n,size,off,ty,nm)=>{const l=gl.getAttribLocation(prog,n);gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,size,ty||gl.FLOAT,!!nm,FPV*4,off*4)};
   at('a_p',2,0);at('a_t',2,2);at('a_c',4,4,gl.UNSIGNED_BYTE,true);at('a_f',1,5,gl.UNSIGNED_BYTE,true);
-  const uR=gl.getUniformLocation(prog,'u_r');gl.uniform1i(gl.getUniformLocation(prog,'u_s'),0);gl.uniform1i(gl.getUniformLocation(prog,'u_d'),1);
+  const uR=gl.getUniformLocation(prog,'u_r'),aP=gl.getAttribLocation(prog,'a_p'),aT=gl.getAttribLocation(prog,'a_t'),aC=gl.getAttribLocation(prog,'a_c'),aF=gl.getAttribLocation(prog,'a_f');gl.uniform1i(gl.getUniformLocation(prog,'u_s'),0);gl.uniform1i(gl.getUniformLocation(prog,'u_d'),1);
   const tex2=gl.createTexture();gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,tex2);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);   // 0.14.2 代理 H：图集第二页一直绑在贴图单元 1（别的贴图都在单元 0 上换）
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,ATLAS.p2);
   for(const[k,v]of[[gl.TEXTURE_MIN_FILTER,gl.NEAREST],[gl.TEXTURE_MAG_FILTER,gl.NEAREST],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k,v);
@@ -49295,19 +49309,54 @@ function makeGL(canvas){
   function flush(){if(!n)return;gl.bufferSubData(gl.ARRAY_BUFFER,0,data.subarray(0,n*4*FPV));gl.drawElements(gl.TRIANGLES,n*6,gl.UNSIGNED_SHORT,0);draws++;n=0}
   function q(x0,y0,x1,y1,u0,v0,u1,v1,r,g,b,a,f){
     if(n>=MAXQ)flush();let o=n*24;quads++;
-    const cc=(B8(r)|B8(g)<<8|B8(b)<<16|B8(a)<<24)>>>0,ff=B8(f);   // 颜色、白闪按字节存（0～1 → 0～255，超出的截断，和显卡本来的截断一样）
-    data[o]=x0;data[o+1]=y0;data[o+2]=u0;data[o+3]=v0;d32[o+4]=cc;d32[o+5]=ff;
-    data[o+6]=x1;data[o+7]=y0;data[o+8]=u1;data[o+9]=v0;d32[o+10]=cc;d32[o+11]=ff;
+    const cc=(B8(r)|B8(g)<<8|B8(b)<<16|B8(a)<<24)>>>0,ff=B8(f)|LF;let ft=ff;   // 颜色、白闪按字节存（0～1 → 0～255，超出的截断，和显卡本来的截断一样）   // LF / ft：2.5D 光影（下面 lit25），平时 LF = 0、ft = ff
+    if(LF){const hb=(y1-y0)*IZ;ft=ff|(hb>255?255:hb>0?hb|0:0)<<16}   // 上面两个顶点带上「离图底边多高」（世界像素），片元里插值出每个像素的高度
+    data[o]=x0;data[o+1]=y0;data[o+2]=u0;data[o+3]=v0;d32[o+4]=cc;d32[o+5]=ft;
+    data[o+6]=x1;data[o+7]=y0;data[o+8]=u1;data[o+9]=v0;d32[o+10]=cc;d32[o+11]=ft;
     data[o+12]=x1;data[o+13]=y1;data[o+14]=u1;data[o+15]=v1;d32[o+16]=cc;d32[o+17]=ff;
     data[o+18]=x0;data[o+19]=y1;data[o+20]=u0;data[o+21]=v1;d32[o+22]=cc;d32[o+23]=ff;n++}
+  // —— 2.5D 光影原型（用户 11-23；ui/vfx_25d 调，数 data/vfx.js 的 d25）：全部在「光影」开着、第一次用到时才建（lit25），关着时上面的画法一点不变 ——
+  //   带光照的着色器 LP：只在画「立着的东西」那一段换上（litBegin … litEnd，一个镜头换两次），地面、影子、特效、滤镜、界面都还是原来的着色器——逐像素光照只花在这些图盖住的像素上。
+  //     顶点格式不变，a_f 那 4 个字节读成 (白闪, 光照方式, 离图底边的高度)；光照方式 LF（litMode 设，不打断批次）：255 = 建筑（脚下一截再压暗）、别的 = 只按法线打光
+  //   法线图两页 NT1 / NT2（贴图单元 2、3，布局同图集两页；ui/vfx_25d 的 vxnStep 分帧算好一块传一块，没算到的地方透明度 0 = 按平面算）
+  //   影子层 FB：半分辨率的一张离屏图（只用它的透明度），先把这一屏的剪影、贴地暗边画上去（重叠的地方不会更深），再整层按一个透明度盖到地面上
+  let LF=0,IZ=1,LP=null,LON=false,LACT=false,LU=null,NT1=null,NT2=null,FB=null,FBT=null,FBW=0,FBH=0,VW0=0,CLP=null;const NSZ=[0,0,0,0];   // LON：这一帧用 2.5D 光影；LACT：现在换着带光照的着色器；NSZ：两页法线贴图的宽高（测试看）
+  function litBuild(){const V2='attribute vec2 a_p;attribute vec2 a_t;attribute vec4 a_c;attribute vec4 a_f;uniform vec2 u_r;varying vec2 v_t;varying vec4 v_c;varying vec3 v_f;'+
+      'void main(){vec2 p=a_p/u_r*2.0-1.0;gl_Position=vec4(p.x,-p.y,0.0,1.0);v_t=a_t;v_c=a_c;v_f=a_f.xyz;}';
+    const F2='#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n'+
+      'uniform sampler2D u_s;uniform sampler2D u_d;uniform sampler2D u_n;uniform sampler2D u_m;uniform vec4 u_v;uniform vec3 u_l;uniform vec3 u_a;uniform vec3 u_k;uniform vec4 u_o;uniform vec4 u_lp[8];uniform vec3 u_lc[8];uniform int u_ln;'+
+      'varying vec2 v_t;varying vec4 v_c;varying vec3 v_f;'+
+      'void main(){bool p2=v_t.y>=1.0;vec2 q=p2?vec2(v_t.x,v_t.y-1.0):v_t;vec4 t=p2?texture2D(u_d,q):texture2D(u_s,q);'+
+      'vec4 n=p2?texture2D(u_m,q):texture2D(u_n,q);vec3 N=n.a>0.5?normalize(n.xyz*2.0-1.0):vec3(0.0,0.0,1.0);float hz=v_f.z*255.0;'+
+      'float d=dot(N,u_l);vec3 L=u_a+u_k*(d>0.0?d:d*u_o.z);'+   // 背着太阳的面再压暗一点（u_o.z）
+      'if(v_f.y>0.95&&n.a>0.9)L*=1.0-u_o.x*(1.0-smoothstep(0.0,u_o.y,hz));'+   // 建筑脚下那一截压暗（贴地的地方）
+      'if(u_ln>0){vec3 P=vec3((gl_FragCoord.x-u_v.x)*u_v.z,(u_v.w-gl_FragCoord.y-u_v.y)*u_v.z+hz,hz);'+
+        'for(int i=0;i<8;i++){if(i>=u_ln)break;vec3 D=u_lp[i].xyz-P;float e=1.0-dot(D,D)*u_lp[i].w;if(e>0.0){float nl=dot(N,normalize(vec3(D.x,D.z,D.y)));L+=u_lc[i]*(e*e*(nl>0.0?nl:nl*u_o.w));}}}'+
+      'gl_FragColor=vec4(mix(t.rgb*v_c.rgb*max(L,vec3(0.0)),vec3(1.0),v_f.x),t.a*v_c.a);}';
+    const a=sh(gl.VERTEX_SHADER,V2),b=sh(gl.FRAGMENT_SHADER,F2);if(!a||!b)return false;const P=gl.createProgram();gl.attachShader(P,a);gl.attachShader(P,b);
+    gl.bindAttribLocation(P,aP,'a_p');gl.bindAttribLocation(P,aT,'a_t');gl.bindAttribLocation(P,aC,'a_c');gl.bindAttribLocation(P,aF,'a_f');gl.linkProgram(P);   // 属性位置和原来的着色器一样：换着色器不用重设顶点指针（只有 a_f 的分量数不同）
+    if(!gl.getProgramParameter(P,gl.LINK_STATUS)){console.warn(gl.getProgramInfoLog(P));return false}
+    gl.useProgram(P);const U=k=>gl.getUniformLocation(P,k);gl.uniform1i(U('u_s'),0);gl.uniform1i(U('u_d'),1);gl.uniform1i(U('u_n'),2);gl.uniform1i(U('u_m'),3);
+    LU={r:U('u_r'),v:U('u_v'),l:U('u_l'),a:U('u_a'),k:U('u_k'),o:U('u_o'),lp:U('u_lp[0]'),lc:U('u_lc[0]'),ln:U('u_ln')};LP=P;gl.useProgram(prog);return true}
+  function litStop(){flush();gl.useProgram(prog);gl.vertexAttribPointer(aF,1,gl.UNSIGNED_BYTE,true,FPV*4,20);LF=0;LACT=false}
+  function nmTex(unit,old,c){gl.activeTexture(gl.TEXTURE0+unit);if(old)gl.deleteTexture(old);const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);texParams();
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,c.width,c.height,0,gl.RGBA,gl.UNSIGNED_BYTE,null);gl.activeTexture(gl.TEXTURE0);NSZ[unit*2-4]=c.width;NSZ[unit*2-3]=c.height;return t}   // 新建的贴图全是 0：透明度 0 = 还没算法线，着色器按平面算
+  function fbSetup(w,h){if(FB&&FBW===w&&FBH===h)return;if(FBT)gl.deleteTexture(FBT);if(!FB)FB=gl.createFramebuffer();FBW=w;FBH=h;FBT=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,FBT);
+    for(const[k,v]of[[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k,v);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);gl.bindFramebuffer(gl.FRAMEBUFFER,FB);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,FBT,0);gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.bindTexture(gl.TEXTURE_2D,tex)}
+  // 任意四个角的四边形（影子用）：角的顺序 左上、右上、右下、左下；上面两个角透明度 a0、下面两个 a1；r = 图（没有 = 纯色块）
+  function q4(r,flip,x0,y0,x1,y1,x2,y2,x3,y3,cr,cg,cb,a0,a1){if(n>=MAXQ)flush();const o=n*24;quads++;let u0=WU,v0=WV,u1=WU,v1=WV;if(r){u0=flip?r.u1:r.u0;u1=flip?r.u0:r.u1;v0=r.v0;v1=r.v1}
+    const rgb=B8(cr)|B8(cg)<<8|B8(cb)<<16,c0=(rgb|B8(a0)<<24)>>>0,c1=(rgb|B8(a1)<<24)>>>0;
+    data[o]=x0;data[o+1]=y0;data[o+2]=u0;data[o+3]=v0;d32[o+4]=c0;d32[o+5]=LF;data[o+6]=x1;data[o+7]=y1;data[o+8]=u1;data[o+9]=v0;d32[o+10]=c0;d32[o+11]=LF;
+    data[o+12]=x2;data[o+13]=y2;data[o+14]=u1;data[o+15]=v1;d32[o+16]=c1;d32[o+17]=LF;data[o+18]=x3;data[o+19]=y3;data[o+20]=u0;data[o+21]=v1;d32[o+22]=c1;d32[o+23]=LF;n++}
   let VH0=0,LMT=null;   // LMT：光照图的贴图（lightMap，第一次用时建）
   function lmTex(){if(LMT){gl.bindTexture(gl.TEXTURE_2D,LMT);return}LMT=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,LMT);for(const[k,v]of[[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k,v)}
   return{mode:'WebGL',
-    begin(w,h,c){VH0=h;gl.disable(gl.SCISSOR_TEST);gl.viewport(0,0,w,h);gl.uniform2f(uR,w,h);gl.clearColor(c.r,c.g,c.b,1);gl.clear(gl.COLOR_BUFFER_BIT);draws=0;quads=0;n=0},
+    begin(w,h,c){if(LACT)litStop();VH0=h;VW0=w;CLP=null;gl.disable(gl.SCISSOR_TEST);gl.viewport(0,0,w,h);gl.uniform2f(uR,w,h);gl.clearColor(c.r,c.g,c.b,1);gl.clear(gl.COLOR_BUFFER_BIT);draws=0;quads=0;n=0},
     img(r,x,y,w,h,flip,a,f,t){q(x,y,x+w,y+h,flip?r.u1:r.u0,r.v0,flip?r.u0:r.u1,r.v1,t?t.r:1,t?t.g:1,t?t.b:1,a,f)},
     imgK(r,x,y,w,h,flip,a,f,t,k){q(x,y,x+w,y+h,flip?r.u1:r.u0,r.v0,flip?r.u0:r.u1,r.v0+(r.v1-r.v0)*k,t?t.r:1,t?t.g:1,t?t.b:1,a,f)},   // v0.8.3 只画图的上面 k（水里的单位，ui/draw.sprW）
     rect(x,y,w,h,c,a){q(x,y,x+w,y+h,WU,WV,WU,WV,c.r,c.g,c.b,a,0)},
-    clip(x,y,w,h){flush();if(x==null){gl.disable(gl.SCISSOR_TEST);return}gl.enable(gl.SCISSOR_TEST);gl.scissor(x|0,(VH0-y-h)|0,w|0,h|0)},
+    clip(x,y,w,h){flush();if(x==null){CLP=null;gl.disable(gl.SCISSOR_TEST);return}if(LON)CLP=[x,y,w,h];gl.enable(gl.SCISSOR_TEST);gl.scissor(x|0,(VH0-y-h)|0,w|0,h|0)},
     end(){flush();gl.disable(gl.SCISSOR_TEST);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA)},
     blend(add){flush();gl.blendFunc(gl.SRC_ALPHA,add?gl.ONE:gl.ONE_MINUS_SRC_ALPHA)},   // v0.7.2 加色混合（发光特效，engine/vfx）
     updateBG(bg,D){flush();bgTexSetup(D);const cs=D.cs;   // 传地面：D.all 整张，否则只传 D.f 标了的块（一块 = 抠到中转画布再 texSubImage2D）
@@ -49334,6 +49383,26 @@ function makeGL(canvas){
     sub(r){flush();up2(r)},   // v0.5.5 图集动态区（手持武器）：补传一块 / 整张重传；0.14.2 代理 H：动态区在第二页
     reup(){flush();WU=ATLAS.wu;WV=ATLAS.wv;gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,ATLAS.canvas);up2(null)},   // 整张重排：两页都重传
     reup2(){flush();up2(null)},   // 0.14.2 代理 H：只重传第二页（动态区清空、加高）
+    // —— 2.5D 光影原型（ui/vfx_25d）——
+    // 这一帧用不用 2.5D 光影（每帧开头调，状态没变直接返回）；着色器第一次用时才编译，编译不过返回 false（调用方退回旧版光影）
+    lit25(on){if(on===LON)return true;if(on&&!LP&&!litBuild())return false;if(!on&&LACT)litStop();LON=on;return true},
+    litMode(m){LF=m<<8},   // 之后画的东西按哪种方式打光（不打断批次；只在 litBegin … litEnd 之间用）
+    // 换上带光照的着色器，把这个镜头的光交给它：v = [OX − CX × zoom, OY − CY × zoom, 1 / zoom]；l 太阳方向（右、上、朝外）；a 环境光；k 太阳光；o = [脚下压暗, 压暗的高度, 背阳面压暗, 背着点光源的面压暗]；lp / lc 点光源（Float32Array，nl 个）
+    litBegin(v,l,a,k,o,lp,lc,nl){flush();gl.useProgram(LP);gl.vertexAttribPointer(aF,4,gl.UNSIGNED_BYTE,true,FPV*4,20);LACT=true;LF=224<<8;IZ=v[2];
+      gl.uniform2f(LU.r,VW0,VH0);gl.uniform4f(LU.v,v[0],v[1],v[2],VH0);gl.uniform3f(LU.l,l[0],l[1],l[2]);gl.uniform3f(LU.a,a[0],a[1],a[2]);gl.uniform3f(LU.k,k[0],k[1],k[2]);
+      gl.uniform4f(LU.o,o[0],o[1],o[2],o[3]);gl.uniform1i(LU.ln,nl);if(nl){gl.uniform4fv(LU.lp,lp);gl.uniform3fv(LU.lc,lc)}},
+    litEnd(){if(LACT)litStop()},
+    // 法线图：nmInit(页) 按图集这一页的大小新建（清空）；nmPut 传一块（u8 = RGBA 字节，RGB = 法线、A = 255 立体 / 153 平面）
+    nmInit(pg){flush();if(pg)NT2=nmTex(3,NT2,ATLAS.p2);else NT1=nmTex(2,NT1,ATLAS.canvas)},
+    nmSize(){return NSZ.slice()},litOn(){return LON},
+    nmPut(pg,x,y,w,h,u8){gl.activeTexture(gl.TEXTURE2+pg);gl.texSubImage2D(gl.TEXTURE_2D,0,x,y,w,h,gl.RGBA,gl.UNSIGNED_BYTE,u8);gl.activeTexture(gl.TEXTURE0)},
+    // 影子层：shBegin 之后画的东西（quad / img）都画到离屏图上（只写透明度），shEnd 把整层按透明度 a 盖到 (x, y, w, h)（颜色 = 黑）
+    shBegin(){flush();const w=Math.max(1,VW0>>1),h=Math.max(1,VH0>>1);fbSetup(w,h);gl.bindFramebuffer(gl.FRAMEBUFFER,FB);gl.viewport(0,0,w,h);gl.disable(gl.SCISSOR_TEST);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.colorMask(false,false,false,true);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA)},
+    shEnd(x,y,w,h,a){flush();gl.colorMask(true,true,true,true);gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,VW0,VH0);if(CLP){gl.enable(gl.SCISSOR_TEST);gl.scissor(CLP[0]|0,(VH0-CLP[1]-CLP[3])|0,CLP[2]|0,CLP[3]|0)}
+      gl.bindTexture(gl.TEXTURE_2D,FBT);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);q(x,y,x+w,y+h,x/VW0,1-y/VH0,(x+w)/VW0,1-(y+h)/VH0,0,0,0,a,0);flush();
+      gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.bindTexture(gl.TEXTURE_2D,tex)},
+    quad(r,flip,x0,y0,x1,y1,x2,y2,x3,y3,c,a0,a1){q4(r,flip,x0,y0,x1,y1,x2,y2,x3,y3,c.r,c.g,c.b,a0,a1)},
   };
 }
 function make2D(canvas){
@@ -104074,7 +104143,7 @@ const camPadY=()=>{const P=G&&CFG.maps[G.map]&&CFG.maps[G.map].viewPad;return P?
 const X=wx=>(wx-CX)*zoom+OX,Y=wy=>(wy-CY)*zoom+OY;
 // v0.8.3 黄沙海岸：画站在水里的单位时（drawWorld 里 csSinkSet 设好、画完复原），整个人往下挪 SNK_DY 像素，水面 SNK_WL（世界 y）以下的像素不画
 let SNK_DY=0,SNK_WL=1e9;
-function sprW(r,wx,wy,flip,flash,a,tint){if(VX_RM){vxRefSpr(r,wx,wy,flip,a===undefined?1:a,tint);return}   // VX_RM：正在画水面倒影（ui/vfx_fx）
+function sprW(r,wx,wy,flip,flash,a,tint){if(VX_RM){if(VX_RM===2)vx25Sil(r,wx,wy,flip,a===undefined?1:a);else vxRefSpr(r,wx,wy,flip,a===undefined?1:a,tint);return}   // VX_RM：1 = 正在画水面倒影（ui/vfx_fx）；2 = 正在画影子层的剪影（ui/vfx_25d）
   if(SNK_DY){wy+=SNK_DY;if(wy+r.h>SNK_WL){const kh=SNK_WL-wy;if(kh>0)R.imgK(r,(wx-CX)*zoom+OX,(wy-CY)*zoom+OY,r.w*zoom,kh*zoom,flip,a===undefined?1:a,flash?(flash===true?1:flash):0,tint,kh/r.h);return}}
   R.img(r,(wx-CX)*zoom+OX,(wy-CY)*zoom+OY,r.w*zoom,r.h*zoom,flip,a===undefined?1:a,flash?(flash===true?1:flash):0,tint)}
 // FX_DT：v0.11.2 皮肤的技能特效换色调（engine/vfx 的 fxDc；没换皮肤的英雄 FX_DT 一直是 null）
@@ -104105,9 +104174,9 @@ let SHDW=true;
 // v0.10.0（用户定）缩小地图时精简特效：ZFX = (当前缩放 ÷ 默认缩放)²，最少 1/16（0.12.2d 用户定，原来 1/4：缩到一半时粒子、散点只画 1/4、缩到 1/4 时只画 1/16，虚线圈的点按边长减半、最少 1/4）；设置「缩小地图时精简特效」关掉 = 1（全画质）。只影响画面，不影响逻辑和随机数
 let ZFX=1,ZFL=1;   // 缩到原下限 zoomMin 以下时 ui/zoomlo.zmnFrame 再往下压（代理 M）
 // v0.10.1 2.5D：大单位脚下的椭圆影子（一行一个矩形）
-function shadowE(cx,cy,rx,ry,a){if(!SHDW)return;if(VX_SH){vxShadowE(cx,cy,rx,ry,a);return}   // VX_SH：光影开着时影子按太阳画（ui/vfx_sun）
+function shadowE(cx,cy,rx,ry,a){if(!SHDW)return;if(VX_SH){if(!VX_SK)vxShadowE(cx,cy,rx,ry,a);return}   // VX_SH：光影开着时影子按太阳画（ui/vfx_sun）
   const n=Math.max(1,Math.round(ry));for(let k=-n;k<=n;k++){const hw=rx*Math.sqrt(1-(k/(n+0.5))**2);rectW(Math.round(cx-hw),Math.round(cy+k),Math.round(hw*2),1,SHC,a)}}
-function shadow(x,y,w){if(!SHDW)return;if(VX_SH){vxShadow(x,y,w);return}   // 同上
+function shadow(x,y,w){if(!SHDW)return;if(VX_SH){if(!VX_SK)vxShadow(x,y,w);return}   // 同上；VX_SK：2.5D 光影的影子层里已经画过这个东西的影子了（ui/vfx_25d）
   const l=Math.round(x-w/2),yy=Math.round(y);rectW(l,yy-1,w,2,SHC,0.34);rectW(l+1,yy-2,w-2,1,SHC,0.34)}
 function pixNum(str,wx,wy,a){const w=str.length*4;let x=Math.round(wx-w/2);for(const ch of str){const g=SPR.dig[ch];if(g)sprW(g,x,Math.round(wy),false,false,a);x+=4}}
 function drawTree(t){if(!t.spr&&!t.sp)shadow(t.x,t.y,12);drawTreeBody(t)}
@@ -104117,7 +104186,7 @@ function wallMask(tx,ty){const W=(x,y)=>{if(x<0||y<0||x>=MAP_W||y>=MAP_H)return 
   return W(tx,ty-1)|W(tx+1,ty)<<1|W(tx,ty+1)<<2|W(tx-1,ty)<<3}
 let DS_TINT=null;   // 代理 ES 加：画建筑图时乘的色调（亡灵阵营的建筑染紫，structs/estruct.esDraw 画的时候设、画完清回 null）
 function drawStructSprite(type,lvl,tx,ty,flash,mask,a){
-  if(isWallT(type)){let sp=null;if(mask&4&&lvl>1){const T=SPR.gwS[type];if(T){const d=gwlStep(lvl,tx,ty);if(d>0)sp=T[(mask*8+Math.min(5,lvl))*5+d]}}if(!sp){const k=TSK_BS[type],W=k&&!DS_TINT?SPR.tskW[k]:null;sp=(W||SPR.wall)[wkey(type,mask,lvl)]}sprW(sp,tx*16,ty*16+16-sp.h,false,flash,a,DS_TINT);return}   // TSK_BS：0.13.7.x 城墙皮肤（帝国精工，城门跟着城墙；game/tskin、图 art/tskin_art7；亡灵阵营的 DS_TINT 不换）   // GW 加：按图高把底边对齐这一格的底边（普通墙图高 24，和原来的 ty*16-8 一样；长城城墙越高级图越高）
+  if(isWallT(type)){let sp=null;if(mask&4&&lvl>1){const T=SPR.gwS[type];if(T){const d=gwlStep(lvl,tx,ty);if(d>0)sp=T[(mask*8+Math.min(5,lvl))*5+d]}}if(!sp){const k=TSK_BS[type],W=k&&!DS_TINT?SPR.tskW[k]:null;sp=(W||SPR.wall)[wkey(type,mask,lvl)];if(VX_25)vx25Wall(sp,mask)}sprW(sp,tx*16,ty*16+16-sp.h,false,flash,a,DS_TINT);return}   // TSK_BS：0.13.7.x 城墙皮肤（帝国精工，城门跟着城墙；game/tskin、图 art/tskin_art7；亡灵阵营的 DS_TINT 不换）   // GW 加：按图高把底边对齐这一格的底边（普通墙图高 24，和原来的 ty*16-8 一样；长城城墙越高级图越高）
   if(isTrapT(type)){const sp=bSpr(type,lvl);sprW(sp,tx*16+8-(sp.w>>1),ty*16+12-sp.h,false,false,a,DS_TINT);return}
   const n=bSize(type);if(n>1){const L=SPR.sL&&SPR.sL[type],sp=L?L[stLookT(lvl||1)]:bSpr(type,lvl);sprW(sp,Math.round((tx+n/2)*16-sp.w/2),(ty+n)*16-sp.h,false,flash,a,DS_TINT);return}   // v0.6.33 修复：开拓地 2 × 2 / 3 × 3 建筑的虚影按整块占地画（锚点和 drawSettleB 一样），原来按 1 格画、放下去就往下跳
   const sp=bSpr(type,lvl),x=tx*16+8,y=ty*16+16;sprW(sp,x-8,y-sp.h,false,flash,a,DS_TINT);   // 0.5.7 按等级取三档外观
@@ -104838,7 +104907,7 @@ function followTo(c,h,dt){const tx=h.dead?G.base.x:h.x,ty=(h.dead?G.base.y:h.y)+
 function useView(k){const V=VIEWS[k];CX=V.CX;CY=V.CY;OX=V.OX;OY=V.OY}
 function setView(k,x,y,w,h,c,sx,sy){const V=VIEWS[k];clampCamTo(c,w,h);Object.assign(V,{x,y,w,h,OX:x+(w>>1),OY:y+(h>>1),CX:Math.round(c.x)+sx,CY:Math.round(c.y)+sy});useView(k)}
 function render(dt){const d0=IN_DRAW;IN_DRAW=1;try{render_(dt)}finally{IN_DRAW=d0}}   // v0.8.10 画面期间的 vr / chance / vpick 用特效随机数（core/core.IN_DRAW）
-function render_(dt){fuFrame();PJ_NL=PJ_N;PJ_N=0;SHDW=SET.shadows!==false;VX_EF=SET.envFade===true;VX_LT=SET.vfxLight===true;VX_RF=SET.vfxRefl===true;if(VX_LT)vxSunFrame(dt);else VX_SH=false;   // VX_*：画面特效的三个开关（ui/vfx_fx）；vxSunFrame：光影开着时算太阳（ui/vfx_sun）
+function render_(dt){fuFrame();PJ_NL=PJ_N;PJ_N=0;SHDW=SET.shadows!==false;VX_EF=SET.envFade===true;VX_LT=SET.vfxLight===true;VX_RF=SET.vfxRefl===true;if(VX_LT){vxSunFrame(dt);vx25Frame()}else{VX_SH=false;if(VX_25)vx25Off()}   // VX_*：画面特效的三个开关（ui/vfx_fx）；vxSunFrame：光影开着时算太阳（ui/vfx_sun）
   ZFX=SET.zoomFx===false||!(zoomBase>0)?1:clamp((zoom/zoomBase)**2,1/16,1);ZFL=Math.sqrt(ZFX);
   const t0=performance.now(),h=G.hero;applyZoom();zmnFrame();WP_BUD=WP_MAX;   // zmnFrame：代理 M 加，缩到原下限以下时特效再精简（ui/zoomlo）
   if(G.bgDirty){G.bgDirty=false;bgAllDirty()}if(BGD.n&&BGC){if(R.updateBG)R.updateBG(BGC,BGD);bgUploaded()}   // 0.13.4 地面分块：只传改到的块（engine/map 的 BGD）
@@ -104897,14 +104966,16 @@ function drawWorld(dt,vk){
       LMx[lmn]=x;LMy[lmn]=y;LMt[lmn]=L.ts?L.ts[m]:L.t;LMf[lmn]=(Math.floor(L.an+m*0.37)&1);LMd[lmn]=fl;LMh[lmn]=m<(L.hv||0)?1:0;dpush(y,5,lmn);lmn++}
     dpush(L.y-L.rows*4.5-2,6,li)}
   if(EXT_ON)extDpush(cx0,cy0,cx1,cy1);   // 0.13.0f 搜打撤的 2.5D 建筑（kind 6、下标 32768 起，ui/ext）
-  const ks=DK.subarray(0,dn);ks.sort();
-  for(let k=0;k<dn;k++){const v=ks[k],kind=(v>>>16)&7,i=v&65535;
+  const ks=DK.subarray(0,dn);ks.sort();const v25=VX_25;
+  if(v25){if(SHDW)vx25Shadows(ks,dn,V);vx25View(V)}   // 2.5D 光影（ui/vfx_25d）：先把这一屏的影子画成一层盖到地面上，再换上带光照的着色器画立着的东西（224 = 按法线打光；建筑 255 = 再加脚下压暗）
+  for(let k=0;k<dn;k++){const v=ks[k],kind=(v>>>16)&7,i=v&65535;if(v25){VX_SK=VXD.H[k];R.litMode(kind===1?255:224)}
     switch(kind){
       case 0:drawTree(tr[i]);break;case 1:drawStruct(st[i]);break;case 7:drawResident(rs[i]);break;
       case 2:case 3:case 4:{const sk=G.csOn&&csSinkSet(kind,i);if(kind===2)drawEnemy(i);else if(kind===3)drawSoldier(so[i]);else drawHero(G.heroes[i]);if(sk){SNK_DY=0;SNK_WL=1e9}break}   // csSinkSet：v0.8.3 黄沙海岸，水里的单位往下沉
       case 5:{const t=LMt[i],x=LMx[i],y=LMy[i],r=SPR.enemies[t][LMf[i]],hv=ETC[t].hover,lf=hv?hv.h:0,sk=G.csOn&&csSinkSet(5,i);if(hv){if(SHDW)rectW(Math.round(x)-6,Math.round(y)-1,12,1,SHC,0.3)}else shadow(x,y,ETC[t].cavalry?16:9);sprW(r,Math.round(x)-(r.w>>1),Math.round(y-lf)-r.h,LMd[i]===1,false);if(LMh[i])drawCarriedHive(x,y,LMd[i]===1?-1:1,0);if(sk){SNK_DY=0;SNK_WL=1e9}break}
       case 6:{if(i>=32768){extDrawE(i);break}const L=G.legions[i];if(!L)break;const x=Math.round(L.x),y=Math.round(L.y-L.rows*4.5-16);rectW(x,y,1,14,K.pole);rectW(x+1,y,6,4,K.purple);rectW(x+1,y+4,4,1,K.purple);rectW(x+1,y+1,6,1,K.ink,0.5);break}
     }}
+  if(v25){VX_SK=0;R.litEnd()}   // 弹道、特效、滤镜、血条不打光（换回原来的着色器）
   for(let i_7=0,a_7=G.proj;i_7<a_7.length;i_7++){const p=a_7[i_7];if(p.x<cx0-PJ_VM||p.x>cx1+PJ_VM||p.y<cy0-PJ_VM||p.y-(p.z||0)>cy1+PJ_VM)continue;PJ_N++;if(p.skd){FX_DT=p.skd;drawProj(p);FX_DT=null}else drawProj(p);}   // 0.13.11 镜头外的弹道不画（原来每个都画，一发导弹三十多个矩形）
   if(settleOn())drawDuMarks(cx0,cy0,cx1,cy1);   // v0.10.1 耐久低于 50% 的建筑头上一个小扳手
   for(const s of st)if(s.beam&&G.time-s.beam.t<(s.beam.life||0.2))drawBeam(s.beam);   // v0.3.4 激光塔；life：v0.11.0 圣焰喷射两发之间不断（structs/holyflame）
@@ -105155,10 +105226,11 @@ function vxShadowE(cx,cy,rx,ry,a){const U=CFG.vfx.sun,D=VXS.D,k=(U.night+(U.base
 function vxPolarA(a){const S=VXS;if(!S.polar||!(S.NP>0))return a;return a+(1-a)*CFG.vfx.aurora.dark*S.NP}
 const vxAmb=()=>VXS.polar&&VXS.NP>0?CFG.vfx.aurora.amb*VXS.NP*(0.8+0.2*Math.sin(G.time*0.3)):0;
 // —— 方向光、光束、极光（ui/draw.drawEnv 画完滤镜和雨雪以后调）：都算进一张低分辨率图（一格 sun.cell 屏幕像素），一遍（Canvas 两遍）盖上去 ——
-function vxSky(V){const S=VXS,U=CFG.vfx.sun,Au=CFG.vfx.aurora,day=S.D>0.02,aur=S.polar&&S.NP>0.02;if(!day&&!aur||!R.lightMap)return;
+function vxSky(V){const S=VXS,U=CFG.vfx.sun,Au=CFG.vfx.aurora,day=S.D>0.02,aur=S.polar&&S.NP>0.02;if(!day&&!aur||!R.lightMap)return;if(VX_25&&!aur&&!(S.el<U.rayE*DEG))return;   // 2.5D 光影开着（ui/vfx_25d）：方向光由着色器按法线算，这里只剩光束、极光；都没有就不铺这一层
+ 
   const dp=Math.max(1,DPR),cs=U.cell*dp,W=Math.ceil(V.w/cs)+1,H=Math.ceil(V.h/cs)+1,B=S.B=vxBufOf(S.B,W,H),A=B.A,GR=B.GR,GG=B.GG,GB=B.GB,t=G.time,hw=V.w/2,hh=V.h/2,R0=Math.hypot(hw,hh);
   A.fill(0);GR.fill(0);GG.fill(0);GB.fill(0);
-  if(day){const ux=S.ux,uy=S.uy,px=-uy,py=ux,c=S.wc,wa=U.warm*S.D,da=U.dark*S.D,low=vxClamp01(1-S.el/(U.rayE*DEG))*S.D,nr=low>0.01?Math.min(8,U.rays):0,rw=U.rayW*dp,ra=U.rayA*low,RC=VXS.rc,RW=VXS.rw,RA=VXS.ra;
+  if(day){const ux=S.ux,uy=S.uy,px=-uy,py=ux,c=S.wc,wa=VX_25?0:U.warm*S.D,da=VX_25?0:U.dark*S.D,low=vxClamp01(1-S.el/(U.rayE*DEG))*S.D,nr=low>0.01?Math.min(8,U.rays):0,rw=U.rayW*dp,ra=U.rayA*low,RC=VXS.rc,RW=VXS.rw,RA=VXS.ra;
     for(let k=0;k<nr;k++){RC[k]=((k+0.5)/nr-0.5)*R0*1.8+Math.sin(t*0.07+k*1.7)*R0*0.06;RW[k]=1/(rw*(0.7+0.25*(k%3)));RA[k]=ra*(0.65+0.35*Math.sin(t*0.3+k*2.3))}   // 每道光束的位置、宽度、亮度：一帧算一次
     for(let yy=0,o=0;yy<H;yy++){const Y=(yy+0.5)*cs-hh;for(let xx=0;xx<W;xx++,o++){const X=(xx+0.5)*cs-hw,s=(X*ux+Y*uy)/R0;let add=s>0?wa*s:0;if(s<0)A[o]=da*-s;
         if(nr){const q=X*px+Y*py,al=0.35+0.65*(s*0.5+0.5);for(let k=0;k<nr;k++){const d=(q-RC[k])*RW[k];if(d>-2&&d<2){const u=1-d*d/4;add+=RA[k]*al*u*u}}}   // (1 − d²/4)² 近似高斯
@@ -105171,6 +105243,102 @@ function vxSky(V){const S=VXS,U=CFG.vfx.sun,Au=CFG.vfx.aurora,day=S.D>0.02,aur=S
           const I=f*ST[j]*fade,c=CL[k],up=d<0?vxClamp01(-d*iu)*0.6:0;r+=(c.r+(cp.r-c.r)*up)*I;g+=(c.g+(cp.g-c.g)*up)*I;b+=(c.b+(cp.b-c.b)*up)*I}
         GR[o]+=r;GG[o]+=g;GB[o]+=b}}}
   vxEmit(B,S.blk,1,V,cs)}
+
+// ---------- 2.5D 光影原型（用户 11-23：「光影没有做出充分的质感，只是拉影子？城墙、建筑都没达到效果。是因为没有 3D 建模吗？2.5D 光影要怎么完成？」）----------
+// 不用 3D 模型，补上两样东西：「每个像素朝哪」（法线）和「形状」（拿它自己的剪影投影）。都挂在「光影」开关下（VX_LT），只有 WebGL 有；Canvas 渲染、着色器编译不过 = 照旧版光影画。
+// 数全在 data/vfx.js 的 d25（Claude 定，等用户实机看）；CFG.vfx.d25.on = false 可以单独关掉这一套、退回旧版光影（对比用）。只管画面，不碰逻辑。
+// ① 法线图集（VXN）：图集里每张图按「离透明边缘多远」算一圈斜角（边缘朝外、中间朝镜头）、再按颜色明暗加一点细节起伏，得到每个像素的法线（右、上、朝镜头），
+//    存进和图集同样布局的两张法线贴图（engine/render 的 nmInit / nmPut）。分帧算（一帧 genMs 毫秒），没算到的图先按平面打光；图集重排、第二页清空 / 加高、动态加图都跟着重算（vx25Frame 每帧看一眼）。
+//    城墙另有提示（vx25Wall）：图的上面 16 像素是墙顶（朝天）、下面是墙的正面（朝南）；和旁边的墙连着的那几边不做斜角（拼起来没有接缝）。
+// ② 逐像素光照（engine/render 的着色器 LP）：白天 = 环境光 + 太阳光 × max(0, 法线 · 太阳方向)，太阳的方位、高度、颜色用 ui/vfx_sun 算好的（VXS）；
+//    立着的东西朝南（镜头这边）：太阳方向换到图的坐标里 = (东西分量, 高度, 南北分量)。夜里取镜头里最强的 8 个光源（ui/vfx_fx 的 vxGather），照亮朝着它的一侧、背着它的一侧压暗。
+//    只有立着的东西（排序画的那一段：树、建筑、单位）换这个着色器，地面、特效、滤镜、界面照旧。旧版的「方向光叠加层」在这套开着时不画（ui/vfx_sun.vxSky），光束、极光照旧；夜里的光照图（暗处开亮洞）照旧，它管明暗、这里管朝向。
+// ③ 影子层（vx25Shadows）：这一屏的树、建筑、亡灵、士兵、英雄，白天各拿自己的图斜切成剪影（脚下对齐、朝背着太阳的方向倒、太阳越低越长），城墙按「一格的方块」扫出影子；
+//    建筑、城墙脚下另画一圈柔和的贴地暗边（夜里也有）。全部先画到一张半分辨率的离屏图上、再整层按一个透明度盖到地面上：影子叠影子不会更深。
+//    剪影影子画过的东西，原来 shadow / shadowE 那块就不画了（VX_SK）；没画剪影的（飞着的、城墙上的、船、夜里的单位）照旧版画。
+let VX_25=false,VX_SK=0;   // VX_25：这一帧用不用 2.5D 光影；VX_SK：正在画的这个东西影子层里已经有影子了（ui/draw.shadow / shadowE 读）
+const VXN={r:null,c1:null,c2:null,nr:-1,n2:0,q:[],qi:0,hint:new Map(),cap:0,D:null,HB:null,LM:null,O:null,ms:0,cnt:0,px:0,gen:0};   // q / qi：等着算法线的图和算到第几张；hint：城墙的提示；ms / cnt / px：累计算了多久、几张、多少像素（测试、调试看）
+const VXD={H:new Uint8Array(1024),v:new Float32Array(3),l:new Float32Array(3),a:new Float32Array(3),k:new Float32Array(3),o:new Float32Array(4),lp:new Float32Array(32),lc:new Float32Array(24),ls:new Float32Array(8),li:new Int32Array(8),nl:0,
+  wh:{r:1,g:1,b:1},amb:null,sx:0,sy:0,px:1,py:0,da:0,ns:0,nc:0};   // H[k]：排好序的第 k 个东西影子层里画过了；sx / sy / da：这一帧剪影的偏移（每像素身高）和透明度；ns / nc：这一帧画了几个剪影、几块贴地暗边
+// —— 每帧一次（ui/draw.render_ 开头，光影开着时）：换上带光照的着色器；图集变了就重排法线的活；再算几毫秒法线 ——
+function vx25Frame(){const U=CFG.vfx.d25,N=VXN;if(!U.on||!R.lit25||!R.lit25(true)){if(VX_25)vx25Off();return}VX_25=true;
+  if(N.r!==R){N.r=R;N.c1=N.c2=null}   // 渲染器换了（显卡上下文丢了重建）：全部重来
+  if(N.c1!==ATLAS.canvas){N.c1=ATLAS.canvas;N.c2=null;R.nmInit(0);N.q.length=0;N.qi=0;N.gen++;for(let i=0;i<REGS.length;i++){const r=REGS[i];if(r.u1>0&&r.v0<1)N.q.push(r)}}   // 第一页（重排过 = 新画布）：清空、全部重算
+  if(N.c2!==ATLAS.p2||N.nr!==WDYN.nr){N.c2=ATLAS.p2;N.nr=WDYN.nr;R.nmInit(1);N.n2=0;let w=N.qi;for(let i=N.qi;i<N.q.length;i++)if(N.q[i].v0<1)N.q[w++]=N.q[i];N.q.length=w}   // 第二页换了画布（加高）/ 动态区清空过：清空，排着队的第二页的图作废（位置可能变了），下面重新排
+  const L=WDYN.L;if(L.length<N.n2)N.n2=0;for(;N.n2<L.length;N.n2++)N.q.push(L[N.n2]);   // 第二页新加的图
+  if(N.qi<N.q.length)vxnStep(U.genMs)}
+function vx25Off(){VX_25=false;VX_SK=0;if(R.lit25)R.lit25(false)}
+function vxnStep(ms){const N=VXN,t0=performance.now();let t=t0;while(N.qi<N.q.length){vxnGen(N.q[N.qi++]);t=performance.now();if(t-t0>=ms)break}N.ms+=t-t0;if(N.qi>=N.q.length){N.q.length=0;N.qi=0}}
+// 城墙的图（ui/draw.drawStructSprite 画墙时登记，一张图一次）：mask = 和哪几边的墙连着（1 北 2 东 4 南 8 西）
+function vx25Wall(sp,mask){if(VXN.hint.has(sp)||sp.w!==16)return;const k=sp.k||1;VXN.hint.set(sp,{top:16*k,e:mask&11,h0:mask&4?16*k:0});VXN.q.push(sp)}
+// 算一张图的法线，传到法线贴图上它在图集里的位置
+function vxnGen(r){const W=r.pw,H=r.ph,n=W*H,N=VXN,U=CFG.vfx.d25;if(!(n>0)||!(r.u1>0))return;const pg=r.v0>=1?1:0,PW=W+2,PH=H+2,pn=PW*PH;
+  if(N.cap<pn){N.cap=Math.max(pn,N.cap*2,4096);N.D=new Float32Array(N.cap);N.HB=new Float32Array(N.cap);N.LM=new Float32Array(N.cap);N.O=new Uint8Array(N.cap*4)}
+  const O=N.O;if(r===SPR.white){for(let i=0,o=0;i<n;i++,o+=4){O[o]=128;O[o+1]=128;O[o+2]=255;O[o+3]=153}R.nmPut(pg,r.x,r.y,W,H,O.subarray(0,n*4));return}   // 纯白点（画纯色块用）：平面，透明度 153 = 「平的小零件」
+  let src;try{src=r.c.getContext('2d').getImageData(0,0,W,H).data}catch(e){return}
+  const hint=N.hint.get(r),D=N.D,HB=N.HB,LM=N.LM,BIG=1e5,eg=hint?hint.e:0,eT=eg&1?BIG:0,eR=eg&2?BIG:0,eL=eg&8?BIG:0,h0=hint&&hint.h0?hint.h0:H+1,top=hint?hint.top:0,kk=r.k||1;
+  // 带一圈边的格子：边 = 图外面。左右、上边算「空的」（连着墙的那几边算「实的」），下边一律算实的（脚踩在地上，底边不做斜角）
+  for(let x=0;x<PW;x++){D[x]=eT;D[(PH-1)*PW+x]=BIG;LM[x]=-1;LM[(PH-1)*PW+x]=-1}
+  for(let y=0;y<PH;y++){D[y*PW]=y===0?Math.min(eT,eL):eL;D[y*PW+PW-1]=y===0?Math.min(eT,eR):eR;LM[y*PW]=-1;LM[y*PW+PW-1]=-1}
+  for(let y=0,s=3;y<H;y++){let i=(y+1)*PW+1;const solid=y>=h0;for(let x=0;x<W;x++,i++,s+=4){const op=src[s]>=128;D[i]=op||solid?BIG:0;LM[i]=op?(src[s-3]*0.3+src[s-2]*0.59+src[s-1]*0.11)/255:-1}}
+  // 到最近的空像素的距离（3-4 倒角距离，来回各扫一遍）
+  for(let y=1;y<=H;y++){let i=y*PW+1;for(let x=1;x<=W;x++,i++){let v=D[i];if(v===0)continue;let a=D[i-1]+3;if(a<v)v=a;a=D[i-PW]+3;if(a<v)v=a;a=D[i-PW-1]+4;if(a<v)v=a;a=D[i-PW+1]+4;if(a<v)v=a;D[i]=v}}
+  for(let y=H;y>=1;y--){let i=y*PW+W;for(let x=W;x>=1;x--,i--){let v=D[i];if(v===0)continue;let a=D[i+1]+3;if(a<v)v=a;a=D[i+PW]+3;if(a<v)v=a;a=D[i+PW+1]+4;if(a<v)v=a;a=D[i+PW-1]+4;if(a<v)v=a;D[i]=v}}
+  // 斜角的高度：离边缘 B 像素以内按 1 − (1 − t)² 鼓起来（边上最陡），再往里是平的。B 按图的大小定（小人整个是圆的，大建筑只有一圈边）
+  const B=hint?U.wallBev*kk:Math.max(U.bevMin*kk,Math.min(U.bevMax*kk,Math.min(W,H)*U.bev)),bk=U.bevK*B,iB=1/B,dk=U.det*kk*0.5;
+  for(let i=0;i<pn;i++){const d=D[i];if(d<=0){HB[i]=0;continue}let t=(d/3-0.5)*iB;if(t>1)t=1;const u=1-t;HB[i]=bk*(1-u*u)}
+  for(let y=0,o=0;y<H;y++){let i=(y+1)*PW+1;const up=y<top;for(let x=0;x<W;x++,i++,o+=4){const lm=LM[i];if(lm<0){O[o]=128;O[o+1]=128;O[o+2]=255;O[o+3]=255;continue}
+      const l0=LM[i-1],l1=LM[i+1],l2=LM[i-PW],l3=LM[i+PW];
+      const nx=-((HB[i+1]-HB[i-1])*0.5+((l1<0?lm:l1)-(l0<0?lm:l0))*dk),nd=-((HB[i+PW]-HB[i-PW])*0.5+((l3<0?lm:l3)-(l2<0?lm:l2))*dk);   // 图平面里的法线：nx 朝右、nd 朝下，朝外 = 1
+      let a=nx,b,c;if(up){b=1;c=nd}else{b=-nd;c=1}const q=127.5/Math.sqrt(a*a+b*b+c*c);   // 立面：(右, 上, 朝外) = (nx, −nd, 1)；墙顶（朝天的平面，图里往下 = 往南）：(nx, 1, nd)
+      O[o]=127.5+a*q;O[o+1]=127.5+b*q;O[o+2]=127.5+c*q;O[o+3]=255}}
+  R.nmPut(pg,r.x,r.y,W,H,O.subarray(0,n*4));N.cnt++;N.px+=n}
+// —— 每个镜头一次（ui/draw.drawWorld 开始画立着的东西之前）：换上带光照的着色器、把这个镜头的光交给它（画完 R.litEnd 换回去）——
+function vx25View(V){const S=VXS,U=CFG.vfx.d25,X=VXD,D=S.D,ce=Math.cos(S.el),se=S.se>0?S.se:0,A=X.amb||(X.amb=C(U.amb)),wc=S.wc,sk=U.sun*D,z=zoom;
+  X.v[0]=OX-CX*z;X.v[1]=OY-CY*z;X.v[2]=1/z;X.l[0]=S.ux*ce;X.l[1]=se;X.l[2]=S.uy*ce;
+  X.a[0]=1+(A.r*U.ambK-1)*D;X.a[1]=1+(A.g*U.ambK-1)*D;X.a[2]=1+(A.b*U.ambK-1)*D;X.k[0]=wc.r*sk;X.k[1]=wc.g*sk;X.k[2]=wc.b*sk;
+  X.o[0]=U.ao;X.o[1]=U.aoH;X.o[2]=U.back;X.o[3]=U.ptBack;
+  // 点光源：画面暗下来以后（时段 / 天气滤镜的透明度）才有；镜头里强度 × 半径最大的 8 个
+  const nk=vxClamp01((G.tA+G.wA-U.nt0)/U.nt1);let nl=0;
+  if(nk>0.02){const hw=V.w/2/z,hh=V.h/2/z;VXV_X0=CX-hw;VXV_X1=CX+hw;VXV_Y0=CY-hh;VXV_Y1=CY+hh;vxGather();const n=VXL.n,LS=X.ls,LI=X.li,M=U.ptN<8?U.ptN:8;
+    for(let i=0;i<n;i++){const sc=VXL.I[i]*VXL.RR[i];let j=nl;if(nl>=M){if(sc<=LS[M-1])continue;j=M-1}else nl++;while(j>0&&LS[j-1]<sc){LS[j]=LS[j-1];LI[j]=LI[j-1];j--}LS[j]=sc;LI[j]=i}
+    for(let j=0;j<nl;j++){const i=LI[j],c=vxColOf(VXL.K_[i]),r=VXL.RR[i]*U.ptR,f=VXL.I[i]*U.ptK*nk;X.lp[j*4]=VXL.X[i];X.lp[j*4+1]=VXL.Y[i]+U.ptH;X.lp[j*4+2]=U.ptH;X.lp[j*4+3]=1/(r*r);X.lc[j*3]=c.r*f;X.lc[j*3+1]=c.g*f;X.lc[j*3+2]=c.b*f}}
+  X.nl=nl;R.litBegin(X.v,X.l,X.a,X.k,X.o,X.lp,X.lc,nl)}
+// —— 影子层（ui/draw.drawWorld 排好序、开始画之前）——
+// 一张图的剪影（ui/draw.sprW 在 VX_RM = 2 时转到这里：照平时的画法走一遍，画出来的是影子）：顶边挪到 (sx, sy) × 图高；
+//   底边绕脚下的中点转到和影子方向垂直（px, py：等于这张图转过去正对着太阳）——不转的话太阳在正东 / 正西时底边和影子方向平行，影子压成一条线
+function vx25Sil(r,wx,wy,flip,a){const z=zoom,X=VXD,h=r.h,hw=r.w*0.5*z,cx=(wx-CX)*z+OX+hw,yb=(wy+h-CY)*z+OY-Math.abs(X.py)*hw*0.5,bx=X.px*hw,by=X.py*hw,dx=X.sx*h*z,dy=X.sy*h*z,al=a*X.da;
+  R.quad(r,flip,cx-bx+dx,yb-by+dy,cx+bx+dx,yb+by+dy,cx+bx,yb+by,cx-bx,yb-by,X.wh,al*CFG.vfx.d25.silTop,al);X.ns++}
+// 一条柔边：从 (ax, ay)-(bx, by) 这条线（透明度 a）往 (ox, oy) 方向淡出到 0
+function vx25Band(ax,ay,bx,by,ox,oy,a){const z=zoom,x0=(ax-CX)*z+OX,y0=(ay-CY)*z+OY,x1=(bx-CX)*z+OX,y1=(by-CY)*z+OY;R.quad(null,false,x0+ox*z,y0+oy*z,x1+ox*z,y1+oy*z,x1,y1,x0,y0,VXD.wh,0,a);VXD.nc++}
+function vx25Box(x0,y0,x1,y1,a0,a1){const z=zoom,X0=(x0-CX)*z+OX,Y0=(y0-CY)*z+OY,X1=(x1-CX)*z+OX,Y1=(y1-CY)*z+OY;R.quad(null,false,X0,Y0,X1,Y0,X1,Y1,X0,Y1,VXD.wh,a0,a1)}
+// 建筑脚下的贴地暗边：占地靠南的一条（往里收 ins、深 dp）实心，四周淡出 f
+function vx25Contact(x0,x1,y1,U){const a=U.ctA,f=U.ctF,xa=x0+U.ctIn,xb=x1-U.ctIn,ya=y1-U.ctD;vx25Box(xa,ya,xb,y1,a,a);VXD.nc++;
+  vx25Band(xa,y1,xb,y1,0,f,a);vx25Band(xa,ya,xb,ya,0,-f,a);vx25Band(xa,ya,xa,y1,-f,0,a);vx25Band(xb,ya,xb,y1,f,0,a)}
+function vx25Shadows(ks,dn,V){const S=VXS,U=CFG.vfx.d25,X=VXD,D=S.D,day=D>0.02&&(S.sx!==0||S.sy!==0),st=G.structs,so=G.soldiers,tr=G.trees,rs=G.residents;
+  if(X.H.length<dn)X.H=new Uint8Array(dn*2);const H=X.H;X.sx=S.sx*U.silH;X.sy=S.sy*U.silH;X.da=D;X.ns=0;X.nc=0;if(!ESHW)eShwInit();
+  {const sq=CFG.vfx.sun.sq,gx=S.sx,gy=S.sy/sq,l=Math.hypot(gx,gy);let px=1,py=0;if(l>1e-4){px=-gy/l;py=gx/l;if(px<0){px=-px;py=-py}}X.px=px;X.py=py*sq}   // 地面上和影子方向垂直的方向（取朝右的那个），南北方向压扁 sq（同 ui/vfx_sun）
+  R.shBegin();VX_RM=2;VX_RMY=-1;
+  try{for(let k=0;k<dn;k++){const v=ks[k],kind=(v>>>16)&7,i=v&65535;let h=0;
+    switch(kind){
+      case 0:if(day){drawTreeBody(tr[i]);h=1}break;
+      case 1:{const s=st[i],cf=s.cfg,ty=s.type;if(SV_ON&&ty==='keep'||cf&&(cf.amJet||cf.cat==='settle')||isTrapT(ty))break;h=1;
+        if(isWallT(ty)){const m=wallMask(s.tx,s.ty),x0=s.tx*16,y0=s.ty*16,x1=x0+16,y1=y0+16,a=U.ctA,f=U.ctF;
+          if(!(m&4))vx25Band(x0,y1,x1,y1,0,f,a);if(!(m&8))vx25Band(x0,y0+4,x0,y1,-f,0,a);if(!(m&2))vx25Band(x1,y0+4,x1,y1,f,0,a);   // 贴地暗边：只画没连着墙的那几边（北边被墙顶挡住，不画）
+          if(day){const dx=S.sx*U.wallH,dy=S.sy*U.wallH,a1=D,z=zoom,X0=(x0-CX)*z+OX,Y0=(y0-CY)*z+OY,X1=X0+16*z,Y1=Y0+16*z,ox=dx*z,oy=dy*z,xs=dx<0?X0:X1,ys=dy<0?Y0:Y1,W=X.wh;   // 城墙 = 一格的方块：占地往影子方向扫过去（挪过去的占地 + 两条平行四边形）
+            R.quad(null,false,X0+ox,Y0+oy,X1+ox,Y0+oy,X1+ox,Y1+oy,X0+ox,Y1+oy,W,a1,a1);R.quad(null,false,xs+ox,Y0+oy,xs+ox,Y1+oy,xs,Y1,xs,Y0,W,a1,a1);R.quad(null,false,X0+ox,ys+oy,X1+ox,ys+oy,X1,ys,X0,ys,W,a1,a1);X.ns++}break}
+        if(ty==='keep'){vx25Contact(s.x-16,s.x+16,s.y,U);if(day){const KS=SPR.keepL?SPR.keepL[KEEP_T(s.level)]:SPR.keep;sprW(KS,s.x-16,s.y-KS.h)}break}
+        {const n=s.fs||1;vx25Contact(s.tx*16,(s.tx+n)*16,(s.ty+n)*16,U);if(day)drawStructSprite(ty==='ynDevice'?ydvSprK(s):ty,s.level,s.tx,s.ty,0)}break}
+      case 2:{if(!day||CH_ESC!==1)break;const t=E.t[i],c=ETC[t];if(c.esb||ESHW[t]<0||EFLY[t]||E.lz[i]>0||E.air[i]||c.hive&&E.hst[i]>=0||ESEG[t]||eLift(i)>0.5)break;
+        drawUnitSpr(E.alt[i]&&SPR.enemyAlt[t]?SPR.enemyAlt[t]:SPR.enemies[t],E.x[i],E.y[i],E.walk[i],E.an[i],E.face[i],0,E.lu[i],c.ghost||E.clk[i]>G.time?0.5:1,null);h=1;break}
+      case 3:{if(!day)break;const s=so[i];if(s.layer||s.elev||s.c.ship||s.abS||SD_BNS.size&&SD_BNS.has(s))break;const fr=s.tsk?tssFr(s):SPR.units[uaSprK(s)];if(!fr)break;
+        drawUnitSpr(fr,s.x,s.y,s.walking,s.anim,s.facing,0,0,s.stealthed?0.45:1,null);h=1;break}
+      case 4:{if(!day)break;const u=G.heroes[i];if(u.d.ship||u.elev||u.jz||SD_BNS.size&&SD_BNS.has(u))break;drawUnitSpr(SPR.heroes[u.spr||u.id]||SPR.hero,u.x,u.y,u.walking,u.anim,u.facing,0,0,u.stealthT>0||u.stealthed?0.38:1,null);h=1;break}
+      case 5:{if(!day)break;const t=LMt[i];if(ETC[t].hover)break;const r=SPR.enemies[t][LMf[i]];sprW(r,Math.round(LMx[i])-(r.w>>1),Math.round(LMy[i])-r.h,LMd[i]===1,false);h=1;break}
+      case 7:{if(!day||!SPR.res)break;const r=rs[i];drawUnitSpr(SPR.res[r.look%SPR.res.length],r.x,r.y,r.walking,r.anim,r.facing,0,0,1);h=1;break}
+    }H[k]=h}}
+  finally{VX_RM=0;VX_RMY=-1}
+  R.shEnd(V.x,V.y,V.w,V.h,U.shA)}
 
 /* ---------- 0.13.2 塔楼皮肤的攻击画面：换画法（配色在 data/tskins 的 vis，描述 game/tskin.tskVD；只改画面）----------
    颜色只换色调的（众合议会四座魔法塔、各种命中特效、爆炸）不经过这里：弹道 / 特效记着 skd，ui/draw 画的时候 FX_DT = skd，rectW 换色调。
@@ -105463,7 +105631,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.2.8',GAME_TAG='测试版',GAME_CODE=308,GAME_BUILD="901db0f",GAME_BUILT=1795420848885,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.2.8',GAME_TAG='测试版',GAME_CODE=308,GAME_BUILD="2a1b828",GAME_BUILT=1795444405046,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
