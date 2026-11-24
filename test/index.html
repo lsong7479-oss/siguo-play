@@ -53385,76 +53385,185 @@ function chyAMedGun(T,b){const w=chyAm(CHYA.white,'cloth'),g=chyAm(CHYA.gun);T.p
   T.part(g,{R:0.3},p=>p.cap(23.4,19.6,28.6,19.6,0.8,0.7));T.dt(29.2,19.6,0.9,CHYA.green)}
 const chyAPack=cross=>(T,b)=>{T.part(chyAm(cross?CHYA.white:'#3a3430',cross?'cloth':'leather'),{R:1},p=>p.rect(4.6,14.6,5.6,8.4,1.4));if(cross){T.ln(7.4,16.2,7.4,20.6,[chyAm(CHYA.red,'cloth'),1]);T.ln(5.4,18.4,9.4,18.4,[chyAm(CHYA.red,'cloth'),1])}};
 const chyABand=(T,b)=>{for(let q=0;q<4;q++)T.part(chyAm('#5a5a3e'),{R:0.4},p=>p.ell(11.6+q*2,19.6,0.9,1.2))};   // 胸前的一排手雷
-// ================= 载具 / 飞机 / 舰船的零件（画布坐标）=================
-function chyATrack(S,x,y,w,h,fr,n){const d=chyAm(CHYA.blkD),g=chyAm(CHYA.gun);S.part(d,{R:h*0.48},p=>p.rect(x,y,w,h,h*0.48));for(let q=0;q<n;q++){const cx=x+h*0.5+(w-h)*(q/(n-1));S.part(g,{R:1},p=>p.ell(cx,y+h*0.5,h*0.32,h*0.32));S.dt(cx,y+h*0.5,0.8,CHYA.gunL)}
-  for(let q=0;q<w/3;q++){const xx=x+((q*3+(fr?1.5:0))%w);S.px(xx,y+0.6,'#5a5660');S.px(xx,y+h-1.2,'#5a5660')}}
-function chyAWheels(S,x,y,w,r,fr,n){for(let q=0;q<n;q++){const cx=x+r+(w-2*r)*(q/(n-1));S.part(chyAm('#1a181c','leather'),{R:r},p=>p.ell(cx,y,r,r));S.part(chyAm(CHYA.gun),{R:0.6},p=>p.ell(cx,y,r*0.45,r*0.45));const a=fr?0.8:0;S.px(cx+Math.cos(a)*r*0.7,y+Math.sin(a)*r*0.7,'#6a6670')}}
+// ================= 载具 / 飞机 / 舰船（2.5D，用户 11-24：2D 侧面像纸片感重）=================
+// 视角同 art/hd25：从南边斜着往下看，纵深压扁一半（CHYA_KY），光从左上来；地上的载具再往镜头转一点——纵深每远 1 像素往右挪 CHYA_KX，看得到顶面、近侧的侧面、车头那一面（背光最暗）
+// 世界坐标 (u 车长，车头朝右；d 纵深，0 = 近侧、往远处加；h 离地高) → 画布 pj(u, d, h)。只画朝右的一张：ui/draw 朝左时整张左右翻，从南边看过去，左右镜像正好就是朝左开的样子（顶面、侧面的关系不变）
+// 炮塔、炮管不会单独转（亡灵和赤曜工厂的载具都是整张图跟着朝向翻），所以炮塔画在图里；舰船用 art/hd25 的 h25Ship（和别的船一个画法，带吃水线）
+const CHYA_KX=0.3,CHYA_KY=0.5,CHYA_SD='#3a363e';   // CHYA_SD：车体侧面（比 CHYA.blk 亮一点，侧面和描边分得开）
 function chyAEmb(S,x,y,s){S.part(chyAm(CHYA.gold),{R:0.4},p=>{p.poly([[x,y-1.2*s],[x-3.4*s,y-2.4*s],[x-2.8*s,y-0.2*s],[x,y+0.6*s]]);p.poly([[x,y-1.2*s],[x+3.4*s,y-2.4*s],[x+2.8*s,y-0.2*s],[x,y+0.6*s]]);p.ell(x,y+0.6*s,0.9*s,1.4*s)});S.px(x,y,CHYA.glow)}   // 金鹰徽
-function chyACoil(S,x,y,w,h){S.part(chyAm('#1c2a3a'),{R:1},p=>p.rect(x,y,w,h,1.2));for(let q=0;q<w;q+=2.4)S.ln(x+q+0.6,y+0.6,x+q+0.6,y+h-0.6,[chyAm(CHYA.cyan,'gem'),1]);S.ln(x+0.4,y+h*0.5,x+w-0.4,y+h*0.5,CHYA.cyanL)}   // 源能线圈
-// 坦克类：车体、履带、炮塔、炮管；o.src 源能（青蓝线圈）、o.rk 导弹架、o.mg 机枪
-function chyATank(W,H,o){return fr=>hdFig(W,H,S=>{const A=CHYA,blk=chyAm(A.blk),red=chyAm(A.red),gun=chyAm(A.gun),hy=H*0.5,th=H*0.26;
-  chyATrack(S,W*0.06,H-th-1,W*0.86,th,fr,o.wh||5);
-  S.part(blk,{R:2},p=>p.poly([[W*0.04,hy+2],[W*0.12,hy-H*0.08],[W*0.8,hy-H*0.08],[W*0.96,hy+1],[W*0.92,H-th],[W*0.08,H-th]]));
-  S.part(red,{R:0.6,edge:false},p=>p.rect(W*0.1,hy+1,W*0.78,H*0.06,0.4));chyAEmb(S,W*0.3,hy+H*0.13,W/60);
-  if(o.rk){S.part(gun,{R:1.2},p=>p.poly([[W*0.24,hy-H*0.06],[W*0.78,hy-H*0.32],[W*0.86,hy-H*0.2],[W*0.34,hy+H*0.02]]));for(let q=0;q<(o.rk|0);q++){const t=(q+0.5)/o.rk,x=W*(0.3+0.48*t),y=hy-H*(0.06+0.24*t);S.part(red,{R:0.6},p=>p.ell(x,y,1.4,1.4));S.px(x,y,A.glow)}
-    if(o.src)chyACoil(S,W*0.36,hy-H*0.02,W*0.3,H*0.08);return}
-  const tx=W*(o.tx||0.36),tw=W*(o.tw||0.38),ty=hy-H*0.3,thh=H*0.24;
-  if(o.bar!==false)S.part(gun,{R:0.6},p=>p.cap(tx+tw*0.8,ty+thh*0.45,W*(o.bl||0.99),ty+thh*0.42,H*(o.br||0.045),H*(o.br||0.045)*0.85));
-  S.part(blk,{R:2.4},p=>p.poly([[tx,ty+thh],[tx+tw*0.12,ty],[tx+tw*0.82,ty],[tx+tw,ty+thh*0.5],[tx+tw*0.9,ty+thh]]));
-  S.part(red,{R:0.5},p=>p.rect(tx+tw*0.1,ty+thh*0.56,tw*0.76,thh*0.18,0.4));S.rc(tx+tw*0.6,ty+thh*0.2,tw*0.16,thh*0.16,A.glow);
-  if(o.src){chyACoil(S,tx+tw*0.14,ty-H*0.08,tw*0.6,H*0.07);S.part(chyAm('#2a3a4a'),{R:0.6},p=>p.cap(tx+tw*0.8,ty+thh*0.2,W*0.98,ty+thh*0.2,H*0.03,H*0.025));S.dt(W*0.98,ty+thh*0.2,1,A.cyanL)}
-  if(o.mg)S.part(gun,{R:0.3},p=>p.cap(tx+tw*0.5,ty-1,tx+tw*1.02,ty-1.6,0.6,0.5))})}
-// 车（轮式）：装甲车、导弹车
-function chyACar(W,H,o){return fr=>hdFig(W,H,S=>{const A=CHYA,blk=chyAm(A.blk),red=chyAm(A.red),gun=chyAm(A.gun),r=H*0.15,hy=H-r*2-1;
-  S.part(blk,{R:2.4},p=>p.poly([[W*0.04,hy+r],[W*0.1,hy-H*0.26],[W*0.7,hy-H*0.28],[W*0.94,hy-H*0.06],[W*0.96,hy+r],[W*0.04,hy+r*1.4]]));
-  S.part(chyAm('#ffb070','gem'),{R:0.6},p=>p.poly([[W*0.74,hy-H*0.24],[W*0.88,hy-H*0.08],[W*0.74,hy-H*0.08]]));
-  S.part(red,{R:0.4,edge:false},p=>p.rect(W*0.08,hy-H*0.02,W*0.84,H*0.06,0.3));chyAEmb(S,W*0.4,hy+H*0.08,W/64);
-  if(o.rk){S.part(gun,{R:1},p=>p.poly([[W*0.12,hy-H*0.3],[W*0.62,hy-H*0.62],[W*0.68,hy-H*0.5],[W*0.2,hy-H*0.2]]));for(let q=0;q<o.rk;q++){const t=(q+0.5)/o.rk;S.dt(W*(0.18+0.44*t),hy-H*(0.3+0.28*t),1.2,q%2?A.red:A.glow)}}
-  if(o.mg){S.part(blk,{R:1.4},p=>p.rect(W*0.38,hy-H*0.44,W*0.2,H*0.18,1.4));for(const dy of[0.33,0.27])S.part(gun,{R:0.3},p=>p.cap(W*0.56,hy-H*dy,W*0.86,hy-H*dy,0.6,0.5))}
-  chyAWheels(S,W*0.1,H-r-1,W*0.8,r,fr,o.wh||3)})}
-// 野战炮：两轮炮车、长炮管、防盾
-function chyAFieldGun(fr){return hdFig(56,38,S=>{const A=CHYA,gun=chyAm(A.gun),blk=chyAm(A.blk),red=chyAm(A.red);
-  S.part(gun,{R:0.8},p=>p.cap(4,33,22,26,1.2,1));S.part(gun,{R:0.6},p=>p.cap(20,22,53,13,2.2,1.8));S.part(blk,{R:0.6},p=>p.rect(16,18,9,9,1.4));
-  S.part(blk,{R:1},p=>p.poly([[22,12],[30,10],[31,26],[23,28]]));S.part(red,{R:0.3,edge:false},p=>p.rect(23,17,7.4,1.6,0.3));chyAEmb(S,26.6,22,0.9);S.dt(53.4,12.8,1.1,A.glow);
-  chyAWheels(S,13,32,14,5,fr,2)})}
-// 飞机：o.k 'heli' 直升机 / 'jet' 战斗机 / 'bomb' 轰炸机 / 'scout' 侦察机；src 源能
-function chyAPlane(W,H,o){return fr=>hdFig(W,H,S=>{const A=CHYA,blk=chyAm(A.blk),red=chyAm(A.red),gun=chyAm(A.gun),gl=chyAm('#ff9a5a','gem'),my=H*0.5;
-  if(o.k==='heli'){S.part(blk,{R:1},p=>p.poly([[W*0.04,my-H*0.12],[W*0.44,my-H*0.04],[W*0.44,my+H*0.08],[W*0.08,my-H*0.02]]));S.part(red,{R:0.6},p=>p.poly([[W*0.02,my-H*0.3],[W*0.1,my-H*0.3],[W*0.12,my-H*0.04],[W*0.05,my-H*0.04]]));
-    S.part(blk,{R:H*0.24},p=>p.ell(W*0.62,my+H*0.02,W*0.24,H*0.24));S.part(gl,{R:1,edge:false},p=>p.ell(W*0.76,my-H*0.04,W*0.08,H*0.12));S.part(red,{R:0.4,edge:false},p=>p.rect(W*0.42,my+H*0.08,W*0.38,H*0.06,0.3));
-    chyAEmb(S,W*0.56,my+H*0.02,W/70);S.part(gun,{R:0.4},p=>{p.rect(W*0.5,my+H*0.3,W*0.34,1.2,0.4);p.rect(W*0.46,my+H*0.38,W*0.42,1.4,0.6)});   // 机炮、起落橇
-    S.part(gun,{R:0.6},p=>p.rect(W*0.58,my+H*0.18,W*0.14,H*0.08,0.6));S.part(red,{R:0.4},p=>p.cap(W*0.6,my+H*0.24,W*0.76,my+H*0.24,0.9,0.9));
-    S.part(gun,{R:0.4},p=>p.rect(W*0.6,my-H*0.3,2,H*0.12,0.4));const L=fr?W*0.46:W*0.3;S.ln(W*0.62-L,my-H*0.32,W*0.62+L,my-H*0.32,[gun,2],1);S.ln(W*0.04,my-H*0.3+(fr?-2:2),W*0.08,my-H*0.3-(fr?-2:2),[gun,1],1);return}
-  const big=o.k==='bomb',L0=W*0.04,L1=W*0.96;
-  S.part(blk,{face:'top',R:0.8},p=>p.poly([[W*0.36,my+H*0.08],[W*0.6,my+H*0.08],[W*(big?0.5:0.46),my+H*0.46],[W*(big?0.24:0.3),my+H*0.46]]));   // 远侧机翼
-  S.part(red,{R:0.8},p=>p.poly([[L0,my-H*0.4],[L0+W*0.1,my-H*0.4],[L0+W*0.18,my-H*0.04],[L0+W*0.02,my-H*0.04]]));   // 垂尾
-  S.part(blk,{R:H*0.16},p=>p.poly([[L0,my-H*0.06],[W*0.3,my-H*0.16],[W*0.74,my-H*0.16],[L1,my],[W*0.74,my+H*0.14],[W*0.3,my+H*0.14],[L0+W*0.02,my+H*0.08]]));
-  S.part(gl,{R:1,edge:false},p=>p.ell(W*0.7,my-H*0.16,W*0.08,H*0.1));S.part(red,{R:0.4,edge:false},p=>p.rect(W*0.2,my-H*0.02,W*0.56,H*0.05,0.3));chyAEmb(S,W*0.4,my+H*0.02,W/72);
-  if(o.src){chyACoil(S,W*0.28,my+H*0.12,W*0.3,H*0.08);S.dt(L1,my,1.2,A.cyanL)}
-  if(big)for(let q=0;q<3;q++)S.part(gun,{R:0.6},p=>p.ell(W*(0.38+q*0.1),my+H*0.24,W*0.035,H*0.07));
-  S.part(blk,{face:'top',R:0.8},p=>p.poly([[W*0.34,my+H*0.06],[W*0.62,my+H*0.06],[W*(big?0.46:0.42),my-H*(big?0.48:0.42)],[W*(big?0.26:0.3),my-H*(big?0.48:0.42)]]));   // 近侧机翼
-  if(o.k!=='bomb')S.part(gun,{R:0.3},p=>p.rect(W*0.54,my+H*0.2,W*0.3,1.4,0.4));
-  const fl=fr?1:0.6;S.part(chyAm(A.glow,'gem'),{R:1,edge:false},p=>p.poly([[L0-1,my-H*0.02],[L0-W*0.06*fl-2,my],[L0-1,my+H*0.06]]))})}   // 尾焰
-// 飞艇：长气囊 + 吊舱（四个乘员的位置）
-function chyABlimp(fr){return hdFig(84,64,S=>{const A=CHYA,env=chyAm('#3a2a2e','cloth'),red=chyAm(A.red,'cloth'),blk=chyAm(A.blk),gold=chyAm(A.gold);
-  S.part(red,{R:1},p=>{p.poly([[6,10],[14,10],[18,24],[8,24]]);p.poly([[6,38],[14,38],[18,28],[8,28]])});
-  S.part(env,{R:8},p=>p.ell(44,26,38,16));S.part(red,{R:3,edge:false},p=>{p.ell(44,26,38,6);p.cut.ell(44,26,38,3.6)});chyAEmb(S,52,24,1.6);
-  S.part(gold,{R:0.4,edge:false},p=>p.rect(14,25.4,60,1,0.3));for(const x of[30,50])S.ln(x,40,x+(x<40?4:-4),48,[chyAm(CHYA.gun),1]);
-  S.part(blk,{R:2},p=>p.poly([[24,46],[62,46],[58,58],[28,58]]));for(let q=0;q<4;q++){const x=31+q*7.4;S.part(hm(A.skin,'skin'),{R:0.6},p=>p.ell(x,45,1.8,1.8));S.part(blk,{R:0.6},p=>p.ell(x,44,2,1.2));S.px(x+0.8,45,A.glow)}
-  S.part(chyAm(A.gun),{R:0.4},p=>p.rect(40,58,6,3,0.6));const L=fr?7:4;S.ln(4,26-L,4,26+L,[chyAm(A.gunL),1],1)})}
-// 舰船：船身（船头朝右）、上层建筑、炮塔；o.cv 航母（平直的甲板 + 小飞机）、o.ms 导弹箱、o.guns 炮塔数、o.src 源能
-function chyAShip(W,H,o){return fr=>hdFig(W,H,S=>{const A=CHYA,blk=chyAm(A.blk),blkD=chyAm(A.blkD),red=chyAm(A.red),gun=chyAm(A.gun),wl=H*0.72;
-  S.part(chyAm('#2a5a7a','gem'),{R:2,edge:false},p=>p.ell(W*0.5,wl+H*0.16,W*0.5,H*0.12));   // 船边的浪
-  S.part(blkD,{R:2},p=>p.poly([[W*0.03,wl-H*0.16],[W*0.97,wl-H*0.2],[W*0.86,wl+H*0.12],[W*0.08,wl+H*0.12]]));S.part(red,{R:0.4,edge:false},p=>p.rect(W*0.06,wl+H*0.02,W*0.84,H*0.06,0.3));
-  if(o.cv){S.part(blk,{face:'top',R:1},p=>p.poly([[W*0.02,wl-H*0.3],[W*0.99,wl-H*0.3],[W*0.96,wl-H*0.18],[W*0.04,wl-H*0.18]]));S.ln(W*0.1,wl-H*0.24,W*0.9,wl-H*0.24,[chyAm(A.gold),1]);
-    S.part(blk,{R:1.4},p=>p.rect(W*0.62,wl-H*0.66,W*0.14,H*0.38,1.4));S.rc(W*0.66,wl-H*0.6,W*0.06,H*0.05,A.glow);if(o.src)chyACoil(S,W*0.63,wl-H*0.74,W*0.12,H*0.07);
-    for(let q=0;q<(o.src?4:3);q++){const x=W*(0.14+q*0.1);S.part(red,{R:0.4},p=>p.poly([[x,wl-H*0.36],[x+W*0.06,wl-H*0.33],[x,wl-H*0.3]]))}}
-  else{S.part(blk,{R:1.6},p=>p.poly([[W*0.32,wl-H*0.18],[W*0.38,wl-H*0.5],[W*0.56,wl-H*0.5],[W*0.6,wl-H*0.18]]));S.part(blk,{R:1},p=>p.rect(W*0.42,wl-H*0.72,W*0.08,H*0.24,1));S.rc(W*0.44,wl-H*0.42,W*0.1,H*0.05,A.glow);
-    S.part(chyAm(A.gun),{R:0.3},p=>p.rect(W*0.455,wl-H*0.92,1.4,H*0.22,0.3));if(fr)S.px(W*0.46,wl-H*0.94,A.glow)}
-  chyAEmb(S,W*0.24,wl-H*0.04,W/90);
-  const n=o.guns||0;for(let q=0;q<n;q++){const x=W*(o.cv?0.84:q<n/2?0.12+q*0.1:0.66+(q-n/2)*0.12),y=wl-H*(o.cv?0.36:0.24);S.part(blk,{R:1.2},p=>p.rect(x,y-H*0.06,W*0.07,H*0.1,1.2));
-    if(o.src){S.part(chyAm('#2a3a4a'),{R:0.4},p=>p.cap(x+W*0.06,y-H*0.02,x+W*0.14,y-H*0.04,1,0.8));S.dt(x+W*0.14,y-H*0.04,0.8,A.cyanL)}else S.part(gun,{R:0.4},p=>p.cap(x+W*0.06,y-H*0.02,x+W*0.15,y-H*0.06,0.9,0.7))}
-  if(o.ms){S.part(gun,{R:1},p=>p.rect(W*0.66,wl-H*0.34,W*0.18,H*0.16,1));for(let q=0;q<5;q++)S.dt(W*(0.68+q*0.03),wl-H*0.27,0.9,q%2?A.red:A.glow)}
-  if(o.deck)for(let q=0;q<o.deck;q++){const x=W*(0.16+q*0.06),y=wl-H*(o.cv?0.34:0.22);S.part(hm(A.skin,'skin'),{R:0.4},p=>p.ell(x,y-2,1.3,1.3));S.part(blk,{R:0.4},p=>p.rect(x-1.2,y-1,2.4,2.6,0.6))}})}
+const chyAPj=(ox,oy)=>(u,d,h)=>[ox+u+d*CHYA_KX,oy-h-d*CHYA_KY];
+// 侧面轮廓 prof [[u, h], ...]（凸多边形）沿纵深 d0..d1 拉成一块：看得到的顶面 / 斜面 / 车头面按朝向分明暗，最后画近侧的侧面；m {n 侧面, t 顶面, e 背光面}；返回 {f 近侧面, s [其余面]}
+function chyAExt(S,pj,prof,d0,d1,m,o){o=o||{};const n=prof.length;let A=0;for(let i=0;i<n;i++){const a=prof[i],b=prof[(i+1)%n];A+=a[0]*b[1]-b[0]*a[1]}
+  const s=[];for(let i=0;i<n;i++){const[u0,h0]=prof[i],[u1,h1]=prof[(i+1)%n];let nu=A>0?h1-h0:h0-h1,nh=A>0?u0-u1:u1-u0;const L=Math.hypot(nu,nh)||1;nu/=L;nh/=L;
+    if(nu*CHYA_KX+nh*CHYA_KY<=0.02)continue;
+    const fc=nh>0.75?'top':nh>0.3?3:nh>-0.2?(nu>0.75?1:2):0,mat=nh>0.3?m.t:m.e;
+    s.push(S.part(mat,{face:fc,R:0.6,join:s.length?s.slice():undefined},p=>p.poly([pj(u0,d0,h0),pj(u1,d0,h1),pj(u1,d1,h1),pj(u0,d1,h0)])))}
+  const f=S.part(m.n,{face:o.nf===undefined?'front':o.nf,R:0.6,join:o.join?s:undefined},p=>p.poly(prof.map(([u,h])=>pj(u,d0,h))));return{f,s}}
+// 方块（侧面是长方形）
+const chyABox=(S,pj,u0,u1,d0,d1,h0,h1,m,o)=>chyAExt(S,pj,[[u0,h0],[u1,h0],[u1,h1],[u0,h1]],d0,d1,m,o);
+// 材质三件套：侧面本色、顶面、背光面
+function chyAM3(c,t,e){return{n:chyAm(c),t:chyAm(t||c),e:chyAm(e||CHYA.gun)}}
+// 近侧面上的一条色带（u0..u1，h0..h1；d 在近侧面上）
+function chyAStrip(S,pj,u0,u1,d,h0,h1,mat,f){return S.part(mat,{face:f===undefined?2:f,R:0.4,edge:false},p=>p.poly([pj(u0,d,h0),pj(u1,d,h0),pj(u1,d,h1),pj(u0,d,h1)]))}
+// 轮子：近侧轮心 (u, d, r)，往远处宽 w；胎面 = 两个圆之间扫过去（有厚度），近侧轮面 + 轮毂；fr 轮毂上的亮点转一下
+function chyAWheel(S,pj,u,d,r,w,fr){const[x0,y0]=pj(u,d,r),[x1,y1]=pj(u,d+w,r),tire=chyAm('#1e1b20','leather');
+  S.part(tire,{R:r*0.7},p=>p.cap(x0,y0,x1,y1,r,r));S.part(tire,{face:'front',R:0.6},p=>p.ell(x0,y0,r,r));
+  S.part(chyAm(CHYA.gun),{R:0.8},p=>p.ell(x0,y0,r*0.52,r*0.52));const a=fr?0.9:-0.6;S.px(x0+Math.cos(a)*r*0.3,y0+Math.sin(a)*r*0.3,CHYA.gunL);S.dt(x0,y0,Math.max(0.6,r*0.16),CHYA.gold)}
+// 履带：侧面是跑道形，拉出宽 d0..d1；顶上一条履带面（防滑齿两帧错开半格），近侧面排 n 个负重轮
+function chyATrk(S,pj,u0,u1,d0,d1,th,fr,n){const r=th/2,P=[];for(let k=0;k<=6;k++){const a=-Math.PI/2+k/6*Math.PI;P.push([u1-r+Math.cos(a)*r,r+Math.sin(a)*r])}
+  for(let k=0;k<=6;k++){const a=Math.PI/2+k/6*Math.PI;P.push([u0+r+Math.cos(a)*r,r+Math.sin(a)*r])}
+  chyAExt(S,pj,P,d0,d1,{n:chyAm(CHYA.blkD),t:chyAm('#4a4650'),e:chyAm(CHYA.blkD)});
+  S.part(chyAm(CHYA.blkD),{face:1,edge:false},p=>{for(let u=u0+r+(fr?1.5:0);u<u1-r;u+=3){const[a,b]=pj(u,d0+0.8,th-0.3),[c,e]=pj(u,d1-0.4,th-0.3);p.poly([[a,b],[a+1,b],[c+1,e],[c,e]])}});   // 防滑齿（做成零件，车体盖得住）
+  for(let q=0;q<n;q++){const u=u0+r+(u1-u0-2*r)*(q/(n-1)),[x,y]=pj(u,d0,r);S.part(chyAm(CHYA.gun),{R:0.8},p=>p.ell(x,y,r*0.66,r*0.66));S.dt(x,y,Math.max(0.6,r*0.18),CHYA.gunL);const q2=fr?0.8:-2.4;S.px(x+Math.cos(q2)*r*0.42,y+Math.sin(q2)*r*0.42,'#8a8690')}
+  for(let u=u0+r*0.6+(fr?1.5:0);u<u1-r*0.6;u+=3){const[x,y]=pj(u,d0,0.7);S.px(x,y,'#5a5660')}}   // 近侧下沿的履带节（两帧错开半格）
+// 炮管：(u0, d, h0) → (u1, d, h1)，圆管（默认打光 = 上亮下暗），口上一圈炮口制退器
+function chyABar(S,pj,u0,d,h0,u1,h1,r,mat,brk){const[a,b]=pj(u0,d,h0),[c,e]=pj(u1,d,h1);S.part(mat,{R:Math.max(0.6,r*0.8)},p=>p.cap(a,b,c,e,r,r*0.9));
+  if(brk)S.part(mat,{R:0.6},p=>p.cap(c-(c-a)*0.08,e-(e-b)*0.08,c,e,r*1.35,r*1.35));S.dt(c,e,Math.max(0.6,r*0.5),'#0c0a0e');return[c,e]}
+// 竖着的圆柱（指挥塔、雷达座）：轴在 (u, d)，h0..h1
+function chyACyl(S,pj,u,d,h0,h1,r,mat,top){const[x,y]=pj(u,d,h1);return h25Cyl(S,x,y,r,r*CHYA_KY,h1-h0,mat,{top:top||mat})}
+// 源能线圈：横躺的一节圆筒（深蓝），一圈圈青色的线，顶上一道亮线
+function chyACoil(S,pj,u0,u1,d,h,r){const[a,b]=pj(u0,d,h),[c,e]=pj(u1,d,h);S.part(chyAm('#1c2a3a'),{R:r*0.8},p=>p.cap(a,b,c,e,r,r));
+  for(let t=0.1;t<0.95;t+=0.16){const x=a+(c-a)*t,y=b+(e-b)*t;S.ln(x,y-r+0.6,x,y+r-0.6,CHYA.cyan)}S.ln(a+1,b-r*0.5,c-1,e-r*0.5,CHYA.cyanL)}
+// 我方识别条（赤曜工厂）：近侧面上一道钢蓝带、上沿白边
+function chyAUs(S,pj,u0,u1,d,h,t){chyAStrip(S,pj,u0,u1,d,h-(t||2.6),h,hdMat('#3f7cc8','metal'),'front');S.ln(...pj(u0,d,h),...pj(u1,d,h),'#e8f2ff')}
+// 发射箱（导弹车 / 火箭车）：从 (ua, ha) 往车头斜上去 len、仰角 a、厚 t，宽 d0..d1；朝前上的那一面排 rk 个弹口（两排）
+function chyARack(S,pj,ua,ha,len,a,t,d0,d1,rk,src){const c=Math.cos(a),s=Math.sin(a),P=[[ua,ha],[ua+c*len,ha+s*len],[ua+c*len-s*t,ha+s*len+c*t],[ua-s*t,ha+c*t]];
+  chyAExt(S,pj,P,d0,d1,{n:chyAm(CHYA_SD),t:chyAm(CHYA.gun),e:chyAm(CHYA.blk)});
+  S.part(chyAm(CHYA.red),{face:'front',R:0.4,edge:false},p=>p.poly([pj(ua+c*len*0.12-s*t*0.3,d0,ha+s*len*0.12+c*t*0.3),pj(ua+c*len*0.88-s*t*0.3,d0,ha+s*len*0.88+c*t*0.3),pj(ua+c*len*0.88-s*t*0.6,d0,ha+s*len*0.88+c*t*0.6),pj(ua+c*len*0.12-s*t*0.6,d0,ha+s*len*0.12+c*t*0.6)]));
+  const ex=ua+c*len,eh=ha+s*len,rows=2,cols=Math.ceil(rk/rows);
+  for(let i=0;i<rk;i++){const r=i%rows,k=(i/rows)|0,tt=(r+0.5)/rows,dd=d0+(d1-d0)*((k+0.5)/cols),[x,y]=pj(ex-s*t*tt+c*0.3,dd,eh+c*t*tt);S.dt(x,y,0.9,'#0c0a0e');S.px(x,y,i%2?CHYA.glow:CHYA.red)}
+  if(src){const[x,y]=pj(ua+c*len*0.5-s*t,(d0+d1)/2,ha+s*len*0.5+c*t);S.ln(x-len*0.3,y+len*0.3*s,x+len*0.3,y-len*0.3*s,CHYA.cyanL)}}
+// ---- 坦克类：履带、车体（前装甲斜面）、炮塔、炮管；o.src 源能（线圈、青蓝炮管）、o.rk 发射箱代替炮塔、o.mg 机枪塔、o.us 我方识别条 ----
+function chyATank(W,H,o){return fr=>hdFig(W,H,S=>{const A=CHYA,D=Math.round(H*0.44),ox=1.5,oy=H-2,pj=chyAPj(ox,oy),L=W-ox-2-D*CHYA_KX,th=H*0.2,hb=th*0.86,ht=H*0.34;
+  {const[x,y]=pj(L/2,D*0.5,0);S.ao(x,y,L*0.56,D*0.5*CHYA_KY+2.5,0.35)}
+  chyATrk(S,pj,0,L,0,D*0.32,th,fr,o.wh||5);
+  const hull=[[1.5,hb],[0,ht*0.72],[2,ht],[L*0.72,ht],[L-1,ht*0.62],[L-1.5,hb+1],[L-4,hb]],M=chyAM3(CHYA_SD,A.blk);
+  chyAExt(S,pj,hull,0,D,M);
+  chyAStrip(S,pj,2,L*0.7,0,ht*0.6,ht*0.6+H*0.05,chyAm(A.red),'front');if(o.us)chyAUs(S,pj,4,L*0.5,0,ht*0.94);
+  {const[x,y]=pj(L*0.2,0,(hb+ht*0.6)/2+0.6);chyAEmb(S,x,y,W/60)}
+  for(let u=3;u<L*0.2;u+=2){const[a,b]=pj(u,D*0.2,ht),[c,e]=pj(u,D*0.8,ht);S.ln(a,b,c,e,'#141216')}   // 车尾顶上的散热格栅
+  {const[x,y]=pj(L-2.2,0,ht*0.62-1.4);S.rc(x-1,y,2,1.4,A.glow)}   // 车灯
+  if(o.rk){chyARack(S,pj,L*0.18,ht,L*0.62,0.4,H*0.16,D*0.18,D*0.82,o.rk,o.src);if(o.src)chyACoil(S,pj,L*0.24,L*0.5,D*0.5,ht+1.6,H*0.05);return}
+  const tu=L*(o.tx||0.34),tw=L*(o.tw||0.38),tH=H*0.15,td0=D*0.16,td1=D*0.84;
+  chyAExt(S,pj,[[tu,ht],[tu+1.5,ht+tH],[tu+tw*0.78,ht+tH],[tu+tw,ht+tH*0.4],[tu+tw-1,ht]],td0,td1,M);
+  chyAStrip(S,pj,tu+1,tu+tw*0.86,td0,ht+tH*0.18,ht+tH*0.34,chyAm(A.red),'front');if(o.us)chyAUs(S,pj,tu+1.5,tu+tw*0.5,td0,ht+tH*0.62);
+  {const[x,y]=pj(tu+tw*0.6,td0,ht+tH*0.7);S.rc(x,y,tw*0.14,1.4,A.glow)}   // 观察窗
+  const br=H*(o.br||0.042),bx=W*(o.bl||0.985)-ox-D*0.5*CHYA_KX;
+  chyABox(S,pj,tu+tw*0.94,tu+tw+1.6,D*0.36,D*0.64,ht+tH*0.2,ht+tH*0.78,chyAM3(A.blkD,A.gun));   // 炮盾
+  chyABar(S,pj,tu+tw+1,D*0.5,ht+tH*0.5,bx,ht+tH*0.56,br,chyAm(o.src?'#2a3a4a':A.gun),!o.src);
+  if(o.src){const[x,y]=pj(bx,D*0.5,ht+tH*0.56);S.dt(x,y,1.1,A.cyanL);chyACoil(S,pj,tu+tw*0.12,tu+tw*0.6,D*0.6,ht+tH+H*0.05,H*0.05)}
+  for(let q=0;q<(o.mg|0);q++){const dd=D*(q?0.7:0.42),uu=tu+tw*(q?0.5:0.32);chyACyl(S,pj,uu,dd,ht+tH,ht+tH+H*0.07,H*0.05,chyAm(A.blk),chyAm(A.gun));chyABar(S,pj,uu+tw*0.04,dd,ht+tH+H*0.05,uu+tw*0.04+L*0.12,ht+tH+H*0.06,0.6,chyAm(A.gunL))}})}   // mg：机枪塔几座（主战坦克 2）
+// ---- 轮式：装甲车、导弹车（o.rk 发射箱、o.mg 双机炮塔、o.us 我方识别条）----
+function chyACar(W,H,o){return fr=>hdFig(W,H,S=>{const A=CHYA,D=Math.round(H*0.42),ox=1.5,oy=H-1.5,pj=chyAPj(ox,oy),L=W-ox-2-D*CHYA_KX,r=H*0.15,hb=r*1.05,ht=H*(o.rk?0.33:0.4);
+  {const[x,y]=pj(L/2,D*0.5,0);S.ao(x,y,L*0.56,D*0.5*CHYA_KY+2.5,0.35)}
+  const M=chyAM3(CHYA_SD,A.blk);
+  if(o.rk){chyABox(S,pj,0.5,L*0.72,0,D,hb,ht*0.78,M);   // 车板
+    chyAExt(S,pj,[[L*0.7,hb],[L*0.7,ht*1.32],[L*0.86,ht*1.32],[L,ht*0.86],[L,hb]],0,D,M);   // 驾驶室
+    S.part(chyAm('#b85a34','gem'),{face:3,R:0.4},p=>p.poly([pj(L*0.87,D*0.1,ht*1.26),pj(L*0.99,D*0.1,ht*0.92),pj(L*0.99,D*0.9,ht*0.92),pj(L*0.87,D*0.9,ht*1.26)]));   // 挡风玻璃
+    {const[x,y]=pj(L*0.74,0,ht*1.1);S.rc(x,y,L*0.08,1.6,'#ffb070')}
+    chyAStrip(S,pj,1.5,L*0.98,0,hb+1,hb+1+H*0.05,chyAm(A.red),'front');if(o.us)chyAUs(S,pj,L*0.72,L*0.92,0,ht*1.06);
+    {const[x,y]=pj(L*0.5,0,(hb+ht*0.78)/2);chyAEmb(S,x,y,W/80)}
+    chyARack(S,pj,L*0.04,ht*0.78,L*0.62,0.42,H*0.13,D*0.14,D*0.86,o.rk,o.src)}
+  else{chyAExt(S,pj,[[1,hb],[0,ht*0.8],[2,ht],[L*0.66,ht],[L-1,ht*0.56],[L,hb+1.5],[L-2.5,hb]],0,D,M);
+    S.part(chyAm('#b85a34','gem'),{face:3,R:0.4},p=>p.poly([pj(L*0.7,D*0.14,ht*0.94),pj(L*0.88,D*0.14,ht*0.7),pj(L*0.88,D*0.86,ht*0.7),pj(L*0.7,D*0.86,ht*0.94)]));
+    chyAStrip(S,pj,1.5,L*0.98,0,hb+1.5,hb+1.5+H*0.05,chyAm(A.red),'front');if(o.us)chyAUs(S,pj,3,L*0.4,0,ht*0.72);
+    {const[x,y]=pj(L*0.4,0,(hb+ht)/2+1);chyAEmb(S,x,y,W/52)}
+    for(const u of[L*0.12,L*0.22])chyABox(S,pj,u,u+3,0,1.2,hb+3,ht-3,chyAM3(A.blkD,A.gun));   // 侧门
+    if(o.mg){const u0=L*0.34,u1=L*0.56;chyAExt(S,pj,[[u0,ht],[u0+1,ht+H*0.14],[u1-1,ht+H*0.14],[u1,ht]],D*0.2,D*0.8,M);
+      for(const dd of[0.4,0.6])chyABar(S,pj,u1,D*dd,ht+H*0.08,L*0.92,ht+H*0.09,0.7,chyAm(A.gun));
+      {const[x,y]=pj(u0+2,D*0.2,ht+H*0.08);S.rc(x,y,3,1.2,A.glow)}}}
+  const n=o.wh||3;for(let q=0;q<n;q++)chyAWheel(S,pj,L*0.14+(L*0.72)*(q/(n-1)),-0.5,r,2.4,fr)})}
+// ---- 野战炮：两个轮子（远侧的先画）、贴地的开脚大架（有厚度）、炮架、防盾、长炮管 ----
+// 贴地的一根梁：从 (u0, d0) 到 (u1, d1)，高 h、宽 w、厚 t（看得到顶面和朝镜头那一面）
+function chyABeam(S,pj,u0,d0,u1,d1,h,w,t,mat){const L=Math.hypot(u1-u0,d1-d0)||1,nu=-(d1-d0)/L*w/2,nd=(u1-u0)/L*w/2,Q=hh=>[pj(u0-nu,d0-nd,hh),pj(u1-nu,d1-nd,hh),pj(u1+nu,d1+nd,hh),pj(u0+nu,d0+nd,hh)];
+  S.part(mat,{face:1,R:0.4},p=>p.poly(Q(h-t)));return S.part(mat,{face:'top',R:0.4},p=>p.poly(Q(h)))}
+function chyAFieldGun(fr){return hdFig(56,38,S=>{const A=CHYA,D=17,pj=chyAPj(1.5,36.5),gun=chyAm(A.gun),M=chyAM3(CHYA_SD,A.blk);
+  {const[x,y]=pj(18,D*0.5,0);S.ao(x,y,20,6,0.32)}
+  chyAWheel(S,pj,20,D-1.5,7,2.6,fr);
+  chyABeam(S,pj,18,D*0.62,0.5,D*0.98,2.4,2.8,1.6,gun);chyABeam(S,pj,18,D*0.38,0.5,D*0.02,2.4,2.8,1.6,gun);   // 开脚大架
+  chyABox(S,pj,13,26,D*0.2,D*0.8,6,10.5,M);   // 炮架
+  chyABox(S,pj,10,22,D*0.32,D*0.68,10.5,15,M);chyABar(S,pj,22,D*0.5,13,48,15.5,2.1,gun,true);   // 炮尾、炮管
+  chyAExt(S,pj,[[25,7],[25,19.5],[27.6,20.5],[27.6,7]],0,D,{n:chyAm(CHYA_SD),t:chyAm(A.blk),e:chyAm(A.gunL)});   // 防盾（宽、有厚度）
+  chyAStrip(S,pj,25,27.6,0,14.4,16,chyAm(A.red),'front');
+  chyAWheel(S,pj,20,-1.5,7,2.6,fr)})}
+// ---- 飞机：o.k 'heli' 直升机 / 'jet' 战斗机 / 'bomb' 轰炸机 / 'scout' 侦察机；src 源能；us 我方识别条 ----
+// 机身 = 横躺的圆筒（截面半径 r(u)），从斜上方看：上三成亮、中间本色、下三成暗；机翼是有厚度的薄板（近侧的往下伸、远侧的往上伸，先画远侧）
+function chyAFus(S,pj,u0,u1,d,h,rf,mat,taper,soft){const N=20,top=[],bot=[],k=Math.hypot(1,CHYA_KY);for(let i=0;i<=N;i++){const t=i/N,u=u0+(u1-u0)*t,r=rf*taper(t),[x,y]=pj(u,d,h);top.push([x,y-r*k]);bot.push([x,y+r*k])}
+  const all=top.concat(bot.slice().reverse());if(soft)return S.part(mat,{R:rf*0.9},p=>p.poly(all));const b=S.part(mat,{face:2,R:0.6},p=>p.poly(all));   // soft：大气囊用圆鼓鼓的默认打光
+  S.part(mat,{face:'top',R:0.6,edge:false},p=>p.poly(top.concat(top.map(([x,y],i)=>[x,y+(bot[i][1]-y)*0.32]).reverse())));
+  S.part(mat,{face:1,R:0.6,edge:false},p=>p.poly(bot.map(([x,y],i)=>[x,y-(y-top[i][1])*0.28]).concat(bot.slice().reverse())));return b}
+// 机翼：根部弦 (ur0..ur1, 纵深 dr)、翼尖弦 (ut0..ut1, 纵深 dt)，高 h，厚 t（往下露出的一道暗边）
+function chyAWing(S,pj,ur0,ur1,dr,ut0,ut1,dt,h,t,mat,tip){const P=hh=>[pj(ur0,dr,hh),pj(ur1,dr,hh),pj(ut1,dt,hh),pj(ut0,dt,hh)];
+  S.part(mat,{face:1,R:0.4},p=>p.poly(P(h-t)));const w=S.part(mat,{face:'top',R:0.4},p=>p.poly(P(h)));
+  if(tip)S.part(tip,{face:3,R:0.4,edge:false},p=>{const a=0.84;p.poly([pj(ur0+(ut0-ur0)*a,dr+(dt-dr)*a,h),pj(ur1+(ut1-ur1)*a,dr+(dt-dr)*a,h),pj(ut1,dt,h),pj(ut0,dt,h)])});return w}
+function chyAPlane(W,H,o){return fr=>hdFig(W,H,S=>{const A=CHYA,blk=chyAm(A.blk),red=chyAm(A.red),gun=chyAm(A.gun),gl=chyAm('#ff9a5a','gem');
+  if(o.k==='heli'){const D=H*0.6,pj=chyAPj(2,H-2),dC=D*0.5,hb=H*0.36,L=W-4-D*CHYA_KX;
+    for(const dd of[dC+H*0.18,dC-H*0.18]){const[a,b]=pj(L*0.4,dd,1),[c,e]=pj(L*0.86,dd,1);S.part(gun,{R:0.4},p=>p.cap(a,b,c,e,0.8,0.8));for(const u of[0.5,0.76]){const[x,y]=pj(L*u,dd,1),[x2,y2]=pj(L*u,dd,hb-H*0.16);S.ln(x,y,x2,y2,'#3a3640')}}   // 起落橇（远的先画）
+    chyAWing(S,pj,L*0.5,L*0.62,dC,L*0.5,L*0.6,dC+H*0.36,hb-1,1.2,gun);
+    chyAFus(S,pj,L*0.04,L*0.52,dC,hb+H*0.04,H*0.07,blk,t=>1-t*0.3);   // 尾梁
+    chyAExt(S,pj,[[L*0.02,hb+H*0.02],[0,hb+H*0.34],[L*0.06,hb+H*0.34],[L*0.12,hb+H*0.06]],dC-0.8,dC+0.8,{n:red,t:red,e:chyAm(A.redD)});   // 垂尾
+    chyAFus(S,pj,L*0.42,L*0.96,dC,hb,H*0.2,blk,t=>Math.sqrt(Math.max(0.05,1-Math.pow((t-0.45)/0.58,2))));
+    {const[x,y]=pj(L*0.82,dC,hb+H*0.06);S.part(gl,{R:1},p=>p.ell(x,y,L*0.09,H*0.12));S.px(x-1,y-2,'#ffe8d0')}
+    {const[x,y]=pj(L*0.56,dC-H*0.2,hb);chyAEmb(S,x,y,W/80)}chyAStrip(S,pj,L*0.46,L*0.74,dC-H*0.2,hb-H*0.1,hb-H*0.04,red,'front');
+    chyAWing(S,pj,L*0.5,L*0.62,dC,L*0.5,L*0.6,dC-H*0.36,hb-1,1.2,gun);{const[x,y]=pj(L*0.55,dC-H*0.36,hb-2);S.part(red,{R:0.6},p=>p.cap(x-3,y,x+4,y,1.2,1.2));S.dt(x+4,y,0.6,A.glow)}   // 短翼 + 火箭巢
+    {const[a,b]=pj(L*0.9,dC-H*0.1,hb-H*0.2),[c,e]=pj(L*1.02,dC-H*0.1,hb-H*0.22);S.part(gun,{R:0.4},p=>p.cap(a,b,c,e,0.7,0.6))}   // 机头下的机炮
+    {const[x,y]=pj(L*0.62,dC,hb+H*0.2);S.part(gun,{R:0.4},p=>p.rect(x-1,y-H*0.12,2,H*0.12,0.4));const rr=L*0.5;for(const a0 of[fr?0.5:1.25,fr?2.07:2.82]){const[x0,y0]=pj(L*0.62+Math.cos(a0)*rr,dC+Math.sin(a0)*rr,hb+H*0.32),[x1,y1]=pj(L*0.62-Math.cos(a0)*rr,dC-Math.sin(a0)*rr,hb+H*0.32);S.ln(x0,y0,x1,y1,'#2a262e')}
+      S.dt(x,y-H*0.13,1,A.gunL)}
+    {const[x,y]=pj(L*0.03,dC,hb+H*0.24);S.ln(x,y-(fr?3:-3),x,y+(fr?3:-3),'#3a3640')}return}   // 尾桨
+  const big=o.k==='bomb',sc=o.k==='scout',ox=W*0.07+2,pj=chyAPj(ox,Math.round(H*0.5)+1),L=W-ox-2,rf=H*(big?0.1:0.082),span=H*(big?0.62:sc?0.62:0.6);
+  // 机翼：根弦 (r0, r1)、翼尖弦 (t0, t1)（占机长的比例）；战斗机后掠、轰炸机 / 侦察机平直
+  const r0=big?0.32:sc?0.38:0.26,r1=big?0.6:sc?0.62:0.66,t0=big?0.3:sc?0.38:0.1,t1=big?0.46:sc?0.5:0.24,wg=s=>chyAWing(S,pj,L*r0,L*r1,0,L*t0,L*t1,s*span,0,1.4,blk,red),
+    tail=s=>chyAWing(S,pj,L*0.02,L*0.17,0,L*0.0,L*0.08,s*span*0.42,rf*0.3,1.1,blk),
+    nac=s=>{chyAFus(S,pj,L*0.38,L*0.56,s*span*0.48,-1,rf*0.62,gun,t=>t<0.15?0.7+t*2:1);const[x,y]=pj(L*0.56,s*span*0.48,-1);S.dt(x,y,1,'#0c0a0e');const[x2,y2]=pj(L*0.38,s*span*0.48,-1);S.dt(x2,y2,0.8,A.glow)};
+  // 远侧：机翼、平尾（被机身挡住一半）
+  wg(1);tail(1);if(big)nac(1);
+  chyAFus(S,pj,0,L,0,0,rf,blk,t=>t<0.1?0.62+t*3.8:t>0.8?Math.max(0.1,1-(t-0.8)*4.4):1);
+  {const[x,y]=pj(L*0.74,0,rf*0.75);S.part(gl,{R:1},p=>p.ell(x,y,L*0.08,rf*0.6));S.px(x-2,y-1,'#ffe8d0')}   // 座舱
+  chyAStrip(S,pj,L*0.12,L*0.82,-rf*0.9,-rf*0.2,rf*0.1,red,'front');if(o.us)chyAUs(S,pj,L*0.16,L*0.5,-rf,rf*0.55,2);
+  chyAExt(S,pj,[[L*0.02,rf*0.5],[0,rf+H*0.24],[L*0.08,rf+H*0.24],[L*0.2,rf*0.5]],-0.9,0.9,{n:red,t:red,e:chyAm(A.redD)});   // 垂尾
+  if(big)for(let q=0;q<3;q++){const[x,y]=pj(L*(0.38+q*0.09),-rf*0.3,-rf*1.05);S.part(gun,{R:0.6},p=>p.ell(x,y,L*0.03,H*0.05))}   // 腹下的炸弹
+  if(o.src)chyACoil(S,pj,L*0.28,L*0.58,-rf*0.7,-rf*0.9,H*0.05);
+  // 近侧：平尾、机翼（翼面上一枚金鹰徽；发动机 / 翼下机炮）
+  tail(-1);wg(-1);{const[x,y]=pj(L*((r0+r1+t0+t1)/4),-span*0.55,0);chyAEmb(S,x,y,W/90)}
+  if(big)nac(-1);else{const[a,b]=pj(L*0.46,-span*0.42,-1),[c,e]=pj(L*0.74,-span*0.42,-1);S.part(gun,{R:0.4},p=>p.cap(a,b,c,e,0.7,0.6))}
+  {const[x,y]=pj(L*(t0+t1)/2,-span,0);S.px(x,y+0.5,fr?A.glow2:A.glow)}   // 翼尖航行灯（两帧一明一暗）
+  if(sc){const[x,y]=pj(L*0.84,0,-rf*0.9);S.part(gun,{R:0.6},p=>p.ell(x,y,2.2,1.6));S.px(x+1,y,A.glow)}   // 侦察吊舱
+  const[nx,ny]=pj(0,0,0),fl=fr?1:0.6;S.part(chyAm(o.src?A.cyan:A.glow,'gem'),{R:1,edge:false},p=>p.poly([[nx+0.5,ny-rf*0.55],[nx-W*0.05*fl-1.5,ny],[nx+0.5,ny+rf*0.55]]));if(o.src)S.dt(nx-1,ny,0.8,A.cyanL)})}   // 尾焰
+// ---- 飞艇：长气囊（上亮下暗）、尾翼（上下左右四片，近的盖住远的）、吊舱（四个乘员的窗）----
+function chyABlimp(fr){return hdFig(84,64,S=>{const A=CHYA,env=chyAm('#3e2c30','cloth'),red=chyAm(A.red,'cloth'),blk=chyAm(A.blk),gold=chyAm(A.gold),D=20,pj=chyAPj(3,52),dC=10,hc=12,L=72;
+  chyAWing(S,pj,2,12,dC,1,7,dC+15,hc,1.4,red);   // 远侧的水平尾翼
+  chyAFus(S,pj,0,L,dC,hc,14,env,t=>Math.sqrt(Math.max(0.03,1-Math.pow(t<0.55?(0.55-t)/0.57:(t-0.55)/0.47,2))),1);
+  {const rr=t=>14*Math.sqrt(Math.max(0.03,1-Math.pow(t<0.55?(0.55-t)/0.57:(t-0.55)/0.47,2))),Q=f=>{const P=[];for(let k=1;k<20;k++){const t=k/20,r=rr(t);P.push(pj(L*t,dC-r*Math.cos(f),hc+r*Math.sin(f)))}return P};S.part(red,{face:2,R:0.6,edge:false},p=>p.poly(Q(0.12).concat(Q(-0.12).reverse())))}   // 沿着气囊的一道红带（近侧腰线）
+  for(const t of[0.3,0.5,0.7]){const u=L*t,[x,y]=pj(u,dC,hc),rr=14*Math.sqrt(Math.max(0,1-Math.pow((t-0.55)/0.56,2)))*Math.hypot(1,CHYA_KY);S.ln(x,y-rr+1,x,y+rr-1,'#2a1e22')}   // 气囊的分片缝
+  {const[x,y]=pj(L*0.58,dC-6,hc+4);chyAEmb(S,x,y,1.5)}
+  chyAExt(S,pj,[[3,hc+6],[0,hc+22],[6,hc+22],[14,hc+6]],dC-1,dC+1,{n:red,t:red,e:chyAm(A.redD)});   // 上垂尾
+  chyAWing(S,pj,2,12,dC,1,7,dC-15,hc,1.4,red);   // 近侧的水平尾翼
+  for(const u of[26,48]){const[a,b]=pj(u,dC-3,hc-12),[c,e]=pj(u+(u<40?3:-3),dC-3,1);S.ln(a,b,c,e,'#3a3640')}   // 吊索
+  chyABox(S,pj,22,52,dC-5,dC+5,-6,2,chyAM3(A.blk,A.gun));chyAStrip(S,pj,22,52,dC-5,-6,-4.6,chyAm(A.gold),'front');
+  for(let q=0;q<4;q++){const[x,y]=pj(26+q*6.6,dC-5,-1);S.rc(x-1.4,y-1.6,3.2,2.6,'#1a1418');S.part(hm(A.skin,'skin'),{R:0.5},p=>p.ell(x+0.2,y-0.2,1.1,1.1));S.px(x+0.8,y-0.4,A.glow)}   // 吊舱的四个窗（乘员）
+  {const[x,y]=pj(37,dC-5,-6);S.part(chyAm(A.gun),{R:0.4},p=>p.rect(x-2,y,5,3,0.6))}
+  {const[x,y]=pj(-0.5,dC,hc);const L2=fr?6:3;S.ln(x,y-L2,x,y+L2,CHYA.gunL)}})}
+// ---- 舰船（art/hd25 的 h25Ship，船头朝右）：o.cv 航母（平甲板 + 舰岛 + 停着的飞机）、o.ms 导弹垂发箱、o.guns 炮塔数、o.deck 甲板上的水兵、o.src 源能、o.us 我方识别条 ----
+function chyAShip(W,H,o){return fr=>hdFig(W,H,S=>{const A=CHYA,blk=chyAm(A.blk),blkD=chyAm(A.blkD),gun=chyAm(A.gun),red=chyAm(A.red),b=Math.round(H*(o.cv?0.15:0.12)),fb=Math.round(H*0.2),cy=H-5-b*0.88-fb+1.4;
+  const g=h25Ship(S,{x0:2,x1:W-3,cy,b,fb,dr:4,bow:o.cv?0.14:0.24,stern:o.cv?0.04:0.08,sw:o.cv?0.95:0.78,rake:o.cv?5:4,sheer:o.cv?1:2,rail:1.4,hull:chyAm(CHYA_SD),deck:chyAm(o.cv?'#3e3a42':'#34303a'),railM:blkD,stripe:red,iron:true});
+  const dk=x=>g.top(x)+(g.near(x)-g.top(x))*0.5;   // 甲板中线
+  {const xs=[];for(let x=3;x<W-4;x+=1)if(g.hw(x)>0.8)xs.push(x);S.part(red,{face:'front',R:0.4,edge:false},p=>p.poly(xs.map(x=>[x,g.wl(x)-3]).concat(xs.slice().reverse().map(x=>[x,g.wl(x)-1]))))}   // 吃水线上一道赤红的船底漆
+  if(o.us)S.part(hdMat('#3f7cc8','metal'),{face:'front',R:0.4,edge:false},p=>p.poly([[W*0.1,g.near(W*0.1)+3.6],[W*0.42,g.near(W*0.42)+3.6],[W*0.42,g.near(W*0.42)+6.2],[W*0.1,g.near(W*0.1)+6.2]]));
+  {const x=W*0.22;chyAEmb(S,x,(g.near(x)+g.wl(x))/2+0.6,W/90)}
+  if(o.cv){S.part(chyAm(A.gold),{face:3,edge:false},p=>{for(let x=W*0.08;x<W*0.86;x+=6)p.rect(x,dk(x)-0.4,3.4,0.8)});S.part(chyAm('#d8d0c0'),{face:3,edge:false},p=>{p.rect(W*0.08,g.top(W*0.5)+1.6,W*0.78,0.7);p.rect(W*0.08,g.near(W*0.5)-1.4,W*0.78,0.7)});
+    const ix=W*0.64,iw=W*0.12,id=b*0.7,yb=g.near(ix)-1;h25Box(S,ix,yb-id-H*0.3,iw,id,H*0.3,gun,blk,{r:0.8,side:2});h25Box(S,ix+iw*0.2,yb-id-H*0.3-id*0.8-H*0.12,iw*0.6,id*0.8,H*0.12,gun,blk,{r:0.6,side:1.5});   // 舰岛
+    S.rc(ix+2,yb-H*0.24,iw-4,1.6,A.glow);S.part(chyAm(A.gunL),{R:0.3},p=>p.rect(ix+iw*0.5-0.6,yb-id-H*0.42-id*0.8-H*0.1,1.4,H*0.12,0.3));
+    if(o.src){const x0=ix+iw*0.2,yy=yb-id-H*0.42-id*0.8;S.part(chyAm('#1c2a3a'),{R:1},p=>p.rect(x0,yy-3,iw*0.6,3,1));for(let x=x0+1;x<x0+iw*0.6-0.5;x+=2)S.ln(x,yy-2.6,x,yy-0.6,A.cyan)}
+    for(let q=0;q<(o.src?4:3);q++){const x=W*(0.14+q*0.11),y=dk(x)-1;S.part(red,{face:'top',R:0.3},p=>{p.poly([[x,y-1.6],[x+W*0.05,y],[x,y+1.6]]);p.rect(x+W*0.012,y-3.4,1.4,6.8)});S.px(x+W*0.05-1,y,A.glow)}}   // 停着的飞机（俯看的小剪影）
+  else{const x0=W*0.36,w=W*0.22,yb=dk(x0+w/2)+b*0.4;h25Box(S,x0,yb-b*0.8-H*0.2,w,b*0.8,H*0.2,gun,blk,{r:1,side:2});
+    h25Box(S,x0+w*0.25,yb-b*0.8-H*0.2-b*0.6-H*0.14,w*0.5,b*0.6,H*0.14,gun,blk,{r:0.8,side:1.5});S.rc(x0+w*0.3,yb-b*0.8-H*0.2-H*0.06,w*0.4,1.4,A.glow);   // 舰桥
+    S.part(chyAm(A.gun),{face:'cyl',R:0.3},p=>p.rect(x0+w*0.48,yb-H*0.66-b,1.6,H*0.2));if(fr)S.px(x0+w*0.48+0.4,yb-H*0.67-b,A.glow);
+    h25Stack(S,x0-W*0.04,yb-b*0.5-H*0.28,H*0.07,H*0.2,blk,red)}
+  const n=o.guns||0;for(let q=0;q<n;q++){const x=o.cv?W*0.9:q<n/2?W*(0.12+q*0.1):W*(0.66+(q-n/2)*0.12),by=dk(x)+1.5,r=H*(o.cv?0.08:0.095);
+    const[mz]=h25Turret(S,x,by,r,gun,chyAm(CHYA_SD),o.src?1:2,r*2.6,-0.1);if(o.src){S.dt(mz[0],mz[1],0.9,A.cyanL)}S.px(x-r*0.2,by-r*0.9,A.glow)}
+  if(o.ms){const x=W*0.66,y=g.top(x)+1.2;h25Box(S,x,y-1.4,W*0.16,b*1.1,1.4,gun,blkD,{r:0.4});for(let q=0;q<5;q++)for(let k=0;k<2;k++){const xx=x+1.5+q*W*0.03,yy=y+0.8+k*b*0.5;S.rc(xx,yy,1.6,1.2,'#1a1418');if((q+k)%2)S.px(xx+0.4,yy+0.2,A.glow)}}
+  if(o.deck)for(let q=0;q<o.deck;q++){const x=W*(0.16+q*0.06),y=g.near(x)-1.4;S.part(hm(A.skin,'skin'),{R:0.4},p=>p.ell(x,y-2.4,1.1,1.1));S.part(blk,{R:0.4},p=>p.rect(x-1,y-1.6,2,2.4,0.5))}
+  for(let k=0;k<4;k++)S.fx(W-3+k*1.4+(fr?1:0),g.wl(W-6)+(k%2)-1,'#e8f8f4',0.75-k*0.15)})}
 // ================= 登记 =================
 const CHYA_SOL={
   chyGunner:{pre:chyAMg,back:chyAPack(false),pad:1},
@@ -54290,22 +54399,20 @@ Object.assign(HD_HEROES,{tamamoOrchid:y2aTamamoOrchid,tamamoOrchidFox:y2aTamamoO
 
 // ---------- 0.14.4 赤曜工厂的图（代理 C1；兵营 data/cyf_camp.js，逻辑 units/cyf_camp.js）----------
 // 四种兵借赤曜帝城亡灵载具的画法（art/chy_art 的 chyATank / chyAPlane / chyAShip / chyACar），画的时候把配色表 CHYA 的金色徽记、橙色灯换成我方的钢蓝、冰蓝（Claude 定：我方识别色），画完换回去；
-//   车身还是赤黑金属，另在车身上加一道钢蓝识别条（cyfAStripe）
+//   车身还是赤黑金属，另在车身近侧加一道钢蓝识别条（o.us，画在图里）；2.5D 画法见 art/chy_art「载具 / 飞机 / 舰船（2.5D）」
 // 换样子（units/cyf_camp.cyfBt 设 u.hbJyK）：cyfTankS 源能装置（炮塔上的线圈、闪电贯穿炮管）、cyfTankM 主战坦克（更大、长炮管、双机炮）、cyfTankMS 两样都有、cyfJetX 源能战机（更大、机腹线圈、冰蓝尾焰）；登记进 HB_JY_SPR
 // 兵营 HD_BUILD.chyFactory：2 × 2（64 × 80），三档 t：赤黑厂房、两根烟囱、坦克大门、门上我方钢蓝的赤曜徽；t ≥ 1 天窗亮、t = 2 金边 + 第二根排气塔
 const CYFA_P={gold:'#4f8fd0',glow:'#7fd4ff',glow2:'#d8f4ff'};
 function cyfAOur(f){const g=fr=>{const o={};for(const k in CYFA_P){o[k]=CHYA[k];CHYA[k]=CYFA_P[k]}try{return f(fr)}finally{Object.assign(CHYA,o)}};return g}
-// 识别条：钢蓝 + 白边，画在已经画好的图上（x0..x1 宽、y 高处）
-function cyfAStripe(cv,x0,x1,y){const x=cv.getContext('2d');x.fillStyle='#e8f2ff';x.fillRect(x0,y-1,x1-x0,1);x.fillStyle='#3f7cc8';x.fillRect(x0,y,x1-x0,2);x.fillStyle='#24507e';x.fillRect(x0,y+2,x1-x0,1);return cv}
-const cyfAS=(f,a,b,c)=>fr=>{const cv=f(fr);return cyfAStripe(cv,Math.round(cv.width*a),Math.round(cv.width*b),Math.round(cv.height*c))};
-HD_UNIT.cyfTank=cyfAS(cyfAOur(chyATank(80,50,{mg:1,wh:5})),0.12,0.4,0.62);
-HD_UNIT.cyfTankS=cyfAS(cyfAOur(chyATank(80,50,{mg:1,wh:5,src:1})),0.12,0.4,0.62);
-HD_UNIT.cyfTankM=cyfAS(cyfAOur(chyATank(92,56,{mg:1,wh:6,br:0.06,tw:0.42,bl:1})),0.1,0.38,0.62);
-HD_UNIT.cyfTankMS=cyfAS(cyfAOur(chyATank(92,56,{mg:1,wh:6,br:0.06,tw:0.42,src:1})),0.1,0.38,0.62);
-HD_UNIT.cyfJet=cyfAS(cyfAOur(chyAPlane(60,32,{k:'jet'})),0.22,0.5,0.56);
-HD_UNIT.cyfJetX=cyfAS(cyfAOur(chyAPlane(72,36,{k:'jet',src:1})),0.22,0.5,0.56);
-HD_UNIT.cyfShip=cyfAS(cyfAOur(chyAShip(84,42,{ms:1,guns:1})),0.1,0.3,0.66);
-HD_UNIT.cyfRocket=cyfAS(cyfAOur(chyACar(72,44,{rk:6,wh:4})),0.1,0.36,0.64);
+// 识别条：车身 / 机身 / 船舷近侧的一道钢蓝带（白边），画在图里（chyATank / chyACar / chyAPlane / chyAShip 的 o.us）
+HD_UNIT.cyfTank=cyfAOur(chyATank(80,50,{mg:1,wh:5,us:1}));
+HD_UNIT.cyfTankS=cyfAOur(chyATank(80,50,{mg:1,wh:5,src:1,us:1}));
+HD_UNIT.cyfTankM=cyfAOur(chyATank(92,56,{mg:2,wh:6,br:0.05,tw:0.42,bl:1,us:1}));
+HD_UNIT.cyfTankMS=cyfAOur(chyATank(92,56,{mg:2,wh:6,br:0.05,tw:0.42,bl:1,src:1,us:1}));
+HD_UNIT.cyfJet=cyfAOur(chyAPlane(60,32,{k:'jet',us:1}));
+HD_UNIT.cyfJetX=cyfAOur(chyAPlane(72,36,{k:'jet',src:1,us:1}));
+HD_UNIT.cyfShip=cyfAOur(chyAShip(84,42,{ms:1,guns:1,us:1}));
+HD_UNIT.cyfRocket=cyfAOur(chyACar(72,44,{rk:6,wh:4,us:1}));
 HB_JY_SPR.push('cyfTankS','cyfTankM','cyfTankMS','cyfJetX');   // 不是兵种的样子：art/art.buildSprites 照兵种的画法做成 SPR.units[键]
 // 兵营
 function cyfACamp(t){return hdFig(64,80,S=>{const T=ynaT(S,1,0,0),A=CHYA,blk=hdMat(A.blk,'metal'),blkD=hdMat(A.blkD,'metal'),red=hdMat(t===0?'#8a2024':A.red,'metal'),gun=hdMat(A.gun,'metal'),
@@ -108547,7 +108654,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.4',GAME_TAG='测试版',GAME_CODE=313,GAME_BUILD="fc4d1b2+",GAME_BUILT=1795528667328,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.4',GAME_TAG='测试版',GAME_CODE=313,GAME_BUILD="5499389",GAME_BUILT=1795530686375,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
