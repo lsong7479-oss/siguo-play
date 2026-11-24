@@ -2659,7 +2659,7 @@ Object.assign(CFG,{
   zoomSteps:[[1,'100%'],[1.25,'125%'],[1.5,'150%'],[1.75,'175%'],[2,'200%'],[2.5,'250%']],
   zoomMin:[640,300],   // v0.10.10 界面缩放后至少留出 640 × 300 的界面空间（Claude 定：常见手机横屏 125% 左右为止；ui/help.zoomFit）
   // 设置默认值
-  settingsDefault:{spdMax:3, kinMar:false, helpQ:true, buyCfm:true, oathOn:false, prepEvOn:true, music:0.45, sfx:0.8, uiZoom:1, uiFont:1, sfxFlat:false, fx:1, fps:60, popText:true, bossBars:true, shadows:true, unitBars:true, zoomFx:true, autoNext:false, autoAttack:true, unlockAll:false, devOn:false, shake:true, cardConfirm:true, autoECard:false, autoRepair:false, skipHfx:false, miniScale:1, miniHide:false, twoP:false,
+  settingsDefault:{regCont:true, spdMax:3, kinMar:false, helpQ:true, buyCfm:true, oathOn:false, prepEvOn:true, music:0.45, sfx:0.8, uiZoom:1, uiFont:1, sfxFlat:false, fx:1, fps:60, popText:true, bossBars:true, shadows:true, unitBars:true, zoomFx:true, autoNext:false, autoAttack:true, unlockAll:false, devOn:false, shake:true, cardConfirm:true, autoECard:false, autoRepair:false, skipHfx:false, miniScale:1, miniHide:false, twoP:false,
     // v0.3.1 触屏操控：摇杆 跟手（按下位置）/ 固定；摇杆、技能按钮的大小（倍率）和离屏幕边缘的距离（像素）
     joyMode:'follow', joyS:1.15, joyM:16, btnS:1.15, btnM:10, heroBarHide:false,   // v0.4.0 heroBarHide：局内英雄头像栏收起
     keys:{up:'w', down:'s', left:'a', right:'d', attack:'j', skill1:'q', skill2:'e', skill3:'r', swap:'tab',
@@ -32603,6 +32603,7 @@ sfStorm sfTpl mcR
 chy
 cyhRp cyhRw
 wdpP wdpCU wdpGot wdpF
+contW
 `.trim().split(/\s+/);   // cyhRp / cyhRw：0.14.4 英雄赤曜「重整旗鼓」的准备阶段、这一波用过（heroes/chyao）   // chy：0.14.4 赤曜帝城的状态（maps/chy_map：毁灭阵塔、全图打击计时、出怪铜币倍率）   // zqS / eAgK：0.13.10 朱雀王城（maps/zq_city；eAgK 亡灵索敌范围的整体倍率，engine/enemy.stepEnemy）   // nkS：0.13.6 北原王庭（maps/nk_court）   // ftSel：0.13.6 家族科技这一局带的 [[键, 等级]…]（game/fam_tech）   // runeG：0.13.6 局内掉的符文石（game/rune）   // gemMc：0.13.5 宝石商人（game/gem）   // wzS：0.13.5 雾隐沼泽（maps/swamp）   // cgps：0.13.2.x 兵营编组（units/campgrp）   // stDrF：0.12.2 德拉贡传（game/story），tools/perfcheck.py 查出来漏登记的；esN esAt esVer esR：代理 ES 加，亡灵阵营的建筑（structs/estruct）；ynm：0.12.5 代理 M 加，源能王城的进攻战（maps/ynm_city）；esOn hkL esTr esDR ynKDR：0.12.5 代理 K 加（骇入、亡灵建筑）   // xnS：0.12.6 代理 H 加（希娜「龙之恩赐」，heroes/xina）   // hmSeen…hmMcD：0.12.6 代理 X 加（隐士，game/hermit）   // en2WK：0.12.6 代理 E 加（进阶-达·芬奇「城墙加固」这一波的城墙生命上限加成，heroes/engineer2）   // wdpP / wdpCU / wdpGot / wdpF：0.14.5 wdp 魏德曼白金的被动参数、骑兵冲锋到期、这局英魂整数 / 小数（game/wdp_break）
 const G_NUM='time tick wave prepId kills legionSeq corpses waveT flowT flowVer structVer navVer flowCool sdistVer visT night shake dayIdx flashT tA wA tunnelN tombN lowT oAsk oBupo mcP gold gdT sqT frT drumT bfT esN esVer'.split(' ');   // P2 加（0.12.2d）gold gdT sqT frT drumT bfT：每帧 / 每次击杀都写的数字（原来先装 undefined，每写一次小数都新建一个数字对象）
 const GState=shapeCtor(G_KEYS,G_NUM);
@@ -96362,10 +96363,11 @@ function endWave(){
   // 科技「战地医院」（v0.2.3）每级 +4%
   const hl=CH_NOREG?0:CFG.run.waveHeal+(TM.waveHealT||0);for(let i_10=0,a_10=G.heroes;i_10<a_10.length;i_10++){const h=a_10[i_10];if(!h.dead)healF(h,h.maxHp*hl);}for(let i_11=0,a_11=G.soldiers;i_11<a_11.length;i_11++){const s=a_11[i_11];if(!s.dead)healF(s,s.maxHp*hl);}   // CH_NOREG：代理 CH 无尽挑战「后勤切断 / 禁止治疗」
   {const tk=mapRewardK(G.map),wk=waveRewK(G.wave);for(const k in CFG.rewardPerWave)G.meta[k]=(G.meta[k]||0)+CFG.rewardPerWave[k]*tk*DIFF.reward*wk*sgResK(k)}   // 0.13.11 建材也乘地区阶系数（同银币）   // sgResK：0.12.9b 死国下银币、建材另算   // wk：v0.10.2（用户定，方案 D）按波数涨   // v0.8.18 按地区阶   // v0.6.71（用户）入侵战结算的银币照常给（0.6.7 误删）
-  if(G.wave>=G.total){hfxEnd();victory();return}
-  const P=G.lastPlan,minQ=P&&P.boss?CFG.cardRules.bossMin:P&&P.eliteWave?CFG.cardRules.eliteMin:null;
-  G.lastReward=reward;G.lastMinQ=minQ;if(G.invade||G.prol)G.cardOpts=[];else cbSet('wave');
-  hfxShow(()=>{if(G.cardOpts.length)showCards(reward);else afterPlayerCard()});   // 0.12.6 先弹英雄效果（没有 / 设置里跳过 = 直接选卡）
+  const rest=()=>{const P=G.lastPlan,minQ=P&&P.boss?CFG.cardRules.bossMin:P&&P.eliteWave?CFG.cardRules.eliteMin:null;
+    G.lastReward=reward;G.lastMinQ=minQ;if(G.invade||G.prol)G.cardOpts=[];else cbSet('wave');
+    hfxShow(()=>{if(G.cardOpts.length)showCards(reward);else afterPlayerCard()})};   // 0.12.6 先弹英雄效果（没有 / 设置里跳过 = 直接选卡）
+  if(G.wave>=G.total){if(regContOk()){regContAsk(rest);return}hfxEnd();victory();return}   // regContOk：0.14.5 常规守满可以接着守（game/reg_cont）
+  rest();
 }
 // —— 强化卡：先抽品质（幸运影响），再抽该品质的卡；精英/首领波保底 ——
 const QRANK=q=>CFG.cardQ[q].rank;
@@ -96542,9 +96544,9 @@ function victory(){if(G.prol){prolEnd();return}G.phase='victory';rfgClearDrop();
 const regSettleOk=()=>!!G&&MODE==='regular'&&!G.invade&&!G.story&&G.expand==null&&!G.prol&&!G.stMap;   // 0.14.4（用户 11-24）常规模式也能直接结算（同无尽）；开拓、剧情、入侵战、序章没有
 const waveBeat=()=>G.phase!=='wave'&&!G.cyhRp&&!G.mp2H;   // 这一波打完了没有：赤曜「重整旗鼓」、亡灵推磨的准备阶段 phase 也是 prep，但这一波还没打完（审阅修 11-24：原来直接结算 / 破城时会把正在打的这一波算成击退）
 function endlessSettle(){if(!G||!(MODE==='endless'||regSettleOk())||G.phase==='over'||G.phase==='victory')return false;const full=waveBeat();G.settled=full?G.wave:Math.max(0,G.wave-1);G.phase='over';
-  const got=awardMeta(false,full);clearSave();sfx('pick');musicMode('menu');showResult(false,got);return true}
+  const got=awardMeta(false,full);clearSave();sfx('pick');musicMode('menu');showResult(!!G.contW,got);return true}
 // beat：v0.6.02 修复——波次已经打完、在之后的推进时间 / 准备阶段被破城，这一波算击退（原来少记一波）
-function gameOver(){if(G.phase==='over'||G.phase==='victory')return;if(G.prol){prolEnd();return}const beat=waveBeat();G.phase='over';const got=awardMeta(false,beat);clearSave();sfx('crash');musicMode('menu');resultLater(false,got,800)}
+function gameOver(){if(G.phase==='over'||G.phase==='victory')return;if(G.prol){prolEnd();return}const beat=waveBeat();G.phase='over';const got=awardMeta(false,beat);clearSave();sfx('crash');musicMode('menu');resultLater(!!G.contW,got,800)}   // contW：0.14.5 常规守满后接着守，陷落也算通关（game/reg_cont）
 // —— 存档：每波结束（准备阶段）自动保存 ——
 // 每波结束后时间自动推进 20 秒（回血、兵营训练、英雄复活、塔装填、陷阱恢复、神圣墙与维修塔），不出怪；之后才是时停的准备阶段
 // v0.5.2（用户定）：不再逐帧模拟 20 秒——城外的英雄、士兵直接回到城内（含城墙；没有城墙围住主堡时 = 主堡回血圈），
@@ -98391,7 +98393,7 @@ function chMigrate(m){const A=m.ach||(m.ach={b:{},e:{}});if(!A.b)A.b={};if(!A.e)
 // 对局结算（game/meta.awardMeta 末尾调）：常规深渊通关 → 徽章；无尽 → 记录
 function chRunEnd(win,got,ban,cleared){if(ban||!G||G.expand!=null||G.invade||G.story)return;const A=chAch(),mk=G.map||'wild';let ch=false;
   if(win&&MODE==='regular'&&DIFF.id==='abyss'&&!A.b[mk]){A.b[mk]=1;got.chBadge=mk;ch=true;setTimeout(()=>toast(`获得徽章：${CFG.maps[mk].name}`),1200)}
-  if(MODE==='endless'){const R=A.e[mk]||(A.e[mk]={}),rk=sgRecId(),r=R[rk]||(R[rk]={w:0,ws:0,wc:[],s:0,sw:0,sc:[]}),s=chScore(),cs=G.chOn?G.chs.slice():[],w=cleared|0;let nb=false;
+  if(MODE==='endless'||G.contW&&cleared>G.contW){const R=A.e[mk]||(A.e[mk]={}),rk=G.contW?(G.sg?'sg:':'')+DIFF.id:sgRecId(),r=R[rk]||(R[rk]={w:0,ws:0,wc:[],s:0,sw:0,sc:[]}),s=chScore(),cs=G.chOn?G.chs.slice():[],w=cleared|0;let nb=false;
     if(w>r.w||(w===r.w&&s>r.ws)){r.w=w;r.ws=s;r.wc=cs;nb=true}
     if(s>r.s||(s===r.s&&w>r.sw)){r.s=s;r.sw=w;r.sc=cs;nb=true}
     got.chRec={w,s,nb};ch=true;if(G.chOn||nb)setTimeout(()=>toast(`无尽记录：${w} 波 · 挑战分数 ${s}${nb?'(新纪录)':''}`),900)}
@@ -98825,7 +98827,8 @@ const goldDiffMax=()=>Object.keys(CFG.goldDay.diffK||{}).reduce((a,k)=>CFG.goldD
 // 合计（营地、商店显示用）：已开放的地图
 function goldDaySum(){const ms=Object.keys(CFG.maps).filter(m=>mapOpen(m)),dm=goldDiffMax();return{got:ms.reduce((a,m)=>a+goldGotOf(m),0),cap:ms.reduce((a,m)=>a+goldCapOf(m,dm),0)}}   // dm：v0.9.55 合计的上限按最高难度（深渊）算，原来按噩梦 ×1 算，深渊拿的比「上限」还多
 // —— 结算 ——
-function awardMeta(win,settle){for(const k in G.souls||{})if(!CFG.heroes[k])delete G.souls[k];if(META.souls)for(const k in META.souls)if(!CFG.heroes[k])delete META.souls[k];   // 0.12.0 修复：清掉不是英雄的英雄之魄（老版本精英抽到的）
+function awardMeta(win,settle){const cw=!!(G.contW&&!win);if(cw)win=true;   // cw：0.14.5 常规守满后接着守（game/reg_cont）——陷落 / 直接结算也算通关，击退波数照实算
+  for(const k in G.souls||{})if(!CFG.heroes[k])delete G.souls[k];if(META.souls)for(const k in META.souls)if(!CFG.heroes[k])delete META.souls[k];   // 0.12.0 修复：清掉不是英雄的英雄之魄（老版本精英抽到的）
     // settle：无尽「直接结算」（准备阶段结算 = 这一波也算击退）
   const ban=!!G.banRew;if(ban){const m=CFG.run.noRewardMul,h=v=>Math.floor((v||0)*m);for(const k in G.meta)G.meta[k]=h(G.meta[k]);for(const k in G.souls)G.souls[k]=h(G.souls[k]);G.soulPt=Math.floor((G.soulPt||0)*m);for(const k in G.skinFrag||{})G.skinFrag[k]=h(G.skinFrag[k]);for(const k in G.mats||{})G.mats[k]=h(G.mats[k]);G.loot=G.loot.filter((_,i)=>i%2===1)}   // v0.7.0（用户定）莉莲、冷参战过：不计通关记录；v0.7.7（用户定）奖励由 0 改成减半（noRewardMul；装备隔一件留一件）
   aplRewPre();   // 0.13.12 AI 局（执行过 AI 的操作）这一局攒下的 × CFG.aiPlayer.rewMul（ui/apl_run）
@@ -98833,7 +98836,7 @@ function awardMeta(win,settle){for(const k in G.souls||{})if(!CFG.heroes[k])dele
   for(const k in G.meta)got[k]=Math.round(G.meta[k]*(k==='银币'||k==='建材'?1+pm.scav:k==='科研点'||k==='设计点'?1+pm.inspire:1)*(k==='金币'?1:1+tr));if(got.银币>0)got.银币=Math.round(got.银币*(1+f5bSilverK()));   // f5bSilverK：0.13.2 代理 15b 加，德雷克「劫掠后裔」   // 卡「拾荒搜刮」「科研灵感」；tr：v0.4.2 商人「搜山检海」
   {const td=alTrade();if(td){got.trade=td;for(const k of['银币','建材','科研点','设计点'])if(td[k])got[k]=(got[k]||0)+td[k]}}{const t2=f16aOath();if(t2){got.f16Oath=t2;got.银币=(got.银币||0)+t2.银币}}   // f16aOath：0.13.2 第四批代理 16a 加，阿里巴巴家族「天平之誓」（game/el_fam16a，和贸易天平各算各的）   // v0.9.0 阿里巴巴「贸易天平」：剩下的铜币换资源（每种总量最多基础结算奖励的 300%）
   if(got.金币>0){const mk=G.map||'wild',st=goldDayState(),cap=Math.floor(goldCapOf(mk,DIFF.id)*aplCapK()),g=Math.min(got.金币,Math.max(0,cap-(st.m[mk]||0)));got.goldCut=got.金币-g;got.金币=g;st.m[mk]=(st.m[mk]||0)+g;got.goldDay=st.m[mk]+'/'+cap}   // v0.4.2 每日金币上限；v0.5.9 按地图
-  const cleared=win||settle?G.wave:Math.max(0,G.wave-1);got.hero=G.heroes[0]?G.heroes[0].id:null;got.heroes=G.heroes.filter(h=>!h.npc&&!h.elite).map(h=>h.id);got.soulMap=soulDayCap(Object.assign({},G.souls),got);got.mats=Object.assign({},G.mats||{});got.wares=Object.assign({},G.wares||{});got.cleared=cleared;
+  const cleared=(win&&!cw)||settle?G.wave:Math.max(0,G.wave-1);got.hero=G.heroes[0]?G.heroes[0].id:null;got.heroes=G.heroes.filter(h=>!h.npc&&!h.elite).map(h=>h.id);got.soulMap=soulDayCap(Object.assign({},G.souls),got);got.mats=Object.assign({},G.mats||{});got.wares=Object.assign({},G.wares||{});got.cleared=cleared;
   f18aSilver(got);   // f18aSilver：0.13.2 八阶代理 18a 加，罗斯福「经济利用」结算银币 ×110%（game/el_fam18a）
   f17bLoot(got);   // f17bLoot：0.13.2 七阶代理加，戴肯「劫掠之手」地区材料、建材（game/el_fam17b；要在下面入库之前）
   ftLoot(got);   // 0.13.6 家族科技「掠夺许可」结算的银币、建材、地区材料 ×(1 + X)（game/fam_tech；要在下面入库之前）
@@ -98860,7 +98863,7 @@ function awardMeta(win,settle){for(const k in G.souls||{})if(!CFG.heroes[k])dele
   saveMeta();svmFlush();   // svmFlush：0.14.4.1 每局结算马上写进安卓本机镜像（game/save_mirror）
   // 最好成绩只记常规 / 无尽（v0.2.2 起扩张战不记，免得和常规模式混在一个键里）
   const dd0=designDiffSet();   // 0.13.13 子代理 TR2 加：记最好纪录之前满足难度条件的（下面记完再比，首次满足的提示可以研发）
-  if(G.expand==null&&!G.invade&&!G.story&&!noRec)try{const b=loadBest(),k=(G.map&&G.map!=='wild'?G.map+'.':'')+MODE+'.'+sgRecId(),cw=sgBestCap(cleared);if(!(b[k]>=cw)){b[k]=cw;localStorage.setItem(BEST_KEY,JSON.stringify(b))}}catch(e){}   // sgBestCap：0.12.7 代理 SG 加，死国的一局记进常规的键时封顶常规的波数（game/sg_dead）
+  if(G.expand==null&&!G.invade&&!G.story&&!noRec)try{const b=loadBest(),k=(G.map&&G.map!=='wild'?G.map+'.':'')+MODE+'.'+sgRecId(),cw2=G.contW?Math.min(cleared,G.contW):sgBestCap(cleared);if(!(b[k]>=cw2))b[k]=cw2;if(G.contW&&cleared>G.contW){const k2=regContRec();if(!(b[k2]>=cleared))b[k2]=cleared}localStorage.setItem(BEST_KEY,JSON.stringify(b))}catch(e){}   // contW：0.14.5 续守——常规的纪录封顶常规波数，整局波数记进同图同难度的无尽纪录（game/reg_cont）   // sgBestCap：0.12.7 代理 SG 加，死国的一局记进常规的键时封顶常规的波数（game/sg_dead）
   {const nd=designDiffSet().filter(id=>!dd0.includes(id)&&!META.design.includes(id));if(nd.length)got.newDesign=(got.newDesign||[]).concat(nd)}   // 0.13.13 子代理 TR2 加：首次通关玄钢山城 / 龙神遗迹噩梦及以上
   try{chRunEnd(win,got,noRec,cleared)}catch(e){console.warn('chRunEnd',e)}   // 代理 CH：徽章（常规深渊通关）、无尽挑战记录（game/ch_chal）
   try{ctkRunEnd(win,noRec,cleared)}catch(e){console.warn('ctkRunEnd',e)}
@@ -99830,6 +99833,21 @@ function sgRunEnd(win,cleared,got,ban){if(!G||!G.sg||ban||MODE!=='regular'||G.ex
   if(!was&&sgClear(m,d)){got.sgClear=d;const nm=CFG.maps[m]?CFG.maps[m].name:m;setTimeout(()=>toast(`死国·${diffName(d,true)}通关：成就里${nm}的勋章燃起了${SG_FLN[sgFlameOn(m)]||''}火焰`),1500)}}
 // 常规的最好成绩：死国的一局封顶常规的波数（死国 3 轮，记进常规的键会出现「最佳 60 波」）
 const sgBestCap=c=>G&&G.sg&&MODE==='regular'?Math.min(c,regWavesOf(DIFF.sgB||DIFF,G.map||'wild')):c;
+
+// ---------- 0.14.5（用户 11-24）常规模式守满之后接着守（转成无尽）----------
+// 用户：常规和无尽本质上没区别（亡灵成长同一套，engine/enemy.enemyStats 的 egSum），守满不必马上结算，可以接着打，到最后一起结算。
+// 守满最后一波（game/game.endWave）：弹窗二选一——「结算」照旧 victory()；「继续守下去」：G.contW = 常规波数、G.total = ∞，之后的出怪照常规第二轮往后排（planWave 的 round2，同 game/sv3_plan 借 G.total = ∞ 的写法），每轮末首领照常
+// 之后主堡陷落 / 直接结算：一起结算、算通关（awardMeta 里 contW 当 win，击退波数照实算）；纪录：常规的最好成绩封顶常规波数，多出来的记进这张图同难度的无尽纪录（死国 = sg:难度）和成就「挑战记录」
+// 只有能「直接结算」的常规局（regSettleOk：不是开拓、剧情、入侵战、序章、开拓地）才问；存档带 contW（读档把 G.total 换回 ∞）
+let REG_CONT=null;   // 选了「继续」以后接着走的波末流程（选卡、英雄效果）
+const regContOk=()=>SET.regCont!==false&&regSettleOk()&&!G.contW&&G.total<Infinity;   // 设置「常规守满后问要不要接着守」（SET.regCont，默认开）
+function regContAsk(rest){REG_CONT=rest;openModal('regcont',`<h2 class="hd">${mapDef().name}守住了</h2>
+  <p class="meta">已经守满 ${G.total} 波，可以现在结算，也可以接着守下去：之后的亡灵照常一波比一波强(和无尽模式一样)，奖励照常每波累计，等主堡陷落或「直接结算」时一起结算，算通关。</p>
+  <div class="actions col"><button class="px big" type="button" data-act="regcont" data-v="1">继续守下去</button><button class="px big" type="button" data-act="regcont" data-v="0">现在结算</button></div>`,null)}
+function regContPick(v){const f=REG_CONT;REG_CONT=null;hideModal();if(!G||G.phase==='victory'||G.phase==='over')return;
+  if(v==='1'&&G.total<Infinity){G.contW=G.total;G.total=Infinity;sayT(`继续守下去：从第 ${G.contW+1} 波起同无尽模式`);if(f)f();if(UI.ready)refreshPhaseUI()}else{hfxEnd();victory()}}
+const regContRec=()=>(G.map&&G.map!=='wild'?G.map+'.':'')+'endless.'+(G.sg?'sg:':'')+DIFF.id;   // 续守的多出来的波数记进的无尽纪录键（同 game/sg_dead.sgRecId 的无尽写法）
+feat('regCont',{on:()=>MODE==='regular',hooks:{save:o=>{if(G.contW)o.contW=G.contW},load:d=>{if(d.contW>0){G.contW=d.contW|0;G.total=Infinity}}}});
 
 // ---------- v0.5.1 日常：每月签到、日常任务（数据见 data/daily.js；界面见 ui/daily.js）----------
 // META.sign = {m:'2026-10', days:[签过的日子], got:{累计档位:1}}；META.daily = {d:dayKey, ref:今天换过几批, tasks:[{kind,cat,map,diff,hero,n,p,r,done}]}
@@ -108728,7 +108746,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="a9702a3",GAME_BUILT=1795555466545,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="9016595",GAME_BUILT=1795557678526,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -110007,6 +110025,7 @@ function showSettings(from){if(from)setFrom=from;const K=SET.keys;
       ${tg('cardConfirm','选卡需要确认','每波结束先点卡片、再点「确认」；关掉后点卡片直接选')}
       ${tg('autoECard','自动确认亡灵选卡','亡灵选卡弹出 1 秒后自动跳过；噩梦难度自动替亡灵选一张最低品质的(同品质随机)')}
       ${tg('autoRepair','每波结束自动全修','铜币够的话自动修满所有建筑，主堡优先')}
+      ${tg('regCont','常规守满后问要不要接着守','常规模式守满最后一波时弹窗：现在结算，或者接着守下去(同无尽，到主堡陷落或直接结算时一起结算、算通关)；关掉后守满直接结算')}
       ${tg('skipHfx','跳过局内英雄效果弹窗提示','每波结束不再弹出英雄效果(格拉淘金、黄虎夺天命等)，改成战斗提示')}
       ${tg('rec','录制行动','开着的时候，每一局按波次把你的操作记成文字：建造、升级、修理、选卡、放技能、指令……下一局开始生效。可以把记录发给 AI 当攻略')}
       ${recRowsHTML()}
@@ -110145,7 +110164,7 @@ function onSheetClick(e){
   else if(a==='stfin')stFinAct(v);   // 0.13.10 结局回顾（ui/st_fin）
   else if(a==='streset'){if(storyArm!=='reset:'+v){storyArm='reset:'+v;showStory();return}storyArm='';stReset(v);toast('这个阶段的剧情已经重置，从第一章重新开始');showStory()}   // v0.7.0 重置本阶段（点两次）
   else if(a==='strestore'){if(storyArm!=='rest:'+v){storyArm='rest:'+v;showStory();return}storyArm='';if(stRestore(v))toast('已恢复到上次重置之前的进度');showStory()}
-  else if(a==='stch')stChoose(v);   // v0.7.0 剧情里的选择
+  else if(a==='stch')stChoose(v);else if(a==='regcont')regContPick(v);   // v0.7.0 剧情里的选择；regcont：0.14.5 常规守满继续守 / 结算（game/reg_cont）
   else if(a==='stnext'||a==='stagain'){storyArm='';running=false;hudEl.hidden=true;audioInit();if(!startStory(v)){newGame({});showStory()}}
   else if(a==='stlist'){if(running){running=false;hudEl.hidden=true;newGame({})}showStory(v)}
   else if(a==='invgo'){if(!stGarOf(v).length&&!elGarOf(v).length){ST_NOGAR=v;sfx('click');showHub('settle');return}audioInit();startInvasion(v)}   // v0.6.2 迎战入侵；v0.10.1 没有驻扎英雄先弹提示
@@ -110430,7 +110449,7 @@ function showResult(win,got,keep){
   const ex=got.expanded?CFG.settlement.expansions[G.expand]:null,exR=G.expandR||'wild';
   const st=G.settled!==undefined;
   const iv=G.invade;
-  openModal('over',`<h2 class="hd${win||st?'':' lose'}">${win?(ex?'开拓成功':iv?'入侵击退':`${mapDef().name}守住了`):st?`${mapDef().name} · ${MODE==='endless'?'无尽结算':'直接结算'}`:'主堡陷落'}</h2>
+  openModal('over',`<h2 class="hd${win||st?'':' lose'}">${win?(ex?'开拓成功':iv?'入侵击退':`${mapDef().name}守住了${G.contW?` · 续守到第 ${got.cleared|0} 波`:''}`):st?`${mapDef().name} · ${MODE==='endless'?'无尽结算':'直接结算'}`:'主堡陷落'}</h2>
     ${iv?`<p class="meta">${win?`${mapDef().name}开拓地的${DIFF.name}入侵已击退：金币 <b>+${got.invGold}</b>，不计入每日上限。以后这里再来${DIFF.name}或更低难度的入侵，可以直接扫荡拿一半金币。`:`这次入侵还挂着，可以重新迎战；开拓地的建筑都已恢复原样。`}</p>`:''}
     ${ex?`<p class="meta">${CFG.maps[exR].name}开拓地第 ${G.expand+1} 次开拓完成：区域扩大到 ${stArea(exR)} × ${stArea(exR)}。</p>`:''}
     ${got.banned?`<p class="warn">${hlkNames()}参战过：这一局不计入通关记录和成就，结算奖励减半</p>`:''}${aplResHTML()}${tutResultTip()}${got.autoExp?`<p class="newmap">${got.autoExp}</p>`:''}${(got.newMaps||[]).map(k=>`<p class="newmap">解锁新地图：<b>${CFG.maps[k].name}</b></p>`).join('')}${(got.newDesign||[]).map(id=>`<p class="newmap">可以研发新建筑：<b>${BDEF[id].name}</b></p>`).join('')}
