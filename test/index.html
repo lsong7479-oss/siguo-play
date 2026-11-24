@@ -16054,13 +16054,13 @@ Object.assign(CFG.heroes.weidemann,CFG.heroStats.weidemann);
    英魂：每位能突破的英雄一种（heroes 里一行，以后别的英雄照着加）；死国模式（常规、无尽都算）在 map 这张图每守完一轮按难度给 drop 个，小数攒着（同英雄之魄来源固定给）
    突破：5★ + need 个英魂 → 白金五星（META.heroes[id].plat = 1），技能换成 plat 数值
    英魂商店：每 shop.hours 小时刷新一批，shop.slots 各槽出现的概率；每槽 = 一位「死国(梦魇及以上)通关过对应地图」的可突破英雄，数量 qty 等概率，单价 gold 金币
-   vehCamps：载具兵营（魏德曼白金「所有非载具兵营基础驻军上限 +2」不算它们）——精械工厂、源能工厂、赤曜工厂（兵种全是 mech 机械）+ 造船厂（舰船）、空军基地（飞机、气球）（Claude 定，等用户看） */
-CFG.heroBreak={need:100,
+   载具兵营（魏德曼白金「所有非载具兵营基础驻军上限 +2」不算它们）：用户 11-24 定，和诸葛闲「闲云兵法」一样——闲云兵法加的魏德曼也加（CFG.zgxNoMech，heroes/zhugexian.zgxMech）
+   dayCap：通关（死国每轮掉落）每天至多拿几个英魂，每位英雄各算（用户 11-24：每天至多通过通关获取 10 个；英魂商店买的不算）；看广告结算翻倍不翻英魂（用户 11-24） */
+CFG.heroBreak={need:100, dayCap:10,
   shop:{hours:24, slots:[1,0.5,0.5,0.5], qty:[1,5]},
   heroes:{
     weidemann:{map:'bloodPass', drop:{nightmare:0.5, inferno:1, abyss:2}, gold:100, name:'魏德曼英魂'},   // 用户定：死国梦魇 / 无间 / 绝境每轮 0.5 / 1 / 2 个（每轮给，用户 11-24 确认）；100 金币 / 个
-  },
-  vehCamps:['campSteam','campYn','chyFactory','shipyard','airBase']};
+  }};
 
 /* ---------- v0.10.0 新英雄：联盟司令（红，用户 2026-10-14 的策划，和迷海遗迹一起给的）----------
    技能逻辑在 heroes/commodore.js，小人在 art/hd_mist.js（hdMhCommodore），立绘 art/portraits/commodore.webp（用户给的海军元帅图，缩到 288×384）。
@@ -108728,7 +108728,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="75a6f7e",GAME_BUILT=1795547212586,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="a9702a3",GAME_BUILT=1795555466545,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -116011,7 +116011,7 @@ function rpTiles(got){if(RP_L&&RP_GOT===got)return RP_L;const L=[],xm=got.tadX?2
   for(const k in got.mats||{}){const m=k.replace(/\d+$/,''),t=+k.replace(/^\D+/,'');if(CFG.mats[m])T(matIcoHTML(m,t),got.mats[k],matName(m,t))}
   for(const k in got.wares||{})if(CFG.wares.items[k])T(wareIco(k),got.wares[k],CFG.wares.items[k].name);
   if(got.blWat>0)T(img(blWaterIcon()),got.blWat,CFG.blWater.name);
-  if(got.bpItem>0)T(img(bpIcon()),got.bpItem,'蓝图');wdpTiles(got,T);   // wdpTiles：0.14.5 wdp 英魂（game/wdp_break）
+  if(got.bpItem>0)T(img(bpIcon()),got.bpItem,'蓝图');wdpTiles(got,L);   // wdpTiles：0.14.5 wdp 英魂（game/wdp_break；不翻倍，所以直接放 L）
   const D=got.drops||[],QO=Object.keys(CFG.itemQ),qi=it=>QO.indexOf(it.q||'common');
   dropGroups(D.filter(it=>(it.q||'common')!=='common')).sort((a,b)=>qi(b.it)-qi(a.it)).forEach(({it,n})=>T(img(itemIcon(it)),n,(it.book?'':itemQ(it).name+' · ')+itemName(it),it.book?'#c9a46a':itemQ(it).color));
   const C=new Map();for(const it of D){if((it.q||'common')!=='common')continue;const k=DROP_SUM[itemKind(it)]||'普通装备',g=C.get(k);if(g)g.n++;else C.set(k,{it,n:1})}   // 普通品质照旧按类合计（menus.dropCommon）
@@ -116062,7 +116062,6 @@ function tadDblApply(got,dry){let n=0;const X={};const add=(o,k,v)=>{if(!(v>0))r
   for(const k in got.elPill||{})if(got.elPill[k]>0){n++;if(!dry)elPillAdd(k,got.elPill[k])}   // 丹药
   if(got.blWat>0){n++;if(!dry)META.blWater=blWaterHas()+got.blWat}   // 不老泉水
   if(got.bpItem>0){n++;if(!dry)META.bpItem=bpHas()+got.bpItem}   // 蓝图
-  n+=wdpDbl(got,dry);   // 0.14.5 wdp 英魂（game/wdp_break）
   const D=got.drops||[];if(D.length){n++;if(!dry){X.drops=D.length;for(const it of D){const c=JSON.parse(JSON.stringify(it));c.uid=META.uid++;addGear(c)}lybGPearlMerge()}}   // 装备、打造书：同样的一件（工艺、词条都一样），新的 uid
   if(!dry&&!got.banned&&!got.noRec)v5fEarnGot(Object.assign({},X,{mats:got.mats,wares:got.wares}));   // 合计赚取的记录（同 awardMeta：兑换码英雄参战的局不记）
   return dry?n:X}
@@ -116091,20 +116090,23 @@ function wdpBreak(id){const e=wdpCan(id);if(e)return e;wdpSpirit()[id]=wdpHasN(i
 // —— 英魂掉落：死国模式、对应地图，每守完一轮（同英雄之魄来源固定给 game/soul_pt）——
 function wdpRoundDrop(){if(!G||!G.sg||G.story||G.invade||G.expand!=null)return;const B=CFG.heroBreak.heroes,id0=DIFF&&DIFF.id;
   for(const id in B){const b=B[id];if(b.map!==G.map)continue;const v=b.drop[id0];if(!(v>0))continue;if(!G.wdpF)G.wdpF={};if(!G.wdpGot)G.wdpGot={};
-    const f=(G.wdpF[id]!=null?G.wdpF[id]:((META.hSpiritF||{})[id]||0))+v,n=Math.floor(f+1e-9);G.wdpF[id]=Math.round((f-n)*100)/100;
+    const left=CFG.heroBreak.dayCap-wdpDay(id)-(G.wdpGot[id]||0);if(left<=0){sayT(`${wdpName(id)}今天通关已经拿满 ${CFG.heroBreak.dayCap} 个，明天再来(英魂商店照常能买)`);continue}   // 每天上限（用户 11-24）：拿满了这一轮不掉，小数也不攒
+    const f=(G.wdpF[id]!=null?G.wdpF[id]:((META.hSpiritF||{})[id]||0))+v,n=Math.min(left,Math.floor(f+1e-9));G.wdpF[id]=Math.round((f-Math.floor(f+1e-9))*100)/100;
     if(n>0){G.wdpGot[id]=(G.wdpGot[id]||0)+n;sayT(`掉落：${wdpName(id)} ×${n}`)}}}
+// 今天通关拿了几个（META.hSpD = {d: dayKey, n: {英雄: 个数}}；过了 0 点从 0 算）
+function wdpDay(id){const D=META.hSpD;return D&&D.d===dayKey()&&D.n?(D.n[id]|0):0}
 feat('wdpDrop',{on:()=>!!(G&&G.sg),hooks:{waveEnd:n=>{if(skinRoundEnd(n))wdpRoundDrop()},
   save:o=>{if(G.wdpGot)o.wdpGot=G.wdpGot;if(G.wdpF)o.wdpF=G.wdpF},
   load:d=>{G.wdpGot=d.wdpGot&&typeof d.wdpGot==='object'?d.wdpGot:{};G.wdpF=d.wdpF&&typeof d.wdpF==='object'?d.wdpF:{}}}});
 // 结算（game/meta.awardMeta）：小数存回、整数入库；兑换码英雄参战减半（同蓝图 bpAward）
 function wdpAward(got){if(!META.hSpiritF)META.hSpiritF={};for(const id in (G&&G.wdpF)||{})META.hSpiritF[id]=G.wdpF[id];
-  const o={};let any=false;for(const id in (G&&G.wdpGot)||{}){let n=G.wdpGot[id]||0;if(G.banRew)n=Math.floor(n*CFG.run.noRewardMul);if(n>0&&CFG.heroes[id]){o[id]=n;wdpAdd(id,n);any=true}}
+  const o={},dk=dayKey();let any=false;if(!META.hSpD||META.hSpD.d!==dk)META.hSpD={d:dk,n:{}};
+  for(const id in (G&&G.wdpGot)||{}){let n=G.wdpGot[id]||0;if(G.banRew)n=Math.floor(n*CFG.run.noRewardMul);n=Math.min(n,Math.max(0,CFG.heroBreak.dayCap-wdpDay(id)));   // 结算时再按当天上限截一次（一局跨过 0 点、或者同时开着别的局）
+    if(n>0&&CFG.heroes[id]){o[id]=n;wdpAdd(id,n);META.hSpD.n[id]=(META.hSpD.n[id]|0)+n;any=true}}
   if(any)got.hSpirit=o}
 // 结算格子（ui/res_pg.rpTiles）、局内战利品（ui/menus）
-function wdpTiles(got,T){for(const id in got.hSpirit||{})T(`<img class="rpi" alt="" src="${wdpIcon()}">`,got.hSpirit[id],wdpName(id))}
+function wdpTiles(got,L){for(const id in got.hSpirit||{})if(got.hSpirit[id]>0)L.push({ico:`<img class="rpi" alt="" src="${wdpIcon()}">`,n:got.hSpirit[id],nm:wdpName(id)})}   // 直接放 L、不经 T：看广告翻倍不翻英魂（用户 11-24）
 function wdpLoot(){const L=Object.entries((G&&G.wdpGot)||{}).filter(([id,n])=>n>0);return L.length?`<p class="meta">英魂：${L.map(([id,n])=>`${wdpName(id)} <b>+${n}</b>`).join(' · ')}</p>`:''}
-// 看广告翻倍（game/tapad.tadDblApply）：英魂同样翻（Claude 定：结算格子会一起显示 ×2）
-function wdpDbl(got,dry){let n=0;for(const id in got.hSpirit||{})if(got.hSpirit[id]>0){n++;if(!dry)wdpAdd(id,got.hSpirit[id])}return n}
 // —— 英魂商店（商店页签「英魂商店」，ui/shop）——
 function wdpShopPool(){const B=CFG.heroBreak.heroes,L=[];for(const id in B)if(CFG.sg.diffs.some(d=>sgClear(B[id].map,d)))L.push(id);return L}
 function wdpShopRoll(force){const S=shopState(),C=CFG.heroBreak.shop,slot=shopSlot(C.hours);
@@ -116130,7 +116132,7 @@ function wdpBtn(id){if(!wdpHas(id)||!META.heroes[id]||!META.heroes[id].owned||wd
 function wdpLine(id){if(!wdpHas(id))return'';const H=META.heroes[id]||{},n=wdpHasN(id),need=CFG.heroBreak.need,b=CFG.heroBreak.heroes[id],mp=(CFG.maps[b.map]||{}).name||b.map;
   if(H.plat)return`<p class="meta wdpln"><b class="wdpTag">白金</b> 已突破为白金五星：技能换成白金效果(点技能图标看「白金」页) · ${wdpName(id)} ${n}</p>`;
   const ok=x=>x?'<b class="ok">✓</b>':'<span class="warn">✗</span>';
-  return`<p class="meta wdpln">突破为<b class="wdpTag">白金</b>五星：${ok((H.star||1)>=CFG.heroStars.maxStar)} ${CFG.heroStars.maxStar} 星 · ${ok(n>=need)} ${wdpName(id)} ${n}/${need}(死国${mp}每守完一轮掉落，英魂商店也能买)</p>`}
+  return`<p class="meta wdpln">突破为<b class="wdpTag">白金</b>五星：${ok((H.star||1)>=CFG.heroStars.maxStar)} ${CFG.heroStars.maxStar} 星 · ${ok(n>=need)} ${wdpName(id)} ${n}/${need}(死国${mp}每守完一轮掉落，通关每天至多 ${CFG.heroBreak.dayCap} 个；英魂商店也能买)</p>`}
 function wdpAct(v){if(WDP_ARM!==v){WDP_ARM=v;return}WDP_ARM='';const e=wdpBreak(v);if(e)toast(e);else{sfx('horn');toast(`${CFG.heroes[v].name}突破为白金五星`)}}
 // 星星（ui/hub.starsHTML 的白金版）：白金配色 + 「白金」小字
 function wdpStars(n){return`<span class="stars wdpSt">${'★'.repeat(n)}</span><em class="wdpTag">白金</em>`}
@@ -116174,7 +116176,7 @@ feat('wdpDr9',{ord:9990,on:()=>heroEver('weidemann'),hooks:{drF:(u,dr)=>{if(!(u.
 // 无坚不摧白金：所有骑兵 chgT 秒内出手都按满速（冲锋倍率、冲锋附带的效果照常）——units/soldiers.soldierMelee 在算冲锋前调，返回原来的满速标记（同北原天狼冲锋 nqChgOn）
 function wdpChg(s,poke){const r=s.nq?nqChgOn(s,poke):-1;if(r>=0||poke||s.cvFull||!(G.wdpCU>G.time)||!s.c.cavalry)return r;s.cvFull=true;return 0}
 // 兵营基础驻军上限（units/soldiers.campCap）：非载具兵营 +cap
-function wdpCap(b){const P=G&&G.wdpP;return P&&P.cap&&!CFG.heroBreak.vehCamps.includes(b.type)?P.cap:0}
+function wdpCap(b){const P=G&&G.wdpP;return P&&P.cap&&!zgxMech(b)?P.cap:0}   // 非载具兵营：用户 11-24 定，同诸葛闲闲云兵法（heroes/zhugexian.zgxMech，CFG.zgxNoMech）
 // 御敌千里白金：全图友军视野、射程；离目标最近的至多 n 名远程物理士兵集火，之后每 exT 秒再一次共 ex 次（zone wdpFarX）
 const WDP_SL=[];
 function wdpFarPick(x,y,n){WDP_SL.length=0;for(let k=0;k<G.soldiers.length;k++){const s=G.soldiers[k];if(!s.dead&&wdpRngU(s))WDP_SL.push(s)}
@@ -116222,7 +116224,7 @@ function tadResIn(got){const T=CFG.tapad,X=got.tadX;
   return`<p class="meta"><button class="px on" type="button" data-act="taddbl"${!left||b?' disabled':''}>${b?'广告加载中…':'看广告奖励翻倍'}</button> ${left?`今天还能翻倍 <b>${left}</b>/${T.dblDay} 次`:`今天的 ${T.dblDay} 次已经用完`}</p>`}
 const tadDblMode=()=>!!G&&G.mode==='regular'&&!G.story&&!G.invade;   // 用户 11-14：翻倍只在常规模式（含开拓）出现；无尽、娱乐(幸存者)、剧情、入侵战都没有
 // 看完广告后弹收获窗（用户 11-14：避免玩家以为没收到）：金币一格；翻倍 = 额外那一份（结算格子按 ×1 算，不含家族声望）
-function tadPopDbl(got){const g=Object.assign({},got,{tadX:null,repF:null}),L=rpTiles(g).slice();RP_L=null;const sp=got.tadX&&got.tadX.soulPt;
+function tadPopDbl(got){const g=Object.assign({},got,{tadX:null,repF:null,hSpirit:null}),L=rpTiles(g).slice();RP_L=null;const sp=got.tadX&&got.tadX.soulPt;
   rwShowL('奖励翻倍',L,`这一局的奖励已经再给了一份，不计入每日上限${sp&&sp.n?`；培养值换成${CFG.heroes[sp.id]?CFG.heroes[sp.id].name:''}的英雄之魄 ×${sp.n}`:''}`)||toast('这一局的奖励已翻倍')}
 const tadResHTML=got=>tadOn()&&got?`<div id="tadRes">${tadResIn(got)}</div>`:'';
 // 只重画按钮所在的那一块（商店整页重画：顶上的金币数也要变；结算原地换，不跳回顶上）
