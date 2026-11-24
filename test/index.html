@@ -26269,7 +26269,7 @@ CFG.heroRoles.of.chyao='cmd';   // 英雄列表的分类：统御
        （半径 r 格内的地面亡灵，物理爆炸）；护盾被打光就不爆；护盾至多 shCap × 最大生命（照赵慈武神用户定的 1000%）；
      无限剑制：按住释放（chan），朝瞄准方向 180° 扇形，长度 = 当前武器攻击距离 × len，每 (攻击间隔 × iv) 秒一下；攻击间隔 = 英雄当前的实际攻击间隔（吃攻速）；
        按攻击间隔出手的技能按用户 11-21 的规矩再 × 武器的 AD 加成比例（hWpK）；松手后没有冷却（cd 0，同别的按住技能）；移速 ×chMv；
-     夺命锋刃：选中施法范围 range 格内的亡灵（瞄准点附近最近的，没有就离卡特最近的），t 秒跃过去（期间不受伤害、越过障碍），落在它面前，
+     夺命锋刃：选中施法范围 range 格内的亡灵（瞄准点附近最近的，没有就离卡特最近的），以 spdM 倍移速跃过去（0.14.5 起；期间不受伤害、越过障碍），落在它面前，
        对它周围 r 格内的地面亡灵造成伤害（受双持兵刃效果），主目标挂上「夺命」；同一时间只有一个夺命目标（新的顶掉旧的），没有时限；
      夺命：这只亡灵受到任何来源的伤害（扣血之后的量），heal 恢复卡特生命；回满后溢出的部分加进无懈可击的护盾（没有护盾就新开一个，计 shT 秒、到时爆炸，爆炸按无懈可击当前星级）；
        这只亡灵死了（不论谁打死）→ 夺命锋刃冷却刷新；
@@ -26289,8 +26289,9 @@ Object.assign(CFG.skills,{
   katBlades:{name:'无限剑制', cd:0, aim:'fan', chan:true, chMv:0.6, arc:180, iv:0.2, range:3, byStar:{len:[1,1.1,1.2,1.35,1.5], b:[100,140,180,240,300], ad:[0.6,0.65,0.7,0.75,0.8]},
     desc:p=>`按住后持续向前方扇形 ${p.arc}° 长(攻击距离)×${p.len} 格每((攻击间隔)×${p.iv})秒造成 ${sv_(p.b,p.ad)} 伤害(受双持兵刃效果；按攻击间隔出手，× 武器的 AD 加成比例)`},
   // 夺命锋刃：range 格内选一只亡灵，t 秒跃过去，r 格内 b(+ad×AD)（受双持兵刃效果），主目标挂「夺命」（受伤时 heal 回卡特生命，溢出转无懈可击护盾；死了刷新冷却）
-  katLeap:{name:'夺命锋刃', cd:10, aim:'enemy', range:10, t:0.75, r:1, ad:2, heal:0.1, byStar:{b:[1200,1500,1800,2100,2500]},
-    desc:p=>`施法范围 ${p.range} 格，${p.t} 秒内跃至选中的亡灵处，然后对半径 ${p.r} 格内的亡灵造成 ${sv_(p.b,p.ad)} 伤害(受双持兵刃效果)，并为主目标赋予「夺命」标记；冷却 ${p.cd} 秒。夺命：该单位受到伤害时，伤害的 ${pc_(p.heal)} 恢复卡特生命，溢出生命转化为「无懈可击」护盾；该单位被击杀后，夺命锋刃冷却刷新`},
+  katLeap:{name:'夺命锋刃', cd:10, aim:'enemy', range:10, spdM:2, r:1,   // spdM：0.14.5（用户 11-24）「1 秒内移动至目标地点」改为「以 200% 的移速移动至目标地点」——用时 = 距离 ÷（卡特当时的移速 × spdM），至少 0.15 秒（原来 t 0.75 秒）
+    ad:2, heal:0.1, byStar:{b:[1200,1500,1800,2100,2500]},
+    desc:p=>`施法范围 ${p.range} 格，以 ${pc_(p.spdM)} 的移速跃至选中的亡灵处(途中不受伤害、越过障碍)，然后对半径 ${p.r} 格内的亡灵造成 ${sv_(p.b,p.ad)} 伤害(受双持兵刃效果)，并为主目标赋予「夺命」标记；冷却 ${p.cd} 秒。夺命：该单位受到伤害时，伤害的 ${pc_(p.heal)} 恢复卡特生命，溢出生命转化为「无懈可击」护盾；该单位被击杀后，夺命锋刃冷却刷新`},
 });
 CFG.katAi={guardR:3, guardN:3, guardHp:0.6, fanN:2, leapMin:2};   // 托管门槛（Claude 定）
 CFG.heroes.kate={name:'卡特', title:'魔剑王者', quality:'red', look:'kate', recruit:true, allSkills:true, dualW:true, soulDrop:{map:'godKingdom', minDiff:'hard', chance:0.3},
@@ -89884,7 +89885,8 @@ const pfKtPick=j=>{if(E.air[j])return;const d=Math.hypot(E.x[j]-KAT_PX,E.y[j]-KA
 function katPick(h,a,R){KAT_PB=-1;KAT_PD=1e9;KAT_PX=a.x;KAT_PY=a.y;eQuery(a.x,a.y,48,pfKtPick,true);let j=KAT_PB;if(j>=0&&Math.hypot(E.x[j]-h.x,E.y[j]-h.y)>R+E.r[j])j=-1;   // 瞄准点 3 格内最近的；够不着就找离卡特最近的
   if(j<0){KAT_PB=-1;KAT_PD=1e9;KAT_PX=h.x;KAT_PY=h.y;eQuery(h.x,h.y,R,pfKtPick,true);j=KAT_PB}return j}
 function katLeapCast(h,p,a){const R=p.range*16,j=katPick(h,a,R);if(j<0){if(h.ctl)toast('夺命锋刃：施法范围内没有目标');return false}const x=katS(h);
-  if(h.layer===1)heroSetLayer(h,0);x.lp={t:0,T:p.t,sx:h.x,sy:h.y,j,id:E.id[j],tx:E.x[j],ty:E.y[j],p};h.busyT=Math.max(h.busyT||0,p.t);h.inv=Math.max(h.inv||0,p.t+0.05);h.walking=false;h.moveTo=null;h.nav=null;h.cv=0;
+  const T=Math.max(0.15,Math.hypot(E.x[j]-h.x,E.y[j]-h.y)/Math.max(1,h.speed*16*Math.max(0.05,1+pm.moveSpd+mvT(h))*(p.spdM||2)));   // 0.14.5 以 200% 移速跃过去（data/hero_kate katLeap.spdM）
+  if(h.layer===1)heroSetLayer(h,0);x.lp={t:0,T,sx:h.x,sy:h.y,j,id:E.id[j],tx:E.x[j],ty:E.y[j],p};h.busyT=Math.max(h.busyT||0,T);h.inv=Math.max(h.inv||0,T+0.05);h.walking=false;h.moveTo=null;h.nav=null;h.cv=0;
   h.facing=E.x[j]>=h.x?1:-1;if(inViewPt(h.x,h.y))sfx('dash',h.x,h.y);return true}
 function katLeapStep(h,x,dt){const L=x.lp;L.t+=dt;if(eOk(L.j,L.id)){L.tx=E.x[L.j];L.ty=E.y[L.j]}const f=Math.min(1,L.t/L.T);
   h.x=clamp(L.sx+(L.tx-L.sx)*f,4,MW-4);h.y=clamp(L.sy+(L.ty-L.sy)*f,4,MH-4);h.facing=L.tx>=L.sx?1:-1;
@@ -98393,7 +98395,7 @@ function chMigrate(m){const A=m.ach||(m.ach={b:{},e:{}});if(!A.b)A.b={};if(!A.e)
 // 对局结算（game/meta.awardMeta 末尾调）：常规深渊通关 → 徽章；无尽 → 记录
 function chRunEnd(win,got,ban,cleared){if(ban||!G||G.expand!=null||G.invade||G.story)return;const A=chAch(),mk=G.map||'wild';let ch=false;
   if(win&&MODE==='regular'&&DIFF.id==='abyss'&&!A.b[mk]){A.b[mk]=1;got.chBadge=mk;ch=true;setTimeout(()=>toast(`获得徽章：${CFG.maps[mk].name}`),1200)}
-  if(MODE==='endless'||G.contW&&cleared>G.contW){const R=A.e[mk]||(A.e[mk]={}),rk=G.contW?(G.sg?'sg:':'')+DIFF.id:sgRecId(),r=R[rk]||(R[rk]={w:0,ws:0,wc:[],s:0,sw:0,sc:[]}),s=chScore(),cs=G.chOn?G.chs.slice():[],w=cleared|0;let nb=false;
+  if(MODE==='endless'||MODE==='regular'){const R=A.e[mk]||(A.e[mk]={}),rk=MODE==='regular'?(G.sg?'sg:':'')+DIFF.id:sgRecId(),r=R[rk]||(R[rk]={w:0,ws:0,wc:[],s:0,sw:0,sc:[]}),s=chScore(),cs=G.chOn?G.chs.slice():[],w=cleared|0;let nb=false;
     if(w>r.w||(w===r.w&&s>r.ws)){r.w=w;r.ws=s;r.wc=cs;nb=true}
     if(s>r.s||(s===r.s&&w>r.sw)){r.s=s;r.sw=w;r.sc=cs;nb=true}
     got.chRec={w,s,nb};ch=true;if(G.chOn||nb)setTimeout(()=>toast(`无尽记录：${w} 波 · 挑战分数 ${s}${nb?'(新纪录)':''}`),900)}
@@ -98863,7 +98865,7 @@ function awardMeta(win,settle){const cw=!!(G.contW&&!win);if(cw)win=true;   // c
   saveMeta();svmFlush();   // svmFlush：0.14.4.1 每局结算马上写进安卓本机镜像（game/save_mirror）
   // 最好成绩只记常规 / 无尽（v0.2.2 起扩张战不记，免得和常规模式混在一个键里）
   const dd0=designDiffSet();   // 0.13.13 子代理 TR2 加：记最好纪录之前满足难度条件的（下面记完再比，首次满足的提示可以研发）
-  if(G.expand==null&&!G.invade&&!G.story&&!noRec)try{const b=loadBest(),k=(G.map&&G.map!=='wild'?G.map+'.':'')+MODE+'.'+sgRecId(),cw2=G.contW?Math.min(cleared,G.contW):sgBestCap(cleared);if(!(b[k]>=cw2))b[k]=cw2;if(G.contW&&cleared>G.contW){const k2=regContRec();if(!(b[k2]>=cleared))b[k2]=cleared}localStorage.setItem(BEST_KEY,JSON.stringify(b))}catch(e){}   // contW：0.14.5 续守——常规的纪录封顶常规波数，整局波数记进同图同难度的无尽纪录（game/reg_cont）   // sgBestCap：0.12.7 代理 SG 加，死国的一局记进常规的键时封顶常规的波数（game/sg_dead）
+  if(G.expand==null&&!G.invade&&!G.story&&!noRec)try{const b=loadBest(),k=(G.map&&G.map!=='wild'?G.map+'.':'')+MODE+'.'+sgRecId();if(MODE==='regular'){if(win){const cw2=G.contW||sgBestCap(G.total);if(!(b[k]>=cw2))b[k]=cw2}const k2=regContRec();if(cleared>0&&!(b[k2]>=cleared))b[k2]=cleared}else if(!(b[k]>=cleared))b[k]=cleared;localStorage.setItem(BEST_KEY,JSON.stringify(b))}catch(e){}   // 0.14.5（用户 11-24）常规只记通不通关（通关记满常规波数，地图卡 / 难度按钮看 ≥ 常规波数算通关），打到第几波记进同图同难度的无尽纪录（死国 = sg:难度；game/reg_cont.regContRec）   // sgBestCap：0.12.7 代理 SG 加，死国的一局记进常规的键时封顶常规的波数（game/sg_dead）
   {const nd=designDiffSet().filter(id=>!dd0.includes(id)&&!META.design.includes(id));if(nd.length)got.newDesign=(got.newDesign||[]).concat(nd)}   // 0.13.13 子代理 TR2 加：首次通关玄钢山城 / 龙神遗迹噩梦及以上
   try{chRunEnd(win,got,noRec,cleared)}catch(e){console.warn('chRunEnd',e)}   // 代理 CH：徽章（常规深渊通关）、无尽挑战记录（game/ch_chal）
   try{ctkRunEnd(win,noRec,cleared)}catch(e){console.warn('ctkRunEnd',e)}
@@ -99837,7 +99839,7 @@ const sgBestCap=c=>G&&G.sg&&MODE==='regular'?Math.min(c,regWavesOf(DIFF.sgB||DIF
 // ---------- 0.14.5（用户 11-24）常规模式守满之后接着守（转成无尽）----------
 // 用户：常规和无尽本质上没区别（亡灵成长同一套，engine/enemy.enemyStats 的 egSum），守满不必马上结算，可以接着打，到最后一起结算。
 // 守满最后一波（game/game.endWave）：弹窗二选一——「结算」照旧 victory()；「继续守下去」：G.contW = 常规波数、G.total = ∞，之后的出怪照常规第二轮往后排（planWave 的 round2，同 game/sv3_plan 借 G.total = ∞ 的写法），每轮末首领照常
-// 之后主堡陷落 / 直接结算：一起结算、算通关（awardMeta 里 contW 当 win，击退波数照实算）；纪录：常规的最好成绩封顶常规波数，多出来的记进这张图同难度的无尽纪录（死国 = sg:难度）和成就「挑战记录」
+// 之后主堡陷落 / 直接结算：一起结算、算通关（awardMeta 里 contW 当 win，击退波数照实算）；纪录（用户 11-24）：常规只记通没通关（最好成绩记满常规波数），每局常规打到第几波都记进这张图同难度的无尽纪录（死国 = sg:难度）和成就「挑战记录」
 // 只有能「直接结算」的常规局（regSettleOk：不是开拓、剧情、入侵战、序章、开拓地）才问；存档带 contW（读档把 G.total 换回 ∞）
 let REG_CONT=null;   // 选了「继续」以后接着走的波末流程（选卡、英雄效果）
 const regContOk=()=>SET.regCont!==false&&regSettleOk()&&!G.contW&&G.total<Infinity;   // 设置「常规守满后问要不要接着守」（SET.regCont，默认开）
@@ -108746,7 +108748,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="9016595",GAME_BUILT=1795557678526,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="27cbf2d",GAME_BUILT=1795562428690,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -109709,7 +109711,7 @@ function mapPages(ex){if(ex)return[{name:'开拓',maps:[menuExpandR]}];const see
 const mapColor=k=>{const T=THEME_PAL[CFG.maps[k].theme||'wild']||THEME_PAL.wild,g=T.GR[1],d=T.DI[1];return`--mg:rgb(${g});--md:rgb(${d})`};
 function mapCard(k,ex,best){const M=CFG.maps[k],on=(ex?menuExpandR:menuMap)===k,lock=!ex&&!mapOpen(k),sg=sgUiOn(ex),b=sg?sgUiBest(k,menuDiff,best):best[(k!=='wild'?k+'.':'')+menuMode+'.'+menuDiff];   // sg：0.12.7 代理 SG 加，死国开着时显示死国的纪录（game/sg_dead）
   return`<div class="mapw"><button class="mapc${on?' on':''}${lock?' lock':''}" type="button" data-act="mapsel" data-v="${k}" style="${mapColor(k)}"><b>${M.name}</b>
-    <span>${ex?`共 ${ex.waves} 波`:lock?`通关「${mapReqName(k)}」后解锁`:sg?(sgClear(k,menuDiff)?'死国已通关':'死国未通关'):META.mapClear[k]?'已通关':'未通关'}${!ex&&!lock&&b!==undefined?` · 最佳 ${b} 波`:''}${!ex&&!lock?` · ${goldDayTxt(k,menuDiff||'normal')}`:''}</span></button>
+    <span>${ex?`共 ${ex.waves} 波`:lock?`通关「${mapReqName(k)}」后解锁`:sg?(sgClear(k,menuDiff)?'死国已通关':'死国未通关'):META.mapClear[k]?'已通关':'未通关'}${!ex&&!lock&&b!==undefined&&menuMode!=='regular'?` · 最佳 ${b} 波`:''}${!ex&&!lock?` · ${goldDayTxt(k,menuDiff||'normal')}`:''}</span></button>
     <button class="mapq" type="button" data-act="bestiary" data-v="${k}" aria-label="${M.name}怪物图鉴">?</button></div>`}
 function showDiff(){
   const best=loadBest(),L=currentLoadout(),ex=menuExpand!==null?CFG.settlement.expansions[menuExpand]:null;if(ex)menuDiff=ex.diff;sgDiffFix(ex);   // sgDiffFix：0.12.7 代理 SG 加，死国只能选噩梦起（ui/sg_ui）
