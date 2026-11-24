@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.4.1",
- "code": 315,
- "size": 24167291,
- "sha256": "9925c614bb740af82f04083599ae0eac38be49b2730e5f9d8405afc542c6ab21",
+ "ver": "0.14.4.1a",
+ "code": 316,
+ "size": 24168886,
+ "sha256": "761d5d9fefbb15ea3e56e1ab0a96744397ee32506b20775bdbc7c2c16fb2e34a",
  "minLoader": 1,
- "sig": "6yW33Ub0xAbL/RDuAiUUfWH+2/87/ehS1K3bQii13zAYv+7q4TOHpPA92olkQ47PngdzMpBm6hOtfSn9alssuw==",
- "note": "0.14.4.1 测试版",
- "at": "2026-11-24 15:26 UTC"
+ "sig": "V8xPN3zdRq9PIR38etMTzgZFC8y7a9MKHnmwEa6tUX0VxOnfgbgCxXVifbiYO2ltrYmaDJWOkvrKUXSuZzTvFQ==",
+ "note": "0.14.4.1a 测试版：赤曜工厂单位不上城墙；赤曜直升机、战机最后才打主堡；赤曜皇帝小人照立绘重画",
+ "at": "2026-11-24 16:01 UTC"
 }
