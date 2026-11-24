@@ -12280,6 +12280,7 @@ CFG.maps.chyCity={name:'赤曜帝城', req:['sfAltar'], theme:'chyCity', size:19
            weight:{chyGunner:3, chySniper:2, chyGrenadier:1.5, chyRiot:2, chyHeli:1, chyAPC:1.2, chyFieldGun:1, chyScout:0.8, chyMedic:1, chyHawkeye:0.6, chyLtTank:0.6, chyFighter:0.6, chyBomber:0.5, chyMslTruck:0.5, chyGhost:0.4}},
 };
 CFG.mapPages[8].maps.push('chyCity');   // 九阶地区那一页（data/map_blspring 建的）
+CFG.maps.chyCity.tierX=9.5;   // 0.14.4（用户 11-24）「赤曜帝城的属性是单独做成这样的，属于 9.5 阶地图」：tools/stats/etier.js 不把它算进九阶平均（不拉低别的九阶图）；地区阶照九阶
 
 /* ---------- 0.14.4 赤曜帝城的首领和掉落（用户 2026-11-24 策划案原文-2 第 38～63 行「BOSS」「大BOSS」、原文-3 掉落物；代理 C1，逻辑 maps/chy_boss.js，图 art/chy_art.js）----------
    排在 data/chy_map.js 之后、data/gear.js 之前（护甲、特殊装备在 gear.js 里合并、拆件）；首领的 id 用 chyCmd* / chyEmp*（chy + 大写，maps/chy_units 的武器、技能表会自动收进去），逻辑的顶层名字 chyb / CHYB 开头，装备 chyG / CHYG
@@ -12295,7 +12296,7 @@ CFG.mapPages[8].maps.push('chyCity');   // 九阶地区那一页（data/map_blsp
      城墙上的位置（格）：陆军 x 40、炮军 x 64（西南），海军 x 128、空军 x 152（东南），皇帝在城楼 x 96；y = 182（墙顶）
      「怪组少于 50%」= 这一波出怪表的只数（G.lastPlan.total）里，还没出场的 + 场上活着的（不算首领、不算飞艇乘员 / 甲板兵 / 舰载机）少于一半
      统领在城墙上时也放技能（指挥全军）；大首领的四条命轮换顺序固定（坦克、火箭、航母、战机），每条命濒死时回到城墙 3 秒（不受伤害）再换下一个载具；最后一条命打完算击败、掉落挂在最后那条命（赤曜皇帝·战机）上
-     技能冷却都写在下面 CFG.chyBoss；空域打击原文没写冷却，Claude 定 15 秒；落日余晖的目标 = 100 格内我方单位最密的地方（主堡除外），500000 是写死的伤害（不随难度、波次涨）
+     技能冷却都写在下面 CFG.chyBoss；空域打击冷却 10 秒（用户 11-24 补）；落日余晖的目标 = 100 格内我方单位最密的地方（主堡除外），500000 是写死的伤害（不随难度、波次涨）
      集群攻势：装甲车、坦克开火时，10 格内别的装甲车 / 坦克（每只 2 秒至多一次）朝同一个目标打一发主武器；隐蔽行动「每 1 秒进入弱隐身」= 每秒重新隐身（出手显形照旧）；
        隐蔽涂装、雷达反侦：期间这些亡灵对我方「看不见」（雷达扫不出来；雷达反侦只去掉雷达给的视野和强隐身被雷达照出来的）
      掉落的「陆地 / 火炮 / 海军 / 空军单位」按家族科技的单位分类（game/fam_tech.ftBits）：火炮 = FB_CAN（火炮手 / 加农炮这类兵种、拿手炮的英雄 / 精英、火炮类建筑）、海军 = FB_SEA（造船厂的舰船、会游泳的英雄）、
@@ -12313,7 +12314,7 @@ CFG.chyBoss={
     army:{veh:'chySrcTank', coop:{t:5, r:10, gap:2, cd:10}, brk:{mspd:0.5, atk:0.5, t:5, cd:10}, blitz:{mspd:0.5, aspd:0.5, t:5, cd:10}},
     art: {veh:'chySrcRocket', fire:{aspd:0.5, cdSpd:0.5, t:5, cd:10}, obs:{rng:0.25, vis:0.5, t:5, cd:10}, hide:{t:5, every:1, cd:10}},
     navy:{veh:'chySrcCarrier', volley:{cd:10}, base:{k:1.5, t:15, cd:30}, cruise:{at:[0,2.5,5], cd:15}},
-    air: {veh:'chySrcJet', paint:{t:5, cd:10}, radar:{t:10, cd:15}, strike:{r:10, k:1, t:5, cd:15}},   // strike.cd：原文没写，Claude 定
+    air: {veh:'chySrcJet', paint:{t:5, cd:10}, radar:{t:10, cd:15}, strike:{r:10, k:1, t:5, cd:10, sMul:0.5, kMul:0.1}},   // 空域打击（用户 11-24 补）：目标 10 格内每秒 100% 伤害、5 秒，对建筑 ×0.5、对主堡 ×0.1，冷却 10 秒
   },
   emp:{lives:['chyEmpTank','chyEmpRocket','chyEmpCarrier','chyEmpJet'], kinds:['army','art','navy','air'], flee:3,
     rally:{cut:15, cd:45}, horn:{p:0.2, cd:60}, sunset:{range:100, warn:10, r:30, dmg:500000, min:0.1, vuln:1, t:15, at:120, hp:0.5}},
@@ -12323,7 +12324,7 @@ CFG.chyBoss={
   const NOTE={army:'在场时所有非炮兵陆军独立增伤、减伤 +50%(噩梦 +65%、深渊 +80%、绝境 +100%)；集群攻势——装甲车、坦克 5 秒内开火时 10 格内的装甲车、坦克协同攻击(每只 2 秒一次)；装甲突破——装甲车、坦克移速、伤害 +50% 5 秒；闪电战术——非炮兵、非首领陆军移速、攻速 +50% 5 秒；冷却都是 10 秒',
     art:'在场时所有炮兵独立增伤 +50%、射程 +25%(噩梦 +65% / +32.5%、深渊 +80% / +40%、绝境 +100% / +50%)；火力覆盖——炮兵攻速、冷却速度 +50% 5 秒；弹道观测——炮兵视野 +50%、射程 +25% 5 秒；隐蔽行动——炮兵每秒进入弱隐身、不会被雷达侦测 5 秒；冷却都是 10 秒',
     navy:'在场时所有海军独立减伤 +50%、射程 +25%(噩梦 +65% / +32.5%、深渊 +80% / +40%、绝境 +100% / +50%)；舰炮齐射——全部海军立刻重新锁敌发起一次射程无限的攻击，冷却 10 秒；海航基地——航母补满舰载机、战斗机和轰炸机数量 ×1.5 持续 15 秒，冷却 30 秒；导弹巡航——全部导弹舰无视射程发射一轮导弹，2.5 秒、5 秒后再各一轮，冷却 15 秒',
-    air:'在场时所有空军独立增伤 +50%、移速 +25%(噩梦 +65% / +32.5%、深渊 +80% / +40%、绝境 +100% / +50%)，闪避率 +15%(至多 90%)；隐蔽涂装——空军无视雷达、强隐身 5 秒，冷却 10 秒；雷达反侦——所有亡灵无视雷达侦测 10 秒，冷却 15 秒；空域打击——全图任意处 10 格内每秒 100% 伤害持续 5 秒，冷却 15 秒'};
+    air:'在场时所有空军独立增伤 +50%、移速 +25%(噩梦 +65% / +32.5%、深渊 +80% / +40%、绝境 +100% / +50%)，闪避率 +15%(至多 90%)；隐蔽涂装——空军无视雷达、强隐身 5 秒，冷却 10 秒；雷达反侦——所有亡灵无视雷达侦测 10 秒，冷却 15 秒；空域打击——全图选一处，10 格内每秒受到 100% 伤害、持续 5 秒，对建筑 ×50%、对主堡 ×10%，冷却 10 秒'};
   const NM={army:['chyCmdArmy','赤曜陆军统领','从城门北进的赤曜源能坦克'],art:['chyCmdArt','赤曜炮军统领','从城门北进的赤曜源能火箭'],navy:['chyCmdNavy','赤曜海军统领','从护城河侧面开进的赤曜源能航母'],air:['chyCmdAir','赤曜空军统领','从城门起飞的赤曜源能战机']};
   for(const k in NM){const[id,name,veh]=NM[k];mk(B.cmd[k].veh,id,2.5,1.25,{name,tier:4,mini:true,bounty:80,cost:30,unstop:true,chybK:k,chybKit:1,empK:0.5,
     note:`小首领：出场时在城墙上，怪组少于 50% 前不会受到伤害，之后走下城墙变成${veh}(继承最大生命和生命)；`+NOTE[k]})}
@@ -18968,7 +18969,7 @@ CFG.sg={rounds:3,
   T:{nightmare:{hp:5, dmg:3, speed:1.8, atkFreq:1.8, reward:4.5, drop:3, grow:1.05},
      inferno:  {hp:7.5, dmg:4, speed:2, atkFreq:2, reward:6.5, drop:3.5, grow:1.1},
      abyss:    {hp:10, dmg:5, speed:2.25, atkFreq:2.25, reward:9, drop:4, grow:1.2}},
-  souls:{nightmare:4, inferno:5, abyss:6},   // 0.14.4（用户 11-24）英雄之魄：梦魇 4（原来绝境的数）、无间 5、绝境 6
+  souls:{nightmare:4, inferno:5, abyss:6}, pt:{nightmare:20, inferno:25, abyss:30},   // pt：0.14.4（用户 11-24）死国每轮的基础培养值（魄值）梦魇 20、无间 25、绝境 30（再乘地区阶倍率、取整）   // 0.14.4（用户 11-24）英雄之魄：梦魇 4（原来绝境的数）、无间 5、绝境 6
   names:{nightmare:'梦魇', inferno:'无间', abyss:'绝境'},
   diffs:['nightmare','inferno','abyss'], abyssName:'绝境',
   count:1.5, killGold:0.6};   // 0.13.2（用户定）死国下怪组数量（出怪量）× count、打怪得的铜币 × killGold（「获取的金币减少 40%」= 局内打怪的铜币，用户 11-06 确认；精英数量不乘）
@@ -27607,7 +27608,7 @@ CFG.elite.eg={enhTo:10, maxTry:500};   // 0.12.7a（用户定）enhTo 只是默�
  const BD=h=>[Math.max(0,10-h),3,Math.max(0,h-10)];
  Object.assign(E.look.fam,{omagin:{hr:[1], ey:[4], sk:[1], b:BD(15)}, kleo:{hr:[0], ey:[6], sk:[1,2], b:BD(13)}, holly:{hr:[4,7], ey:[2], sk:[0], b:BD(9)}, theo:{hr:[5], ey:[3], sk:[1], b:BD(8)}});
  // 王都家族的声望（用户定）：只有剧情能涨；初始「接纳」；剧情各阶段完成后的等级
- E.royalRep={reg:'royal', init:'接纳', stage:['信任','尊敬','忠诚','狂热']};
+ E.royalRep={reg:'royal', init:'接纳', stage:['接纳','信任','尊敬','忠诚']};   // stage：0.14.4（用户 11-24）新剧情第一～四阶段全部通关后分别到接纳 / 信任 / 尊敬 / 忠诚（原来写的信任～狂热一直没接上）；判定 game/royal144
  // 顾问教官、英雄教官的位置（用户定：各 1 个，不占普通教官位置）
  E.insHeroMax=1;E.insFamMax=1;
  // —— 家族技能 ——（fsk 家族键、fr 要到的声望：尊敬 = 特殊技能、狂热 = 秘传；jreq 要哪个职业才能用；不进随机技能池、只有顾问教官教）
@@ -75645,7 +75646,8 @@ function bkHitF(u,P,C,k){const f=P.fall!==undefined?1-(1-P.fall)*(k||0):1;let d=
   if(P.on)P.on(u,C,k,d);return d}
 // @bk 效果 | bkHitS(s,P,C,k) | 对一座建筑结算（伤害 × sMul（默认 1）× 亡灵的 structMul；P.onS 自定义：冻结、停火……） | bkHitS(s,{dmg:2,sMul:0.5},C,0)
 function bkHitS(s,P,C,k){if(P.noKeep&&s.type==='keep')return 0;const f=P.fall!==undefined?1-(1-P.fall)*(k||0):1;let d=0;
-  if(P.dmg&&P.sMul!==0)d=hurtS(s,C.atk*P.dmg*f*(P.sMul===undefined?1:P.sMul)*(C.sm||1),P.sSrc?{src:C.i,kt:C.kt,magic:!!P.magic,mix:P.mix,blast:P.blast}:P.noSrc?{src:-1,blast:P.blast,magic:!!P.magic,mix:P.mix,kt:C.kt}:{kt:C.kt,magic:!!P.magic,mix:P.mix,blast:P.blast});   // sSrc：算作它打的（城墙会反击）
+  const sm=P.kMul!==undefined&&s.type==='keep'?P.kMul:P.sMul===undefined?1:P.sMul;   // kMul：0.14.4 对主堡另给倍数（不写 = 同 sMul）
+  if(P.dmg&&sm!==0)d=hurtS(s,C.atk*P.dmg*f*sm*(C.sm||1),P.sSrc?{src:C.i,kt:C.kt,magic:!!P.magic,mix:P.mix,blast:P.blast}:P.noSrc?{src:-1,blast:P.blast,magic:!!P.magic,mix:P.mix,kt:C.kt}:{kt:C.kt,magic:!!P.magic,mix:P.mix,blast:P.blast});   // sSrc：算作它打的（城墙会反击）
   if(P.onS)P.onS(s,C,k,d);return d}
 // @bk 效果 | bkHitE(j,P,C,k) | 英雄 / 我方对一只亡灵结算（伤害走 dealE；控制走 ccMul；P.on 自定义） | bkHitE(j,{mix:{frost:1},magic:1,st:{frz:3}},C,0)
 function bkHitE(j,P,C,k){const f=P.fall!==undefined?1-(1-P.fall)*(k||0):1;let d=0;
@@ -95306,7 +95308,7 @@ function chybSkills(i,c,k,dt){const b=i*4,sk=E.bfK[i*6+5]||1;for(let q=0;q<3;q++
   else if(k===3){
     if(CHYB.cd[b]<=0){CHYB.cd[b]=C.paint.cd;CHYB_CMU=G.time+C.paint.t;chybFx(i,'隐蔽涂装')}
     if(CHYB.cd[b+1]<=0){CHYB.cd[b+1]=C.radar.cd;CHYB_RDU=G.time+C.radar.t;chybFx(i,'雷达反侦')}
-    if(CHYB.cd[b+2]<=0){const T=chybDense(E.x[i],E.y[i],1e9);if(T){CHYB.cd[b+2]=C.strike.cd;const S=C.strike;bkZone({k:'c',r:S.r},{who:'FS',dmg:S.k,mix:{impact:1},blast:1,noSrc:1,fx:null},bkC0(E.t[i],E.dmg[i],T.x,T.y),{dur:S.t,tick:1});chybFx(i,'空域打击')}else CHYB.cd[b+2]=1}}}
+    if(CHYB.cd[b+2]<=0){const T=chybDense(E.x[i],E.y[i],1e9);if(T){CHYB.cd[b+2]=C.strike.cd;const S=C.strike;bkZone({k:'c',r:S.r},S.bk||(S.bk={who:'FS',dmg:S.k,sMul:S.sMul,kMul:S.kMul,mix:{impact:1},blast:1,noSrc:1,fx:null}),bkC0(E.t[i],E.dmg[i],T.x,T.y),{dur:S.t,tick:1});chybFx(i,'空域打击')}else CHYB.cd[b+2]=1}}}
 function chybFx(i,name){if(inViewPt(E.x[i],E.y[i]))addFx({k:'ring',x:Math.round(E.x[i]),y:Math.round(E.y[i]-10),r:22,life:0.6,c:'#ff8a5a'})}   // 放技能：一圈橙红的光（name 留着给以后要显示技能名时用）
 // 舰炮齐射：每门武器朝最近的我方单位（没有就最近的建筑）打一下，射程无限
 function chybFireAll(j,only){const c=ETC[E.t[j]],L=CHU_W[E.t[j]];if(!L)return;const T=chybNearest(E.x[j],E.y[j]);if(!T)return;const x=E.x[j],y=E.y[j],oy=y-8-(c.hover?c.hover.h*0.5:0);
@@ -99115,7 +99117,7 @@ const sgResK=k=>{if(!G||!G.sg)return 1;const R=CFG.sg.res;return R&&R[k]&&CFG.sg
 // 首领必掉的装备、打造书（每件 / 噩梦起每两件）：各再有 drop − 1 的概率多掉一件；gl 是 onBossKill 里的掉落函数（两轮后的随机首领照样按它的概率）
 function sgBossExtra(gl,night){if(!G||!G.sg)return;const p=sgDropK()-1;for(let k=0;k<(night?2:1);k++){if(Math.random()<p)gl('w');if(Math.random()<p)gl('b')}}
 const sgSoulSrc=()=>{const id=DIFF&&DIFF.id,S=CFG.sg.souls;return G&&G.sg&&S[id]!=null?S[id]:CFG.soulSrc[id]||0};
-const sgPtK=()=>{const id=DIFF&&DIFF.id,a=CFG.sg.souls[id],b=CFG.soulSrc[id];return G&&G.sg&&a>0&&b>0?a/b:1};
+const sgPtK=()=>{if(!G||!G.sg)return 1;const id=DIFF&&DIFF.id,P=CFG.sg.pt,d=CFG.soulPt.diff[id];if(P&&P[id]>0&&d>0)return P[id]/d;const a=CFG.sg.souls[id],b=CFG.soulSrc[id];return a>0&&b>0?a/b:1};   // 0.14.4 有 CFG.sg.pt 就按它（每轮基础魄值 20 / 25 / 30），否则照英雄之魄的比例
 feat('sgDead',{hooks:{
   start:()=>{if(G.sg&&CFG.sg.hp){G.dHp*=CFG.sg.hp;G.dDmg*=CFG.sg.dmg}},   // 0.14.3 起倍率在 DIFF.hp / dmg 里（sgDiff），CFG.sg 不再有 hp / dmg
   save:o=>{if(G.sg)o.sg=1}}});   // 读档：game/game.loadRun 把存档的 sg 交给 newGame（DIFF、G.total、倍率都要在 newGame 里定）
@@ -104774,7 +104776,7 @@ function stExtra(R,C){const P=SDY.pay,g=C.gold||0,o={wallet:{},wares:{}};if(C.pa
   if(T){for(const kind in T.basic){const w=T.basic[kind],n=Math.ceil(g*(M&&M.basic.includes(w)?P.basic:P.other));if(n>0)o.wares[w]=n}if(M&&M.core)o.wares[M.core]=Math.ceil(g*P.core)}
   return o}
 const stExtraTxt=x=>Object.entries(x.wallet).filter(e=>e[1]>0).map(([k,v])=>`${k} ${v}`).concat(Object.entries(x.wares).map(([w,n])=>`${CFG.wares.items[w].name} ${n}`)).join('、');
-function stPay(R,C,out){const M=stMeta();if(!M.paid[C.id]){M.paid[C.id]=1;out.first=true;out.gold=C.gold||0;META.wallet.金币=(META.wallet.金币||0)+out.gold;
+function stPay(R,C,out){const M=stMeta();try{ry144Chk(META)}catch(e){console.warn('ry144',e)}if(!M.paid[C.id]){M.paid[C.id]=1;out.first=true;out.gold=C.gold||0;META.wallet.金币=(META.wallet.金币||0)+out.gold;   // ry144Chk：0.14.4 章节记了通关之后查王都四家族的阶段声望（game/royal144）
     {const X=stExtra(R,C);for(const k in X.wallet)META.wallet[k]=(META.wallet[k]||0)+X.wallet[k];for(const w in X.wares)trAdd(w,X.wares[w]);v5fEarnO(X.wallet);v5fEarnO(X.wares);out.extra=stExtraTxt(X)}   // 0.12.5 代理 F：v5fEarnO 合计赚取资源（game/v5f_rec）
     if(C.souls){out.souls=[];for(const id in C.souls){META.souls[id]=(META.souls[id]||0)+C.souls[id];out.souls.push(`${CFG.heroes[id].name}之魄 ×${C.souls[id]}`)}}}
   if(C.allyMap&&typeof elAllyStory==='function'){elAllyStory(C.allyMap);out.ally=C.allyMap;if(out.first)out.allyUp=st2AllyRep(C.allyMap)}   // allyUp：0.14.1.2 本地家族声望 +50000（game/st2_ally；只在首通给，重打不再加）   // 0.12.2 第二卷传记完成 → 这个地区结盟（开放精英招募、家族声望、婚配；重打也调，不重复）
@@ -105055,6 +105057,17 @@ function stNpcPor(nm,R0){const x=R0?{R:R0}:stCur();if(!x||!x.R.nv)return null;if
     else{let job=o&&o.job;if(!job)for(const C of x.R.chapters)for(const r of C.els||[])if(r[0]===nm)job=(STE_W[r[1]]||STE_W.ss).job;
       if(job){const e=stElGen(nm,{sex:(o&&o.sex)||'m',age:(o&&o.age)||24});e.job=job;e.given=nm;if(o&&o.lk)e.lk=Object.assign({sk:1,hr:1,ey:1,ear:0,b:1},o.lk);u=elIcon(e)}}}catch(err){console.warn('stNpcPor',err)}   // lk：0.13.7.1 照设定写的面相（发色、瞳色、肤色、体型的下标，CFG.elite.look）
   ST_POR.set(nm,u);return u}
+
+// ---------- 0.14.4 王都四家族的声望随新剧情阶段上涨（用户 11-24：「新剧情通关第一、二、三、四阶段全图；王都四家族声望分别上涨到接纳、信任、尊敬、忠诚，已通关的需补发」）----------
+// 阶段 = 第一卷按地区阶分的四段（《剧情重置/第一卷大纲》：一阶～四阶）：新剧情第一卷的地区按顺序走，每个地区的阶段 = 它和它前面所有地区里地图阶数的最大值（所以「重返荒野」算第四阶段）
+// 某一阶段的地区全部通关 → 王都四家声望补到 CFG.elite.royalRep.stage 那一档（只升不降）；章节结算（game/story.stPay，之后照常存盘）和读档（META_LATE，补发老存档）都查一次
+// m = 要改的存档对象（读档时 metaFix 传进来的，不是全局 META）；不存盘
+function ry144Stages(){const S={};let mx=0;for(const R of SDY.regions){if(!R.nv||(R.vol||1)>1)continue;mx=Math.max(mx,mapTierOf(R.map)+1);const s=Math.min(4,mx);(S[s]||(S[s]=[])).push(R)}return S}
+function ry144Chk(m){m=m||META;if(!m||!m.el||!m.story||!m.story.clr)return 0;const clr=m.story.clr,S=ry144Stages(),RR=EL().royalRep,B=elBlood();let top=0;
+  for(let s=1;s<=4;s++){const L=S[s];if(L&&L.length&&L.every(R=>R.chapters.every(c=>clr[c.id])))top=s}
+  const lv=top>0?RR.stage[Math.min(RR.stage.length,top)-1]:null;if(!lv)return 0;const v=elRepAt(lv),rep=m.el.rep||(m.el.rep={});let n=0;
+  for(const fid in B)if(elRoyalReg(fid)){const cur=rep[fid]!=null?rep[fid]:elRepInit(fid);if(cur<v){rep[fid]=v;n++}}return n}
+META_LATE.push(['ry144',m=>{try{ry144Chk(m)}catch(e){console.error(e)}}]);
 
 // ---------- 0.14.1 新剧情第二卷第七～十三章（熔岩之地篇、黄沙海岸篇；章节配置 data/story_n5.js）用到的剧情开关 ----------
 // 剧情精英的兵器键（game/st_new 的 STE_W）：
@@ -108017,7 +108030,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.3',GAME_TAG='测试版',GAME_CODE=311,GAME_BUILD="c403a08+",GAME_BUILT=1795506857439,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.3',GAME_TAG='测试版',GAME_CODE=311,GAME_BUILD="e66ef05+",GAME_BUILT=1795508419297,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -110895,7 +110908,7 @@ HELP.sg=()=>({t:'死国',b:hpL(['只有常规模式有；开拓、剧情、入�
   `难度只能选梦魇、无间、绝境(死国下的噩梦、炼狱、深渊)，三个难度都要打 ${CFG.sg.rounds} 轮`,
   ...CFG.sg.diffs.map(d=>{const T=CFG.sg.T[d];return`${diffName(d,true)}：亡灵生命 ×${T.hp}、攻击 ×${T.dmg}、移速 ×${T.speed}、攻击频率 ×${T.atkFreq}，结算 ×${T.reward}、掉宝 ×${T.drop}，亡灵每波成长 ×${T.grow}(以深渊为基础)`}),
   `出怪量(怪组数量) ×${CFG.sg.count}；打怪得的铜币 ×${CFG.sg.killGold}`,
-  `来源地图的英雄之魄每轮 ${CFG.sg.diffs.map(d=>diffName(d,true)+' '+CFG.sg.souls[d]).join('、')} 个；培养值同比例提升(${CFG.sg.diffs.map(d=>diffName(d,true)+' ×'+Math.round(CFG.sg.souls[d]/CFG.soulSrc[d]*100)/100).join('、')})`,
+  `来源地图的英雄之魄每轮 ${CFG.sg.diffs.map(d=>diffName(d,true)+' '+CFG.sg.souls[d]).join('、')} 个；每轮基础培养值 ${CFG.sg.diffs.map(d=>diffName(d,true)+' '+(CFG.sg.pt?CFG.sg.pt[d]:'')).join('、')}(再乘地区阶倍率)`,
   '和卡牌、英雄(搜山检海、攫财之道……)的加成分开相乘',
   '死国的纪录单独记(战绩里常规那一格下面)；死国下通关，成就勋章墙里这张地图那一格燃起火焰：梦魇青蓝色、无间蓝紫色、绝境紫色'])});
 // 死国开着时，噩梦～深渊的「?」里补死国的倍率和波数
