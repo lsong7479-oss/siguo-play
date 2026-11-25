@@ -99528,7 +99528,7 @@ function techMods(noTech){const o={};for(const id in CFG.techs){const t=CFG.tech
   return o}
 function techBuy(id){const t=CFG.techs[id],L=techLv(id);if(L>=techMax(t))return techCapText(t)||'已满级';if(!techReqOk(t))return`需要${techReqText(t)}`;
   const[c,s]=techCost(t,L+1);if(META.wallet.科研点<c||META.wallet.银币<s)return`需要 科研点 ${c} + 银币 ${s}`;
-  META.wallet.科研点-=c;META.wallet.银币-=s;META.tech[id]=L+1;saveMeta();return null}
+  META.wallet.科研点-=c;META.wallet.银币-=s;META.tech[id]=L+1;saveMetaSoon();return null}   // saveMetaSoon：0.14.5 之后（玩家 11-25 连点科技闪退）连点只在停手后存一次（game/save）
 function techToggle(id){const i=META.techOff.indexOf(id);if(i>=0)META.techOff.splice(i,1);else META.techOff.push(id);saveMeta()}
 const roman=n=>['','I','II','III','IV','V','VI','VII','VIII','IX','X'][n]||String(n);
 // —— 开拓地：v0.6.2 改成网格，见 game/settle.js ——
@@ -100323,7 +100323,9 @@ function lsSetFree(k,v){for(let i=0;;i++){try{localStorage.setItem(k,v);return t
 function lsUsage(){const L=[];let t=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i),n=k.length+(localStorage.getItem(k)||'').length;t+=n;L.push([n,k])}}catch(e){}L.sort((a,b)=>b[0]-a[0]);return`共 ${Math.round(t/1024)}K 字：`+L.slice(0,8).map(x=>x[1]+' '+Math.round(x[0]/1024)+'K').join('，')}
 function saveFailNote(why){if(typeof dbgErr==='function')dbgErr('存档写入失败：'+(why||LS_ERR+'；'+lsUsage()),'saveMeta');if(!saveFailShown){const t='存档写入失败：本机存储空间不足或被禁止，进度可能保存不了';try{toast(t);saveFailShown=true}catch(_){saveNotice=t}}}
 let META_WOK=false;   // ui/main 初始化开始后才置 true：saveMeta 在开局读存档时就会被调，那时 ui/hud 的 GAME_CODE 还没定义（0.13.8.1 打包冒烟抓到：直接读会报「初始化前访问」，整段脚本停掉）
-function saveMeta(){if(saveLock||metaLock)return;if(META_WOK&&GAME_CODE>0&&!((META.wcode||0)>=GAME_CODE))META.wcode=GAME_CODE;let raw;   // wcode：用户 11-13 报，写过这个存档的最新版本号；旧版本打开时提示先更新（ui/hub 开屏）
+let SMS_T=0;   // 0.14.5 之后（玩家 11-25：科技一次点多了容易闪退）连点时的延后存档：每点一下整份存档转文字、写进本机存储，手机上连点几十下内存吃紧
+function saveMetaSoon(ms){if(SMS_T)clearTimeout(SMS_T);SMS_T=setTimeout(()=>{SMS_T=0;saveMeta()},ms||800)}   // 停手 0.8 秒后存一次；中间别处 saveMeta 了就顺带存掉；切后台 / 退出照旧马上存（game/save_mirror 的 visibilitychange）
+function saveMeta(){if(SMS_T){clearTimeout(SMS_T);SMS_T=0}if(saveLock||metaLock)return;if(META_WOK&&GAME_CODE>0&&!((META.wcode||0)>=GAME_CODE))META.wcode=GAME_CODE;let raw;   // wcode：用户 11-13 报，写过这个存档的最新版本号；旧版本打开时提示先更新（ui/hub 开屏）
   META.svN=(META.svN|0)+1;   // svN：0.14.4.1 存盘次数（game/save_mirror 比本机镜像新旧用）
   try{raw=JSON.stringify(META)}catch(e){console.warn('saveMeta',e);saveFailNote('转成文字出错 '+e.message);return}if(!lsSetFree(META_KEY,raw))saveFailNote();svmNote(raw,META.svN)}   // svmNote：0.14.4.1 安卓本机镜像（game/save_mirror）
 // —— 地图解锁 ——
@@ -109747,7 +109749,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.5',GAME_TAG='测试版',GAME_CODE=319,GAME_BUILD="fe68869",GAME_BUILT=1795621205742,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.5',GAME_TAG='测试版',GAME_CODE=319,GAME_BUILD="0db2864",GAME_BUILT=1795622257853,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -110968,11 +110970,11 @@ function hubTech(){
   const all=Object.keys(CFG.techs).filter(k=>CFG.techs[k].cat===techCat),kidsA=id=>all.filter(k=>{const t=CFG.techs[k];return(t.req&&t.req[0]===id)||(t.req2&&t.req2[0]===id)||(t.req3&&t.req3[0]===id)});
   const vis=id=>hvShowTech(id)||kidsA(id).some(vis),ids=all.filter(vis);   // v0.10.11 还没法解锁的高阶科技先不显示（ui/hv）；下面有显示的子科技时父科技照样显示
   const L=techLayout(ids,techCat);requestAnimationFrame(techLines);
-  const cells=ids.map(id=>techNode(id).replace('<div class="tn',`<div data-id="${id}" data-p="${L.par(id).join(',')}" style="grid-column:${L.D[id]+1};grid-row:${L.Y[id]*2+1} / span 2" class="tn`)).join('')
+  TN_H.clear();const cells=ids.map(id=>{const h=techNode(id);TN_H.set(id,h);return h}).map((h,i)=>{const id=ids[i];return h.replace('<div class="tn',`<div data-id="${id}" data-p="${L.par(id).join(',')}" style="grid-column:${L.D[id]+1};grid-row:${L.Y[id]*2+1} / span 2" class="tn`)}).join('')
     +L.H.map(h=>`<div class="tgrp" style="grid-column:1 / span ${Math.max(1,...ids.map(id=>L.D[id]+1))};grid-row:${h.y*2+1}"><b>${h.nm}</b></div>`).join('');   // 0.13 分块的名字 + 分界线
   return`<div class="tabs sub">${CFG.techCats.map(([k,n])=>`<button class="px${k===techCat?' on':''}" type="button" data-act="tcat" data-v="${k}">${n}</button>`).join('')}</div>
     <p class="meta">最高通关：<b>${clearTierName()}</b>${helpBtn('tech')}</p>
-    <div class="ttree2" data-sk="tt-${techCat}"><svg class="tlines" aria-hidden="true"></svg>${cells}</div>${hvMore(all.length-ids.length,'项科技')}`}
+    <div class="ttree2" data-sk="tt-${techCat}" data-ids="${ids.join(',')}"><svg class="tlines" aria-hidden="true"></svg>${cells}</div>${hvMore(all.length-ids.length,'项科技')}`}
 // v0.4.3：英雄页（英雄属性 / 装备）、装备栏、仓库、物品详情移到 ui/hero.js
 // —— 建筑页（v0.3.4 按分类分页：兵营 / 墙体 / 塔楼 / 陷阱 / 魔法 / 功能）——
 let designCat='camp';
@@ -111089,6 +111091,20 @@ function testGiveHTML(){const W=CFG.weapons,all=Object.keys(W).filter(k=>!W[k].h
     ${gearTabsHTML(P,'tgtop','tgsub')}
     <div class="uppick">${P.list.map(k=>`<button class="px sm" type="button" data-act="tgive" data-v="${tgBook?'b':'w'}:${k}" style="color:${CFG.itemQ[baseQ(k)].color}"><img class="ia" alt="" src="${itemIcon({base:k,book:tgBook})}">${tgBook?'《'+bookDef(k).name+'》':bookDef(k).name}</button>`).join('')}</div>
     <div class="actions"><button class="px" type="button" data-act="itests">银币 +1000</button></div></div>`}
+
+// ---------- 0.14.5 之后（玩家 11-25：科技一次点多了容易闪退）点「研究」只换变了的科技卡 ----------
+// 原来每点一下整个营地重画一遍（showHub：入侵检查、精英日常、开拓地、全部科技卡和几十张图标、连线），手机上连点几十下又慢又吃内存。
+// 现在：ui/hub.hubTech 画的时候记下每张卡的 HTML（TN_H）和这一页显示哪些科技（.ttree2 的 data-ids）；点完研究重算一遍，
+//   显示的科技没变就只换 HTML 变了的那几张卡、顶上的资源，再重画连线；显示的科技变了（解锁了新科技）返回 false，照旧整页重画。
+const TN_H=new Map();   // 科技 id → 上次画的卡片 HTML（不含位置属性）
+function techPatch(){if(hubTab!=='tech'||running||typeof sheet==='undefined'||!sheet)return false;const tree=sheet.querySelector('.ttree2');if(!tree)return false;
+  const all=Object.keys(CFG.techs).filter(k=>CFG.techs[k].cat===techCat),kidsA=id=>all.filter(k=>{const t=CFG.techs[k];return(t.req&&t.req[0]===id)||(t.req2&&t.req2[0]===id)||(t.req3&&t.req3[0]===id)});
+  const vis=id=>hvShowTech(id)||kidsA(id).some(vis),ids=all.filter(vis);if(ids.join(',')!==tree.dataset.ids)return false;   // 同 hubTech 的显示规则
+  for(const id of ids){const h=techNode(id);if(TN_H.get(id)===h)continue;const el=tree.querySelector(`.tn[data-id="${id}"]`);if(!el)return false;
+    const t=document.createElement('div');t.innerHTML=h.replace('<div class="tn',`<div data-id="${id}" data-p="${el.getAttribute('data-p')||''}" style="${el.getAttribute('style')||''}" class="tn`);
+    const n=t.firstElementChild;if(!n)return false;el.replaceWith(n);TN_H.set(id,h)}
+  const r=sheet.querySelector('.scr-res');if(r&&typeof resChips==='function')r.innerHTML=resChips();
+  if(typeof requestAnimationFrame==='function')requestAnimationFrame(techLines);return true}
 
 // ---------- v0.10.11（用户定）营地里还完全没法解锁的内容先藏起来 ----------
 // 只改显示，不改解锁逻辑。每样东西有一个「阶」（1 = 一阶地区……，要通关哪一阶的地区才能拿到）；
@@ -111341,7 +111357,7 @@ function onSheetClick(e){
   else if(a==='hfxok')hfxOk();   // 0.12.6 英雄效果弹窗（ui/hfx_pop）
   else if(a==='dswap'){const r=dailySwap(+v);if(r.err)toast(r.err);else sfx('pick');showHub('daily')}
   else if(a==='dref'){const r=dailyRefresh();if(r.err)toast(r.err);else sfx('pick');showHub('daily')}
-  else if(a==='tbuy'){const err=techBuy(v);if(err)toast(err);else{sfx('pick');toast(`${CFG.techs[v].name} 升到 ${roman(techLv(v))} 级`)}showHub('tech')}
+  else if(a==='tbuy'){const err=techBuy(v);if(err)toast(err);else{sfx('pick');toast(`${CFG.techs[v].name} 升到 ${roman(techLv(v))} 级`)}if(!techPatch())showHub('tech')}   // techPatch：0.14.5 之后只换变了的科技卡和顶上的资源（ui/tech_patch），不整页重画
   else if(a==='ttog'){techToggle(v);showHub('tech')}
   else if(a==='cardok'){if(G.cardSel>=0&&armed('card'))pickCard(G.cardSel)}
   else if(a==='reroll'||a==='ereroll'){if(armed('card'))rerollCards(a==='ereroll')}   // v0.8.23 刷新卡牌
