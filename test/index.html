@@ -1701,7 +1701,7 @@ let CFG={   // P3 改（0.12.2d 性能）：let——数据文件都拼完后 co
     // 0.5.7（用户定：巨型僵尸、巨型雪兽、坦克、精英、首领等大幅提高击退抗性）亡灵被击退 / 被拉扯的距离：首领 × (1 − boss，直接减免)，其他 ÷ (1 + 抗性)（v0.7.4 用户定；原来都是 × (1 − 抗性)）；heavy（重型）照旧完全不动
     //   boss 首领、elite 精英、big = 大块头的普通亡灵（bigList）、size = 其余体型大于 5 的
     // v0.7.7（用户 2026-10-08 定）亡灵受到的控制（晕眩、冰冻、定身、恐惧、缴械、击退、拉扯；engine/cc.js）：
-    //   dr 第 1～5 次被控制的效果（独立乘区），满 5 次后 sa 秒霸体，霸体结束计数清零；decay 秒没被控制计数也清零、same 秒内的几种控制算同一次（这两个 Claude 定）
+    //   dr 第 1～5 次被控制的效果（独立乘区；0.14.5 用户 11-25 定：每种控制各数各的），同一种满 5 次后这一种 sa 秒霸体、计数清零；这一种 decay 秒没被控制计数也清零、same 秒内同一种只算一次（这两个 Claude 定）
     //   tier 同类控制的抗性：[每次 +X, 最高]（二阶 / 三阶 / 四阶及以上），先吃这次控制再加，resT 秒内没再被同类控制就清零；效果 ÷ (1 + 抗性)；大首领（五阶）一直霸体
     cc:{dr:[1,0.65,0.35,0.2,0.1], sa:5, decay:10, same:0.05, tier:{2:[0.5,2],3:[0.75,3],4:[1,4]}, resT:5},
     kbRes:{boss:0.9, elite:0.75, big:0.7, size:0.4, bigList:['tank','giantTank','troll','snowBeast','giantBeast','beastLancer','heavyZombie','polarHeavy','polarGiant','bearCorpse','bearKnight','bigApe','bigThrowApe','camelLord','copperPuppet','ironPuppet']},
@@ -58934,7 +58934,7 @@ const E=fastObj(Object.assign({n:0,count:0,nextId:1,alive:new Uint8Array(ECAP),i
   {tsU:F32(),nrv:new Uint8Array(ECAP)},
   {nu:new Uint8Array(ECAP),clk:F32(),mrv:new Uint8Array(ECAP),nrU:F32(),cbf:new Uint8Array(ECAP),yI:new Int32Array(ECAP),yJ:new Int32Array(ECAP),yA:F32(),yB:F32(),yC:F32(),yD:F32(),rvU:F32(),yT:new Int16Array(ECAP),yN:new Uint8Array(ECAP),hwT:F32(),hwF:F32()},
   {zsN:new Uint8Array(ECAP),zsD:F32(),zsF:F32()},
-  {ccN:new Uint8Array(ECAP),ccL:F32(),ccM:F32(),saU:F32(),cr:new Float32Array(ECAP*6),crU:new Float32Array(ECAP*6)},
+  {saU:F32(),ccKN:new Uint8Array(ECAP*6),ccKL:new Float32Array(ECAP*6),ccKM:new Float32Array(ECAP*6),saK:new Float32Array(ECAP*6),cr:new Float32Array(ECAP*6),crU:new Float32Array(ECAP*6)},   // engine/cc：ccKN / ccKL / ccKM / saK 每只 6 个（CCK 种类）：这一种的控制次数、上次时刻、那一下的倍率、这一种霸体到期（0.14.5 c1，用户 11-25：控制次数按种类分开）
   {wkU:F32(),wkF:F32(),glT:F32(),sjU:F32(),sjF:F32(),sup:new Uint8Array(ECAP)},
   {dv:new Uint8Array(ECAP),hb:new Uint8Array(ECAP),csS:new Uint8Array(ECAP),csK:new Uint8Array(ECAP),csA:F32(),csB:F32(),hgc:new Float32Array(ECAP*8)},
   {fac:new Uint8Array(ECAP),fcv:new Uint8Array(ECAP),fe:new Int32Array(ECAP),feId:new Int32Array(ECAP),bfK:new Float32Array(ECAP*6)},   // v0.8.6 阵营（engine/faction）：fac 阵营下标、fcv 1 = 换阵营换过来的、fe / feId 正在打的敌对亡灵（第三方阵营）；bfK 统一 buff（engine/buff）每只 6 个：已经乘进 E.dmg / E.ai / E.sp 的倍率、加进 E.def 的防御、受到伤害的倍率、技能冷却速度
@@ -62838,8 +62838,9 @@ MAP_FX.sandCoast.afterHurtF=(u,d,o)=>{if(G.csOn&&!o.dot)csHitF(u,d,o)};
 
 /* ---------- v0.7.7 亡灵受到的控制（用户 2026-10-08 定；数值在 CFG.combat.cc）----------
    玩家这一方对亡灵的晕眩、冰冻、定身、恐惧、缴械、击退、拉扯都走这里（以前各处直接写 E.stun 等，首领被投石塔连续晕住、很多亡灵被一直击退）。
-   霸体：大首领（五阶）一直有；其他亡灵被控制满 5 次后获得 5 秒霸体。霸体期间不受控制，减速照旧。
-   控制次数（独立乘区）：第 1～5 次 100% / 65% / 35% / 20% / 10%；满 5 次给霸体、计数清零；10 秒没被控制计数也清零；同一下攻击带的几种控制只算一次。
+   霸体：大首领（五阶）一直有（E.saU 也是全部种类的霸体：佛窟光环、九尾等直接写）；其他亡灵某一种控制满 5 次后，这一种控制 5 秒霸体（E.saK，别的种类照常）。霸体期间不受控制，减速照旧。
+   控制次数（独立乘区，0.14.5 用户 11-25 定：按种类分开记）：晕眩、冰冻、定身（含麻痹、禁锢）、恐惧、缴械（含沉默）、击退（含拉拽）六种各数各的（E.ccKN / ccKL / ccKM，下标 i×6 + CCK 种类）；
+   同一种第 1～5 次 100% / 65% / 35% / 20% / 10%；同一种满 5 次给这一种霸体、计数清零；这一种 10 秒没被控制计数清零；同一下攻击带的几种控制各算各的，同一下里同一种只算一次。
    同类控制的抗性：二阶 +50%（最高 200%）、三阶 +75%（最高 300%）、四阶及以上 +100%（最高 400%）；先吃这次控制再加，5 秒内没再被同类控制就清零；效果 ÷ (1 + 抗性)。
    击退另乘种类自带的击退抗性 EKBK（重型不吃击退；精英、大型、体型大 ÷ (1 + X)，engine/enemy）。
    不算控制的：地图机制（流沙、寒风、传送带、元素森林的风）、亡灵自己的出场 / 复活硬直、剧情脚本（收服时定住首领）。
@@ -62847,21 +62848,21 @@ MAP_FX.sandCoast.afterHurtF=(u,d,o)=>{if(G.csOn&&!o.dot)csHitF(u,d,o)};
 const CCK={stun:0,frz:1,root:2,fear:3,dis:4,kb:5};
 let CC_K=null,CC_TK=1;   // CC_TK：0.13.13 机簧投石「重击」这一下打出的控制时间倍率（engine/combat.explode 打的时候设，打完回 1）
    // v0.10.10 某只亡灵受到的控制再乘几（i → 倍率）：废弃佛窟佛陀的金身 −50%（maps/buddha_boss.foCcK）
-function ccReset(i){E.ccN[i]=0;E.ccL[i]=-99;E.ccM[i]=1;E.saU[i]=0;const q=i*6;for(let k=0;k<6;k++){E.cr[q+k]=0;E.crU[q+k]=0}}
-const ccSA=i=>eBigBoss(ETC[E.t[i]])||E.saU[i]>G.time||!!EUNST[E.t[i]]||(!!G.bpMar&&bpMarHas(i,1));   // 霸体：大首领（2026-11-07 用户定：前三阶段地区的五阶首领是小 BOSS，取消霸体）、满 5 次控制后 5 秒、无前（冠军先锋）；bpMarHas：v0.8.4 赤血元帅光环给步兵的先登之志（maps/blood）
+function ccReset(i){E.saU[i]=0;const q=i*6;for(let k=0;k<6;k++){E.cr[q+k]=0;E.crU[q+k]=0;E.ccKN[q+k]=0;E.ccKL[q+k]=-99;E.ccKM[q+k]=1;E.saK[q+k]=0}}   // ccK*、saK：0.14.5 c1 按种类分开
+const ccSA=i=>eBigBoss(ETC[E.t[i]])||E.saU[i]>G.time||!!EUNST[E.t[i]]||(!!G.bpMar&&bpMarHas(i,1));   // 全部种类的霸体：大首领（2026-11-07 用户定：前三阶段地区的五阶首领是小 BOSS，取消霸体）、E.saU（外部给的）、无前（冠军先锋）；bpMarHas：v0.8.4 赤血元帅光环给步兵的先登之志（maps/blood）；某一种满 5 次的霸体是 E.saK（0.14.5 c1）
 function ccSAFx(i){if(inViewPt(E.x[i],E.y[i]))addFx({k:'ring',x:Math.round(E.x[i]),y:Math.round(E.y[i]-6),r:E.r[i]+8,life:0.5,c:'#f3d47c'})}
-// 这一次控制的倍率（0 = 不受控制）：记次数、给霸体、加同类抗性
-function ccMul(i,k){if(HK.eCC.length&&E.alive[i])hkEach('eCC',i,k);if(!E.alive[i]||ccSA(i))return 0;   // eCC：v0.8.3 赤血关隘的先登之志（受到控制就加移速、攻速，霸体挡住的也算）
-  const C=CFG.combat.cc,t=G.time;let m;
-  if(t-E.ccL[i]<C.same)m=E.ccM[i];   // 同一下攻击的另一种控制
-  else{if(t-E.ccL[i]>C.decay)E.ccN[i]=0;const n=E.ccN[i];m=C.dr[Math.min(n,C.dr.length-1)];E.ccN[i]=n+1;E.ccL[i]=t;E.ccM[i]=m;
-    if(E.ccN[i]>=C.dr.length){E.ccN[i]=0;E.saU[i]=t+C.sa;ccSAFx(i)}}
-  const q=i*6+k;if(E.crU[q]<t)E.cr[q]=0;const r=E.cr[q],T=C.tier[Math.min(4,ETC[E.t[i]].tier)];if(T){E.cr[q]=Math.min(T[1],r+T[0]);E.crU[q]=t+C.resT}
+// 这一次控制的倍率（0 = 不受控制）：记这一种的次数、给这一种霸体、加同类抗性
+function ccMul(i,k){if(HK.eCC.length&&E.alive[i])hkEach('eCC',i,k);const q=i*6+k,t=G.time;if(!E.alive[i]||E.saK[q]>t||ccSA(i))return 0;   // eCC：v0.8.3 赤血关隘的先登之志（受到控制就加移速、攻速，霸体挡住的也算）
+  const C=CFG.combat.cc;let m;
+  if(t-E.ccKL[q]<C.same)m=E.ccKM[q];   // 同一下攻击里同一种控制的第二次
+  else{if(t-E.ccKL[q]>C.decay)E.ccKN[q]=0;const n=E.ccKN[q];m=C.dr[Math.min(n,C.dr.length-1)];E.ccKN[q]=n+1;E.ccKL[q]=t;E.ccKM[q]=m;
+    if(n+1>=C.dr.length){E.ccKN[q]=0;E.saK[q]=t+C.sa;ccSAFx(i)}}
+  if(E.crU[q]<t)E.cr[q]=0;const r=E.cr[q],T=C.tier[Math.min(4,ETC[E.t[i]].tier)];if(T){E.cr[q]=Math.min(T[1],r+T[0]);E.crU[q]=t+C.resT}
   return CC_K?m/(1+r)*CC_K(i):m/(1+r)}
 // 不计次数、不加抗性：持续拉扯
-function ccPeek(i,k){if(ccSA(i))return 0;const q=i*6+k,m=E.crU[q]<G.time?1:1/(1+E.cr[q]);return CC_K?m*CC_K(i):m}
-// 持续区域：同一个区域对同一只亡灵只算第一次（倍率记在区域上；之后有了霸体照样挡住）
-function ccZone(z,i,k){const M=z.ccm||(z.ccm=new Map()),id=E.id[i];if(!M.has(id)){const m=ccMul(i,k);M.set(id,m);return m}return ccSA(i)?0:M.get(id)}
+function ccPeek(i,k){const q=i*6+k;if(E.saK[q]>G.time||ccSA(i))return 0;const m=E.crU[q]<G.time?1:1/(1+E.cr[q]);return CC_K?m*CC_K(i):m}
+// 持续区域：同一个区域对同一只亡灵只算第一次（倍率记在区域上；之后有了这一种的霸体照样挡住）
+function ccZone(z,i,k){const M=z.ccm||(z.ccm=new Map()),id=E.id[i];if(!M.has(id)){const m=ccMul(i,k);M.set(id,m);return m}return E.saK[i*6+k]>G.time||ccSA(i)?0:M.get(id)}
 // 大 BOSS（大首领）：2026-11-07 用户定叫法——四阶精英、五阶小 BOSS、六阶大 BOSS；代码里 tier 5 是首领，但前三阶段地区（mapPages 第 0～2 页）的 tier 5 首领其实是小 BOSS
 let EBB_G=null,EBB_M='',EBB_T=false;   // eBigBoss 的缓存：同一局（G）、同一张图（G.map）只查一次地区的阶（mapTierOf 是 findIndex，热路径上每次伤害都会问；别给 G 加表外字段）
 function ebbRe(){EBB_G=G;EBB_M=G.map;return EBB_T=mapTierOf(G.map)>=3}
@@ -108823,7 +108824,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="98d7d26",GAME_BUILT=1795563794073,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="d904dd1",GAME_BUILT=1795566380191,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
