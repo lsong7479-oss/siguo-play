@@ -35251,6 +35251,279 @@ const tciEvo=e=>tciByKey(tciEvoKey(e));   // 建筑进化一张卡（e = BTT[t].
 CDI_DRAW.wind=S=>{skiaTwister(S,16,3,28,12,1.6,'#9fdcd0','#e8fff8');   // 上宽下窄的一股旋风，浅青色、白色弧纹
   for(const[x,y,c]of[[3,9,'#7fe0c8'],[28,13,'#7fe0c8'],[5,19,'#bfefe6'],[26,22,'#bfefe6'],[9,27,'#7fe0c8']])S.r(x,y,2,1,c,1)};   // 周围卷起来的几缕风
 
+// ---------- 0.14.5 之后 代理 I1（用户 11-25「有不少进阶科技的图标不太符合进阶的效果，该重绘的重绘」）：进阶科技（一～三阶进化）专用图标 ----------
+// 往 art/card_icons 的 CDI_DRAW 里加 e_ 开头的键（画法同 ic32：32×32，画完自动打光、描黑边）；哪个进化用哪个图标在 data/i1_evoico.js（CFG.techIcoEvo）。
+// 构图：一个主体（地雷、兽夹、毒池、冰块……）+ 至多一两个点明效果的小元素（弹出的子雷、晕眩星、向外的箭头）；同一种东西的升级版只换颜色或加一点光（玄钢 = 暗钢蓝，诅咒 = 紫光）。
+const I1C={g:'#6cc040',gl:'#b0f070',gd:'#2f7a30',b:'#b8202a',bl:'#e85a5a',bd:'#6a1018',i:'#9fdcf4',il:'#e0f8ff',id:'#4a90c8',f:'#d8402a',fo:'#f08a2a',fy:'#ffe070',
+  y:'#f8d040',yl:'#fff6a0',m:'#9a5ad8',ml:'#d0a8f8',st:'#c3cad6',ir:'#8a92a0',xg:'#5a6680',xgl:'#8ea0c0',dirt:'#5a4a3a'};
+// 小闪电：中心 (x,y)、高 h
+function i1Bolt(S,x,y,h,c,c2){const k=h/14;S.poly([[x+2*k,y-7*k],[x-3*k,y+1*k],[x,y+1*k],[x-2*k,y+7*k],[x+3.5*k,y-1.5*k],[x+0.5*k,y-1.5*k],[x+3*k,y-7*k]],c||I1C.y);if(h>=10)S.line(x+1.5*k,y-5.5*k,x-1.5*k,y+0.5*k,c2||I1C.yl,1)}
+// 折线闪电：(x0,y0) → (x1,y1)，n 段，左右摆 a
+function i1Zig(S,x0,y0,x1,y1,n,a,w,c,c2){const P=[[x0,y0]],dx=x1-x0,dy=y1-y0,L=Math.hypot(dx,dy),px=-dy/L,py=dx/L;
+  for(let i=1;i<n;i++){const t=i/n,s=i%2?a:-a;P.push([x0+dx*t+px*s,y0+dy*t+py*s])}P.push([x1,y1]);skiaPath(S,P,w,c||I1C.y);if(c2)skiaPath(S,P,Math.max(0.3,w-0.8),c2,1)}
+// 亡灵小目标（暗紫圆，带一点高光）
+function i1Foe(S,x,y,r){S.disc(x,y,r,'#5a4a6a');S.p(x-r*0.4,y-r*0.4,'#8a7a9a',1)}
+// 地雷：中心 (x,y)，k 倍大小
+function i1Mine(S,x,y,k,c){k=k||1;S.ell(x,y+2*k,10*k,4.2*k,c||'#4a5a3a');S.ell(x,y-0.5*k,6.5*k,3.6*k,shd(c||'#4a5a3a',0.15));S.r(x-1.5*k,y-4.5*k,3*k,2.4*k,MAT.iron);S.disc(x,y-5*k,1.4*k,'#e03a2a',1);
+  for(const d of[-7,-3.5,3.5,7])S.p(x+d*k,y+2.6*k,'#2a3020',1)}
+// 兽夹（俯视）：圆圈铁口 + 向里的齿 + 中间踏板 + 链子
+function i1Bear(S,c,cd,glow){skiaPath(S,[[16,27],[18,29],[21,28],[23,30]],0.8,MAT.iron);skiaArc(S,16,15,8.6,11.6,0,Math.PI*2,c);
+  for(let i=0;i<10;i++){const a=i*Math.PI/5,co=Math.cos(a),si=Math.sin(a),pa=a+Math.PI/2;S.poly([[16+co*9,15+si*9],[16+co*5.2,15+si*5.2],[16+co*9+Math.cos(pa)*1.9,15+si*9+Math.sin(pa)*1.9]],cd)}
+  S.disc(16,15,3.2,MAT.brass);S.disc(16,15,1.4,shd(MAT.brass,0.4),1);S.r(14,25,4,2,c);if(glow)for(const[x,y]of[[4,4],[28,5],[27,26],[5,25]])spark(S,x,y,glow)}
+// 钉刺板：木板 + 几根朝上的尖钉；中心 (x,y)、半宽 w、钉高 h、n 根
+function i1Spikes(S,x,y,w,h,n,c,c2){S.poly([[x-w,y],[x+w,y],[x+w-2,y+4],[x-w-2,y+4]],MAT.wood);S.r(x-w,y,w*2,1,MAT.lwood,1);
+  for(let i=0;i<n;i++){const sx=x-w+2+i*(w*2-4)/Math.max(1,n-1),hh=h*(i%2?0.8:1);S.poly([[sx-2.4,y+0.5],[sx,y-hh],[sx+2.4,y+0.5]],c);S.line(sx,y-hh+1.5,sx,y-1,c2||shd(c,0.45),1)}}
+// 冰块：左上 (x,y)、宽 w、高 h；里面冻着一个亡灵小骷髅（暗）
+function i1Ice(S,x,y,w,h,skull){S.r(x,y,w,h,I1C.i);S.r(x+1,y+1,w-2,2,I1C.il,1);S.r(x+1,y+1,2,h-2,shd(I1C.i,0.25),1);if(skull)skiaSkull(S,x+w/2,y+h/2+0.5,'#5a7a98',w/16);
+  for(let k=0;k<w+h;k+=6)S.line(x+k,y+h-2,x+k+3,y+h-5,I1C.il,1)}
+// 冰刺（从地面往上）
+function i1Spike(S,x,y,h,w){S.poly([[x-w,y],[x,y-h],[x+w,y]],I1C.i);S.line(x,y-h+1,x-w*0.4,y-1,I1C.il,1)}
+// 地面法阵（透视椭圆环 + 几个符文点）
+function i1Rune(S,cy,rx,ry,c,c2){S.ell(16,cy,rx,ry,c);S.ell(16,cy,rx-2,ry-1.4,shd(c,-0.45),1);S.ell(16,cy,rx-3.5,ry-2.4,c,1);S.ell(16,cy,rx-5,ry-3.3,shd(c,-0.45),1);
+  for(let i=0;i<6;i++){const a=i*Math.PI/3+0.3;S.p(16+Math.cos(a)*(rx-1),cy+Math.sin(a)*(ry-0.7),c2||'#ffffff',1)}}
+// 火苗（尖朝上）：底中心 (x,y)、宽 r、高 h
+function i1Flame(S,x,y,r,h){skiaFlame(S,x,y-r,r,h)}
+// 箭：尾 → 尖
+function i1Arrow(S,x0,y0,x1,y1,hc){skiaArrow(S,x0,y0,x1,y1,{h:hc||MAT.steel,f:'#e8e0d0'})}
+// 石块（灰色不规则圆）
+function i1Rock(S,x,y,r,c){c=c||'#9a9488';S.poly([[x-r,y-r*0.2],[x-r*0.5,y-r*0.9],[x+r*0.4,y-r],[x+r,y-r*0.3],[x+r*0.85,y+r*0.6],[x+r*0.1,y+r],[x-r*0.75,y+r*0.75]],c);S.p(x-r*0.4,y-r*0.4,shd(c,0.4),1)}
+// 血瓶：圆肚瓶，blood 液面高度 0～1
+function i1Flask(S,x,y,r,liq,neck,lv){S.r(x-2,y-r-6,4,6,'#d8e8f0');S.r(x-2.5,y-r-8,5,2,MAT.wood);S.disc(x,y,r,'#d8e8f0');
+  const top=y+r-2*r*lv;for(let yy=Math.ceil(top);yy<=y+r;yy++)for(let xx=Math.floor(x-r);xx<=x+r;xx++){const dx=xx+0.5-x,dy=yy+0.5-y;if(dx*dx+dy*dy<=(r-1.2)*(r-1.2))S.p(xx,yy,liq,1)}
+  S.p(x-r*0.5,y-r*0.5,'#ffffff',1);S.p(x-r*0.5+1,y-r*0.5,'#ffffff',1)}
+// 齿轮
+function i1Gear(S,x,y,r,c){skiaGear(S,x,y,r,8,c);S.disc(x,y,r*0.3+0.2,MAT.dark);S.ellClr(x,y,r*0.18+0.3,r*0.18+0.3)}
+// 小红箭头（朝上 / 朝下）
+function i1UpArr(S,x,y,c){S.poly([[x,y-4],[x+3.5,y],[x+1.3,y],[x+1.3,y+4],[x-1.3,y+4],[x-1.3,y],[x-3.5,y]],c||'#e03a2a')}
+function i1DnArr(S,x,y,c){S.poly([[x,y+4],[x+3.5,y],[x+1.3,y],[x+1.3,y-4],[x-1.3,y-4],[x-1.3,y],[x-3.5,y]],c||'#e03a2a')}
+// 激光束：发射器在左下，光束到右上
+function i1Beam(S,w,c,c2){S.r(2,24,7,6,MAT.dark);S.disc(7,25,3,MAT.iron);skiaSeg(S,8,24,29,3,w,c||'#ff5a6a');skiaSeg(S,8,24,29,3,Math.max(0.4,w-1.1),c2||'#ffd8e0',1);S.disc(8,24,2.2,c2||'#ffd8e0',1)}
+// 火焰喷射扇形：喷口在左下 (4,28)，朝右上，半角 h（弧度）；ring = 一圈
+function i1Cone(S,half,ring){const cx=4,cy=28,a0=-Math.PI/4;if(ring){S.disc(16,16,4,MAT.dark);S.disc(16,16,2,MAT.iron,1)}
+  for(let y=0;y<32;y++)for(let x=0;x<32;x++){let dx,dy,d,t;if(ring){dx=x+0.5-16;dy=y+0.5-16;d=Math.hypot(dx,dy);if(d<5||d>14.5)continue;t=(d-5)/9.5}
+    else{dx=x+0.5-cx;dy=y+0.5-cy;d=Math.hypot(dx,dy);if(d<4||d>28)continue;let a=Math.atan2(dy,dx)-a0;a=Math.atan2(Math.sin(a),Math.cos(a));if(Math.abs(a)>half)continue;t=(d-4)/24;
+      if(Math.abs(a)>half*0.75&&((x+y)&1))continue}
+    S.p(x,y,t<0.25?I1C.fy:t<0.55?I1C.fo:I1C.f)}
+  if(!ring){S.poly([[1,27],[6,22],[10,26],[5,31]],MAT.dark);S.p(6,26,MAT.iron,1)}}
+// 汇聚：四支箭头指向中心的光球
+function i1Conv(S,c,c2,core){S.disc(16,16,5,c);S.disc(16,16,3,c2,1);S.glow(15,15,'#ffffff');for(const[a,b]of[[1,1],[1,-1],[-1,1],[-1,-1]]){const x0=16+a*13,y0=16+b*13,x1=16+a*7.5,y1=16+b*7.5;skiaSeg(S,x0,y0,x1,y1,1,core);S.poly([[x1-a*0.5,y1-b*0.5],[x1+a*3.2,y1],[x1,y1+b*3.2]],core)}}
+const I1D={
+  // ---- 雷电 ----
+  e_chain:S=>{i1Zig(S,7,23,15,9,4,2,1.5,I1C.y,I1C.yl);i1Zig(S,17,9,26,21,4,2,1.5,I1C.y,I1C.yl);i1Foe(S,6,25,3.6);i1Foe(S,16,7,3.6);i1Foe(S,27,23,3.6);spark(S,16,3,I1C.yl)},
+  e_chainLong:S=>{const P=[[4,8],[12,22],[20,8],[28,22]];for(let i=0;i<3;i++)i1Zig(S,P[i][0],P[i][1],P[i+1][0],P[i+1][1],3,1.6,1.3,I1C.y,I1C.yl);for(const[x,y]of P)i1Foe(S,x,y,3.2);for(const[x,y]of[[29,29],[25,29]])S.r(x,y,2,2,I1C.y,1)},
+  e_bolts3:S=>{i1Bolt(S,7,13,16);i1Bolt(S,25,13,16);i1Bolt(S,16,17,26);S.r(2,29,28,1,'#6a5a7a')},
+  e_tcloud:S=>{for(const[x,y,r]of[[10,10,6],[17,8,7.5],[24,11,5.5],[15,13,6]])S.disc(x,y,r,'#5a6478');S.ell(16,15,12,2.6,'#3e4658');S.disc(15,7,3,'#7a8498',1);
+    i1Bolt(S,8,23,11);i1Bolt(S,17,24,13);i1Bolt(S,25,22,10)},
+  // ---- 毒 ----
+  e_psnStack:S=>{eiDrop(S,9,13,5,I1C.gd);eiDrop(S,23,13,5,I1C.gd);eiDrop(S,16,21,7.5,I1C.g);S.disc(16,22,3,'#2f5a1a',1);S.p(14,22,I1C.gl,1);S.p(17,22,I1C.gl,1);S.r(12,16,2,3,I1C.gl,1);
+    S.p(7,12,'#9ad070',1);S.p(21,12,'#9ad070',1)},
+  e_psnPool:S=>{S.ell(16,23,14,6,I1C.gd);S.ell(16,22.5,12,4.6,I1C.g,1);S.ell(13,21.5,5,1.6,I1C.gl,1);
+    for(const[x,y,r]of[[11,14,2.2],[19,10,1.8],[23,16,2.6],[15,5,1.3]]){S.disc(x,y,r,I1C.g);S.p(x-0.6,y-0.6,'#e0ffd0',1)}},
+  e_acid:S=>{S.ell(16,24,14,5.6,'#8a9a20');S.ell(16,23.5,12,4.2,'#c8e030',1);S.ell(12,22.5,4,1.4,'#f0ff90',1);for(const[x,y]of[[9,23],[20,24],[24,22]])S.disc(x,y,1.3,'#f0ff90',1);
+    eiDrop(S,10,10,3,'#c8e030');eiDrop(S,21,13,3.5,'#c8e030');for(const x of[6,15,26])S.line(x,4,x+1,8,'#d8f0a0',1)},
+  e_plague:S=>{skiaSkull(S,16,15,'#c8e0a0',1.25);for(const[a,b]of[[-1,-1],[1,-1],[-1,1],[1,1]]){const x=16+a*11,y=16+b*11;S.disc(x,y,2.4,I1C.g);S.p(x,y,I1C.gl,1);skiaSeg(S,16+a*6.8,16+b*6.8,x-a*2.6,y-b*2.6,0.6,I1C.gl)}},
+  e_flask:S=>{S.r(13,3,6,9,'#d8e8f0');S.r(12,2,8,2,MAT.wood);S.poly([[13,11],[19,11],[27,27],[5,27]],'#d8e8f0');S.poly([[11.5,17],[20.5,17],[25.5,26],[6.5,26]],I1C.g,1);
+    for(const[x,y]of[[12,21],[18,19],[16,23],[20,24]])S.p(x,y,'#e0ffd0',1);S.disc(15,8,1.2,I1C.gl);S.disc(18,5,0.9,I1C.gl);S.r(14,5,1,5,'#ffffff',1)},
+  e_psnCloud:S=>{for(const[x,y,r]of[[9,15,6],[17,11,8],[24,15,6],[16,18,7]])S.disc(x,y,r,'#5aa040');for(const[x,y,r]of[[15,9,3],[8,13,2]])S.disc(x,y,r,'#8ad060',1);
+    skiaSkull(S,16,16,'#2f5a1a',0.8);for(const[x,y]of[[8,26],[15,28],[23,26]])eiDrop(S,x,y,1.4,I1C.g)},
+  // ---- 陷阱工厂：地雷 / 兽夹 / 钉刺 三条线 ----
+  e_mine:S=>{S.ell(16,26,14,3,I1C.dirt);i1Mine(S,16,19,1.3);spark(S,16,8,'#ffb040')},
+  e_mineSub:S=>{S.ell(16,28,13,2.4,I1C.dirt);i1Mine(S,16,23,0.95);for(const[x,y]of[[5,9],[16,5],[27,9]])i1Mine(S,x,y,0.42);
+    for(const[x0,y0,x1,y1]of[[12,17,6,12],[16,15,16,9],[20,17,26,12]])for(let t=0;t<=1;t+=0.34)S.p(x0+(x1-x0)*t,y0+(y1-y0)*t,'#e8d8b0',1)},
+  e_mineShock:S=>{S.ell(16,27,14,3,I1C.dirt);i1Mine(S,16,21,1.05);i1Zig(S,3,15,9,7,3,1.2,0.8,I1C.y);i1Zig(S,29,15,23,7,3,1.2,0.8,I1C.y);for(const[x,y]of[[11,5],[16,3],[21,5]])eiStar(S,x,y,4,0.9,2.4,I1C.y,0,1)},
+  e_bear:S=>i1Bear(S,I1C.st,'#e8ecf2'),
+  e_bearXg:S=>i1Bear(S,I1C.xg,I1C.xgl),
+  e_bearCurse:S=>{i1Bear(S,'#6a4a88',I1C.ml,I1C.ml);S.disc(16,15,1.6,I1C.m,1)},
+  e_caltrop:S=>i1Spikes(S,16,23,12,15,4,I1C.st),
+  e_caltropXg:S=>i1Spikes(S,16,23,12,17,4,I1C.xg,I1C.xgl),
+  e_caltropArc:S=>{i1Spikes(S,16,23,12,17,4,'#8a6ab8',I1C.ml);for(const[x,y]of[[5,6],[27,8],[26,22]])spark(S,x,y,I1C.ml)},
+  e_caltrops3:S=>{i1Spikes(S,9,12,6,8,3,I1C.st);i1Spikes(S,24,14,6,8,3,I1C.st);i1Spikes(S,15,26,7,9,3,I1C.st)},
+  // ---- 冰 ----
+  e_frozen:S=>{i1Ice(S,6,6,20,21,1);spark(S,26,5,I1C.il)},
+  e_frozenAoe:S=>{i1Ice(S,2,13,12,13,1);i1Ice(S,18,13,12,13,1);i1Ice(S,10,3,12,12,1);S.ell(16,28,15,2.4,'#c8ecf8')},
+  e_frozenFast:S=>{i1Ice(S,4,9,18,19,1);i1Bolt(S,24,10,16)},
+  e_shatter:S=>{i1Ice(S,5,6,18,20,1);for(const[a,b,c,d]of[[14,6,11,14],[11,14,15,19],[15,19,12,26],[11,14,5,17]])S.line(a,b,c,d,'#2a5070',1);
+    S.poly([[25,8],[29,10],[26,13]],I1C.i);S.poly([[25,17],[29,16],[28,21]],I1C.i);i1DnArr(S,26,25)},
+  e_icicles:S=>{for(const[x,y,L]of[[3,16,14],[8,22,14],[13,28,14]]){skiaAlong(S,x,y,x+L*0.72,y-L*0.72,(u,v,LL)=>{const w=u<3?u*0.95:2.9*(LL-u)/(LL-3);return Math.abs(v)<=w?(v<0?I1C.il:I1C.i):null});
+    S.line(x-4,y+2,x-1,y-1,'#c8ecf8',1)}},
+  e_iceField:S=>{S.ell(16,26,14,4,'#c8ecf8');i1Spike(S,9,26,12,3);i1Spike(S,23,26,13,3);i1Spike(S,16,27,19,3.6)},
+  e_iceField2:S=>{S.ell(16,26,15,4.4,'#c8ecf8');for(const[x,h,w]of[[5,9,2.4],[27,10,2.4],[10,14,3],[22,15,3],[16,21,3.6]])i1Spike(S,x,26+(x===16?1:0),h,w)},
+  e_iceField3:S=>{S.ell(16,27,15,4,'#c8ecf8');for(const[x,h,w]of[[3,8,2],[29,8,2],[7,13,2.5],[25,13,2.5],[11,17,2.8],[21,18,2.8],[16,23,3.4]])i1Spike(S,x,27,h,w);spark(S,5,6,I1C.il);spark(S,27,4,I1C.il)},
+  e_iceWall:S=>{for(let r=0;r<4;r++)for(let c=-1;c<4;c++){const x=2+c*8+(r%2?4:0),y=6+r*6;S.r(Math.max(2,x),y,Math.min(x+7,30)-Math.max(2,x),5,r%2?I1C.i:shd(I1C.i,0.12));S.p(Math.max(2,x)+1,y+1,I1C.il,1)}
+    for(const x of[6,15,24])i1Spike(S,x,6,4,2)},
+  e_iceWallP:S=>{for(let r=0;r<4;r++)for(let c=-1;c<4;c++){const x=2+c*8+(r%2?4:0),y=6+r*6;S.r(Math.max(2,x),y,Math.min(x+7,30)-Math.max(2,x),5,r%2?'#6ab0e0':'#7ac0ec');S.p(Math.max(2,x)+1,y+1,I1C.il,1)}
+    for(const x of[6,15,24])i1Spike(S,x,6,4,2);spark(S,4,3,I1C.il);spark(S,28,3,I1C.il);spark(S,16,16,'#ffffff')},
+  // ---- 法阵 / 持续发射 ----
+  e_rot:S=>{skiaArc(S,16,16,8,11,Math.PI*1.1,Math.PI*1.9,'#5ac8e0');skiaArc(S,16,16,8,11,Math.PI*0.1,Math.PI*0.9,'#5ac8e0');
+    S.poly([[27,13],[30.5,19],[23,19]],'#5ac8e0');S.poly([[5,19],[1.5,13],[9,13]],'#5ac8e0');S.disc(16,16,4.5,'#e0f8ff');S.disc(16,16,2.4,'#5ac8e0',1)},
+  e_instCircle:S=>{i1Rune(S,23,14,6,I1C.m,I1C.ml);i1Bolt(S,16,10,18)},
+  e_circleWide:S=>{i1Rune(S,19,10,4.6,I1C.m,I1C.ml);for(const d of[-1,1]){S.poly([[16+d*15.5,19],[16+d*12,15],[16+d*12,23]],I1C.ml)}S.poly([[16,3],[12,7],[20,7]],I1C.ml);S.poly([[16,31],[12,27],[20,27]],I1C.ml)},
+  e_circleOuter:S=>{for(let i=0;i<20;i+=2){const a=i*Math.PI/10;S.ell(16+Math.cos(a)*14,18+Math.sin(a)*8,1.4,1.1,I1C.ml)}i1Rune(S,18,9,4.4,I1C.m,I1C.ml)},
+  e_center:S=>{i1Rune(S,20,14,6.5,I1C.m,I1C.ml);skiaStar(S,16,15,8,3.5,9,'#e0502a',0.2);skiaStar(S,16,15,8,2,6,'#f8a030',0.6,1);S.disc(16,15,2,'#fff0a0',1)},
+  e_converge:S=>i1Conv(S,'#d84a1a','#ffc040','#f08a2a'),
+  e_emField:S=>{i1Conv(S,'#3a6ad8','#a8d8ff','#7ab8f8');i1Bolt(S,16,16,9,'#fff6a0')},
+  // ---- 控制 / 削弱 ----
+  e_root:S=>{S.r(10,12,8,12,MAT.leather);S.r(10,22,14,5,MAT.leather);S.r(10,27,15,2,MAT.dleather);S.r(9,15,10,3,MAT.iron);S.r(9,15,10,1,MAT.steel,1);
+    skiaPath(S,[[19,17],[22,19],[24,18],[27,21],[27,25]],0.8,MAT.iron);S.r(25,25,5,5,MAT.dark);for(const[x,y]of[[4,6],[8,3]])i1Bolt(S,x,y+2,7)},
+  e_stun:S=>{skiaSkull(S,16,21,MAT.bone,1.3);for(let i=0;i<14;i++){const a=i*Math.PI/7;S.p(16+Math.cos(a)*11,8+Math.sin(a)*3.5,'#d8c890',1)}
+    for(const[x,y]of[[6,9],[16,4.5],[26,9]])eiStar(S,x,y,5,1.2,3.2,I1C.y,-Math.PI/2)},
+  e_weak:S=>{skiaSword(S,5,27,15,17,{});skiaAlong(S,17,14,24,5,(u,v,L)=>{const w=u>L-3?1.7*(L-u)/3:1.7;return Math.abs(v)<=w&&u>=0?MAT.steel:null});for(const[x,y]of[[16,15],[17,17],[15,14]])S.p(x,y,'#fff',1);i1DnArr(S,25,23)},
+  e_knock:S=>{i1Foe(S,8,18,5);for(const[r,c]of[[9,'#fff6c0'],[13,'#e8d8a0'],[17,'#c8b880']])skiaArc(S,4,18,r-1,r,-Math.PI/3,Math.PI/3,c);S.poly([[30,18],[25,13],[25,23]],'#e03a2a');S.r(19,16,6,4,'#e03a2a')},
+  e_blind:S=>{for(let y=0;y<32;y++)for(let x=0;x<32;x++)if(eiAlm(x+0.5-13,y+0.5-20,11,6))S.p(x,y,'#f4f0e8');S.disc(13,20,4,'#3a6ab8',1);S.disc(13,20,2,'#16131b',1);S.p(11,18,'#ffffff',1);
+    eiStar(S,23,10,8,3,9.5,'#fff6a0',0.2);S.disc(23,10,3.4,'#ffffff',1);for(const[x,y]of[[4,6],[29,24]])spark(S,x,y,'#fff6a0')},
+  // ---- 箭、弹、石 ----
+  e_fan:S=>{for(const a of[-0.55,0,0.55]){const b=-Math.PI/4+a;i1Arrow(S,6,26,6+Math.cos(b)*22,26+Math.sin(b)*22)}S.disc(6,26,2,MAT.wood)},
+  e_volley:S=>{for(const o of[-7,0,7])i1Arrow(S,5+o,27-(-o),5+o+19,27-(-o)-19)},
+  e_pierceN:S=>{for(const t of[8,15.5,23]){S.disc(t,32-t,3.8,'#a85a6a');S.p(t-1.5,30.5-t,'#e8a0a8',1)}i1Arrow(S,2,30,29,3)},
+  e_pierceSteel:S=>{for(const t of[7,12.5,18,23.5]){S.disc(t,32-t,3,'#a85a6a');S.p(t-1,31-t,'#e8a0a8',1)}skiaSeg(S,2,30,25,7,0.9,MAT.iron);S.poly([[30,2],[22,5],[27,10]],'#6a7488');S.line(25,7,28,4,'#e8ecf2',1)},
+  e_pellets:S=>{S.r(1,22,9,5,MAT.dark);S.r(1,21,9,1,MAT.iron);S.r(8,21,2,7,MAT.iron);for(const[x,y]of[[14,22],[18,16],[22,10],[19,24],[25,18],[28,8],[28,25],[13,16]]){S.disc(x,y,1.6,'#8a8a9a');S.p(x-1,y,'#e0e0f0',1);S.line(x-3,y+1,x-2,y+1,'#f8d878',1)}},
+  e_cluster:S=>{for(let i=0;i<8;i++){const a=i*Math.PI/4+0.2,x=16+Math.cos(a)*11,y=16+Math.sin(a)*11;S.disc(x,y,1.8,MAT.brass);skiaSeg(S,16+Math.cos(a)*5,16+Math.sin(a)*5,x-Math.cos(a)*2,y-Math.sin(a)*2,0.4,'#ffd070',1)}
+    skiaStar(S,16,16,8,2.6,5.5,'#f8a030',0.2);S.disc(16,16,2,'#fff0a0',1)},
+  e_frag:S=>{i1Rock(S,16,17,7);for(const[a,b]of[[-1,-1],[1,-1],[-1,1],[1,1],[0,-1.3],[0,1.3]]){const x=16+a*11,y=17+b*10;i1Rock(S,x,y,2.2,'#b0aa9e')}for(const[x0,y0,x1,y1]of[[16,10,14,4],[23,17,27,15],[9,17,5,19]])S.line(x0,y0,x1,y1,'#3a3430',1)},
+  e_rocks3:S=>{i1Rock(S,9,10,6);i1Rock(S,24,13,5.5);i1Rock(S,14,23,6.5);for(const[x,y]of[[2,4],[18,7],[6,18]])S.line(x,y,x+3,y+3,'#e8e0d0',1)},
+  e_roll:S=>{S.r(1,27,30,2,I1C.dirt);S.disc(20,18,8,'#9a9488');S.disc(18,16,2.2,'#c8c2b8',1);skiaArc(S,20,18,4,5,Math.PI*0.2,Math.PI*0.9,'#6a6458',1);for(const y of[12,17,22])S.r(2,y,7,1,'#e8e0d0',1);for(const[x,y]of[[9,25],[6,24],[11,26]])S.disc(x,y,1,'#a89a80')},
+  e_rollBig:S=>{S.r(0,28,32,2,I1C.dirt);S.disc(19,16,11.5,'#8a8478');S.disc(16,12,3,'#c8c2b8',1);skiaArc(S,19,16,6,7.4,Math.PI*0.2,Math.PI*0.9,'#5a5448',1);for(const y of[9,15,21])S.r(0,y,5,1,'#e8e0d0',1);i1UpArr(S,27,5,'#f0a030')},
+  e_bleed:S=>{skiaAlong(S,4,4,22,22,(u,v,L)=>{if(u<0||u>L)return null;const w=1.8-(u/L)*0.6;if(Math.abs(v)<=w)return MAT.steel;if(v>0&&v<=w+2.2&&(Math.floor(u)%4)<2)return MAT.steel;return null});
+    for(const[x,y,r]of[[21,24,2.6],[13,22,2],[26,16,1.8]])eiDrop(S,x,y+2,r,I1C.b);S.p(20,25,I1C.bl,1)},
+  e_scope:S=>{skiaHair(S,16,16,10,'#e03a3a');S.disc(16,16,2.4,'#e03a3a');S.p(16,16,'#ffffff',1)},
+  e_powder:S=>{S.ell(14,25,10,3.2,'#2a2430');S.r(5,8,18,17,MAT.wood);for(const y of[11,21])S.r(5,y,18,2,MAT.iron);S.ell(14,8,9,2.6,MAT.lwood);S.ell(14,8,6,1.6,'#2a2430',1);
+    skiaPath(S,[[14,7],[19,4],[24,6],[26,3]],0.5,MAT.tan);spark(S,27,2,'#ffb040');S.p(9,15,'#e0c090',1)},
+  e_belt:S=>{skiaSeg(S,2,22,22,2,1.4,MAT.dleather);for(let i=0;i<5;i++){const x=3+i*4.6,y=21-i*4.6;skiaSeg(S,x,y,x+6,y+6,2,MAT.brass);skiaSeg(S,x+6,y+6,x+9,y+9,1.4,'#b0b0c0');S.p(x+2,y+1,'#fff0b0',1)}},
+  e_barrels:S=>{S.r(3,12,8,10,MAT.dark);S.r(4,13,6,8,MAT.iron);for(const y of[11,15,19,23])S.r(11,y-1,18,2.6,y===15||y===19?MAT.steel:MAT.iron);S.r(11,9,3,16,MAT.dark);S.r(24,9,2,16,MAT.dark);
+    for(const y of[11,15,19,23])S.p(29,y,'#2a2430')},
+  // ---- 火 ----
+  e_firePit:S=>{S.ell(16,25,14,4.6,'#5a1a10');S.ell(16,24.5,11.5,3.2,'#c8401a',1);for(const[x,r,h]of[[9,3.4,10],[17,4.2,14],[24,3.2,9]])i1Flame(S,x,25,r,h)},
+  e_fireSea:S=>{S.r(1,24,30,6,'#c8401a');S.r(1,27,30,3,'#5a1a10');for(const[x,r,h]of[[4,2.6,9],[10,3.2,13],[16,3.6,17],[22,3.2,12],[28,2.6,9]])i1Flame(S,x,26,r,h)},
+  e_fireSpread:S=>{i1Flame(S,7,29,4.6,15);i1Flame(S,17,21,3.4,11);i1Flame(S,25,13,2.4,8);S.poly([[30,3],[24,4],[29,9]],'#f0a030')},
+  e_fireballs:S=>{for(const[x,y,r]of[[22,9,4.6],[10,14,3.4],[24,22,3.4],[13,25,2.6]]){skiaSeg(S,x-r*1.6,y+r*1.6,x,y,r*0.55,'#f08a2a');S.disc(x,y,r,'#e0442a');S.disc(x+r*0.15,y-r*0.15,r*0.55,I1C.fy,1)}},
+  e_pillar:S=>{S.ell(16,27,10,3,'#5a1a10');S.r(11,4,10,23,'#e0442a');S.r(13,4,6,23,'#f08a2a',1);S.r(15,4,2,23,I1C.fy,1);for(const[x,y]of[[9,8],[23,12],[8,18],[24,20]])S.disc(x,y,1.2,'#f08a2a');S.ell(16,4,5,2.4,'#f08a2a')},
+  e_meteor:S=>{skiaSeg(S,2,2,15,15,4.2,I1C.f);skiaSeg(S,3,3,15,15,2.6,I1C.fo,1);skiaSeg(S,5,5,14,14,1.2,I1C.fy,1);S.disc(19,19,9.5,'#5a3a2e');
+    for(const[a,b,c,d]of[[13,17,19,20],[19,20,24,15],[19,20,20,27]])S.line(a,b,c,d,'#f08a2a',1);S.disc(15,15,3,I1C.fo,1);S.p(14,14,I1C.fy,1)},
+  e_meteors:S=>{for(const[x,y,r]of[[10,12,5],[25,8,4],[20,25,5.5]]){skiaSeg(S,x-r*1.7,y-r*1.7,x,y,r*0.75,I1C.f);skiaSeg(S,x-r*1.4,y-r*1.4,x,y,r*0.4,I1C.fy,1);S.disc(x,y,r,'#5a3a2e');S.disc(x-r*0.35,y-r*0.35,r*0.4,I1C.fo,1)}},
+  e_boom:S=>{skiaBoom(S,16,17,15);for(const[x,y]of[[5,5],[27,4],[28,27]])S.disc(x,y,1.4,'#8a8478')},
+  e_flameWide:S=>i1Cone(S,0.95),
+  e_flameNarrow:S=>{i1Cone(S,0.26);spark(S,28,4,'#ffffff')},
+  e_flameRing:S=>i1Cone(S,0,1),
+  e_flameLine:S=>{S.poly([[1,27],[6,22],[10,26],[5,31]],MAT.dark);skiaSeg(S,8,24,29,3,2.6,I1C.f);skiaSeg(S,8,24,29,3,1.5,I1C.fo,1);skiaSeg(S,8,24,27,5,0.6,I1C.fy,1)},
+  e_fireBlue:S=>{skiaDrop(S,16,20,9,17,'#3a6ad8');skiaDrop(S,16,22,6,12,'#7ab8f8',1);skiaDrop(S,16,24,3,7,'#ffffff',1);for(const[x,y]of[[5,8],[27,10]])spark(S,x,y,'#a8d8ff')},
+  // ---- 机械 / 时间 ----
+  e_gear:S=>{i1Gear(S,16,16,12,MAT.iron);S.p(10,9,MAT.silver,1)},
+  e_gears2:S=>{i1Gear(S,11,12,9.5,MAT.iron);i1Gear(S,23,22,8,MAT.brass)},
+  e_hourglass:S=>{S.r(6,3,20,3,MAT.wood);S.r(6,26,20,3,MAT.wood);S.poly([[8,6],[24,6],[17,16],[24,26],[8,26],[15,16]],'#d8e8f0');S.poly([[11,9],[21,9],[16,15]],MAT.sand,1);S.poly([[16,18],[22,25],[10,25]],MAT.sand,1);S.line(16,15,16,20,MAT.sand,1)},
+  e_hourglassG:S=>{S.r(6,3,20,3,MAT.gold);S.r(6,26,20,3,MAT.gold);S.poly([[8,6],[24,6],[17,16],[24,26],[8,26],[15,16]],'#e8f4ff');S.poly([[11,9],[21,9],[16,15]],'#f8d870',1);S.poly([[16,18],[22,25],[10,25]],'#f8d870',1);S.line(16,15,16,20,'#f8d870',1);
+    spark(S,3,9,'#fff0a0');spark(S,29,20,'#fff0a0')},
+  e_charge:S=>{S.r(8,3,10,26,MAT.dark);S.r(10,5,6,22,'#2a2430',1);for(let y=12;y<27;y++)S.r(10,y,6,1,y<17?'#f8d040':y<22?'#f08a2a':'#e0442a',1);i1UpArr(S,25,11,'#f0a030')},
+  e_ironBall:S=>{S.disc(16,17,12,'#4a4e5a');S.disc(12,13,4,'#7a8090',1);S.p(10,11,'#e0e4ee',1);S.p(11,11,'#e0e4ee',1);for(const[x,y]of[[22,21],[16,26],[25,14]])S.p(x,y,'#2a2c34',1)},
+  // ---- 赤曜工厂 / 精械工厂 ----
+  e_tank:S=>{S.r(3,22,26,6,MAT.dark);for(const x of[6,11,16,21,26])S.disc(x,25,2,MAT.iron,1);S.r(5,15,22,7,'#a83a2a');S.r(9,10,12,6,'#c84a3a');skiaSeg(S,20,12,30,9,1.3,MAT.iron);i1Bolt(S,6,7,10)},
+  e_jet:S=>{S.poly([[16,2],[18,10],[29,20],[29,23],[18,19],[18,25],[22,29],[10,29],[14,25],[14,19],[3,23],[3,20],[14,10]],'#b8404a');S.r(15,6,2,6,'#a8d8ff',1);
+    for(const x of[12,20])i1Bolt(S,x,30,5)},
+  e_carrier:S=>{S.r(1,26,30,4,'#3a6ab8');S.poly([[2,19],[30,19],[27,26],[5,26]],MAT.dark);S.r(2,18,28,2,MAT.iron);S.r(21,13,5,5,MAT.iron);
+    S.poly([[12,4],[13,8],[19,10],[19,11],[13,10],[13,13],[11,13],[11,10],[5,11],[5,10],[11,8]],'#b8404a')},
+  e_emp:S=>{for(const[r,c]of[[6,'#a8d8ff'],[10,'#7ab8f8'],[14,'#3a6ad8']])skiaArc(S,16,16,r-1.2,r,0,Math.PI*2,c);i1Bolt(S,16,16,12,'#fff6a0','#ffffff')},
+  e_missile:S=>{for(const[x,y]of[[4,28],[6,23],[9,19]])S.disc(x,y,1.8,'#c8c8d0');skiaSeg(S,12,18,24,8,2.4,MAT.steel);S.poly([[28,5],[22.5,7],[26,11]],'#e03a2a');S.poly([[12,15],[10,20],[15,20]],'#e03a2a');S.disc(25,8,0.8,'#fff',1)},
+  e_missiles:S=>{for(const[x,y]of[[3,15],[9,23],[15,9],[19,27]]){skiaSeg(S,x,y+6,x+7,y-1,1.6,MAT.steel);S.poly([[x+9.5,y-3.5],[x+5.5,y-1.5],[x+7.5,y+0.5]],'#e03a2a');S.disc(x-0.5,y+7,1.2,'#f08a2a')}},
+  e_drone:S=>{skiaSeg(S,7,7,25,25,1.3,MAT.iron);skiaSeg(S,25,7,7,25,1.3,MAT.iron);for(const[x,y]of[[7,7],[25,7],[7,25],[25,25]]){S.ell(x,y,5,1.6,'#a8b0be');S.disc(x,y,1.2,MAT.dark,1)}
+    S.r(12,12,8,8,'#c84a3a');S.r(14,14,4,4,'#a8d8ff',1)},
+  e_drones:S=>{for(const[cx,cy]of[[9,9],[23,9],[16,23]]){for(const[a,b]of[[-1,-1],[1,-1],[-1,1],[1,1]]){skiaSeg(S,cx,cy,cx+a*4.5,cy+b*4.5,0.6,MAT.iron);S.ell(cx+a*4.5,cy+b*4.5,2.4,0.9,'#a8b0be')}S.r(cx-2,cy-2,4,4,'#c84a3a');S.p(cx,cy,'#a8d8ff',1)}},
+  e_beam:S=>i1Beam(S,2.4),
+  e_beamUp:S=>{i1Beam(S,1.8);i1UpArr(S,24,22)},
+  e_beamMax:S=>{i1Beam(S,3,'#ff3a5a','#fff0f4');i1UpArr(S,20,26);i1UpArr(S,27,20)},
+  // ---- 边军大营 / 赤血兵营 ----
+  e_banner:S=>{S.r(6,2,2,28,MAT.dwood);S.disc(7,2,1.6,MAT.gold);S.poly([[8,4],[28,6],[24,12],[28,18],[8,18]],'#c43a3a');eiStar(S,16,11,5,2,4.6,MAT.gold,-Math.PI/2,1)},
+  e_tiger:S=>{const W='#f4f0e8',K='#2a2430';S.ell(16,17,12,11,W);S.disc(7,7,3.6,W);S.disc(25,7,3.6,W);S.disc(7,7,1.6,'#e8a0a0',1);S.disc(25,7,1.6,'#e8a0a0',1);
+    for(const[x0,y0,x1,y1]of[[16,7,16,11],[12,8,13,11],[20,8,19,11],[5,16,9,17],[27,16,23,17],[5,20,9,20],[27,20,23,20]])S.line(x0,y0,x1,y1,K,1);
+    S.r(10,14,4,2,'#f0c040',1);S.r(18,14,4,2,'#f0c040',1);S.p(11,14,K,1);S.p(20,14,K,1);S.ell(16,22,4,3,'#e8e0d0',1);S.r(15,19,2,2,'#e88a9a',1);S.line(14,24,18,24,K,1)},
+  e_phoenixBow:S=>{skiaArc(S,4,16,12,13.6,-Math.PI*0.42,Math.PI*0.42,MAT.gold);S.line(8,4,8,28,'#e8e0d0',1);skiaSeg(S,8,16,25,16,0.6,MAT.lwood);
+    i1Flame(S,27,19,3.2,10);S.poly([[30,16],[26,13],[26,19]],'#ffe070')},
+  e_mortar:S=>{S.ell(9,28,8,2.4,MAT.dark);S.line(4,27,8,20,MAT.iron);skiaSeg(S,9,26,14,14,3.6,MAT.iron);skiaSeg(S,9,26,14,14,1.6,MAT.steel,1);S.ell(14.5,13,3.2,1.8,'#2a2430',1);
+    for(let t=0.08;t<=0.9;t+=0.1){const x=15+t*13,y=12-Math.sin(t*Math.PI)*9+t*12;S.p(x,y,'#e8e0d0',1)}S.disc(21,4,1.8,'#2a2430');skiaBoom(S,27,25,5.5)},
+  e_lanceCharge:S=>{skiaAlong(S,3,25,29,6,(u,v,L)=>{if(u<0||u>L)return null;if(u<7)return Math.abs(v)<=1.1?MAT.dwood:null;if(u<9)return Math.abs(v)<=3?MAT.gold:null;const w=2.6*(L-u)/(L-9);return Math.abs(v)<=w?MAT.steel:null});
+    for(const[x,y]of[[4,14],[2,19],[9,8]])S.r(x,y,6,1,'#e8e0d0',1)},
+  // ---- 血池 ----
+  e_bloodFlask:S=>i1Flask(S,16,19,10,I1C.b,1,0.75),
+  e_bloodFlaskG:S=>{i1Flask(S,16,19,10,I1C.b,1,0.95);skiaArc(S,16,19,10,11.4,0,Math.PI*2,MAT.gold);spark(S,4,5,'#fff0a0');spark(S,28,7,'#fff0a0')},
+  e_bloodDrip:S=>{i1Flask(S,16,22,8,I1C.b,1,0.45);eiDrop(S,16,7,2.4,I1C.b);eiDrop(S,9,2,1.4,I1C.bl);eiDrop(S,23,3,1.4,I1C.bl)},
+  e_bloodVial:S=>{S.r(13,2,6,3,MAT.wood);S.r(12,5,8,22,'#d8e8f0');S.r(13,10,6,16,'#8a0a20',1);S.r(14,11,1,13,'#e85a5a',1);for(const[x,y]of[[6,10],[26,14],[7,24]])spark(S,x,y,I1C.bl)},
+  e_transfuse:S=>{eiDrop(S,16,18,6.5,I1C.b);S.p(14,17,I1C.bl,1);S.p(14,18,I1C.bl,1);for(const[a,b]of[[-1,0],[1,0],[0,1]]){const x=16+a*12,y=18+b*11;S.poly([[x+a*2.6,y+b*2.6],[x-b*2.6-a*0.6,y-a*2.6-b*0.6],[x+b*2.6-a*0.6,y+a*2.6-b*0.6]],I1C.bl)}
+    for(const[x,y]of[[16,2]])S.poly([[x,y],[x-2.6,y+3],[x+2.6,y+3]],I1C.bl)},
+  e_fang:S=>{S.ell(16,12,13,8,'#a8202a');S.ell(16,13,10.5,5.4,'#3a0a10',1);S.r(6,7,20,3,'#a8202a',1);S.poly([[8,10],[12.5,10],[10.5,22]],'#f4f0e8');S.poly([[19.5,10],[24,10],[21.5,22]],'#f4f0e8');
+    S.r(12,10,8,2,'#f4f0e8',1);eiDrop(S,10.5,27,2.6,I1C.b);eiDrop(S,21.5,28,2,I1C.b)},
+  e_bloodLink:S=>{S.ell(9,21,8,4.6,I1C.bd);S.ell(9,20.5,6.4,3.2,I1C.b,1);S.ell(23,12,8,4.6,I1C.bd);S.ell(23,11.5,6.4,3.2,I1C.b,1);skiaSeg(S,13,18,19,14,1.6,I1C.b);skiaSeg(S,13,18,19,14,0.6,I1C.bl,1)},
+  e_drain:S=>{skiaSkull(S,10,13,'#b8b0c0',1.1);for(let t=0;t<=1;t+=0.1){const x=15+t*10,y=14+Math.sin(t*Math.PI)*-5+t*6;S.disc(x,y,0.9+t*0.6,I1C.b)}eiDrop(S,25,24,4,I1C.b);S.p(24,23,I1C.bl,1)},
+};
+Object.assign(CDI_DRAW,I1D);
+
+/* ---------- 0.14.5 之后 代理 I1（用户 11-25「有不少进阶科技的图标不太符合进阶的效果，该重绘的重绘」）：进阶科技图标重新对应 ----------
+   0.14.5 界碑那一轮改了很多塔楼进阶的效果，图标原来按说明里最先出现的关键字自动取（data/tech_icons.js），很多对不上、同一座塔几个进化一模一样。
+   这里按「建筑.进化」重新指定（逐条的理由见 tools/i1_icons.md）：e_ 开头的是新画的（art/i1_ico.js），其余是现成的卡牌分类图标。
+   同一座建筑不同阶用了同一个键名的（烈火阵塔二阶、三阶都叫 wide，寒冰阵塔一阶、三阶都叫 inst），按键名查分不开，直接给那个进化写 ico。
+   只换图标，不动效果、数值、文字。 */
+Object.assign(CFG.techIcoEvo,{
+  // 电能塔
+  'ynTesla.ytArc':'e_chain', 'ynTesla.ytPrc':'ltn', 'ynTesla.ytFull':'e_bolts3',
+  // 炼毒塔
+  'toxTower.stack':'e_psnStack', 'toxTower.pool':'e_psnPool', 'toxTower.plague':'e_plague', 'toxTower.chem':'e_flask', 'toxTower.acid':'e_acid', 'toxTower.fog':'e_psnCloud',
+  // 陷阱工厂（地雷线 / 兽夹线 / 钉刺线，同一条线换颜色、加东西）
+  'trapFac.heMine':'e_mine', 'trapFac.steelBear':'e_bear', 'trapFac.steelSpike':'e_caltrop', 'trapFac.bounce':'e_mineSub', 'trapFac.xgBear':'e_bearXg', 'trapFac.xgSpike':'e_caltropXg',
+  'trapFac.shockMine':'e_mineShock', 'trapFac.curseBear':'e_bearCurse', 'trapFac.arcSpike':'e_caltropArc',
+  // 冰球塔
+  'iceTower.freeze':'e_frozen', 'iceTower.multi':'e_icicles', 'iceTower.field':'e_iceField', 'iceTower.massFrz':'e_frozenAoe', 'iceTower.ring':'e_rot', 'iceTower.hell':'e_iceField2',
+  // 赤曜工厂
+  'chyFactory.source':'ltn', 'chyFactory.emp':'e_emp', 'chyFactory.arc':'e_chain', 'chyFactory.implode':'e_emField', 'chyFactory.alloy':'dr', 'chyFactory.mbt':'e_tank', 'chyFactory.srcJet':'e_jet',
+  'chyFactory.deck':'e_carrier', 'chyFactory.burn':'e_firePit',
+  // 边军大营
+  'campBj.yuLin':'hero', 'campBj.fengWang':'e_banner', 'campBj.tiger':'e_tiger', 'campBj.phoenix':'e_phoenixBow', 'campBj.tortoise':'block',
+  // 钉刺塔
+  'nailTower.gear':'e_gear', 'nailTower.keep':'e_hourglass', 'nailTower.gear2':'e_gears2', 'nailTower.hard':'e_caltrop', 'nailTower.multi':'e_caltrops3', 'nailTower.doom':'e_boom', 'nailTower.eternal':'e_hourglassG',
+  // 火枪塔
+  'musketTower.snipe':'e_scope', 'musketTower.shot':'e_pellets', 'musketTower.deadly':'crit', 'musketTower.prop':'e_powder', 'musketTower.bloom':'e_cluster',
+  // 火炮塔
+  'cannon.burn':'e_firePit', 'cannon.shock':'e_knock', 'cannon.he':'blast', 'cannon.napalm':'e_fireSea', 'cannon.flash':'e_blind', 'cannon.spread':'e_fireSpread', 'cannon.mech':'e_gear', 'cannon.heavy':'e_boom',
+  // 雷电塔
+  'lightningTower.multi':'e_bolts3', 'lightningTower.chain':'e_chain', 'lightningTower.ring':'e_rot', 'lightningTower.chain25':'e_chainLong',
+  // 火球塔
+  'fireTower.burst':'blast', 'fireTower.burn':'e_firePit', 'fireTower.scatter':'e_fireballs', 'fireTower.inferno':'e_pillar', 'fireTower.sea':'e_fireSea', 'fireTower.whirl':'e_rot',
+  // 弩炮塔
+  'ballista.pierce':'e_pierceN', 'ballista.edge':'e_bleed', 'ballista.blast2':'e_fan', 'ballista.repeat2':'e_rot',
+  // 箭塔
+  'arrowTower.barb':'e_bleed', 'arrowTower.garrison':'e_volley', 'arrowTower.pierce2':'e_pierceN', 'arrowTower.fan':'e_fan',
+  // 投石塔
+  'catapult.frag':'e_frag', 'catapult.boulder':'e_stun', 'catapult.bounce':'e_rocks3', 'catapult.roll':'e_roll', 'catapult.durian':'e_bleed', 'catapult.big':'e_rollBig', 'catapult.sky':'e_meteor',
+  // 喷火塔（扇形宽 / 窄 / 一圈 / 一条线）
+  'flameTower.spread':'e_flameWide', 'flameTower.focus':'e_flameNarrow', 'flameTower.omni':'e_flameRing', 'flameTower.scorch':'e_fireBlue', 'flameTower.lance':'e_flameLine',
+  // 激光塔
+  'laserTower.focus':'e_beamUp', 'laserTower.pierce':'e_pierceN', 'laserTower.contBlast':'e_boom', 'laserTower.superF':'e_beamMax', 'laserTower.hot':'fire',
+  // 速射箭塔
+  'rapidArrow.pierce':'e_pierceN', 'rapidArrow.fan':'e_fan', 'rapidArrow.mech':'e_gear', 'rapidArrow.steel':'e_pierceSteel', 'rapidArrow.venom':'e_psnStack',
+  // 三座阵塔（重名的进化在下面写 ico）
+  'fireCircle.inst':'e_instCircle', 'fireCircle.rot':'e_rot', 'fireCircle.core':'e_center',
+  'iceCircle.wide':'e_circleWide', 'iceCircle.rot':'e_rot', 'iceCircle.deep':'e_frozen', 'iceCircle.brit':'e_shatter', 'iceCircle.hard':'e_circleOuter',
+  'thunderCircle.inst':'e_instCircle', 'thunderCircle.chain':'e_chain', 'thunderCircle.rot':'e_rot', 'thunderCircle.volt':'e_root', 'thunderCircle.nerve':'e_weak', 'thunderCircle.cloud':'e_tcloud',
+  // 重弩炮塔、重型投石
+  'heavyBallista.pierce':'e_pierceN', 'heavyBallista.rocket':'e_powder', 'heavyBallista.mech':'e_gear',
+  'heavyCatapult.scatter':'e_frag', 'heavyCatapult.heavy':'e_stun', 'heavyCatapult.roll':'e_roll', 'heavyCatapult.multi':'e_rocks3', 'heavyCatapult.steel':'e_ironBall', 'heavyCatapult.charge':'e_charge',
+  // 魔导阵塔
+  'arcMissile.burn':'e_firePit', 'arcMissile.salvo':'e_missiles', 'arcMissile.hiEx':'blast', 'arcMissile.ap':'pen', 'arcMissile.fire':'e_fireSea', 'arcMissile.osc':'magic',
+  // 速射炮塔
+  'rapidTower.belt':'e_belt', 'rapidTower.barrels':'e_barrels', 'rapidTower.rocket':'e_powder', 'rapidTower.cluster':'e_cluster', 'rapidTower.scorch':'e_firePit',
+  // 熔岩阵塔
+  'lavaTower.focus':'e_converge', 'lavaTower.heart':'e_center', 'lavaTower.meteor':'e_meteor', 'lavaTower.sea':'e_fireSea', 'lavaTower.rain':'e_meteors',
+  // 冰刺阵塔
+  'iceSpikeTower.array':'e_iceField', 'iceSpikeTower.frost':'e_frozen', 'iceSpikeTower.field':'e_iceField2', 'iceSpikeTower.zero':'e_frozenFast', 'iceSpikeTower.wall':'e_iceWall',
+  'iceSpikeTower.storm':'ice', 'iceSpikeTower.all':'e_iceField3', 'iceSpikeTower.frozen':'e_iceWallP',
+  // 血池
+  'bloodPool.store':'e_bloodFlask', 'bloodPool.brew':'e_bloodDrip', 'bloodPool.remote':'e_transfuse', 'bloodPool.leech':'e_fang', 'bloodPool.vessel':'e_transfuse', 'bloodPool.share':'e_bloodLink',
+  'bloodPool.mech':'rep', 'bloodPool.drain':'e_drain', 'bloodPool.endless':'e_bloodFlaskG', 'bloodPool.dense':'e_bloodVial',
+  // 赤血兵营
+  'campBlood.ironWedge':'cav', 'campBlood.rapidFire':'aspd', 'campBlood.heavyFire':'blast', 'campBlood.cavCharge':'e_lanceCharge', 'campBlood.mortar':'e_mortar', 'campBlood.spear':'inf',
+  'campBlood.musket':'gun', 'campBlood.cripple':'e_weak',
+  // 精械工厂
+  'campSteam.missile':'e_missile', 'campSteam.prodLine':'e_drone', 'campSteam.fireSup':'e_barrels', 'campSteam.heavyEng':'cannon', 'campSteam.aiCore':'e_drones', 'campSteam.laser':'e_beam',
+  'campSteam.blaze':'e_firePit', 'campSteam.arms':'e_missiles',
+});
+{const T=CFG.btech.towers;if(T.fireCircle){T.fireCircle.evo2.wide.ico='e_circleWide';T.fireCircle.evo3.wide.ico='e_circleOuter'}if(T.iceCircle){T.iceCircle.evo.inst.ico='e_instCircle';T.iceCircle.evo3.inst.ico='e_frozenFast'}}   // 同名进化分阶写 ico（art/tech_icons.tciEvoKey 先看 ico）
+
 // ---------- v0.5.5 高清重绘引擎（用户：宽高各 ×2 重绘，像素总数 ×4；16×16 的单位画成 32×32）----------
 // 用法：hdFig(宽, 高, S=>{ ... }, {ol:外轮廓粗细}) → canvas（宽高是 ×2 后的像素；登记时 reg(canvas, 2)，逻辑尺寸 = 宽 / 2）
 // 「零件」= 一块形状 + 一种材质；后画的在前面。每个零件按自己的形状自动打光（枕形法线：离边越近越陡，光从左上前方来），
@@ -109749,7 +110022,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.5',GAME_TAG='测试版',GAME_CODE=319,GAME_BUILD="0db2864",GAME_BUILT=1795622257853,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.5',GAME_TAG='测试版',GAME_CODE=319,GAME_BUILD="635f322",GAME_BUILT=1795622950662,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
