@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.14.5",
- "code": 318,
- "size": 24257298,
- "sha256": "9e6f6f6d673ff0eb0f4733e1c8c56a6a98db246df0ddc70a04d65f97ad664693",
+ "ver": "0.14.6",
+ "code": 320,
+ "size": 24495915,
+ "sha256": "0998d130ff5ba2c7b8207d9cc9640c6b8de96e25e5a9a878bb61b0c974648ae9",
  "minLoader": 1,
- "sig": "0Wn1Kdm+hD0YjDlXCE4XD3SO43YkRFNbk5juckLskOgzqV4+zpQ3ZuYMsMmeP2vogHfl4SGXYwI+inSvbhICIQ==",
- "note": "0.14.5 稳定版",
- "at": "2026-11-25 10:24 UTC"
+ "sig": "TD+FwmHbIaeGhLkdnUn915Gh4OvwQ7JVDaE6NS9eAnyk/PwDv7A6jT+pgzK1SJALA8l50HjXIDbueC4GcZinCA==",
+ "note": "娱乐模式大更新（幸存者装置重做、圣物、搜打撤营地、任务）、进阶塔楼调整、第二卷六阶剧情完整、剧情通关改送英雄之魄、亡灵卡外围修复、科技一键升级、安卓闪退处理",
+ "at": "2026-11-25 21:24 UTC"
 }
