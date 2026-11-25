@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.6",
- "code": 321,
- "size": 24495915,
- "sha256": "e15a0f767d6e1a95951076414b7dd0b0ce5a80215b7482de5af62bbd6ced9043",
+ "ver": "0.14.6.1",
+ "code": 322,
+ "size": 24498052,
+ "sha256": "69bf4f6fae522b3c4642004ba5bb73a0a6ed87efb4a30385a1e8b7c90209bb55",
  "minLoader": 1,
- "sig": "sH3n7LtBPVrFdGunRiuTxpG0gDcB4+MzV+CRSrZMg46adAFUsq3kU3o66HzanmNtyl69zdbMMXzPUvZDZAhk3w==",
- "note": "0.14.6 测试版（同稳定版内容）：娱乐模式大更新（幸存者装置重做、圣物、搜打撤营地、任务）、进阶塔楼调整、第二卷六阶剧情完整、剧情通关改送英雄之魄、亡灵卡外围修复、科技一键升级、安卓闪退处理",
- "at": "2026-11-25 21:30 UTC"
+ "sig": "3cn/oQRa0+hjnruVPyx75gGFECITNw6ohdmYRbOUq+so+TrhWojyzlh2k7qnUsF1B3RBJfm3lXIfEJuTWeE8Ug==",
+ "note": "0.14.6.1 测试版：战神勋章按最低记录算、勋章重画补画（战神勋章燃火）、屯驻大军削弱、超效经济只算非唯一数值卡、赤曜兵视野修正（赤曜合金加雷达）、电磁聚爆调整、英魂商店说明进问号、建筑详情防误触",
+ "at": "2026-11-25 23:15 UTC"
 }
