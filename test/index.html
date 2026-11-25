@@ -31035,7 +31035,7 @@ CFG.buildings.ynTesla={cat:'tower', name:'电能塔', cost:500, hp:800, def:4, v
 CFG.btech.towers.ynTesla={base:CFG.olv.lists.tower.slice(), baseOld:['hp','rate','dmg'], cost:[18,150], evoCost:[75,600], evo:{   // base：本文件排在 data/olv.js 之后，自己写基础加成列表（同边军大营）
   ytBoom:{name:'聚能爆破', desc:'每次攻击对首个目标额外造成 2.5 格的爆炸，40% 伤害；第一次弹射造成 1.5 格的爆炸，25% 伤害', ytBm:[{r:2.5, mul:0.4},{r:1.5, mul:0.25}]},
   ytHv:  {name:'高压电能', desc:'伤害 +50%，建筑进化的独立乘区', dmgMul:1.5, ytNdF:1},   // ytNdF：亡灵版电能塔照旧弹射不衰减（亡灵版不均摊，原效果对它真起作用；文档写亡灵版不改）   // 0.14.5（用户和界碑 11-24 定）删掉「弹射伤害不衰减」（均摊以后只作用在爆炸上，高压线没有爆炸）
-  ytArc: {name:'电弧跳跃', desc:'弹射次数 X +1，每一跳的连锁数量 +4，连锁半径 +1 格；一发最多打中 80 只', ytX:1, ytN:4, ytR:1, ytCap:80},   // 0.14.5（用户和界碑 11-24 定）连锁 +2 → +4；ytCap：一发最多打几只（不写 = CFG.ynU.ray.cap 40；二阶、三阶顶替；亡灵版不用）
+  ytArc: {name:'电弧跳跃', desc:'弹射次数 X +1，每一跳的连锁数量 +4，连锁半径 +1 格；一发最多打中 80 只；第一次弹射之后，剩下的次数化作电网：铺在第一次弹射落点周围(连锁半径内)，所有电能塔共用，每 0.25 秒打一次格子里的亡灵(每只每次至多一下)，0.5 秒内没用完就散掉(穿刺电弧、全域电弧同样)', ytX:1, ytN:4, ytR:1, ytCap:80},   // 0.14.5（用户和界碑 11-24 定）连锁 +2 → +4；ytCap：一发最多打几只（不写 = CFG.ynU.ray.cap 40；二阶、三阶顶替；亡灵版不用）
 }, evo2:{
   ytPen:{name:'渗透爆破', req:'ytBoom', desc:'造成的伤害无视 30% 减伤、30 个百分点的雷电抗性、30% 物理防御，每升 1 级 +5%(Lv5 50%)；爆炸半径 +0.5 格；首个目标的爆炸伤害 40% → 60%、第一次弹射的 25% → 40%；第二次弹射造成 1 格的爆炸，30% 伤害(这一个半径不加)',
     ytPen:{p:0.3, lv:0.05, max:0.5}, ytBr:0.5, ytBm2:{r:1, mul:0.2}, ytBmAdd:[0.2,0.15,0.1]},   // ytBmAdd：0.14.5（用户和界碑 11-24 定）爆炸伤害 首个目标 / 第一次弹射 / 第二次弹射 各加多少（40% → 60%、25% → 40%、20% → 30%）
@@ -31074,6 +31074,12 @@ CFG.btech.towers.ynDevice={base:CFG.olv.lists.ynDevice.slice(), baseOld:['hp'], 
   ydRep2:{name:'领域维修', req:'ydRep', desc:'维修改为目标周围 3×3 格内的受损建筑都修', ydRepA:1},
 }};
 CFG.designTree.push({id:'ynDevice', cost:300, req:['repairTower'], map:'ynCity', mapName:'源能王城', note:'通关「源能王城」后才能研发'});
+// 0.14.5 G1（用户 11-24 定，问题 86）电能塔「电网」：电弧线（电弧跳跃 / 穿刺电弧 / 全域电弧）打完主目标和第一跳以后，剩下的次数变成电量充进电网格子，所有电能塔共用一张电网（逻辑 structs/yn_grid.js）
+//   格子 = 2×2 格（32 像素，同亡灵空间网格）；tick：多久结算一次（用户定 0.25 秒）；life：充进来多久没用掉就散掉（用户定 0.5 秒）；
+//   rK：充电范围 = 第一跳落点周围 连锁半径 × rK 以内的格子（用户定 = 连锁半径，1）；
+//   byN：电量怎么分给范围里的格子（Claude 定，等用户看）：1 = 按格子里的亡灵只数分（空格子不分电），0 = 按格子平分（策划原文；空格子分到的电白白散掉，密集时总伤害只有改前六成）；
+//   fx：画面（Claude 定，等用户看）：a0 / a1 最暗 / 最亮的不透明度，ref = 一格里攒到多少「下」算最亮，n = 每格几条短折线（特效档位 100% 时），hz = 每秒换几次形状
+CFG.ygd={tick:0.25, life:0.5, rK:3, byN:1, fx:{a0:0.12, a1:0.5, ref:6, n:3, hz:12, cap:120}};   // rK 3：主会话 11-24 定——充电半径 = 连锁半径 × 3，中等 / 稀疏密度的总伤害也和改前接近（G1 实测：rK 1 时间距 12 / 16 像素 0.57 / 0.45、稀疏 0.35；rK 3 时 1.00 / 1.00 / 0.94），用户要的是总伤害不变；byN 1：电量按格子里的亡灵数分（G1 定，按格子平分密集只剩 0.59）
 
 /* ---------- 0.14.2 生命上限削减 / 提高（通用机制，逻辑 engine/mhc.js；用户 11-22 策划「圣火祭坛」第 12、14 行：主堡不会受到生命上限削减效果、提高的生命上限均为加算）----------
    我方（英雄、精英、士兵、建筑）：mhcCut(u, amt, until) 削减、mhcAdd(u, amt, until) 提高（先补回被削减的）、mhcOf(u) 当前削减量、mhcBase(u) 没削减 / 没提高时的生命上限
@@ -32079,6 +32085,61 @@ CFG.solBuff={hp:1.3, def:1.3, shield:1.3, tierMax:3, extra:['maidenGuard'], adv:
   for(const k in CFG.unitAdv.units){const A=CFG.unitAdv.units[k],o=B.orig[k];if(!o)continue;   // 进阶的绝对值按改前的原版算
     A.hp=r10(o.hp*B.adv.hp);A.def=Math.max(A.def||0,r1(o.def+B.adv.def));if(o.shield>0)A.shield=r1(o.shield+B.adv.shield);delete A.hpMul}
   for(const u of ids){const d=U[u];if(!d)continue;d.hp=r10(d.hp*B.hp);if(d.def)d.def=r1(d.def*B.def);if(d.shield)d.shield=r1(d.shield*B.shield)}}
+
+/* ---------- 0.14.5 兵种进阶第四批：赤血兵营、精械工厂（用户 11-25 定，界碑整理：仓库根目录《兵种进阶策划-赤血兵营与精械工厂（用户 2026-11-25）》第一～三节；逻辑 units/a1u_adv.js，代理 A1）----------
+   框架照前三批（data/unit_adv 的 CFG.unitAdv.units、units/unit_adv.uaClone）：每个兵种单独进阶、原版 / 进阶版可切换，兵种类型不变，换名字、外观，加效果。
+   花费（用户 11-24 晚定，覆盖文档第一节「待用户确认」）：每个兵种 100 万设计点 + 250 万银币 + 地区材料；兵营等级照 CFG.unitAdv.lv。
+     要排在 data/adv_price（统一定价）、data/sol143（老兵营进阶属性）之后，这里写的就是最终价、最终属性。
+     Claude 定：文档的「黑曜锭」= 七阶黑曜要塞的核心特产「黑曜钢锭」(obSteel)；玄钢锭 xuanSteel、深渊熔核 abyssEmber、源能晶核 ynmCore。
+   新键（units/a1u_adv 读）：
+     mdef         法防改成这个（跟着进阶的圣女血骑加差值）
+     a1W {melee, ranged, ranged2, mgun, gun}  各件武器的基础攻击改成这个：melee 近战（赤血骁骑 = 剑，骑枪 melee2 不变，Claude 定）、ranged / ranged2 两种远程（砲手：速射 / 狙击；炮手：轻炮 / 重炮）、
+                  mgun 精械战士的机炮、gun 无人机机炮（drone.gun 是算好 dmgK 的最终攻击，units/s4_camps.s4Drone 里会除掉 gk 再乘回来，所以直接写 40）
+     atkTxt       兵营「兵种」页进阶块里显示的攻击（几件武器的）
+     a1Tnt {t, keep, weak, slow, st}  赤血锐士：近战打中 → 嘲讽目标 t 秒（同卡包「阵前嘲讽」：亡灵挑目标的 ePick 钩子；离嘲讽者超过 keep 格不再追），虚弱 weak、减速 slow，持续 st 秒（刷新不叠加）
+     fan          赤血骁骑：不冲锋时的剑攻击改成扇形群伤（同疾刃骑兵 units/unit_adv.uaFan；骑枪冲锋不变）
+     a1Cav {v, t} 赤血骁骑「骑兵易伤」：剑命中 → 目标受到骑兵（c.cavalry 的士兵）的伤害 +v，持续 t 秒，刷新不叠加，进易伤池子（加算）
+     a1Brn {k, t} 赤血砲士：造成伤害时灼烧，每秒 = 这一下伤害 × k，t 秒（统一的点燃 burnE：强的覆盖弱的）
+     ign {def, dr} 精械锐士：近战无视 def 物理防御、dr 减伤（同上忍迅捷刺杀 units/unit_adv.uaMelO 的 ign，只给近战；机炮不吃）
+     a1Bx         精械炮士：轻炮、重炮的爆炸半径 ×(1 + a1Bx)
+     a1Rep        精械智造师：维修量 bRepair.amt 改成这个
+     a1Dn         精械智造师：无人机数量上限 ×a1Dn（2 → 3，带二阶「人工智能」4 → 6；units/units080.v8Bt 取整）
+   六个兵种自己的效果名（用户 11-24 定，主会话 11-25 转达）：赤血锐士「赤血禁令」、赤血骁骑「赤血骁武」、赤血砲士「赤血铁砲」、精械锐士「精械光刃」、精械炮士「智能瞄准」、精械智造师「精械智造」（用户 11-24 更正：先前两个写反了）；
+     智造师的维修量、无人机数量合在「精械智造」一条里（Claude 定：用户只给了一个名字）。
+   两座兵营的共同进阶效果 CFG.a1uAdv[兵营]（这座兵营进阶过的兵都有；无人机算它主人的）：
+     cap {hp, ov}  黑曜防护：每秒至多失去 hp 最大生命（按每秒补满的额度算，同赤曜合金 units/cyf_camp.cyfRedF、塔楼黑曜防护）；超出额度的部分 /(1 + ov)（ov 19 = 只吃 5%，用户「免伤 95%」）
+     thorn         玄钢棘甲：受到亡灵的直接伤害时，把这一下原伤害（防御、减伤、限伤之前，engine/combat 的 FR_RAW）的 thorn 以法术伤害打回伤害来源（同玄武卫「玄盾」，排到下一帧结算）
+     lava {k, t, n, res}  深渊熔岩：每次造成直接伤害挂 1 层灼烧：每秒 = 这一下伤害 × k，t 秒；至多 n 层、各自计时（第 n + 1 层顶掉最早到期的那层，Claude 定）；这份灼烧火焰抗性减 res（同赤曜爆燃火箭 resCut）
+     bolt {k, root, cd}   源能闪电：每次造成直接伤害另外打这一下 × k 的法术雷电伤害（同元素弓手 eDmg），这一下让目标麻痹（定身，engine/cc.eRoot，走控制规则）root 秒；
+                          同一个目标 cd 秒一次（按目标记、不分是谁打的）；灼烧、闪电本身不再触发熔岩和闪电
+     「这一下伤害」= 这一下的原伤害（dealE 开头、防御之前；同元素弓手 eDmg 按 o.hd、爆燃火箭按爆炸伤害，Claude 定）
+   跟着进阶（Claude 定）：奥薇尔在场时赤血铁骑变成的圣女血骑跟着赤血骁骑进阶（同圣女侍从跟重装骑兵：生命、攻击、防御加差值，效果照常，名字、外观不变）。 */
+CFG.a1uAdv={
+  campBlood:{cap:{hp:0.2, ov:19}, thorn:0.25},
+  campSteam:{lava:{k:0.15, t:3, n:3, res:0.5}, bolt:{k:0.3, root:1, cd:2.5}}};
+{const U=CFG.unitAdv.units,BW={xuanSteel:500, obSteel:500},SW={abyssEmber:500, ynmCore:500},P={design:1000000, silver:2500000},
+  FB=[['黑曜防护','每秒至多失去 20% 最大生命，超出的部分只受 5%'],['玄钢棘甲','受到伤害时，把这一下原伤害(防御、减伤之前)的 25% 以法术伤害反弹给伤害来源']],
+  FS=[['深渊熔岩','每次造成伤害给目标挂 1 层灼烧：每秒造成这一下伤害的 15%，持续 3 秒；至多 3 层、各自计时，无视 50% 火焰抗性'],['源能闪电','每次造成伤害另外造成这一下 30% 的法术雷电伤害，并麻痹(定身)目标 1 秒，同一个目标 2.5 秒一次；无人机打的也算']];
+  Object.assign(U,{
+    bloodGuard:  Object.assign({camp:'campBlood', name:'赤血锐士', hp:1000, def:30, mdef:14, shield:50, a1W:{melee:60}, atkTxt:'长枪 60', ware:BW,
+      a1Tnt:{t:3, keep:8, weak:0.3, slow:0.3, st:3},
+      fx:FB.concat([['赤血禁令','攻击后嘲讽目标 3 秒，并使它虚弱 30%、减速 30%，持续 3 秒']])},P),
+    bloodKnight: Object.assign({camp:'campBlood', name:'赤血骁骑', hp:850, def:20, mdef:12, a1W:{melee:80}, atkTxt:'剑 80', ware:BW,
+      fan:90, a1Cav:{v:0.3, t:3},
+      fx:FB.concat([['赤血骁武','不冲锋时的剑攻击改为前方 90° 扇形范围伤害(骑枪冲锋不变)；剑命中的目标受到骑兵的伤害 +30%(骑兵易伤)，持续 3 秒，不可叠加']])},P),
+    bloodGunner: Object.assign({camp:'campBlood', name:'赤血砲士', hp:620, def:10, mdef:8, a1W:{ranged:55, ranged2:100}, atkTxt:'速射 55、狙击 100', ware:BW,
+      a1Brn:{k:0.25, t:3},
+      fx:FB.concat([['赤血铁砲','造成伤害时使目标灼烧：每秒造成这一下伤害的 25%，持续 3 秒']])},P),
+    mechWarrior: Object.assign({camp:'campSteam', name:'精械锐士', hp:900, def:15, mdef:10, a1W:{melee:60, mgun:35}, atkTxt:'近战 60、机炮 35', ware:SW,
+      ign:{def:0.5, dr:0.5},
+      fx:FS.concat([['精械光刃','近战攻击无视目标 50% 减伤和 50% 物理防御']])},P),
+    mechGunner:  Object.assign({camp:'campSteam', name:'精械炮士', hp:600, def:8, mdef:8, a1W:{ranged:50, ranged2:150}, atkTxt:'轻炮 50、重炮 150', ware:SW,
+      a1Bx:0.25, hit:25, crit:0.25, critDmg:0.25, apb:{dr:0.3, def:0.3}, a1Aim:1,   // 智能瞄准（用户 11-24 补：瞄准时出现瞄准线，命中 +25、暴击率 +25%、暴击伤害 +25%，无视目标 30% 减伤和物理防御；同前几批的 hit / crit / critDmg / apb 字段）；a1Bx 爆炸半径 +25% 是文档原来写的，先保留（待用户确认）
+      fx:FS.concat([['智能瞄准','瞄准时出现瞄准线；命中 +25、暴击率 +25%、暴击伤害 +25%，攻击无视目标 30% 减伤和 30% 物理防御；轻炮、重炮的爆炸半径 +25%']])},P),
+    mechEngineer:Object.assign({camp:'campSteam', name:'精械智造师', hp:600, def:8, mdef:8, a1W:{melee:25, gun:40}, atkTxt:'近战 25、无人机机炮 40', ware:SW,
+      a1Rep:25, a1Dn:1.5,
+      fx:FS.concat([['精械智造','维修量 10 → 25；无人机数量 ×1.5(2 → 3，带二阶「人工智能」4 → 6)']])},P)});
+  CFG.unitAdv.follow.saintRider='bloodKnight'}   // 圣女血骑跟着赤血骁骑进阶（units/units080.v8Saint 换形态时走 uaDef）
 
 'use strict';
 // ---------- 核心常量与工具 ----------
@@ -49847,6 +49908,114 @@ function uarGTowerFx(S,W,H){const st='#8a93a4',gd=UAR.gold,dk=UAR.blkD,g2='#1344
 Object.assign(UAR_SHD,{uaGTower:{shape:'tower',face:UAR.grn,rim:UAR.blkD,emb:'none',ec:UAR.gold,size:5,fx:uarGTowerFx}});
 Object.assign(UAR_SHK,{bigShield:'uaGTower'});
 
+// ---------- 0.14.5 兵种进阶第四批的新小人：赤血兵营、精械工厂各三个（用户 11-25 定；代理 A1；键 = 兵种 + 'UA'，取图 units/unit_adv.uaSprK：有图就用、没有用原图）----------
+// 照原版的画法和尺寸（art/hd_build080 的 hdU_bloodGuard / hdU_redRider / hdU_bloodGunner / hdU_mechWarrior / hdU_mechGunner / hdU_mechEngineer：步兵 32×32、骑兵 48×46，两帧 0 站 / 1 迈步）。
+// 武器、盾照旧由代码画在手上（ui/draw.drawSoldier）：进阶兵换成下面的样子（往 art/hd_units_adv 的 UAR_WPN / UAR_SHD / UAR_SHK 里加，排在它后面）。
+// 一套的记号（Claude 定，和原版一眼分开）：
+//   赤血进阶「黑曜玄钢」：黑曜石色的板甲（偏紫的黑钢）、赤红布、金边，胸前一枚金框赤红菱徽，甲缝里透一点烧红（黑曜防护、玄钢棘甲）；
+//   精械进阶「深渊源能」：深炮铁色的甲和工装、金边，胸口 / 背包里一颗橙红熔核（深渊熔岩）、青色源能晶体和视窗（源能闪电）。
+// 装了兵营皮肤：art/tskin_sol 照样按像素换色（黑钢 → 主题金属、赤红布 / 青色 → 主题布色、金边 → 主题镶边；熔核的橙色饱和度 1，算木头皮革不换，也不会被当成脸）。
+const A1R={obs:'#2e2834',obsL:'#4a4256',obsD:'#1e1a24',red:'#a01a24',redL:'#c8283a',hot:'#ff4a2a',gold:'#e6c44a',gun:'#4a5264',gunL:'#6a7486',gunD:'#2a2e38',core:'#ff6a1a',coreL:'#ffc04a',cyan:'#5ae8ff'};
+// 金框赤红菱徽（胸前；S 坐标 cx, cy）
+function a1rGem(S,cx,cy,g,r){S.poly([[cx,cy-2.2],[cx+1.8,cy],[cx,cy+2.2],[cx-1.8,cy]],g,{R:0.4});S.poly([[cx,cy-1.2],[cx+0.9,cy],[cx,cy+1.2],[cx-0.9,cy]],hm(r,'gem'),{R:0.3,edge:false})}
+// 熔核：橙红圆核 + 亮芯（精械）
+function a1rCore(S,cx,cy,rad){S.dt(cx,cy,rad+0.6,A1R.gunD);S.dt(cx,cy,rad,A1R.core);S.dt(cx-0.3,cy-0.3,rad*0.45,A1R.coreL)}
+// ===== 赤血锐士：黑曜板甲（金边）、赤红罩衫、黑曜闭盔（金冠 + 高赤缨）、带烧红尖刺的厚护肩（塔盾由代码画：a1uObTower）=====
+function hdU_bloodGuardUA(fr){return hdFig(32,32,S=>{
+  const ob=hm(A1R.obs,'metal'),obL=hm(A1R.obsL,'metal'),obD=hm(A1R.obsD,'metal'),red=hm(A1R.red,'cloth'),redL=hm(A1R.redL,'cloth'),gold=hm(A1R.gold,'metal'),plume=hm(A1R.redL,'hair');
+  hdU_body(S,fr,{pants:obD,boot:ob,bootH:4,sleeve:obD,hand:ob,body:ob,belt:hm('#2a1a10','leather'),buckle:[gold,4],
+    legs:S=>{for(const x of fr?[10.5,21.5]:[12,20]){S.ell(x,26.2,2.4,2,obL);S.px(x,25.6,[gold,3])}},
+    torso:S=>{S.part(obL,{R:3},p=>p.poly([[10,15],[22,15],[22.5,20],[20,23.4],[12,23.4],[9.5,20]]));S.ln(10.4,15.4,21.6,15.4,[gold,3]);for(const y of[18.6,21.4])S.ln(11,y,21,y,[ob,1]);
+      a1rGem(S,16,18.4,gold,A1R.hot);
+      S.part(red,{R:1},p=>p.poly([[12,23.6],[20,23.6],[20.8,27.6],[11.2,27.6]]));S.ln(11.4,27.4,20.6,27.4,[gold,3]);S.ln(16,24,16,27,[redL,2])}});   // 赤红罩衫下摆（金边）
+  hdU_helm(S,ob,{crest:S=>{S.part(plume,{},p=>{p.cap(15,2.6,10.4,-1.2,1.8,2.4);p.cap(12,0.6,6,3.4,1.6,0.8)});S.part(gold,{R:0.4},p=>{p.rect(11.6,3.2,8,1.4,0.4);for(const x of[11.8,14.8,17.8])p.poly([[x,3.4],[x+0.8,1.2],[x+1.6,3.4]])})}});   // 金冠 + 高赤缨
+  S.ln(12.8,16.4,21.8,16.2,[gold,3]);S.ln(13.4,9.8,23.4,9.6,[gold,3]);   // 面甲下沿、视缝上沿的金边
+  for(const x of[9.4,22.6]){S.ell(x,17.4,4.2,3.1,obL);S.ln(x-3.2,19,x+3.2,19,[gold,3]);S.part(hm(A1R.hot,'cloth'),{R:0.3},p=>p.poly([[x-1.2,15],[x,12.4],[x+1.2,15]]))}   // 厚护肩（金边、烧红尖刺）
+})}
+// ===== 赤血骁骑：黑曜板甲 + 赤红罩衫（金边菱徽）、黑曜闭盔（金冠、赤缨）；黑马披黑曜全甲（金边），赤红鞍毯金穗 =====
+function hdU_bloodKnightUA(fr){return hdFig(48,46,S=>{
+  const ob=hm(A1R.obs,'metal'),obL=hm(A1R.obsL,'metal'),obD=hm(A1R.obsD,'metal'),red=hm(A1R.red,'cloth'),gold=hm(A1R.gold,'metal'),plume=hm(A1R.redL,'hair');
+  hdU_horse(S,fr,{coat:hm('#2a2430','hair'),far:hm('#1a1620','hair'),mane:hm('#100c14','hair'),cloth:red,trim:[gold,3],big:true,barded:true,plate:ob,crest:plume,hoof:obD});
+  S.ln(38.6,17,41.6,18.4,[gold,3]);S.ln(41.6,18.4,45.6,24,[gold,3]);S.part(hm(A1R.hot,'cloth'),{R:0.3},p=>p.poly([[42.4,19.4],[45.4,16.2],[43.6,20.4]]));   // 马面甲金边、额前烧红的角
+  for(let x=12.6;x<=30.4;x+=2)S.ln(x,38.6,x,39.8,[gold,3]);a1rGem(S,21,32.6,gold,A1R.hot);   // 鞍毯金穗、菱徽
+  const R=hdU_shift(S,8,4);
+  hdArmBack(R,{sleeve:obD,hand:obD});
+  R.part(ob,{R:2},p=>p.rect(9,15,14,10,3));R.part(red,{R:1.5},p=>p.poly([[12,15],[20,15],[20.4,24.6],[11.6,24.6]]));R.ln(12,15.2,11.6,24.4,[gold,3]);R.ln(20,15.2,20.4,24.4,[gold,3]);   // 赤红罩衫（金边）
+  a1rGem(R,16,18.6,gold,A1R.hot);
+  hdBelt(R,23,hm('#2a1a10','leather'),[gold,4]);
+  hdU_riderLeg(S,{leg:obD,boot:ob});S.ell(28,30.4,2.2,1.9,obL);S.ln(25.2,34.2,30.8,34.2,[gold,3]);
+  hdArmFront(R,{sleeve:obD,hand:obD,pad:obL});R.ln(7.4,17.6,12.6,17.6,[gold,3]);R.ln(19.4,17.6,24.6,17.6,[gold,3]);   // 护肩金边
+  hdU_helm(R,ob,{crest:R=>{R.part(plume,{},p=>{p.cap(15,3,11,0.2,1.6,2.2);p.cap(12,0.8,6,3,1.6,0.8)});R.part(gold,{R:0.4},p=>{p.rect(12,3.4,7,1.2,0.4);for(const x of[12.2,15,17.8])p.poly([[x,3.6],[x+0.7,1.6],[x+1.4,3.6]])})}});
+  R.ln(12.8,16.6,21.8,16.4,[gold,3]);
+})}
+// ===== 赤血砲士：黑三角帽（金边、赤羽）、赤红长外套外罩黑曜胸甲（金扣、金肩章）、白色交叉肩带，腰间火药角 =====
+function hdU_bloodGunnerUA(fr){return hdFig(32,32,S=>{
+  const red=hm(A1R.red,'cloth'),redL=hm(A1R.redL,'cloth'),ob=hm(A1R.obs,'metal'),white=hm('#ece8de','cloth'),hat=hm('#1e1a22','leather'),gold=hm(A1R.gold,'metal'),skin=hm(SKIN,'skin'),hair=hm('#3a2418','hair'),boot=hm('#1e1a22','leather'),horn=hm('#e6dcc2','bone');
+  hdU_body(S,fr,{pants:hm('#2a2630','cloth'),boot,bootH:5,cuff:true,sleeve:red,hand:hm('#2a1a10','leather'),body:red,belt:hm('#2a1a10','leather'),buckle:[gold,4],pad:gold,
+    torso:S=>{hdSkirt(S,red,27.4,{slit:true});S.ln(10,27,15,27.2,[gold,3]);
+      S.part(ob,{R:2},p=>p.poly([[10.6,15.6],[21.4,15.6],[20.8,22.4],[16,23.6],[11.2,22.4]]));S.ln(10.8,15.8,21.2,15.8,[gold,3]);   // 黑曜胸甲（金边）
+      S.part(white,{},p=>{p.poly([[10.5,15.5],[12.5,15.5],[21,23],[19.5,23.5]]);p.poly([[19.5,15.5],[21.5,15.5],[13,23.5],[11,23]])});a1rGem(S,16,19.4,gold,A1R.hot)},
+    after:S=>{S.rect(21.2,20.4,3.6,1.6,gold,{edge:false});S.part(horn,{R:1},p=>p.poly([[8,22],[10.4,23],[9.6,26],[7.6,27.4],[7,26.4],[8.4,25]]))}});   // 金袖口、火药角
+  hdHead(S,{skin});S.part(hair,{},p=>p.ell(11.8,11.6,2.4,3.2));
+  S.part(hat,{},p=>{p.rect(11,3.6,10,5,2);p.poly([[6,8.6],[11,5.4],[16,7.4],[21,5.4],[26,8.6],[16,9.6]])});S.ln(7,8.6,25,8.6,[gold,3]);S.ln(11.2,5.4,16,7.2,[gold,2]);S.ln(16,7.2,20.8,5.4,[gold,2]);   // 三角帽（金边）
+  S.part(redL,{},p=>{p.cap(12,4.6,7.6,-0.6,1.3,2.2);p.cap(13,4.4,10,0.4,1,1.4)});S.dt(12.2,4.8,0.9,[gold,4]);   // 双赤羽 + 金扣
+  hdFace(S,{skin,ey:10.8,brow:'#2a1a10'});S.ln(18.4,13.6,21.2,13.4,'#2a1a10');   // 小胡子
+})}
+// ===== 精械锐士：深炮铁动力甲（金边、铆钉）、胸口熔核、圆顶潜水盔换成青色源能视窗 + 金箍，机炮背包加一根青色晶体管 =====
+function hdU_mechWarriorUA(fr){return hdFig(32,32,S=>{
+  const g=hm(A1R.gun,'metal'),gL=hm(A1R.gunL,'metal'),d=hm(A1R.gunD,'metal'),gold=hm(A1R.gold,'metal'),cy=hm(A1R.cyan,'gem');
+  S.part(d,{R:2},p=>p.rect(3.2,12.6,7.6,11.6,2));S.cap(6,13,6,9,1.4,1.4,gold);S.rect(4,10,5,3.4,g,{R:1});S.ln(4.4,16,10,16,[gold,3]);S.ln(4.4,19,10,19,[d,3]);S.rect(4.6,20.2,2,3.4,cy,{R:0.6});S.px(5.2,20.8,'#e8fbff');   // 机炮背包（金边、青色晶体管）
+  hdU_body(S,fr,{pants:d,boot:g,bootH:4,sleeve:d,hand:g,body:g,belt:hm('#3a2a1c','leather'),buckle:[gold,4],
+    legs:S=>{for(const x of fr?[10.5,21.5]:[12,20]){S.ell(x,26.2,2.4,2,gL);S.px(x,25.4,[gold,3])}},
+    torso:S=>{S.part(gL,{R:3},p=>p.poly([[10.5,15],[21.5,15],[22,20],[20,23.2],[12,23.2],[10,20]]));for(const[x,y]of[[12,16.4],[20,16.4],[12,21.6],[20,21.6]])S.dt(x,y,0.6,[gold,3]);a1rCore(S,16,19,1.8);S.ln(11,15.4,21,15.4,[gold,3])},
+    pad:gL});
+  S.ell(16,9.6,7.4,7,g);S.ell(19.4,10.4,3.8,3.6,gold);S.ell(19.6,10.4,2.7,2.5,cy);S.px(18.6,9.4,'#e8fbff');S.ln(9.4,13.6,22.6,13.6,[gold,3]);   // 潜水盔（金箍、青色视窗）
+  for(const[x,y]of[[10,7],[12.6,3.6],[16.4,2.8]])S.dt(x,y,0.6,[gold,3]);S.ln(16,2.4,16,-0.4,[d,2]);S.dt(16,-0.6,0.8,A1R.cyan);   // 盔顶天线（青色灯）
+  for(const x of[10,22])S.ln(x-2.6,18.4,x+2.6,18.4,[gold,3]);   // 护肩金边
+})}
+// ===== 精械炮士：钢盔 + 青色护目镜、深炮铁厚外套（金边）、斜挎发烫的熔核炮弹带、背后炮弹箱（熔核）=====
+function hdU_mechGunnerUA(fr){return hdFig(32,32,S=>{
+  const coat=hm(A1R.gun,'cloth'),coatL=hm(A1R.gunL,'cloth'),lea=hm('#6a4428','leather'),leaD=hm('#4a2e1c','leather'),gold=hm(A1R.gold,'metal'),skin=hm(SKIN,'skin'),iron=hm(A1R.gunD,'metal'),steel=hm(A1R.gunL,'metal'),pants=hm('#2e2a34','cloth'),cy=hm(A1R.cyan,'gem');
+  S.part(iron,{R:1.5},p=>p.rect(3.2,13.6,7,9.6,1.5));S.ln(4,15.4,9.6,15.4,[gold,3]);a1rCore(S,6.6,19,1.6);   // 炮弹箱（熔核）
+  hdU_body(S,fr,{pants,boot:leaD,bootH:5,cuff:true,sleeve:coat,hand:lea,body:coat,belt:leaD,buckle:[gold,4],pad:steel,
+    torso:S=>{hdSkirt(S,coat,27,{slit:true});S.ln(10,26.6,15,26.8,[gold,3]);S.part(coatL,{R:1},p=>p.poly([[12.5,14.6],[19.5,14.6],[18.5,16.6],[13.5,16.6]]));
+      S.part(lea,{},p=>p.poly([[10,15.5],[12.5,15.5],[22,22.5],[21,24]]));for(const k of[0.15,0.4,0.65,0.9])S.rect(10.4+k*10,15+k*7.6,1.6,2.4,hm(A1R.core,'gem'),{R:0.6,edge:false})}});   // 熔核炮弹带
+  hdHead(S,{skin});
+  S.part(steel,{},p=>{p.ell(15.6,8.2,7.2,5.4);p.cut.rect(0,9.4,32,9);p.rect(9.2,7.6,4.4,7.6,1.5)});S.ln(8.6,9.4,22.6,9.4,[gold,3]);   // 钢盔 + 护耳（金边）
+  S.rc(10,9.8,10,1.2,iron);for(const x of[18.4,21.6]){S.dt(x,8.4,1.8,[gold,2]);S.dt(x,8.4,1.1,cy)}   // 推到额头上的青色护目镜
+  hdFace(S,{skin,ey:11,brow:'#3a2418'});
+})}
+// ===== 精械智造师：深炮铁工装（青色源能线、金边）、掀起的焊接面罩（青色视窗）、背后晶体天线背包、腰挂熔核动力扳手包 =====
+function hdU_mechEngineerUA(fr){return hdFig(32,32,S=>{
+  const suit=hm(A1R.gunD,'cloth'),suitL=hm(A1R.gun,'cloth'),lea=hm('#5a3a20','leather'),glove=hm('#7a5232','leather'),d=hm(A1R.gunD,'metal'),g=hm(A1R.gunL,'metal'),gold=hm(A1R.gold,'metal'),skin=hm(SKIN,'skin'),cy=hm(A1R.cyan,'gem');
+  S.part(d,{R:1.5},p=>p.rect(3.2,13,7.2,10.6,1.5));S.ln(6,13,4.6,4,[g,2]);S.part(cy,{R:0.3},p=>p.poly([[4.6,1],[5.8,3.4],[4.6,5.4],[3.4,3.4]]));S.px(4.4,2.4,'#e8fbff');S.ln(4,17.6,9.6,17.6,[gold,3]);a1rCore(S,6.8,20.4,1.4);   // 背包：青色晶体天线、熔核
+  hdU_body(S,fr,{pants:hm('#22262e','cloth'),boot:hm('#2a1a10','leather'),bootH:4,cuff:true,sleeve:suitL,hand:glove,body:suit,belt:lea,buckle:[gold,4],
+    torso:S=>{S.part(suitL,{R:2},p=>p.poly([[12.4,16],[19.6,16],[19.8,23],[12.2,23]]));S.ln(12.6,16.2,12.4,22.8,[cy,1]);S.ln(19.4,16.2,19.6,22.8,[cy,1]);S.rc(14.4,17.6,3.2,2.2,[gold,2]);S.ln(16,20.4,16,22.6,[gold,2])},   // 青色源能线、金色胸袋
+    after:S=>{S.rect(19.4,23,3.6,3.6,lea,{R:1});S.dt(21.2,24.8,0.9,A1R.core);S.part(g,{},p=>{p.cap(11.4,23.6,11.4,27.6,0.7);p.ell(11.4,23.4,1.4,1.2)})}});
+  hdHead(S,{skin});S.part(hm('#4a3424','hair'),{},p=>p.ell(11.8,11.6,2.4,3));
+  S.part(d,{R:1},p=>{p.ell(15.6,7.4,7,4.4);p.cut.rect(0,8.4,32,9)});S.part(d,{R:1.5},p=>p.poly([[10,3.6],[21,2.2],[22.6,6.4],[11,7.6]]));S.rc(13,4.2,7,1.6,A1R.cyan);S.ln(10.4,7.4,22.2,6.2,[gold,3]);   // 掀起来的焊接面罩（青色视窗、金边）
+  hdFace(S,{skin,ey:11,brow:'#2a1a10'});
+})}
+Object.assign(HD_UNIT,{bloodGuardUA:hdU_bloodGuardUA,bloodKnightUA:hdU_bloodKnightUA,bloodGunnerUA:hdU_bloodGunnerUA,mechWarriorUA:hdU_mechWarriorUA,mechGunnerUA:hdU_mechGunnerUA,mechEngineerUA:hdU_mechEngineerUA});
+HB_JY_SPR.push('bloodGuardUA','bloodKnightUA','bloodGunnerUA','mechWarriorUA','mechGunnerUA','mechEngineerUA');   // 不是兵种的样子：art/art.buildSprites 照兵种的画法做成 SPR.units[键]
+// 手持武器（art/hd_weapons 的 wpDraw：drawWeapon 的 des = 这里的键；握法、大小照兵种原来的武器种类）
+Object.assign(WPG,{
+  a1uSpear:S=>icSpear(S,{kind:'barb',c:'#c8ccd6',hc:A1R.obs,bands:[8,14],bc:MAT.gold,tassel:A1R.redL}),   // 赤血锐士：玄钢倒钩长枪（黑曜杆、金箍、赤缨）
+  a1uLance:S=>icSpear(S,{kind:'lance',c:'#4a4256',hc:A1R.obsD,pennant:A1R.red,bands:[6,12],bc:MAT.gold}),   // 赤血骁骑：黑曜骑枪（金箍、赤红小旗）
+  a1uMusket:S=>icGun(S,{kind:'musket',L:32,sc:'#3a2418',bc:'#4a4256',bands:MAT.gold,lock:MAT.gold}),   // 赤血砲士：黑曜长枪管火枪（金机、金箍）
+  a1uAxe:S=>icAxe(S,{L:29,w:8,hl:12,c:'#8a94a8',spike:1,hc:A1R.gunD,wrap:[3,9],wc:A1R.gold}),   // 精械锐士：加大的炮铁战斧（金缠柄）
+  a1uCannon:S=>icGun(S,{kind:'hand',L:30,sc:A1R.gunD,bc:A1R.gun,bands:A1R.core}),   // 精械炮士：更长的手炮（发烫的熔核箍）
+  a1uWrench:S=>icHammer(S,{L:25,c:'#8a94a8',hc:A1R.gunD,wrap:[1,7]})});   // 精械智造师：动力锤
+Object.assign(UAR_WPN,{bloodGuard:{spear:'a1uSpear'},bloodKnight:{lance:'a1uLance'},bloodGunner:{musket:'a1uMusket',bayonet:'a1uMusket'},
+  mechWarrior:{axe:'a1uAxe'},mechGunner:{handcannon:'a1uCannon'},mechEngineer:{club:'a1uWrench'}});
+// 盾（ui/draw.drawShield 的 key；开局 art/hd_weapons.hdShieldSprites 画）：赤血锐士的黑曜塔盾（金线、金框赤红菱徽）、赤血骁骑的黑曜小盾
+function a1rTowerFx(S,W,H){const cx=W/2,cy=H/2,gd=A1R.gold;
+  for(let x=2;x<W-2;x++){S.p(x,2,gd);S.p(x,H-3,gd)}for(let y=2;y<H-2;y++){S.p(2,y,gd);S.p(W-3,y,gd)}   // 金线
+  S.poly([[cx,cy-6],[cx+4.6,cy],[cx,cy+6],[cx-4.6,cy]],gd);S.poly([[cx,cy-4.4],[cx+3.2,cy],[cx,cy+4.4],[cx-3.2,cy]],A1R.red);S.poly([[cx,cy-2],[cx+1.4,cy],[cx,cy+2],[cx-1.4,cy]],A1R.hot)}   // 金框赤红菱徽（烧红的芯）
+Object.assign(UAR_SHD,{a1uObTower:{shape:'tower',face:A1R.obs,rim:A1R.obsD,emb:'none',ec:A1R.gold,size:4,fx:a1rTowerFx},
+  a1uObKnight:{shape:'heater',face:A1R.obs,rim:A1R.gold,emb:'chev',ec:A1R.redL,size:1}});
+Object.assign(UAR_SHK,{bloodGuard:'a1uObTower',bloodKnight:'a1uObKnight'});
+
 // ---------- v0.12 地图徽章（代理 BD；成就「勋章墙」用）----------
 // 每张正式地图一枚：64×64 像素（hdFig 2 倍精度，逻辑 32×32，canvas._k = 2），金属边框 + 中间一块底色 + 地图标志物。
 // 边框按地区阶数换材质和装饰（Claude 定）：一阶铜、二阶铁（铆钉）、三阶银（四个圆钮）、四阶金（光芒）、五阶白金（光芒 + 蓝宝石）、
@@ -59688,6 +59857,7 @@ function dealE_(i,raw,o){
   {const now=G.time;let vu=pm.frostVuln>0?(E.frz[i]>0?2*pm.frostVuln:E.slowT[i]>0&&E.fsl[i]>now?pm.frostVuln:0):0;   // 寒潮：v0.9.3 被冰霜减速的 +X%、冰冻的 +2X%
     if(BV!==null)vu+=BV[6];if(E.xvU[i]>now)vu+=E.xvF[i];if(E.wkU[i]>now)vu+=E.wkF[i];if(E.sjU[i]>now)vu+=E.sjF[i];if(E.dmU[i]>now)vu+=E.dmF[i];   // v0.4.3 十字架；v0.8.0 弱点暴露、制裁；v0.5.7 猎魔标记
     if(pm.shockwave>0&&!o.dot){vu+=Math.min(CFG.cardFx.shockMax,pm.shockwave*E.vuln[i]);if(E.vuln[i]<65000&&!(E.vuT[i]>now-CFG.cardFx.shockCd)){E.vuln[i]++;E.vuT[i]=now}}   // 震波打击：vuT v0.8.23（用户定）每只亡灵内置 0.1 秒冷却；v0.11.0 修：持续伤害不吃（卡的说明本来就这么写）
+    if(A1U_VON)vu+=a1uCavV(i,o);   // 0.14.5 A1 赤血骁骑「骑兵易伤」：骑兵士兵打它 +30%（units/a1u_adv）
     if(vu!==0)dmg*=Math.max(0.1,1+vu)}
   if(o.hk&&(o.hk.bfV||o.hk.auDmU>G.time))dmg*=bfHK(o.hk);   // bfHK：英雄身上的临时伤害加成（engine/buff）；士兵的在 unitDmgMul 里
   if(o.hk&&o.hk.hf&&o.hk.hf.ampE)dmg=o.hk.hf.ampE(o.hk,i,dmg,o);   // v0.8.10 英雄自己的增伤（HERO_FX[id].ampE：莉莲「万魔加身」、佛伯亚「恐惧之力」……）
@@ -73819,6 +73989,7 @@ function ynRayE(src,x0,y0,j,dmg,X,o){if(typeof j!=='number'||j<0||!E.alive[j])re
         if(!E.alive[k]||YNR_SEEN.has(E.id[k]))continue;YNR_SEEN.add(E.id[k]);
         const kx=E.x[k],ky=ynREy(k),bq=ynRBlock(px,py,kx,ky,'F');if(bq){ynRBolt(px,py,bq.x,bq.y,false,true);continue}
         ynRBolt(px,py,kx,ky,false,true);if(HL)HL.push(k);if(!DRY)dealE(k,d,mk());n++;B.push(kx,ky);if(bm)ynRBoomE(kx,ky,bm.r*16,d*bm.mul,mk)}}
+    if(b===0&&o===YGD_AK&&o!=null&&b+1<X&&n<Y.cap&&ygdPut(B,R,Y.cap-n,d*dk))break;   // 0.14.5 G1：电能塔电弧线第一跳之后转成电网（structs/yn_grid）
     const S=A;A=B;B=S}
   YNR_FA.length=0;YNR_FB.length=0;YNR_JA.length=0;YNR_JB.length=0;YNR_SEEN.clear();return n}
 // ================= 电磁干扰 =================
@@ -76771,8 +76942,8 @@ const uCmdK=s=>s.mkA||s.wtOvU>G.time?mkK(s):1;   // 冷却倒数的倍率（瓦�
 const uShotInt=s=>s.rg.int/(1+pmNC(s,pm.atkSpd)+(s.rg.magic?0:pmNC(s,pm.rgAtk))+drumF(s)+(s.rg.magic?TM.uCast||0:TM.uRgSpd||0)+solAspT(s))/ENV.fslow/ENV.ourAtk/fAtkK(s);   // uCast：v0.8.1 科技「施法训练」（法术攻击的兵）
 // 我方重型器械瞄准：目标脚下一个收缩的金圈
 ZONE_FX.uAim={tick(z){if(z.s.dead||!(z.s.aimT>0)||z.s.aimId!==z.id||!eOk(z.j,z.id)||z.t>=z.dur+0.1)z.dead=true},
-  draw(z){const p=Math.min(1,z.t/z.dur),x=E.x[z.j],y=E.y[z.j]-4;dotRing(x,y,12-7*p,K_UAIM,0.4+0.5*p,14,1)}};
-const K_UAIM=C('#f3d47c');
+  draw(z){const p=Math.min(1,z.t/z.dur),x=E.x[z.j],y=E.y[z.j]-4;dotRing(x,y,12-7*p,K_UAIM,0.4+0.5*p,14,1);const X=z.s.uaX;if(X&&X.A.a1Aim)pline(z.s.x,z.s.y-7,x,y,K_UAIML,0.25+0.45*p)}};   // a1Aim：0.14.5 精械炮士「智能瞄准」瞄准时画瞄准线（data/a1u_adv）
+const K_UAIM=C('#f3d47c'),K_UAIML=C('#ff5a3c');
 // 0.13.6 兵营皮肤的攻击画面（众合议会 · 法师塔 / 元素塔）：训练出来的兵开火时 FX_TINT = 兵营皮肤的 vis（game/tskin.tskVD），这一发的弹道、特效换色；只改画面
 function soldierShoot(s,j,RR,extra){const v=s.tsk?tskVD(s.ct):null;if(!v){solShootIn(s,j,RR,extra);return}const f=FX_TINT;FX_TINT=v;solShootIn(s,j,RR,extra);FX_TINT=f}
 function solShootIn(s,j,RR,extra){   // extra：v0.6.1 魔法分流的追加施法、圣剑裁决挥剑附带的剑气（不计冷却、不耗弹）
@@ -76821,7 +76992,7 @@ function soldierMelee(s,j,poke){
   if(CPF_SM&&chgOn&&c.cavalry)o.cpC=1;   // 0.14.1 卡包：冲锋命中（铁蹄撼山、碾压之势、铁骑连创，game/card_pack_fx）
   if(s.s3Sh)o.m2Dr=s.s3Sh.dr;if(s.uaX){dmg*=uaMelO(s,o,chgOn);if(!poke)uaMomUse(s)}   // uaMelO 返回旋风斩斧的倍率（0.14.2 步兵营进阶）；uaMelO：0.14.1 兵种进阶的破甲、冲锋无视减伤 / 防御；uaMomUse：蓄势用掉（units/unit_adv）   // S3 加：v0.10.11 暗影之刃无视减伤（engine/enemy.ueDen）
   let kills=0;
-  if(s.nq&&s.nq.moon)kills=nqSweep(s,j,dmg,o);else if(s.uaX&&s.uaX.A.fan)kills=uaFan(s,j,dmg,o,M);else   // uaFan：0.14.1 疾刃骑兵扇形横扫（units/unit_adv）   // NQ 加：0.13.6 天狼月刃横扫（units/nq_camp）
+  if(s.nq&&s.nq.moon)kills=nqSweep(s,j,dmg,o);else if(s.uaX&&s.uaX.A.fan&&!M.lance)kills=uaFan(s,j,dmg,o,M);else   // !M.lance：0.14.5 A1 赤血骁骑骑枪冲锋不扇形   // uaFan：0.14.1 疾刃骑兵扇形横扫（units/unit_adv）   // NQ 加：0.13.6 天狼月刃横扫（units/nq_camp）
   if(c.cleave){const list=[];eQuery(s.x,s.y,M.reach*16,(k,d)=>{if(!E.air[k])list.push([d,k])},true);list.sort((a,b)=>a[0]-b[0]);const cn=s.uaX&&s.uaX.A.whirl?1e9:s1Cleave(s,c.cleave);   // uaX.A.whirl：0.14.2 戮血狂战旋风斩斧（units/unit_adv_i）   // S1 加：s1Cleave 旋风战斧（三阶）劈中半径内所有亡灵
     for(let k=0;k<Math.min(cn,list.length);k++){dealE(list[k][1],dmg*(k?0.6:1),o);if(!E.alive[list[k][1]])kills++}}
   else{dealE(j,dmg,o);if(!E.alive[j])kills++}
@@ -80659,7 +80830,7 @@ function v8Bt(u,e,rg){const c=u.c,k=c.v8,V={k};u.v8=V;
   else if(k==='mg'){const he=V8E(e,'heavyEng');const A=home(boost(rg));let B=boost(c.ranged2);
     if(he)B=Object.assign({},B,{minR:0,dmg:B.dmg*(1+he.dmg),blast:Object.assign({},B.blast,{r:B.blast.r*(1+he.aoe)})});
     V.w=[A,B];V.am=[A.mag,B.mag];V.rl=[0,0];V.sep=1;V.only=he?1:-1;V.cur=1;rg=V.w[1]}
-  else if(k==='me'){const pl=V8E(e,'prodLine'),ai=V8E(e,'aiCore');V.max=ai?ai.max:c.drone.max;V.int=c.drone.int/(1+(pl?pl.spd:0));V.dT=0}
+  else if(k==='me'){const pl=V8E(e,'prodLine'),ai=V8E(e,'aiCore');V.max=Math.round((ai?ai.max:c.drone.max)*(c.drone.a1N||1));V.int=c.drone.int/(1+(pl?pl.spd:0));V.dT=0}   // a1N：0.14.5 A1 精械智造师的无人机数量 ×1.5（data/a1u_adv、units/a1u_adv.a1uClone）
   else if(k==='dr'){rg=home(boost(rg));V.mags=c.drone?c.drone.ammo:2;V.dive=0;V.life=0;V.age=0;V.orb=Math.random()<0.5?1:-1;V.tj=-1;V.tid=0;V.th=0}
   else if(k==='bg'){V.bT=0;const hs=V8E(e,'heavyShield');V.hs=hs;V.projK=hs?hs.proj:1}
   else if(k==='bk'){V.bump=new Set();V.bmp=false;V.cc=V8E(e,'cavCharge');V.ccT=0;V.dash=null;V.svT=0}
@@ -80778,7 +80949,7 @@ function v8Dash(s,dt){const V=s.v8,D=V.dash,c=s.c,hx=Math.cos(D.dir),hy=Math.sin
   return true}
 // 奥薇尔在场：赤血铁骑 → 圣女铁骑；不在了换回来（生命按比例）
 function v8Saint(s){const on=G.heroes.some(h=>(h.id==='saintKnight'||h.id==='saintKnight2')&&!h.dead),c=s.c,to=on?c.saint:c.blood;if(!to||!CFG.units[to])return;
-  const r=s.hp/s.maxHp;s.type=to;s.c=ov2Def(UDEF[to],s.ct);ov2Mx(s);s.baseHp=s.c.hp*s.statMul/(s.tc6K||1);s.maxHp=s.baseHp*uHpMul(s);s.hp=s.maxHp*r;s.def=tskDef(s.c.def,s.ct);s.mdef=s.c.mdef||0;ftSolDefRe(s)}   // tskDef：0.13.6 兵营皮肤「帝国精锐」士兵防御 +10%（换形态后照样算）   // tc6K：0.13.6 科技的基础攻击乘在 statMul 里，生命别跟着涨；ftSolDefRe：家族科技「赤血统御」的双防（game/fam_tech）
+  const r=s.hp/s.maxHp;s.type=to;s.c=ov2Def(uaDef(to,s.ct),s.ct);ov2Mx(s);s.baseHp=s.c.hp*s.statMul/(s.tc6K||1);s.maxHp=s.baseHp*uHpMul(s);s.hp=s.maxHp*r;s.def=tskDef(s.c.def,s.ct);s.mdef=s.c.mdef||0;ftSolDefRe(s)}   // uaDef：0.14.5 A1 赤血铁骑进阶过，圣女血骑跟着进阶（follow）   // tskDef：0.13.6 兵营皮肤「帝国精锐」士兵防御 +10%（换形态后照样算）   // tc6K：0.13.6 科技的基础攻击乘在 statMul 里，生命别跟着涨；ftSolDefRe：家族科技「赤血统御」的双防（game/fam_tech）
 // —— 红衣主教：治疗（和攻击分开计时）——
 const v8HealAmt=s=>s.c.heal.amt*unitDmgMul(s.c,s.statMul,s,true)*s.atkMul;
 function v8HealOne(s,u,a,sh){if(u.dead)return;healF(u,a);if(s.s4)s4Bless(s,u);if(sh){const cur=u.shieldHp>0?u.shieldHp:0;if(a>cur){u.shieldHp=a;u.shieldMax=Math.max(u.shieldMax||0,a)}u.shieldT=Math.max(u.shieldT||0,5)}healFx(u.x,u.y-14-(u.elev||0))}   // S4 加：庇佑之力（units/s4_camps）
@@ -92443,8 +92614,8 @@ function ytlOpt(ev,L){ev=ev||YTL_E0;L=Math.min(4,Math.max(0,L|0));let a=YTL_OC.g
   const W=CFG.buildings.ynTesla.weapon.tesla,R=CFG.ynU.ray,br=ev.ytBr||0,P=ev.ytPen?Math.min(ev.ytPen.max,ev.ytPen.p+ev.ytPen.lv*L):0;
   let bm=null;if(ev.ytBm){bm=ev.ytBm.map(b=>({r:b.r+br,mul:b.mul}))}if(ev.ytBm2){bm=bm||[null,null];while(bm.length<2)bm.push(null);bm[2]={r:ev.ytBm2.r,mul:ev.ytBm2.mul}}   // 第二次弹射的 1 格不加渗透爆破的 0.5（用户定）
   if(bm&&ev.ytBmAdd)for(let q=0;q<bm.length;q++)if(bm[q])bm[q].mul=Math.round((bm[q].mul+(ev.ytBmAdd[q]||0))*1e6)/1e6;   // 0.14.5 t1：渗透爆破的爆炸 +20% / +15% / +10%
-  const yr={n:ev.ytNx||R.n+(ev.ytN||0),r:R.r+(ev.ytR||0)+(ev.ytR2||0)+(ev.ytR3||0),cap:ev.ytCap||R.cap,dk:(ev.ytNd?1:R.decay)*(1+(ev.ytHop||0)),bm,ba:ev.ytBa?{r:ev.ytBa.r+br,mul:ev.ytBa.mul}:null};   // ytR3 / ytCap：0.14.5 t1，全域电弧的连锁半径、电弧线一发打几只
-  r={X:W.X+Math.floor(L/W.lvX)+(ev.ytX||0),yr,yrF:ev.ytCap||ev.ytNdF||ev.ytHopF?Object.assign({},yr,{cap:R.cap,dk:(ev.ytNd||ev.ytNdF?1:R.decay)*(1+(ev.ytHop||ev.ytHopF||0))}):yr,pen:P,resCut:P>0?{lightning:P}:null,dr:ev.ytDr||0};a[L]=r;return r}   // yrF：亡灵版，一发上限、高压 / 超压的不衰减和每跳 ×1.1 都照旧（0.14.5：文档写亡灵版不改）
+  const yr={n:ev.ytNx||R.n+(ev.ytN||0),r:R.r+(ev.ytR||0)+(ev.ytR2||0)+(ev.ytR3||0),cap:ev.ytCap||R.cap,dk:(ev.ytNd?1:R.decay)*(1+(ev.ytHop||0)),bm,ba:ev.ytBa?{r:ev.ytBa.r+br,mul:ev.ytBa.mul}:null,gd:ev.ytCap&&!bm&&!ev.ytBa?1:0};   // ytR3 / ytCap：0.14.5 t1，全域电弧的连锁半径、电弧线一发打几只   // gd：0.14.5 G1，电弧线（有 ytCap、没有爆炸）第一跳之后走电网（structs/yn_grid）
+  r={X:W.X+Math.floor(L/W.lvX)+(ev.ytX||0),yr,yrF:ev.ytCap||ev.ytNdF||ev.ytHopF?Object.assign({},yr,{cap:R.cap,dk:(ev.ytNd||ev.ytNdF?1:R.decay)*(1+(ev.ytHop||ev.ytHopF||0)),gd:0}):yr,pen:P,resCut:P>0?{lightning:P}:null,dr:ev.ytDr||0};a[L]=r;return r}   // yrF：亡灵版，一发上限、高压 / 超压的不衰减和每跳 ×1.1 都照旧（0.14.5：文档写亡灵版不改）
 const YTL_HL=[],YTL_BX=new Map();   // 这一发电能塔打中的亡灵（均摊用，复用）
 const ytlStackK=(W,n)=>1+W.stack.per*n,ytlStackN=W=>Math.round(W.stack.max/W.stack.per);
 // 我方电能塔开火（structs/structs.updateTowers：t = 首个目标的亡灵下标，o = 塔楼通用的物理伤害选项，ev = 这一座的进化）
@@ -92453,7 +92624,7 @@ function ytlShot(s,T,t,mz,o,ev,vis){const W=T.w.tesla,P=ytlOpt(ev,s.level-1),id=
   const O=Object.assign({},o);O.magic=false;O.yr=P.yr;
   if(P.pen>0){O.igRed=Math.min(1,(O.igRed||0)+P.pen);O.penP=Math.min(1,(O.penP||0)+P.pen);O.resCut=P.resCut}   // 渗透爆破：无视减伤、雷电抗性、物理防御
   if(P.dr>0)O.m2Dr=(O.m2Dr||0)+P.dr;   // 穿刺电弧：忽略 1 点减伤（同魔导阵塔三阶，engine/enemy.ueDen）
-  const K=ytlStackK(W,s.ytlN),HL=YTL_HL,SP=W.split;HL.length=0;if(SP||W.poolK>0)O.ynHit=HL;if(SP)O.ynDry=true;   // split：0.12.7g（用户定）链上不直接打，连完以后总伤害 = 攻击 ×(base + per × 打中的只数)，平分给打中的每一只
+  const K=ytlStackK(W,s.ytlN),HL=YTL_HL,SP=W.split;HL.length=0;if(SP||W.poolK>0)O.ynHit=HL;if(SP)O.ynDry=true;if(P.yr.gd)ygdArm(s,O,SP?T.dmg*K*SP.per:-1);   // ygdArm：0.14.5 G1 电网，电弧线第一跳之后的次数充进电网（structs/yn_grid；均摊时单下 = 攻击 × 叠层 × per）   // split：0.12.7g（用户定）链上不直接打，连完以后总伤害 = 攻击 ×(base + per × 打中的只数)，平分给打中的每一只
   const BX=YTL_BX;BX.clear();YNR_BX=BX;try{ynRay(s,mz.x,mz.y-4,t,T.dmg*K,P.X,O)}finally{YNR_BX=null}
   if(BX.size){const B=Object.assign({},O,{magic:false,blast:true,noFx:true,ynHit:null,yr:null});if(!B.mix)B.mix=CFG.buildings.ynTesla.weapon.mix;for(const[k,r]of BX)if(E.alive[k]&&E.id[k]===r[0])dealE(k,r[1],Object.assign({},B));BX.clear()}   // 爆炸：每只只吃一次、取最高（maps/yn_ray.ynRBoomE 记的）
   if(HL.length&&SP){const per=T.dmg*K*(SP.base+SP.per*HL.length)/HL.length;O.ynHit=null;O.ynDry=false;O.yr=null;for(let q=0;q<HL.length;q++){const k=HL[q];if(E.alive[k])dealE(k,per,Object.assign({},O,{mix:CFG.buildings.ynTesla.weapon.mix}))}HL.length=0}
@@ -92555,6 +92726,61 @@ feat('ynDev',{on:()=>!!G&&(YDV_FORCE||!!(G.loadout&&G.loadout.includes('ynDevice
   dmgDefS:(s,dmg,o)=>ydvAbs(s,dmg),
   drawWorld:ydvDraw,
 }});
+
+// ---------- 0.14.5 G1（用户 11-24 定，问题 86）电能塔「电网」----------
+// 电弧线（这一发的 o.yr 有 ytCap、没有爆炸：电弧跳跃 / 穿刺电弧 / 全域电弧）打完主目标和第一跳以后，后面不再一只只连锁（原来密集时每个连锁点都 eQuery 一遍再挑最近的，CPU 大头），
+//   剩下的次数变成电量充进电网格子；所有电能塔共用一张电网（塔只负责充电），每 CFG.ygd.tick 秒按格子结算一次，塔再多也只按格子算。
+// 顶层名字 ygd / YGD_ 开头；参数 CFG.ygd（data/yn_tdev.js 末尾）。
+// 接入点：structs/yn_tdev.ytlOpt 的 yr.gd（= 1 走电网）；ytlShot 开火前 ygdArm 记下这一发；maps/yn_ray.ynRayE 打完第一跳（b = 0）调 ygdPut，返回 true 就不再往下连。
+// 格子 = 亡灵空间网格的格子（engine/enemy 的 GC = 32 像素 = 2×2 格，下标同 gHead），结算直接走 gHead 链表。
+// 充电：rem = 一发上限 − 主目标和第一跳打中的只数；单下伤害 v：均摊（split）= 攻击 × 叠层 × per（均摊公式里每多打中一只加的那一份），不均摊 = 第一跳伤害 × 衰减；
+//   电量 rem × v 分给第一跳落点（B 列表）周围 连锁半径 × rK 以内的格子（格子中心在范围里，加上落点自己那一格；几个落点盖到同一格只算一次）；分到电的格子单下上限 H += v。
+//   怎么分：byN = 1（Claude 定，等用户看）按格子里的亡灵只数分（空格子不分，密集时和改前一样每只平均吃 rem ÷ 只数 下）；byN = 0 = 策划原文的「按覆盖到的格子平分」（空格子也分，密集时总伤害只剩改前六成左右）。
+// 结算：每格数能被电弧打到的亡灵 n（同 ynRPick：活着、不在地下、阵营同 eQuery、真视野里、不是雷达标出来的；地面、空中都算，同电弧线）；
+//   每只受到 min(电量 ÷ n, H)；先用上一段留下的电量，再用这一段充的；上一段留下的这一次还没用完就散掉（= 充进来 0.25～0.5 秒内没用掉就散）；H 清零。
+// 选项：这一格这一段里充电最多的那一发的（ytlShot 均摊时的选项：物理闪电、穿透、无视减伤、忽略 1 点减伤……），统计记给那座塔（DS_CUR）；不爆炸（有爆炸的路线不走电网）。
+// 画面：每格一组淡淡闪动的短折线，亮度按这一格攒的电量，充电后 life 秒内淡出；特效档位 0 不画、档位低少画几条。
+const YGD=CFG.ygd,YGD_N=GW*GH;
+let YGD_Q0=null,YGD_Q1=null,YGD_H=null,YGD_BQ=null,YGD_LT=null,YGD_GL=null,YGD_ON=null,YGD_ST=null,YGD_BO=null,YGD_BS=null;   // 每格：这一段充的电量、上一段留下的、单下上限、这一段充得最多的一发的电量、最后一次充电的时间、亮度、在不在活动表、去重戳、选项、塔
+const YGD_L=[],YGD_C=[],YGD_CN=[],YGD_J=[],YGD_I=[];   // 活动格子表；充电时盖到的格子、格子里的亡灵数；结算时这一格的亡灵下标、id（复用）
+let YGD_T=0,YGD_SN=0,YGD_AK=null,YGD_AO=null,YGD_AS=null,YGD_AV=0;   // YGD_AK：正在开火的那一发的 o（ynRayE 认这个对象）；YGD_AO：电网用的伤害选项；YGD_AS：开火的塔；YGD_AV：单下伤害（−1 = 用第一跳伤害 × 衰减）
+function ygdAlloc(){if(YGD_Q0)return;const N=YGD_N;YGD_Q0=new Float64Array(N);YGD_Q1=new Float64Array(N);YGD_H=new Float64Array(N);YGD_BQ=new Float64Array(N);YGD_LT=new Float64Array(N);YGD_GL=new Float32Array(N);YGD_ON=new Uint8Array(N);YGD_ST=new Int32Array(N);YGD_BO=new Array(N).fill(null);YGD_BS=new Array(N).fill(null)}
+function ygdReset(){YGD_T=0;YGD_AK=null;YGD_AO=null;YGD_AS=null;if(!YGD_Q0){YGD_L.length=0;return}
+  for(let k=0;k<YGD_L.length;k++){const c=YGD_L[k];YGD_Q0[c]=YGD_Q1[c]=YGD_H[c]=YGD_BQ[c]=0;YGD_GL[c]=0;YGD_ON[c]=0;YGD_BO[c]=null;YGD_BS[c]=null}YGD_L.length=0}
+// structs/yn_tdev.ytlShot 开火前（yr.gd 的路线）：O = 这一发传给 ynRay 的选项，v = 单下伤害（均摊时攻击 × 叠层 × per；−1 = 第一跳伤害 × 衰减）
+function ygdArm(s,O,v){featNeed('ygd');ygdAlloc();YGD_AK=O;YGD_AS=s;YGD_AV=v;YGD_AO=Object.assign({},O,{mix:CFG.buildings.ynTesla.weapon.mix,ynHit:null,ynDry:false,yr:null})}   // 同 ytlShot 均摊那一下的选项
+// maps/yn_ray.ynRayE 打完第一跳：B = 第一跳落点 [x, y, x, y…]，R = 连锁半径（像素），rem = 还能打几下，d2 = 下一跳的单下伤害；返回 true = 电网接手了，不再往下连
+function ygdPut(B,R,rem,d2){const O=YGD_AO,S=YGD_AS;YGD_AK=null;if(!O||!(rem>0)||!B.length)return false;const v=YGD_AV>0?YGD_AV:d2;if(!(v>0))return false;
+  const st=++YGD_SN,CL=YGD_C,Rr=R*YGD.rK,R2=Rr*Rr,h=GC/2;CL.length=0;
+  for(let q=0;q<B.length;q+=2){const px=B[q],py=B[q+1],ox=clamp((px/GC)|0,0,GW-1),oy=clamp((py/GC)|0,0,GH-1),c0=Math.max(0,((px-Rr)/GC)|0),c1=Math.min(GW-1,((px+Rr)/GC)|0),r0=Math.max(0,((py-Rr)/GC)|0),r1=Math.min(GH-1,((py+Rr)/GC)|0);
+    for(let cy=r0;cy<=r1;cy++)for(let cx=c0;cx<=c1;cx++){const c=cy*GW+cx;if(YGD_ST[c]===st)continue;const dx=cx*GC+h-px,dy=cy*GC+h-py;if(dx*dx+dy*dy>R2&&!(cx===ox&&cy===oy))continue;YGD_ST[c]=st;CL.push(c)}}
+  const m=CL.length;if(!m)return false;const now=G.time,ref=v*YGD.fx.ref,CN=YGD_CN;let N=0;
+  if(YGD.byN){for(let k=0;k<m;k++){let n=0;for(let j=gHead[CL[k]];j!==-1;j=gNext[j])if(E.alive[j]&&!(E.ug[j]>0))n++;CN[k]=n;N+=n}}   // byN：按格子里的亡灵数分（空格子不分电）
+  const qe=rem*v/(N>0?N:m);
+  for(let k=0;k<m;k++){const c=CL[k],q=N>0?qe*CN[k]:qe;if(!(q>0))continue;YGD_Q0[c]+=q;YGD_H[c]+=v;if(q>YGD_BQ[c]){YGD_BQ[c]=q;YGD_BO[c]=O;YGD_BS[c]=S}YGD_LT[c]=now;YGD_GL[c]=Math.min(1,(YGD_Q0[c]+YGD_Q1[c])/ref);if(!YGD_ON[c]){YGD_ON[c]=1;YGD_L.push(c)}}
+  CL.length=0;return true}
+// 每帧（tick 钩子）：攒够 tick 秒结算一次
+function ygdTick(dt){if(!YGD_L.length)return;YGD_T+=dt;if(YGD_T<YGD.tick-1e-9)return;YGD_T-=YGD.tick;if(YGD_T>YGD.tick)YGD_T=0;ygdSettle()}
+function ygdSettle(){const L=YGD_L,now=G.time,life=YGD.life,dc=DS_CUR,J=YGD_J,I=YGD_I;let w=0;
+  for(let k=0;k<L.length;k++){const c=L[k],h=YGD_H[c];let q0=YGD_Q0[c],q1=YGD_Q1[c];
+    if(h>0&&q0+q1>0){const s=YGD_BS[c];DS_CUR=s&&!s.dead?s:null;J.length=0;I.length=0;
+      for(let j=gHead[c];j!==-1;j=gNext[j]){if(!E.alive[j]||E.ug[j]>0)continue;if(EQF>=0&&FAC_HOS[EQF<<4|E.fac[j]]===1)continue;if(!eVis(j)||RD_ON&&rdBlip(j))continue;J.push(j);I.push(E.id[j])}   // 同 eQuery(…, 2) 的条件（连锁只跳真视野里的）
+      const n=J.length;if(n){const per=Math.min((q0+q1)/n,h),O=YGD_BO[c];for(let q=0;q<n;q++){const j=J[q];if(E.alive[j]&&E.id[j]===I[q])dealE(j,per,Object.assign({},O))}   // 每一下一份选项（dealE 会往里写东西）
+        const u=per*n;if(u<=q1)q1-=u;else{q0=Math.max(0,q0-(u-q1));q1=0}}
+      J.length=0;I.length=0}
+    YGD_Q1[c]=q0>0?q0:0;YGD_Q0[c]=0;YGD_H[c]=0;YGD_BQ[c]=0;   // 上一段留下的 q1 没用完就散掉；这一段的挪成「上一段」
+    if(YGD_Q1[c]>0||now-YGD_LT[c]<life)L[w++]=c;else{YGD_ON[c]=0;YGD_BO[c]=null;YGD_BS[c]=null;YGD_GL[c]=0;YGD_Q1[c]=0}}
+  L.length=w;DS_CUR=dc}
+// 画电网线：每格一组短折线（格子里随机起点、3 段），亮度按电量，最后一次充电后 life 秒内淡出；形状按格子和时间（每秒换 hz 次）
+const K_YGD1=C('#eaf6ff'),K_YGD2=C('#7fd0ff');
+function ygdDraw(cx0,cy0,cx1,cy1){if(FXK<=0||!YGD_L.length)return;const now=G.time,life=YGD.life,F=YGD.fx,nl=Math.max(1,Math.min(F.n,Math.round(F.n*FXK))),fr=(now*F.hz)|0;
+  const st=Math.max(1,Math.ceil(YGD_L.length/(F.cap||120)));   // 画面预算：带电格子多（充电半径 ×3 时一发能铺几百格）时隔几格画一格，每帧换起点，看起来照样铺满（0.14.5 主会话加）
+  for(let k=st>1?fr%st:0;k<YGD_L.length;k+=st){const c=YGD_L[k],age=now-YGD_LT[c];if(!(age<life))continue;const x0=(c%GW)*GC,y0=((c/GW)|0)*GC;if(x0+GC<cx0||x0>cx1||y0+GC<cy0||y0>cy1)continue;
+    const a=(F.a0+(F.a1-F.a0)*YGD_GL[c])*(1-age/life);if(a<0.02)continue;let sd=(Math.imul(c+1,0x9E3779B1)^Math.imul(fr+7,40503))>>>0;
+    for(let q=0;q<nl;q++){sd=(Math.imul(sd,1103515245)+12345)>>>0;let px=x0+2+(sd>>>8)%(GC-4);sd=(Math.imul(sd,1103515245)+12345)>>>0;let py=y0+2+(sd>>>8)%(GC-4);
+      for(let m=0;m<3;m++){sd=(Math.imul(sd,1103515245)+12345)>>>0;const nx=clamp(px+(sd>>>8)%13-6,x0,x0+GC);sd=(Math.imul(sd,1103515245)+12345)>>>0;const ny=clamp(py+(sd>>>8)%9-4,y0,y0+GC);pline(px,py,nx,ny,m===1?K_YGD1:K_YGD2,m===1?Math.min(1,a*1.4):a);px=nx;py=ny}}}}
+// 只在有电弧线开过火的局挂上（ytlShot → ygdArm 里 featNeed）
+feat('ygd',{on:()=>false,hooks:{start:ygdReset,waveStart:ygdReset,tick:ygdTick,drawWorld:ygdDraw}});
 
 // ---------- 0.13.2.1 新塔楼「雷达基地」（数据 data/build_radar.js 的 CFG.buildings.radarBase；用户 2026-11-06 定，规则、Claude 定的细节写在数据文件开头）----------
 // 雷达 = 视野，只是分不清类型：每 tick 秒每座扫一次，扫到的亡灵记 E.rvU（我方塔楼、士兵、英雄都能索敌、攻击），同时记 RD_U / RD_ID（这只「看得见」是雷达给的）；
@@ -93372,6 +93598,7 @@ function uaClone(t){let c=UA_DEF[t];if(c)return c;const k=uaKey(t),b=UDEF[t],A=U
   if(A.chgAdd&&b.charge){c.charge=+(b.charge+A.chgAdd).toFixed(2);UA_CA.set(c,A.chgAdd)}
   if(A.def>0)c.def=fw?+(b.def+A.def-kb.def).toFixed(1):A.def;   // 第三批：重盾禁卫基础防御 8.1 → 12；0.14.3 进阶都有防御（data/sol143），跟随的加差值
   if(A.shield>0&&b.shield>0)c.shield=fw?+(b.shield+A.shield-kb.shield).toFixed(1):A.shield;   // 0.14.3 格挡防御（只给本来会格挡的）
+  if(A.a1W||A.mdef)a1uClone(c,b,kb,A,fw);   // 0.14.5 A1：法防、各件武器的攻击、爆炸半径、维修量、无人机（units/a1u_adv）
   UA_A.set(c,A);return UA_DEF[t]=c}
 // 第二批改在兵种数据上的（独立乘区，不进加算池子 / 射程折算）：双持火枪攻速 ×aspd（间隔、装填 ÷aspd）；狙击瞄准间隔 ×aim.int（远射的间隔一起，s2Far 按 far.int ÷ int 换算）；远距打击射程 ×rngMul（远射分界 far.r 一起）
 function uaRgX(r,A){if(A.aspd)Object.assign(r,{int:+(r.int/A.aspd).toFixed(3),reload:+((r.reload||0)/A.aspd).toFixed(3)});
@@ -93460,7 +93687,7 @@ feat('uadvG',{on:uaAnyGG,hooks:{start:()=>{UA_PU.fill(0);UA_PI.fill(-1);UA_SG.le
 function uaRowHTML(k){const A=UAD(),U=A.units[k];if(!U||!uaShow(k))return'';const got=uaGot(k),on=uaMetaOn(k),T=testOn(),L=got||T?[]:uaLack(k),W=META.wares||{},lv=taOlv(U.camp);
   const WR=uaWare(k),SV=uaSilver(k),cost=Object.keys(WR).map(w=>`<span class="${(W[w]||0)>=WR[w]?'':'warn'}">${taWareN(w)} ${W[w]||0}/${WR[w]}</span>`).join(' · ')+` · <span class="${(META.wallet.银币||0)>=SV?'':'warn'}">银币 ${SV}</span>`+(uaDesign(k)?` · <span class="${(META.wallet.设计点||0)>=uaDesign(k)?'':'warn'}">设计点 ${uaDesign(k)}</span>`:'');
   const head=`<b>兵种进阶：${UA_N0[k]||CFG.units[k].name} → ${U.name}</b> <span class="meta">${uaCampN(k)}建筑等级 ${lv} / ${A.lv}${got?' · 已进阶，可随时切换(下一局生效)':''}</span>`;
-  const st=[U.atk>0?`基础攻击 ${U.atk}`:'',U.def>0?`防御 ${U.def}`:'',U.hp>0?`生命 ${U.hp}`:U.hpMul?`生命 ×${Math.round(U.hpMul*100)}%`:'',U.shield>0?`格挡防御 ${U.shield}`:''].filter(x=>x).join('、'),fx=`<span class="meta">${st?st+'；':''}${U.fx.map(([n,d])=>`${n}：${d}`).join('；')}</span>`;   // 第二批没改攻击、生命
+  const st=[U.atk>0?`基础攻击 ${U.atk}`:U.atkTxt?`攻击 ${U.atkTxt}`:'',U.def>0?`防御 ${U.def}`:'',U.mdef>0?`法防 ${U.mdef}`:'',U.hp>0?`生命 ${U.hp}`:U.hpMul?`生命 ×${Math.round(U.hpMul*100)}%`:'',U.shield>0?`格挡防御 ${U.shield}`:''].filter(x=>x).join('、'),fx=`<span class="meta">${st?st+'；':''}${U.fx.map(([n,d])=>`${n}：${d}`).join('；')}</span>`;   // atkTxt / mdef：0.14.5 A1 赤血、精械几件武器的攻击、法防   // 第二批没改攻击、生命
   const btn=got?`<div class="btrow"><button class="px sm${on?'':' on'}" type="button" data-act="uadvon" data-v="${k}:0">用原版</button><button class="px sm${on?' on':''}" type="button" data-act="uadvon" data-v="${k}:1">用进阶版</button>${T?`<button class="px sm" type="button" data-act="uadvundo" data-v="${k}">测试：撤销进阶</button>`:''}</div>`
     :`<div class="btrow"><span class="meta">${cost}</span><button class="px sm" type="button" data-act="uadvbuy" data-v="${k}" ${L.length?'disabled':''}>${T?'测试：直接进阶':'进阶'}</button></div>`+(L.length?`<p class="meta warn">${L.join('；')}</p>`:'');
   return`<div class="uadv">${head}${fx}${btn}</div>`}
@@ -93539,6 +93766,87 @@ function uaiWaveEnd(){for(let i=0;i<G.soldiers.length;i++){const s=G.soldiers[i]
 const uaAnyGI=()=>{if(!G||!G.btech)return false;for(const t of uaTypes())if(UAD().units[t].camp==='campI'&&uaInG(t))return true;return false};
 feat('uadvI',{on:uaAnyGI,hooks:{start:()=>{UAI_L.length=0;UAI_TK=0},tick:uaiTick,afterHurtF:uaiHurt,waveStart:uaiWave,waveEnd:uaiWaveEnd,
   dmgRedF:(u,d,o)=>{if(u.isHero)return d;const X=u.uaX;if(!X||!X.A.doom||ufNoRed(o))return d;return d/(1+uaLost(u)*X.A.doom.dr)}}});   // 决死狂戮：独立减伤
+
+// ---------- 0.14.5 兵种进阶第四批：赤血兵营、精械工厂（用户 11-25 定，界碑整理；数据 data/a1u_adv.js 的 CFG.unitAdv.units 六条 + CFG.a1uAdv，代理 A1）----------
+// 框架同前三批（units/unit_adv）：兵种类型不变，uaClone 换名字、生命、防御、格挡防御，最后调 a1uClone 换法防、各件武器的攻击、爆炸半径、维修量、无人机（数据对象，不加士兵字段）。
+// 共享代码的调用点（每处一行，行尾写着 0.14.5 A1）：units/unit_adv.uaClone（a1uClone）、uaRowHTML（攻击 atkTxt、法防）；units/soldiers.soldierMelee（扇形只给剑：骑枪 M.lance 不走 uaFan）；
+//   units/units080.v8Bt（无人机上限 × drone.a1N）、v8Saint（圣女血骑跟着赤血骁骑进阶：uaDef）；engine/enemy.dealE_ 的易伤池子（a1uCavV：骑兵易伤）。
+// 这里：feat a1uAdv（这一局有这两座兵营的进阶兵才开）——
+//   dmgRedF：赤血的玄钢棘甲（原伤害 FR_RAW × thorn 排进 A1U_RQ，下一帧 tick 结算）、黑曜防护（每秒补满的额度，超出部分 /(1 + ov)；状态在 A1U_HB：士兵 → {b 额度, t 上次结算}）；
+//   dmgBaseE：记下这一下的原伤害（A1U_RO / A1U_RW，afterHitE 按它算熔岩、闪电、砲士灼烧）；
+//   afterHitE：这名兵（无人机算主人）造成的直接伤害 → 精械的熔岩（叠层）、闪电（排进 A1U_ZQ，下一帧结算伤害和麻痹——dealE 里面不再打 dealE）；
+//     赤血锐士嘲讽 + 虚弱 + 减速、赤血骁骑骑兵易伤（剑：uaFan 正在结算 = UA_S 是它）、赤血砲士灼烧（burnE）；
+//   ePick：被赤血锐士嘲讽的亡灵挑它（同卡包「阵前嘲讽」cpfEPick）；tick：反弹、闪电队列，每 0.5 秒结算熔岩。
+// Claude 定（待用户确认）：「这一下伤害」按原伤害（防御之前）；熔岩第 4 层顶掉最早到期的那层；嘲讽同卡包：已经被别人嘲讽着的不抢，离嘲讽者 8 格外不再追；
+//   骑兵易伤只认剑命中、只加骑兵士兵（c.cavalry）的伤害；砲士灼烧走统一点燃 burnE（强的覆盖弱的）；反弹、闪电晚一帧结算；局内状态不进存档（都是几秒内的效果）。
+const a1uC=A=>CFG.a1uAdv[A.camp]||null;   // 这座兵营的共同效果
+// ===== 兵种数据（units/unit_adv.uaClone 最后调；fw = 跟着别的兵种进阶，加差值）=====
+const A1U_WK=['melee','ranged','ranged2','mgun'];
+function a1uClone(c,b,kb,A,fw){const W=A.a1W;
+  if(W)for(let q=0;q<A1U_WK.length;q++){const k=A1U_WK[q];if(!(W[k]>0)||!b[k])continue;const v=fw&&kb[k]?+(b[k].dmg+W[k]-kb[k].dmg).toFixed(2):W[k];c[k]=Object.assign({},c[k]||b[k],{dmg:v})}
+  if(A.mdef>0)c.mdef=fw?+((b.mdef||0)+A.mdef-(kb.mdef||0)).toFixed(1):A.mdef;
+  if(A.a1Bx)for(const k of['ranged','ranged2'])if(c[k]&&c[k].blast)c[k]=Object.assign({},c[k],{blast:Object.assign({},c[k].blast,{r:+(c[k].blast.r*(1+A.a1Bx)).toFixed(3)})});   // 扩爆炮弹（二阶重型引擎的 +aoe 在 v8Bt 里再乘）
+  if(b.drone&&(W&&W.gun>0||A.a1Dn))c.drone=Object.assign({},b.drone,W&&W.gun>0?{gun:W.gun}:null,A.a1Dn?{a1N:A.a1Dn}:null);   // gun：算好 dmgK 的最终攻击（s4_camps.s4Drone）；a1N：units080.v8Bt 的上限倍率
+  if(A.a1Rep>0&&b.bRepair)c.bRepair=Object.assign({},b.bRepair,{amt:A.a1Rep})}
+// ===== 局内状态 =====
+const A1U_HB=new WeakMap();   // 黑曜防护：士兵 → 剩下的额度 b、上次结算的时刻 t
+const A1U_RQ=[],A1U_ZQ=[];   // 反弹队列 [亡灵下标, id, 伤害, 士兵]、闪电队列 [亡灵下标, id, 伤害, 出手的兵, 闪电数据]
+const A1U_REF={magic:true,mix:{arcane:1},fu:null,noFx:true,a1X:1},A1U_ZO={magic:true,mix:{lightning:1},su:null,noFx:true,a1X:1};
+// 熔岩：每只亡灵 3 格（n 写死上限 3，数据的 n 只能 ≤ 3）：每秒伤害、到期、上次结算；A1U_LI 这几格是哪一只（id）；A1U_LJ 正在烧的名单
+const A1U_LN=3,A1U_LD=new Float32Array(ECAP*A1U_LN),A1U_LU=new Float64Array(ECAP*A1U_LN),A1U_LL=new Float64Array(ECAP*A1U_LN),A1U_LI=new Int32Array(ECAP),A1U_LM=new Uint8Array(ECAP),A1U_LS=new Array(ECAP).fill(null),A1U_LJ=[];
+const A1U_LO={magic:true,dot:true,noFx:true,mix:{fire:1},resCut:{fire:0.5},su:null,a1X:1};
+let A1U_LT=0;
+// 麻痹冷却（按目标）、嘲讽（目标 → 嘲讽者、到期）、骑兵易伤（到期、数值）
+const A1U_PU=new Float64Array(ECAP),A1U_PI=new Int32Array(ECAP),A1U_TU=new Float64Array(ECAP),A1U_TI=new Int32Array(ECAP),A1U_TF=new Array(ECAP).fill(null),A1U_VU=new Float64Array(ECAP),A1U_VI=new Int32Array(ECAP),A1U_VV=new Float64Array(ECAP);
+let A1U_VON=false,A1U_RO=null,A1U_RW=0;   // A1U_VON：这一局有没有骑兵易伤要查（engine/enemy 的易伤池子先看它）；A1U_RO / A1U_RW：dmgBaseE 记下的这一下的 o 和原伤害
+function a1uReset(){A1U_PU.fill(0);A1U_PI.fill(-1);A1U_TU.fill(0);A1U_TI.fill(-1);A1U_TF.fill(null);A1U_VU.fill(0);A1U_VI.fill(-1);A1U_LU.fill(0);A1U_LI.fill(-1);A1U_LM.fill(0);A1U_LS.fill(null);
+  A1U_LJ.length=0;A1U_RQ.length=0;A1U_ZQ.length=0;A1U_LT=0;A1U_RO=null;A1U_VON=true}
+// ===== 赤血：受伤 =====
+function a1uRedF(u,d,o){if(u.isHero||!(d>0))return d;const X=u.uaX;if(!X)return d;const C=a1uC(X.A);if(!C)return d;
+  const j=o.src;if(C.thorn&&!o.dot&&j>=0&&FR_RAW>0&&E.alive[j]&&(o.sid===undefined||E.id[j]===o.sid))A1U_RQ.push(j,E.id[j],FR_RAW*C.thorn,u);   // 玄钢棘甲
+  const P=C.cap;if(!P)return d;const cap=u.maxHp*P.hp,t=G.time;let S=A1U_HB.get(u);if(!S){S={b:cap,t};A1U_HB.set(u,S)}   // 黑曜防护
+  S.b=Math.min(cap,S.b+(t-S.t)*cap);S.t=t;const v=Math.min(d,Math.max(0,S.b));S.b-=v;return v+(d-v)/(1+P.ov)}
+function a1uRefFlush(){const O=A1U_REF;for(let q=0;q<A1U_RQ.length;q+=4){const j=A1U_RQ[q],u=A1U_RQ[q+3];if(!eOk(j,A1U_RQ[q+1]))continue;O.fu=u.dead?null:u;dealE(j,A1U_RQ[q+2],O);
+    if(inViewPt(E.x[j],E.y[j]))vfx('beam',{x0:u.x,y0:u.y-8,x1:E.x[j],y1:E.y[j]-6,c:'#c8283a',c2:'#ffd0c8',w:2,life:0.16})}O.fu=null;A1U_RQ.length=0}
+// ===== 造成伤害 =====
+const a1uBaseE=(i,d,o)=>{A1U_RO=o;A1U_RW=d;return d};
+function a1uHitE(i,dmg,o){if(o.dot||o.a1X||!(dmg>0))return;const u=o.fu||o.su;if(!u||u.isHero===true)return;let X=u.uaX;const own=!!X;if(!X&&u.summon&&u.owner)X=u.owner.uaX;if(!X)return;
+  if(!E.alive[i]||!(E.hp[i]>0))return;const A=X.A,C=a1uC(A),raw=A1U_RO===o&&A1U_RW>0?A1U_RW:dmg,id=E.id[i];
+  if(C){if(C.lava)a1uLava(i,id,raw*C.lava.k,C.lava,u);if(C.bolt)A1U_ZQ.push(i,id,raw*C.bolt.k,u,C.bolt)}
+  if(!own)return;   // 下面是兵种自己的效果（无人机不算）
+  if(A.a1Tnt&&o.melee)a1uTaunt(i,id,u,A.a1Tnt);
+  if(A.a1Cav&&UA_S===u){A1U_VU[i]=G.time+A.a1Cav.t;A1U_VI[i]=id;A1U_VV[i]=A.a1Cav.v}   // 骑兵易伤：uaFan 正在结算这名兵的剑（刷新不叠加）
+  if(A.a1Brn)burnE(i,raw*A.a1Brn.k,A.a1Brn.t)}
+// 熔岩叠层：同一只亡灵至多 n 层、各自计时；满了顶掉最早到期的那层
+function a1uLava(j,id,dps,L,u){if(!(dps>0)||G.efWater)return;const b=j*A1U_LN,t=G.time,n=Math.min(A1U_LN,L.n);
+  if(A1U_LI[j]!==id){A1U_LI[j]=id;for(let k=0;k<A1U_LN;k++)A1U_LU[b+k]=0}
+  let s=-1,mu=1e18;for(let k=0;k<n;k++){const v=A1U_LU[b+k];if(v<=t){s=k;break}if(v<mu){mu=v;s=k}}
+  A1U_LD[b+s]=dps;A1U_LU[b+s]=t+L.t;A1U_LL[b+s]=t;A1U_LS[j]=u;if(!A1U_LM[j]){A1U_LM[j]=1;A1U_LJ.push(j)}}
+function a1uLavaTick(){const t=G.time,O=A1U_LO;let w=0;O.resCut.fire=CFG.a1uAdv.campSteam.lava.res;
+  for(let q=0;q<A1U_LJ.length;q++){const j=A1U_LJ[q],b=j*A1U_LN;if(!E.alive[j]||A1U_LI[j]!==E.id[j]||G.efWater){A1U_LM[j]=0;A1U_LS[j]=null;continue}
+    let d=0,on=false;for(let k=0;k<A1U_LN;k++){const U=A1U_LU[b+k],L0=A1U_LL[b+k];if(U<=L0)continue;const e=U<t?U:t;d+=A1U_LD[b+k]*(e-L0);A1U_LL[b+k]=e;if(U>t)on=true}
+    if(d>0){const u=A1U_LS[j];O.su=u&&!u.dead?u:null;dealE(j,d,O);if(inViewPt(E.x[j],E.y[j])&&chance(0.5))pp(E.x[j]+vr(-3,3),E.y[j]-6,2,vr(-6,6),vr(-24,-10),vr(4,9),0,vr(0.3,0.5),vpick(['#ff5a1e','#ffb03a','#c8281e']),1,0,1)}
+    if(on&&E.alive[j])A1U_LJ[w++]=j;else{A1U_LM[j]=0;A1U_LS[j]=null}}
+  A1U_LJ.length=w;O.su=null}
+// 源能闪电：另外一下法术雷电伤害 + 麻痹（同一个目标 cd 秒一次，按目标记）
+function a1uZapFlush(){const O=A1U_ZO,t=G.time;for(let q=0;q<A1U_ZQ.length;q+=5){const j=A1U_ZQ[q],id=A1U_ZQ[q+1];if(!eOk(j,id))continue;const u=A1U_ZQ[q+3],B=A1U_ZQ[q+4];
+    O.su=u.dead?null:u;dealE(j,A1U_ZQ[q+2],O);if(!E.alive[j])continue;
+    if(!(A1U_PI[j]===id&&A1U_PU[j]>t)){A1U_PI[j]=id;A1U_PU[j]=t+B.cd;eRoot(j,B.root);if(inViewPt(E.x[j],E.y[j]))addFx({k:'ring',x:Math.round(E.x[j]),y:Math.round(E.y[j]-6),r:8,life:0.25,c:'#7fe0ff'})}
+    else if(inViewPt(E.x[j],E.y[j])&&chance(0.3))pp(E.x[j]+vr(-3,3),E.y[j]-8,2,vr(-14,14),vr(-14,4),vr(4,8),0,0.18,'#bff4ff',1,0,1)}
+  O.su=null;A1U_ZQ.length=0}
+// 赤血锐士：嘲讽目标（已经被别人嘲讽着的不抢）、虚弱、减速
+function a1uTaunt(j,id,u,T){const t=G.time;if(!(A1U_TI[j]===id&&A1U_TU[j]>t&&A1U_TF[j]!==u&&A1U_TF[j]!==null&&!A1U_TF[j].dead)){A1U_TI[j]=id;A1U_TU[j]=t+T.t;A1U_TF[j]=u}
+  bfAddE(j,'a1uWk',uaEf('weak',T.weak),T.st,{debuff:true});if(T.slow>=E.slowF[j]||E.slowT[j]<=0){E.slowF[j]=T.slow;E.slowT[j]=slowMx(j,T.st)}}
+function a1uEPick(i,x,y,range,ranged){if(A1U_TI[i]!==E.id[i]||!(A1U_TU[i]>G.time))return;const u=A1U_TF[i];if(u===null||u.dead||fHid(u)||(!ranged&&(u.layer||u.fly)))return;
+  const dx=u.x-x,dy=u.y-y,R=CFG.unitAdv.units.bloodGuard.a1Tnt.keep*16;if(dx*dx+dy*dy>R*R)return;return u}
+// 骑兵易伤：进易伤池子（engine/enemy.dealE_ 调；A1U_VON 先挡掉没开的局）
+function a1uCavV(i,o){if(!(A1U_VU[i]>G.time)||A1U_VI[i]!==E.id[i])return 0;const u=o.fu||o.su;return u&&u.c&&u.c.cavalry&&u.isHero!==true?A1U_VV[i]:0}
+// ===== 特性 =====
+const A1U_T=['bloodGuard','bloodKnight','bloodGunner','mechWarrior','mechGunner','mechEngineer'];
+const a1uAny=()=>{if(!G||!G.btech)return false;for(let q=0;q<A1U_T.length;q++)if(CFG.unitAdv.units[A1U_T[q]]&&uaInG(A1U_T[q]))return true;return false};
+feat('a1uAdv',{on:()=>{const v=a1uAny();A1U_VON=v;return v},hooks:{start:a1uReset,
+  tick:dt=>{if(A1U_RQ.length)a1uRefFlush();if(A1U_ZQ.length)a1uZapFlush();A1U_LT-=dt;if(A1U_LT<=0){A1U_LT=0.5;if(A1U_LJ.length)a1uLavaTick()}},
+  dmgRedF:a1uRedF,dmgBaseE:a1uBaseE,afterHitE:a1uHitE,ePick:a1uEPick}});
 
 // ---------- 0.13.13 两种新陷阱：玄钢地刺 xgSpike、木龙荆棘 wdThorn（数据 data/build_traps2.js，图 art/hd_traps2.js）----------
 // 入口：structs/structs.pfTrap 里 trap.tr2 的陷阱交给 tr2Tick（伤害 dmg、选项 o、在水里的倍率 wk、控制时间加成 ctl 都是 pfTrap 照尖刺算好的）
@@ -108824,7 +109132,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="d904dd1",GAME_BUILT=1795566380191,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="99eee0b",GAME_BUILT=1795567927874,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
