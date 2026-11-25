@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.4.1b",
- "code": 317,
- "size": 24169663,
- "sha256": "f8e11b6b83e5f935e8ee972a323b039202b75272a8741de98a6402b38191f5b8",
+ "ver": "0.14.5",
+ "code": 319,
+ "size": 24257298,
+ "sha256": "5ec6652dcb5392e7b49edfcd537d4c04cf5f5b04ae9333c9abe3cbb98f73fd8d",
  "minLoader": 1,
- "sig": "LAd8dDi/xYf5Sn2F3ZSAjmwt61CaON3JSb/ToKnvB9emEXXSyCodnsYsLVSOPx5pjoQOpT4Ye4J1rXkUl0AYAg==",
- "note": "0.14.4.1b 测试版：塔楼兵营平衡调整；飞行亡灵最后才打主堡；无尽模式也能开死国；死国挑战改成无尽、挑战任务每个位子一天一个",
- "at": "2026-11-24 17:54 UTC"
+ "sig": "VamZuHBnMISQkq1ZR2ZmRiXYmr+VtzYxQ0niBSo/O1ykmdhJiwmmkcBxZq36nXlptHeCp82C90la1eZZujeDJQ==",
+ "note": "0.14.5 测试版（同稳定版内容）",
+ "at": "2026-11-25 10:35 UTC"
 }
