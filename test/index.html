@@ -297,6 +297,14 @@ h2.hd.lose{color:var(--blood)}
 #hfPick .hfrow{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:8px;text-align:left;padding:6px 8px}#hfPick .hfh{display:flex;align-items:center;gap:4px;white-space:nowrap}#hfPick .hfh i{font-style:normal;color:#e0533f;font-size:.75rem}
 #hfPick .sphd{display:grid;gap:2px}#hfPick .cmi{width:22px;height:22px;object-fit:contain;image-rendering:pixelated}#hfPick .hftag .cmi{width:16px;height:16px}
 #hfPick .hff{display:flex;flex-wrap:wrap;gap:4px 8px;justify-content:flex-end;font-size:.75rem}#hfPick .hftag{display:inline-flex;align-items:center;gap:2px;color:var(--ash)}
+/* 0.14.5 P1 局内点选的小框（ui/p1_pick）：点到几个对象时在点击处旁边弹出；不挡游戏（不暂停、没有遮罩），每行至少 36px 高，最多露 6 行、多的滚动 */
+#p1Pick{position:fixed;left:0;top:0;z-index:9}#p1Pick[hidden]{display:none}
+#p1Pick .p1box{display:grid;gap:2px;width:min(calc(230px * var(--fk,1)),calc(100vw - 16px));max-height:calc(6 * 38px + 8px);overflow-y:auto;padding:4px;box-sizing:border-box;overscroll-behavior:contain}
+#p1Pick .p1row{display:grid;grid-template-columns:24px 1fr 46px;align-items:center;gap:6px;min-height:36px;padding:3px 6px;text-align:left;font:inherit;font-size:.8rem;color:var(--bone);background:rgba(255,255,255,.04);border:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);cursor:pointer}
+#p1Pick .p1row:hover,#p1Pick .p1row:active{background:rgba(243,212,124,.16)}
+#p1Pick .p1ic{display:flex;align-items:center;justify-content:center;width:24px;height:24px;font-style:normal;box-shadow:inset 0 0 0 1px rgba(0,0,0,.5);overflow:hidden}#p1Pick .p1ic img{max-width:22px;max-height:22px;object-fit:contain;image-rendering:pixelated}
+#p1Pick .p1nm{display:grid;line-height:1.15;min-width:0}#p1Pick .p1nm b{font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#p1Pick .p1nm em{font-style:normal;font-size:.68rem}
+#p1Pick .p1hp{height:5px;background:rgba(0,0,0,.6);box-shadow:0 0 0 1px rgba(255,255,255,.12)}#p1Pick .p1hp b{display:block;height:100%;background:#6fbf4a}#p1Pick .p1hp.en b{background:#e0533f}
 /* 0.13.2.x 兵营编组（ui/campgrp_ui）：编组行、成员、选兵营的弹窗 #cgPick（同 #hfPick） */
 #cmdPanel .cgrow{border-left:3px solid var(--brass)}#cmdPanel .cmrow>b i.cgt{color:var(--brass-hi)}
 #cmdPanel .cgmem{gap:2px 10px;color:var(--ash)}#cmdPanel .cgmem .hftag{display:inline-flex;align-items:center;white-space:nowrap}#cmdPanel .cgmem .cmi{width:16px;height:16px;margin-right:2px}
@@ -78288,6 +78296,7 @@ function heroAI(h,dt){if(!h.aiNx)h.aiNx=[0,0,0];
       if(best<0&&!ns&&!gp&&G.phase==='wave'&&heroModeOf(h)==='sortie'){lr=HA.seekR*16;best=heroNearK(h,h.x,h.y,lr,mel);if(best>=0)sc=j=>heroScK(h,j,h.x,h.y)}   // v0.10.0 修（玩家反馈：出击的托管英雄杀完一只要等 1～2 秒才打下一只）：身边 9 格、领地里都没有时，再看自己 seekR 格内看得见的；原来直接原地等 linger 秒，下一只就在 10 格外也不动
       pick=best;if(cur>=0&&best!==cur&&heroKeepTgt(h,cur,best,sc,ox,oy,lr,terr))best=cur}
     if(SV_ON&&h.svSq>0&&svSqCmd()==='focus'){const f=svSqFocus(h,mel);if(f>=0){best=f;pick=f}}   // 0.13.0h 后：队员「集火」打队长正在打的那只（game/sv_squad）
+    if(h.elite){const f=p1ElTgt(h);if(f>=0){best=f;pick=f}}   // 0.14.5 P1 加：选中精英点亡灵 = 强制攻击，打死为止（ui/p1_pick）
     if(best>=0&&(best!==h.aiTi||E.id[best]!==h.aiTid))h.aiLk=G.time+HA.lock;   // 换了目标：至少咬住 lock 秒
     else if(best<0&&h.aiTi>=0&&G.phase==='wave'&&G.time-(h.aiEng||-9)<HA.engT)h.aiLg=G.time+HA.linger;   // 目标没了、附近也没有：原地等 linger 秒；v0.8.0（用户：英雄接敌前走一会儿停一会儿）只有正在打它（engT 秒内够得着）才等，走过去的路上它被别人打死了不停下，接着按原来的打算走
     if(oathPrideIdle(h)){best=-1;pick=-1}   // v0.9.4 誓约「傲慢」代价：托管英雄这一波没挨过打就不主动索敌、不放技能、不普攻
@@ -78298,10 +78307,10 @@ function heroAI(h,dt){if(!h.aiNx)h.aiNx=[0,0,0];
   if(h.h60T&&h.layer!==1){const g=h60AI(h);if(g)return g}   // v0.6.0 疾风斩击：冲向还没斩过的亡灵（heroes/heroes060）   // v0.5.6 骆驼骑士托管：冲撞 / 压顶好了就骑向扎堆的亡灵（跑起来才放得出）
   if(h.layer===1&&(melee||!guard||gp))return heroLeaveWall(h);   // v0.5.2 近战 / 出击：先从最近的城门下墙
   if(eOk(j,h.aiTid)){const ex=E.x[j],ey=E.y[j],d=Math.hypot(ex-h.x,ey-h.y)||1,w=h.ws,dr=RSL_ON&&w.cls!=='melee'?rslD(ex-h.x,ey-h.y):d;   // dr：0.14.4 cy 赤曜帝城远程射程按方向（engine/enemy.rslD）
-    if(h.layer===1){if(dr<=heroRange(h)*0.95){h.aiEng=G.time;return MV_ZERO}const P=heroWallGoal(h,ex,ey);return P?heroToPost(h,P):heroLeaveWall(h)}   // v0.5.2 在城墙上：够不着就沿城墙挪到离它最近的位置
+    if(h.layer===1){if(dr<=heroRange(h)*0.95){h.aiEng=G.time;return MV_ZERO}if(h.elite&&p1ElF(h))return heroLeaveWall(h);const P=heroWallGoal(h,ex,ey);return P?heroToPost(h,P):heroLeaveWall(h)}   // v0.5.2 在城墙上：够不着就沿城墙挪到离它最近的位置
     if(w.cls==='melee'){if(d>w.reach*16*0.75)return aiNav(h,ex,ey);h.aiEng=G.time;return MV_ZERO}   // aiEng：v0.8.0 最近一次够得着目标的时间
     const R=heroRange(h);
-    if(guard&&!gp&&(dr>R*0.85||!shotClear(h.x,h.y-4,ex,ey-4))){const P=heroWallGoal(h,ex,ey);if(P)return heroToPost(h,P)}   // v0.5.2 驻守的远程英雄：打不着就上城墙打
+    if(guard&&!gp&&(dr>R*0.85||!shotClear(h.x,h.y-4,ex,ey-4))&&!(h.elite&&p1ElF(h))){const P=heroWallGoal(h,ex,ey);if(P)return heroToPost(h,P)}   // p1ElF：0.14.5 P1 强制攻击的精英够不着就追过去（不上城墙等）   // v0.5.2 驻守的远程英雄：打不着就上城墙打
     if(dr>R*0.85||!shotClear(h.x,h.y-4,ex,ey-4))return aiNav(h,ex,ey);
     h.aiEng=G.time;{const bk=heroBack(h,dt);if(bk)return bk;if(h.aiKpM>G.time)return MV_ZERO}   // 0.13.2.x（用户定）被贴身先撤开，拉不开原地打（heroes/heroai.heroBack）
     if(d<R*0.4){const ax=h.x-(ex-h.x)/d*24,ay=h.y-(ey-h.y)/d*24;if(friendPassPt(ax,ay))return[-(ex-h.x)/d,-(ey-h.y)/d]}
@@ -96992,7 +97001,7 @@ function unpick(id){const c=CFG.cards.find(x=>x.id===id);if(!c)return;const ns=[
 function pickEnemyCard(i){const o=G.ecardOpts&&G.ecardOpts[i];if(!o)return;applyEnemyCard(o);G.ecardOpts=null;sfx('pick');toPrep()}
 function confirmEnemyPicked(){G.eAuto=null;sfx('pick');toPrep()}
 function toPrep(){
-  hideModal();G.phase='prep';clearOrders();if(selUnit)followHero();   // v0.5.9 指挥只在这一波有效；准备阶段不选士兵
+  hideModal();G.phase='prep';clearOrders();if(selUnit)followHero();   // v0.5.9 指挥只在这一波有效（0.14.5 P1 起准备阶段也能选士兵 / 精英、下前往指令，开打后保持）
  G.prepId++;G.boltT=null;envFor(G.wave+1);
   if(G.wave>0&&CFG.run.prepAdvance>0){advanceTime(CFG.run.prepAdvance);if(G.phase!=='prep')return}   // 推进中主堡被残留的弹道 / 酸液打爆：已经结算，不再存档
   const hold=G.story?storyPrep():false;   // v0.6.3 剧情：图纸、补给、赴约、对白（存档之前，事件标记一起存）
@@ -108419,7 +108428,7 @@ function drawOverlayView(vk,V){
   // v0.5.8 选中的士兵：远程射程（金色）、近战距离（红色）
   if(PICK){const p=PICK.pt||pickCenter();ovRingS(p.x,p.y,12,'243,212,124',0.25);ovRingS(p.x,p.y,3,'243,212,124',0.9)}   // v0.8.18 选驻守点的标记
   else if(UI.cmdOpen){for(const b of G.structs){const g=!b.dead&&b.cmd&&b.cmd.g;if(g&&b.mode==='guard')ovRingS(g.x,g.y,10,'120,200,255',0.18)}for(const h of G.heroes){const g=heroGuardPt(h);if(g)ovRingS(g.x,g.y,10,'243,212,124',0.18)}}   // 指挥面板开着：显示各兵营、英雄的驻守点
-  if(selUnit&&!selUnit.dead){const u=selUnit,y=u.y-4-u.elev;if(u.rg)ovRingS(u.x,y,u.rg.range*16*postMul(u,'range'),'243,212,124');if(u.c.melee)ovRingS(u.x,y,u.c.melee.reach*16+6,'224,83,63',0.1)}
+  if(selUnit&&!selUnit.dead){const u=selUnit,y=u.y-4-u.elev;if(u.elite)p1ElRing(u,y);else{if(u.rg)ovRingS(u.x,y,u.rg.range*16*postMul(u,'range'),'243,212,124');if(u.c.melee)ovRingS(u.x,y,u.c.melee.reach*16+6,'224,83,63',0.1)}}   // p1ElRing：0.14.5 P1 选中的精英（攻击范围、驻守点、强制攻击的亡灵；ui/p1_pick）
   // v0.5.9 指挥标记：选中的士兵 / 建筑正在执行的指令（前往的地点、攻击的地点、集火的亡灵）
   {const o=selUnit&&!selUnit.dead?selUnit:selected&&!selected.dead?selected:null;if(o){const P=o.ordP||(o.ord&&o.ord.x!==undefined?o.ord:null),T=o.ordT||(o.ord&&o.ord.i!==undefined?o.ord:null);
     if(P)ovOrder(P.x,P.y,o.ord?CFG.run.orderNear*16:8,'243,212,124');if(T&&eOk(T.i,T.id))ovOrder(E.x[T.i],E.y[T.i]-6,E.r[T.i]+6,'255,106,74')}}
@@ -109021,7 +109030,7 @@ function tskDrumSpark(s,beat){const W=tskVD('warDrum').tw,u=beat/0.12,a=1-u,d=2+
 
 // ---------- 输入：建造（单点确认 / 连续建造 / 撤销）、地图、PC 鼠标瞄准、键位 ----------
 const keys=new Set(),input={jx:0,jy:0};
-let selUnit=null;   // v0.5.8 选中的士兵（镜头跟着它、显示攻击范围；和 selected 建筑互斥）
+let selUnit=null;   // v0.5.8 选中的士兵（镜头跟着它、显示攻击范围；和 selected 建筑互斥）；0.14.5 P1 起也可以是精英（G.heroes 里 h.elite 的英雄对象）
 let buildSel=null,selected=null,hover=null,running=false,paused=true,speedMul=1,modalState=null;
 let tool=null,batchMode=false;          // tool: 'undo' 撤销模式；batchMode: 连续建造
 const pend=[];                          // 触屏单点模式：待确认的放置
@@ -109055,7 +109064,7 @@ function orderStruct(s,o){const T=towerW(s),cx=s.x,cy=s.type==='keep'?s.y-20:s.y
   if(o.i!==undefined){s.ord={i:o.i,id:E.id[o.i]};addFx({k:'ring',x:Math.round(E.x[o.i]),y:Math.round(E.y[o.i]-6),r:12,life:0.4,c:'#ff6a4a'});sfx('click');return}
   const d=Math.hypot(o.x-cx,o.y-cy);if(d>T.range){toast('超出射程');return}if(T.minRange&&d<T.minRange){toast('太近了，在最小射程以内');return}
   s.ord={x:o.x,y:o.y,until:G.time+CFG.run.orderT};addFx({k:'ring',x:Math.round(o.x),y:Math.round(o.y),r:CFG.run.orderNear*16,life:0.5,c:'#f3d47c'});sfx('click')}
-function clearOrders(){for(let i_2=0,a_2=G.soldiers;i_2<a_2.length;i_2++){const s=a_2[i_2];s.ordP=null;s.ordT=null}for(let i_3=0,a_3=G.structs;i_3<a_3.length;i_3++){const s=a_3[i_3];s.ord=null}}
+function clearOrders(){for(let i_2=0,a_2=G.soldiers;i_2<a_2.length;i_2++){const s=a_2[i_2];s.ordP=null;s.ordT=null}for(let i_3=0,a_3=G.structs;i_3<a_3.length;i_3++){const s=a_3[i_3];s.ord=null}p1OrdClr()}   // p1OrdClr：0.14.5 P1 精英的强制攻击（ui/p1_pick）
 function enemyAt(wx,wy){let best=-1,bd=1e9;eQuery(wx,wy+5,10,(j,d)=>{if(d<bd){bd=d;best=j}},true);return best}
 function aimPoint(){const h=G.hero;if(!aimUI.active)return null;
   if(aimUI.mode==='mouse')return mouseW.ok?{x:mouseW.x,y:mouseW.y}:null;
@@ -109132,16 +109141,7 @@ function endPtr(e,cancel){
     else if(ptr.mode==='build'&&buildSel&&!isWallT(buildSel)&&!batchMode){
       if(ptr.imm){if(!tryBuild(buildSel,t.tx,t.ty,false))setBuild(null)}
       else if(!ptr.moved){pend.length=0;pendAdd(t.tx,t.ty)}}
-    else if(ptr.mode==='pan'&&!ptr.moved){
-      const w=screenToWorld(e.clientX,e.clientY),wave=G.phase==='wave',j=wave?enemyAt(w.x,w.y):-1,ob=objAtTile(t.tx,t.ty),pickS=o=>{if(selUnit){selUnit=null;cam.follow=false;btnFollow.hidden=false}selected=o;refreshSel(true)};
-      if(wave&&selUnit&&!selUnit.dead){   // v0.5.9 选中了士兵：点亡灵 = 强制攻击，点建筑 = 改选建筑，点另一个士兵 = 改选它，点地面 = 前往
-        const u=j<0&&!ob?soldierAt(w.x,w.y):null;if(j>=0)orderUnit(selUnit,{i:j});else if(ob)pickS(ob);else if(u){if(u!==selUnit)selectUnit(u)}else orderUnit(selUnit,{x:w.x,y:w.y})}
-      else if(wave&&canOrderS(selected)){   // v0.5.9 选中了能攻击的建筑：点亡灵 = 集火，点别的建筑 = 改选，再点它自己 = 取消指令，点地面 = 向那里攻击
-        if(j>=0)orderStruct(selected,{i:j});else if(ob&&ob!==selected)pickS(ob);else if(ob===selected){if(selected.ord){selected.ord=null;toast('已取消指令')}}else orderStruct(selected,{x:w.x,y:w.y})}
-      else if(j>=0){if(!G.hero.dead){G.hero.tgtI=j;G.hero.tgtId=E.id[j];G.hero.moveTo=null}if(!(RD_ON&&rdBlip(j)))selectEnemy(j)}   // rdBlip：0.13.2.1 雷达光点看不出是什么，不开亡灵面板   // v0.8.15 同时显示亡灵属性面板
-      else if(!ob&&HK.tapTile.length&&hkAny('tapTile',t.tx,t.ty)){}   // 0.13.2 天灾海域加：点凿空的甲板（maps/scourge.szTapTile）
-      else if(ob)pickS(ob);   // v0.5.9 建筑优先：同一个位置有建筑就选建筑
-      else{const u=wave?soldierAt(w.x,w.y):null;if(u)selectUnit(u);else pickS(null)}}   // 准备阶段不选士兵（不然士兵挡着建造）；点空地取消选中，镜头停在原地
+    else if(ptr.mode==='pan'&&!ptr.moved)p1Tap(e.clientX,e.clientY);   // 0.14.5 P1（用户 11-25）：点选挪到 ui/p1_pick.p1Tap——精英能选中、点到几个对象弹小框选、准备阶段也能选士兵 / 精英；指挥规则同 v0.5.9（战斗中选中士兵 / 精英：点亡灵 = 强制攻击、点地面 = 前往；选中能攻击的建筑：点亡灵 = 集火、点地面 = 向那里攻击、再点它 = 取消）
   }
   ptr.id=null;ptr.mode=null;ptr.lastT=null;if(ptr.type!=='mouse')hover=null;
 }
@@ -109236,7 +109236,7 @@ addEventListener('keydown',e=>{
   if(k===K.attack){if(heroTryGate())return;atkKey=true;return}
   if(k===K.swap){swapWeapon();return}
   if(k.length===1&&k>='1'&&k<=String(CFG.buildCats.length)&&G.phase==='prep'){setCat(CFG.buildCats[+k-1].id);return}
-  if(k==='escape'){if(aimUI.active){aimUI.active=false;return}if(BPR.on){bprOff();return}if(buildSel||selected||selUnit||tool||pend.length){setBuild(null);setTool(null);pendClear();selected=null;if(selUnit){selUnit=null;followHero()}refreshSel(true)}else openPause();return}
+  if(k==='escape'){if(aimUI.active){aimUI.active=false;return}if(p1PkOn()){p1PkClose();return}if(BPR.on){bprOff();return}if(buildSel||selected||selUnit||tool||pend.length){setBuild(null);setTool(null);pendClear();selected=null;if(selUnit){selUnit=null;followHero()}refreshSel(true)}else openPause();return}
   if(k===K.pause)openPause();
   else if(k===K.wave||k==='n')startWave();
   else if(k===K.heroAI)toggleHeroAI();
@@ -109267,7 +109267,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="3c6fea7",GAME_BUILT=1795590745774,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="50ab02d",GAME_BUILT=1795591382975,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -109447,10 +109447,10 @@ function unitSelPanel(u,force){if(selShown!==u){selShown=u;sellArmT=0}selEl.hidd
   u2Set(selNote,'sno',unitSel(u).join(' · ')+(u.sht?shtSelT(u):'')+` · 指令：${SOLD_NAMES[u.camp&&!u.camp.dead&&u.camp.mode==='spread'&&!u.summon?'spread':soldierMode(u)]||'驻守'}${u.layer===1?' · 在城墙上':u.layer===2?' · 在瞭望塔上':''}`);   // SHT 加：shtSelT 0.13.12 神国兵的魔能（units/sht_hall）
   for(const b of[selUp,selSell,selRep,selGU,selGR,selSU,selSR,selBatch,selUnits,selModes])b.hidden=true;f1SelBuf(u,force)}   // f1SelBuf：v0.10.11 士兵身上的统一 buff（ui/f1_fbuf）
 function refreshSel(force){
-  if(selUnit&&(selUnit.dead||!G.soldiers.includes(selUnit))){selUnit=null;if(cam.follow)btnFollow.hidden=true}
+  if(selUnit&&(selUnit.dead||!(selUnit.elite?G.heroes:G.soldiers).includes(selUnit))){selUnit=null;if(cam.follow)btnFollow.hidden=true}   // elite：0.14.5 P1 选中的也可以是精英（英雄对象，ui/p1_pick）
   if(selected)selUnit=null;
   if(selE&&(selected||selUnit||!eSelOK()))selE=null;if(selE){f1SelHide();eSelPanel(force);return}eSelHide();   // v0.8.15 选中的亡灵   // f1SelHide：v0.10.11 收起士兵的 buff 牌子（ui/f1_fbuf）
-  if(selUnit){unitSelPanel(selUnit,force);return}f1SelHide();   // v0.5.8 选中士兵：显示兵种属性，不显示升级 / 拆除这些按钮
+  if(selUnit){if(selUnit.elite)p1ElPanel(selUnit,force);else unitSelPanel(selUnit,force);return}f1SelHide();   // v0.5.8 选中士兵：显示兵种属性，不显示升级 / 拆除这些按钮
   const s=selected;if(!s||s.dead){selEl.hidden=true;selKey='';selShown=null;return}
   if(selShown!==s){selShown=s;armLate('sel',CFG.tapGuard.sel*1000);sellArmT=0}
   selEl.hidden=false;
@@ -109715,6 +109715,88 @@ function f1HeroBuf(){const h=G&&G.hero;
   if(!L.length){if(!F1_HB.hidden){F1_HB.hidden=true;F1_HK=''}return}F1_HB.hidden=false;
   const n=L.length>F1_HN?F1_HN-1:L.length,html=L.slice(0,n).map(x=>f1Chip(x,false)).join('')+(L.length>n?`<button type="button" class="bfc" data-bk="more">+${L.length-n}</button>`:'');
   if(html!==F1_HK){F1_HK=html;F1_HB.innerHTML=n1NumH(html)}}
+
+// ---------- 0.14.5 代理 P1（用户 11-25 要）：局内点选——精英也能选中、指挥；一下点到几个对象时弹小框选（防误触、点不到）；准备阶段也能选士兵 / 精英 ----------
+// 调用点：ui/input.endPtr 的 pan 分支 → p1Tap；ui/hud.refreshSel 选中精英 → p1ElPanel；ui/draw.drawSpawnMarks 选中精英 → p1ElRing；
+//   heroes/hero.heroAI 索敌块 → p1ElTgt、追强制目标时不上城墙 → p1ElF；ui/input.clearOrders → p1OrdClr；ui/input 的 Esc → p1PkOn / p1PkClose
+// 候选：这一格的建筑（objAtTile）、点击处 P1_SR 像素内的士兵（同 soldierAt）、P1_ER 像素内的精英；战斗中、不在指挥状态时，enemyAt 点到的亡灵也算一个（雷达光点不算）
+//   1 个 = 直接选；≥ 2 个 = 点击处旁边弹小框（每行 图标 + 名字 + 生命条），点一行选那个，点框外关掉、什么都不选；框开着游戏照常跑，0.2 秒刷新一次（死了 / 拆了的那行去掉）
+// 指挥状态（选中士兵 / 精英，或战斗中选中能攻击的建筑）：点亡灵照旧直接下指令；没点到亡灵、点到 ≥ 2 个友方才弹框；点到 1 个照旧改选；点空地照旧下移动 / 攻击指令
+// 精英的指挥：点亡灵 = 强制攻击（P1_OT：英雄对象 → {i,id}，同士兵的 ordT，不存档、toPrep 清掉），点地面 = 驻守在那里（借指挥面板的英雄驻守点：G.heroModes 驻守 + G.heroCmd[id].g，存档、指挥面板里看得到、能「回默认」）
+const P1_SR=9,P1_ER=10,P1_MAX=20;   // 士兵 9 像素（同 soldierAt：脚下往上 6 像素是身体中间）；精英 10 像素（身体中间在脚下往上 8 像素）；候选最多 20 个
+const P1_OT=new WeakMap();
+const P1_KC={b:'#f3d47c',s:'#86bfff',e:'#e6b0ff',z:'#e0533f'},P1_KN={b:'建筑',s:'士兵',e:'精英',z:'亡灵'};
+let P1_PK=null,P1_IV=0;   // 小框：{g 这一局的 G, L 候选, el, box, bars 生命条, t 弹出的时刻}；P1_IV 刷新的定时器
+const P1_GT=250;   // 弹出后 250 毫秒内的点击不算（同一下点击补发的 click、手指抖动）
+const p1ByD=(a,b)=>a.d-b.d;
+// —— 候选 ——
+function p1Cands(w,ob,j){const C=[],S=[],H=[],SL=G.soldiers,HL=G.heroes;if(ob&&!ob.dead)C.push({k:'b',o:ob,d:0,tx:ob.tx,ty:ob.ty});
+  for(let i=0;i<HL.length;i++){const h=HL[i];if(!h.elite||h.dead)continue;const d=Math.hypot(h.x-w.x,h.y-8-(h.elev||0)-w.y);if(d<P1_ER)H.push({k:'e',o:h,d})}
+  for(let i=0;i<SL.length;i++){const s=SL[i];if(s.dead)continue;const d=Math.hypot(s.x-w.x,s.y-6-s.elev-w.y);if(d<P1_SR)S.push({k:'s',o:s,d})}
+  H.sort(p1ByD);S.sort(p1ByD);for(const x of H)C.push(x);for(const x of S)C.push(x);if(j>=0)C.push({k:'z',o:j,id:E.id[j],d:0});return C.length>P1_MAX?C.slice(0,P1_MAX):C}
+function p1Live(c){if(!G)return false;if(c.k==='z')return eOk(c.o,c.id);if(c.o.dead)return false;
+  if(c.k==='s')return G.soldiers.includes(c.o);if(c.k==='e')return G.heroes.includes(c.o);return objAtTile(c.tx,c.ty)===c.o}
+// —— 选中 ——
+function p1PickS(o){if(selUnit){selUnit=null;cam.follow=false;btnFollow.hidden=false}selected=o;refreshSel(true)}   // 同原来 endPtr 里的 pickS：选建筑（null = 取消选中，镜头停在原地）
+function p1Sel(c){if(!c){p1PickS(null);return}
+  if(c.k==='b')p1PickS(c.o);else if(c.k==='s'||c.k==='e')selectUnit(c.o);
+  else if(c.k==='z'&&eOk(c.o,c.id)){const j=c.o;if(!G.hero.dead){G.hero.tgtI=j;G.hero.tgtId=E.id[j];G.hero.moveTo=null}if(!(RD_ON&&rdBlip(j)))selectEnemy(j)}}   // 同原来点亡灵：英雄打它 + 亡灵属性面板（雷达光点不开面板）
+// —— 指挥 ——
+function p1Order(u,o){if(u.elite)p1ElOrder(u,o);else orderUnit(u,o)}
+function p1ElOrder(h,o){if(o.i!==undefined){P1_OT.set(h,{i:o.i,id:E.id[o.i]});h.aiT=0;addFx({k:'ring',x:Math.round(E.x[o.i]),y:Math.round(E.y[o.i]-6),r:12,life:0.4,c:'#ff6a4a'});sfx('click');return}
+  P1_OT.delete(h);if(!G.heroModes)G.heroModes={};G.heroModes[h.id]='guard';heroCmdSet(h.id,'g',{x:Math.round(o.x),y:Math.round(o.y)});   // 只改这一局（不改精英的默认指令 e.cmd）
+  addFx({k:'ring',x:Math.round(o.x),y:Math.round(o.y),r:10,life:0.4,c:'#f3d47c'});sfx('click')}
+function p1ElTgt(h){if(!h.elite)return -1;const o=P1_OT.get(h);if(!o)return -1;if(eOk(o.i,o.id)&&eVis(o.i)&&!(h.ws.cls==='melee'&&E.air[o.i]))return o.i;P1_OT.delete(h);return -1}   // 强制目标：死了 / 看不见了 / 近战够不着飞行的就作废
+const p1ElF=h=>!!h.elite&&P1_OT.has(h);
+function p1OrdClr(){if(G&&G.heroes)for(const h of G.heroes)if(h.elite)P1_OT.delete(h)}
+// —— 一次点击（ui/input.endPtr 的 pan 分支，没拖动）——
+function p1Tap(cx,cy){const t=screenToTile(cx,cy),w=screenToWorld(cx,cy),wave=G.phase==='wave',ob=objAtTile(t.tx,t.ty);
+  const u=selUnit&&!selUnit.dead?selUnit:null,cs=!u&&wave&&canOrderS(selected)?selected:null,j=wave?enemyAt(w.x,w.y):-1;
+  if(u||cs){   // 指挥状态（v0.5.9）：点亡灵 = 强制攻击 / 集火；点到友方 1 个 = 改选（再点建筑自己 = 取消指令），≥ 2 个 = 弹框；点空地 = 前往 / 向那里攻击
+    if(j>=0){if(u)p1Order(u,{i:j});else orderStruct(cs,{i:j});return}
+    const C=p1Cands(w,ob,-1);if(C.length>=2){p1PkOpen(C,cx,cy);return}
+    if(C.length===1){const c=C[0];if(c.o===u)return;if(cs&&c.o===cs){if(cs.ord){cs.ord=null;toast('已取消指令')}return}p1Sel(c);return}
+    if(u)p1Order(u,{x:w.x,y:w.y});else orderStruct(cs,{x:w.x,y:w.y});return}
+  if(!ob&&j<0&&HK.tapTile.length&&hkAny('tapTile',t.tx,t.ty))return;   // 0.13.2 天灾海域：点凿空的甲板（maps/scourge.szTapTile）
+  const C=p1Cands(w,ob,j>=0&&!(RD_ON&&rdBlip(j))?j:-1);
+  if(C.length>=2){p1PkOpen(C,cx,cy);return}
+  if(C.length===1){p1Sel(C[0]);return}
+  if(j>=0){p1Sel({k:'z',o:j,id:E.id[j]});return}   // 只点到雷达光点：照旧让英雄打它（不开面板）
+  p1PickS(null)}
+// —— 小框 ——
+function p1Name(c){const o=c.o;if(c.k==='z'){const T=ETC[E.t[o]];return T?T.name:'亡灵'}if(c.k==='e')return o.d.name+(o.d.title?' · '+o.d.title:'');if(c.k==='s')return(o.hbJyN||o.c.name)+(o.summon?'(召唤)':'');
+  if(o.type==='keep')return'主堡 Lv'+lvTxt(o);const d=o.cfg||BDEF[o.type];return(d?d.lvNames?d.lvNames[o.level-1]:d.name:'建筑')+(o.level?' Lv'+lvTxt(o):'')}
+function p1Hp(c){const o=c.o;if(c.k==='z')return E.mhp[o]>0?E.hp[o]/E.mhp[o]:0;return o.maxHp>0&&o.hp!==undefined?o.hp/o.maxHp:-1}
+function p1Ico(c){let u='';try{const o=c.o;u=c.k==='z'?enemyIcon(ETYPES[E.t[o]]):c.k==='e'?(SPR.heroes[o.spr]?heroIcon(o.spr,1):''):c.k==='s'?(SPR.units[o.type]?unitIcon(o.type):''):iconOf(o.type)}catch(e){u=''}
+  return`<i class="p1ic" style="background:${P1_KC[c.k]}">${u?`<img alt="" src="${u}">`:''}</i>`}
+const p1HpW=v=>Math.round(clamp(v,0,1)*100)+'%';
+function p1Row(c,i){const v=p1Hp(c);return`<button type="button" class="p1row" data-pk="${i}">${p1Ico(c)}<span class="p1nm"><b>${p1Name(c)}</b><em style="color:${P1_KC[c.k]}">${P1_KN[c.k]}</em></span>${v>=0?`<span class="p1hp${c.k==='z'?' en':''}"><b style="width:${p1HpW(v)}"></b></span>`:'<span></span>'}</button>`}
+function p1PkDraw(){const P=P1_PK;P.box.innerHTML=n1NumH(P.L.map(p1Row).join(''));P.bars=[...P.box.querySelectorAll('.p1row')].map(r=>r.querySelector('.p1hp b'))}
+function p1PkOpen(C,cx,cy){let el=$('#p1Pick');
+  if(!el){el=document.createElement('div');el.id='p1Pick';el.innerHTML='<div class="ui panel p1box"></div>';document.body.appendChild(el);
+    el.addEventListener('click',e=>{const b=e.target.closest('[data-pk]');if(!b||!P1_PK||performance.now()-P1_PK.t<P1_GT)return;const c=P1_PK.L[+b.dataset.pk];p1PkClose();if(c&&p1Live(c)){sfx('click');p1Sel(c)}})}
+  const box=el.firstChild;box.style.zoom=UI_UZ!==1?String(UI_UZ):'';P1_PK={g:G,L:C,el,box,bars:null,t:performance.now()};p1PkDraw();el.hidden=false;
+  const r=el.getBoundingClientRect(),W=innerWidth,H=innerHeight,g=14,w=r.width,h=r.height;let x,y;   // 不盖住点击处（手机上松手后浏览器补发的 click 会落在框上）：右边 → 左边 → 下面 → 上面
+  if(cx+g+w<=W-8){x=cx+g;y=cy-h/2}else if(cx-g-w>=8){x=cx-g-w;y=cy-h/2}else{x=cx-w/2;y=cy+g+h<=H-8?cy+g:cy-g-h}
+  x=clamp(x,8,Math.max(8,W-8-w));y=clamp(y,8,Math.max(8,H-8-h));el.style.left=Math.round(x)+'px';el.style.top=Math.round(y)+'px';
+  if(!P1_IV)P1_IV=setInterval(p1PkTick,200)}
+function p1PkTick(){const P=P1_PK;if(!P){p1PkClose();return}if(P.g!==G||!running||modalState){p1PkClose();return}
+  const L=P.L.filter(p1Live);if(!L.length){p1PkClose();return}
+  if(L.length!==P.L.length){P.L=L;p1PkDraw();return}
+  for(let i=0;i<L.length;i++){const b=P.bars[i];if(!b)continue;const w=p1HpW(p1Hp(L[i]));if(b.style.width!==w)b.style.width=w}}
+function p1PkClose(){P1_PK=null;if(P1_IV){clearInterval(P1_IV);P1_IV=0}const el=$('#p1Pick');if(el)el.hidden=true}
+const p1PkOn=()=>!!P1_PK;
+// 点框外：关掉；点在地图上的这一下作废（不选、不拖镜头），点在别的按钮上照常
+addEventListener('pointerdown',e=>{if(!P1_PK)return;if(P1_PK.box.contains(e.target))return;p1PkClose();if(e.target===cv){e.stopPropagation();e.preventDefault()}},true);
+// —— 选中精英的面板（ui/hud.refreshSel 调；同 unitSelPanel 的写法）——
+function p1ElPanel(h,force){if(selShown!==h){selShown=h;sellArmT=0}selEl.hidden=false;const w=h.ws,mel=w.cls==='melee',mg=w.cls==='magic'||!!w.magic,gp=heroGuardPt(h),f1=v=>String(Math.round(v*10)/10);
+  setT(selName,'sn',`${h.d.name}${h.d.title?' · '+h.d.title:''}`);
+  u2Set(selHp,'sh',`生命 ${hpTxt(h)} · 防御 ${Math.round(h.def||0)} · 法防 ${Math.round(h.mdef||0)}`);
+  u2Set(selNote,'sno',`${mel?'近战':mg?'法术':'远程'} ${atkAmT(w.dmg,w.am)} · ${mel?'距离':'射程'} ${f1(mel?w.reach||1:heroRange(h)/16)} 格 · 攻速 ${atkRate(heroAtkInt(h))} · 指令：${p1ElF(h)?'强制攻击':HERO_MODES[heroModeOf(h)]+(gp?'(指定地点)':'')}${h.layer===1?' · 在城墙上':''}`);
+  for(const b of[selUp,selSell,selRep,selGU,selGR,selSU,selSR,selBatch,selUnits,selModes])b.hidden=true;f1SelBuf(h,force)}
+// 选中精英：攻击范围 + 指令标记（驻守点、强制攻击的亡灵）；ui/draw.drawSpawnMarks 调
+function p1ElRing(h,y){const w=h.ws;if(w.cls==='melee')ovRingS(h.x,y,(w.reach||1)*16+6,'224,83,63',0.1);else ovRingS(h.x,y,heroRange(h),'243,212,124');   // 近战画武器的攻击距离（heroRange 只管远程），同士兵
+  const g=heroGuardPt(h);if(g)ovOrder(g.x,g.y,8,'243,212,124');const o=P1_OT.get(h);if(o&&eOk(o.i,o.id))ovOrder(E.x[o.i],E.y[o.i]-6,E.r[o.i]+6,'255,106,74')}
 
 // ---------- 0.12.7 代理 BFN：统一 buff 的显示名字（用户 2026-11-01：很多 buff 名字直接显示的是字段名）----------
 // 亡灵身上的、两边都会出现的放 BF_NAME（ui/esel），只在我方单位身上的放 F1_BN（ui/f1_fbuf）；两边面板都按 f1BfName 查，所以放哪张表都看得到
