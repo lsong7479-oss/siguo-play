@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.14.4.1",
- "code": 314,
- "size": 24167291,
- "sha256": "cd7c22e5ec98bbb7cea7f125503ab19156d591cd88f465b375cbd0423533c4a1",
+ "ver": "0.14.5",
+ "code": 318,
+ "size": 24257298,
+ "sha256": "9e6f6f6d673ff0eb0f4733e1c8c56a6a98db246df0ddc70a04d65f97ad664693",
  "minLoader": 1,
- "sig": "C64WYieJnSfrKED7m7q9ZB14p0tAUymnp+xDdCz/nkJUfko6x02yLPobPeeFJ2Hl0nz6e7eeq1dw70NX/1j6MA==",
- "note": "0.14.4.1 稳定版",
- "at": "2026-11-24 15:04 UTC"
+ "sig": "0Wn1Kdm+hD0YjDlXCE4XD3SO43YkRFNbk5juckLskOgzqV4+zpQ3ZuYMsMmeP2vogHfl4SGXYwI+inSvbhICIQ==",
+ "note": "0.14.5 稳定版",
+ "at": "2026-11-25 10:24 UTC"
 }

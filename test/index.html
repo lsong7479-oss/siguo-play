@@ -59321,7 +59321,7 @@ const EAB_MODS=[],EABL=[];
 function eAbil(has,f,sil){EAB_MODS.push({has,f,s:sil?1:0})}
 function eabBuild(){for(let t=0;t<ETYPES.length;t++){const c=ETC[t],L=[];for(const m of EAB_MODS)if(m.has(c))L.push({f:m.f,s:m.s});
     if(EAB[t]&&!c.vult)L.push({f:EAB[t],s:c.hover||EAB_SIL[t]?1:0});EABL[t]=L.length?L:null}}
-function eReset(){E.n=0;E.count=0;efreeN=0;E.alive.fill(0);E.ft.fill(null);E.st.fill(null);gHead.fill(-1);DEV_TRAIL.clear();facReset()}   // DEV_TRAIL：v0.5.0 沙漠吞噬者身体的轨迹（maps/temple）
+function eReset(){E.n=0;E.count=0;efreeN=0;E.alive.fill(0);E.ft.fill(null);E.st.fill(null);S1_SR.fill(null);gHead.fill(-1);DEV_TRAIL.clear();facReset()}   // S1_SR：R2 加，换局清掉持续伤害池子记的来源单位   // DEV_TRAIL：v0.5.0 沙漠吞噬者身体的轨迹（maps/temple）
 const eOk=(i,id)=>i>=0&&E.alive[i]===1&&E.id[i]===id;
 // 亡灵受到的治疗倍率：禁疗 = 0；v0.6.1 重伤（尖刺二阶）= 1 − hwF
 const eHK=i=>(E.hcT[i]>0?0:E.hwT[i]>0?1-E.hwF[i]:1)*(G.eHealK||1)*HH_HK*(1+em.eHealS);   // eHealS：0.14.5 K1 死国「黑暗恩赐」   // HH_HK：0.11.4 代理hh 加，黄虎「望穿千年」观兵·禁疗   // hwT / hwF：v0.7.0 修复——重伤原来和腐化皇家骑兵的撤退共用 hrT，被尖刺「重伤」的亡灵会乱走   // eHealK：v0.9.0 亡灵受到的治疗的整体倍率（无尽沙漠的水之碑）
@@ -59432,7 +59432,7 @@ function eSpawn(ti,x,y,st){
   E.hp[i]=st.hp;E.mhp[i]=st.hp;E.def[i]=st.def;E.dmg[i]=st.dmg;E.ai[i]=st.ai;E.sp[i]=st.sp*(c.tier>=4?1:vr(0.92,1.08));E.dodge[i]=st.dodge;E.ls[i]=st.ls;E.blk[i]=st.blk||0;E.shd[i]=st.shd||0;
   E.cd[i]=vr(0,0.5);E.fl[i]=0;E.an[i]=vr(0,2);E.lu[i]=0;E.th[i]=TH_WAIT;E.acc[i]=0;E.r[i]=c.size;E.face[i]=1;E.walk[i]=1;
   E.tile[i]=-1;E.nxt[i]=-1;E.fv[i]=-1;E.ft[i]=null;E.st[i]=null;E.hdv[i]=0;E.cv[i]=0;E.stT[i]=-9;E.bTk[i]=0;E.iceK[i]=0;E.alt[i]=0;E.bnT[i]=0;E.pA[i]=0;E.pB[i]=0;E.pC[i]=0;E.pD[i]=0;E.sld[i]=0;E.rvN[i]=0;E.rvM[i]=1;E.gdN[i]=0;
-  E.gr[i]=0;E.pa[i]=0;E.pab[i]=0;E.ab3[i]=c.parry?c.parry.cd*0.6:0;E.s1n[i]=0;E.s1m[i]=0;E.exd[i]=0;
+  E.gr[i]=0;E.pa[i]=0;E.pab[i]=0;E.ab3[i]=c.parry?c.parry.cd*0.6:0;E.s1n[i]=0;E.s1m[i]=0;s1SrFree(i);E.exd[i]=0;
   E.aslT[i]=0;E.aslF[i]=0;E.vol[i]=0;E.volT[i]=0;E.rcd[i]=c.rider?c.rider.int:0;E.ug[i]=0;E.dgS[i]=0;E.tl[i]=0;E.tlI[i]=-1;E.tcd[i]=0;E.tgo[i]=-1;
   E.aiS[i]=-99;E.aiF[i]=-99;E.aiU[i]=null;   // 0.13.2.x 托管英雄索敌用：最近一次打我方建筑 / 我方单位的时刻、打的是谁（engine/combat.hurtF / hurtS 记，heroes/heroai.heroTgtK 读）
   E.tsU[i]=0;E.nu[i]=0;E.nrv[i]=0;E.clk[i]=0;E.mrv[i]=0;E.nrU[i]=0;E.cbf[i]=0;E.yI[i]=0;E.yJ[i]=-1;E.yA[i]=0;E.yB[i]=0;E.yC[i]=0;E.yD[i]=0;E.rvU[i]=0;E.yT[i]=0;E.yN[i]=0;E.hwT[i]=0;E.hwF[i]=0;EHM[i]=0;E.tbk[i]=0;E.rvT[i]=0;E.hrT[i]=0;E.bw[i]=0;E.bwT[i]=0;E.wtgt[i]=null;E.wu[i]=0;E.wuO[i]=null;E.rtr[i]=0;E.flk[i]=0;E.gd[i]=0;E.bcd[i]=c.burrow?1.5:0;E.stn[i]=0;E.stnT[i]=0;E.stnN[i]=0;E.wlT[i]=0;E.wlK[i]=0;E.ugT[i]=0;E.ich[i]=0;E.lpT[i]=0;E.lz[i]=0;E.own[i]=0;E.hsT[i]=0;E.hst[i]=-1;E.hstId[i]=0;E.hvN[i]=0;E.hvL[i]=0;E.ptg[i]=null;E.pyN[i]=0;E.dgT[i]=0;E.spT[i]=0;E.spK[i]=0;E.stun[i]=0;E.adv[i]=0;E.shootT[i]=0;E.frz[i]=0;E.slowT[i]=0;E.slowF[i]=0;E.root[i]=0;E.buffS[i]=0;E.buffL[i]=0;E.chg[i]=0;
@@ -59449,7 +59449,7 @@ function eSpawn(ti,x,y,st){
   if(em.stealth>0&&!c.tomb&&c.speed>0){if(ETG[ti])E.sp[i]*=1+CFG.eCardFx.stealthSpd;else E.clk[i]=1e9}   // v0.8.25 亡灵卡「匿影潜行」：出场弱隐身（挨打、出手短暂显形）；本来会隐身的移速 +30%
   return i;
 }
-function eKill(i){if(!E.alive[i])return;if(ETUN[E.t[i]])G.tunnelN--;if(ETOMB[E.t[i]])G.tombN--;if(ESTRU[E.t[i]])esGone(i);E.alive[i]=0;E.ft[i]=null;E.st[i]=null;E.vt[i]=null;E.ptg[i]=null;EFREE[efreeN++]=i;E.count--}
+function eKill(i){if(!E.alive[i])return;if(ETUN[E.t[i]])G.tunnelN--;if(ETOMB[E.t[i]])G.tombN--;if(ESTRU[E.t[i]])esGone(i);E.alive[i]=0;E.ft[i]=null;E.st[i]=null;E.vt[i]=null;E.ptg[i]=null;s1SrFree(i);EFREE[efreeN++]=i;E.count--}   // s1SrFree：R2 加，持续伤害池子记的来源单位置 null（engine/s1_dot；池子本身留着，死后传染照样抄）
 // 空间网格
 const GC=32,GW=MAP_MAX*TILE/GC,GH=MAP_MAX*TILE/GC,gHead=new Int32Array(GW*GH).fill(-1),gNext=new Int32Array(ECAP);
 function buildGrid(){gHead.fill(-1);for(let i=0;i<E.n;i++){if(!E.alive[i])continue;const c=((E.y[i]/GC)|0)*GW+((E.x[i]/GC)|0);gNext[i]=gHead[c];gHead[c]=i}}
@@ -75585,6 +75585,7 @@ function dsRows(){const L=Object.values(DSK).filter(r=>r.dmg>0.5||r.tak>0.5||r.h
 // 三种：0 灼烧（火，每 CFG.combat.burnTick 0.1 秒结算）、1 中毒（毒）、2 流血（斩击；中毒、流血每 dotTick 0.5 秒结算）。
 // 池子的键 = 种类 + 来源名（玩家看到的名字：塔种、兵种、英雄、卡、词条、技能……）。名字是小整数（s1Nm 登记），每只亡灵至多 S1_K 个池子：
 //   同名之内：默认取大（每秒伤害取大、时长刷新）；cap > 1（说明写了叠加 / 叠层的来源）才叠层：层数相加到 cap，每层伤害取大，时长刷新。
+//   同一个来源名下，带层上限的写入（cap > 1）和不叠层的写入是两个池子（内部键 S1_SB），各算各的、结算时相加，面板上显示同一个名字（R2，主会话 11-25 定）。
 //   非同名之间：各自一份，结算时相加；没有全局上限。池子满了顶掉同种里每秒伤害最小的（比新来的还小才顶）。
 // 结算：同一种的池子合成一下 dealE（BURN_HIT / POISON_HIT / BLEED_HIT，第三类「状态伤害」o.st），数据详情按各池攒的份额分账；
 //   池子带 rc（无视这么多点对应类型的抗性：熔火塔爆燃火焰、精械工厂深渊熔岩、进阶帕拉塞尔苏斯蚀骨之毒……）的单独结算一下（S1_HRC）。
@@ -75600,7 +75601,8 @@ function s1NmM(M,id,lb){let n=M.get(id);if(n===undefined){n=S1_NL.length;M.set(i
 // 单位 → 名字：英雄按英雄（召唤物算主人）、士兵按兵种、建筑 / 陷阱按种类；地图机制、找不到的 = 其它
 function s1NmU(u){for(let k=0;k<4&&u;k++){if(u.isHero)return s1NmM(S1_NH,u.id,()=>(u.d&&u.d.name)||u.id);if(u.summon&&u.owner){u=u.owner;continue}
     if(u.c&&u.type!==undefined&&CFG.units[u.type])return s1NmM(S1_NS,u.type,()=>CFG.units[u.type].name||u.type);if(u.cfg&&u.type!==undefined)return s1NmM(S1_NB,u.type,()=>u.cfg.name||u.type);return S1_NX}return S1_NX}
-const s1NmName=n=>S1_NL[n]||'其它';
+const S1_SB=1<<24,S1_NMK=S1_SB-1;   // 池子的内部键 = 名字（带层上限的写入再或上 S1_SB）：同一个来源名下叠层的和不叠层的各是一个池子、结算时相加（R2，主会话 11-25 定：炼药师「炼毒」叠层 + 「淬毒」不叠层是两份）
+const s1NmName=n=>S1_NL[n&S1_NMK]||'其它';
 // 固定的名字（卡、词条、饰品、绝命毒师的毒……；别的来源不给名字 = 按出手的单位认）
 const S1_JM=s1NmM(S1_NH,'poisoner',()=>(CFG.heroes.poisoner&&CFG.heroes.poisoner.name)||'绝命毒师');   // 绝命毒师在场时 o.psn 叠的毒（士兵、塔叠的也算他的）
 const S1_CBURN=s1Nm('cd:burn','灼烧(卡)'),S1_CARROW=s1Nm('cd:fireArrow','火矢(卡)'),S1_CRED=s1Nm('cd:redFlame','赤焰(卡)'),S1_CVEN=s1Nm('cd:venom','淬毒(卡)');
@@ -75610,12 +75612,12 @@ const S1_MAP=s1Nm('x:map','地图'),S1_F16Q=s1Nm('f16b:qz','淬沼之毒'),S1_RP
 // s1Add(亡灵, 种类, 名字（≤ 0 = 按 src / DS_CUR 认）, 每层每秒, 秒, 叠几层, 层上限（≤ 1 = 取大不叠）, 无视抗性, 来源单位（undefined = DS_CUR）)
 function s1Add(j,k,nm,dps,t,n,cap,rc,src){if(!(dps>0)||!(t>0)||!E.alive[j])return;
   if(k===0){if(G.efWater)return;if(HK.burnKE.length){const q=hkFirst('burnKE');if(q>0)dps*=q}if(G.efFire)t*=CFG.elemForest.fire.mul;const L=HK.burnDurE;for(let q=0;q<L.length;q++)t=L[q](t)}   // burnKE：地狱轰炸机我方灼烧 ×2；元素森林水之相点不着、火之相时间翻倍；burnDurE：赤龙法杖（gear/fx_ly）
-  if(src===undefined)src=DS_CUR;if(!(nm>0))nm=s1NmU(src);const C=cap>1?cap:1,b=j*S1_K,c=E.s1n[j];
+  if(src===undefined)src=DS_CUR;if(!(nm>0))nm=s1NmU(src);const C=cap>1?cap:1,b=j*S1_K,c=E.s1n[j];nm=C>1?(nm&S1_NMK)|S1_SB:nm&S1_NMK;   // nm 从这里起是内部键
   for(let q=b;q<b+c;q++){if(S1_NI[q]!==nm||S1_KD[q]!==k)continue;
     if(S1_T[q]<=0){S1_S[q]=0;S1_D[q]=0}   // 到期还没结算掉的：当成新挂上
-    if(C>S1_C[q])S1_C[q]=C;const CC=S1_C[q];S1_S[q]=CC>1?Math.min(CC,S1_S[q]+(n>0?n:1)):1;if(dps>=S1_D[q]){S1_D[q]=dps;S1_SR[q]=src;S1_R[q]=rc||0}if(t>S1_T[q])S1_T[q]=t;E.s1m[j]|=1<<k;return}   // 同名里有一处写了叠层，这个名字就按叠层算（层上限取大）
-  let q=b+c;if(c>=S1_K){let w=-1,wv=dps*(C>1?Math.min(C,n>0?n:1):1);for(let p=b;p<b+c;p++){if(S1_KD[p]!==k||S1_A[p]>0)continue;const v=S1_T[p]>0?S1_S[p]*S1_D[p]:0;if(v<wv){wv=v;w=p}}if(w<0)return;q=w}else E.s1n[j]=c+1;   // 满了：顶掉同种里最弱、这一跳没有攒着伤害的
-  S1_NI[q]=nm;S1_KD[q]=k;S1_S[q]=C>1?Math.min(C,n>0?n:1):1;S1_C[q]=C;S1_D[q]=dps;S1_T[q]=t;S1_R[q]=rc||0;S1_A[q]=0;S1_SR[q]=src;E.s1m[j]|=1<<k}
+    if(C>S1_C[q])S1_C[q]=C;const CC=S1_C[q];S1_S[q]=CC>1?Math.min(CC,S1_S[q]+(n>0?n:1)):1;if(dps>=S1_D[q]){S1_D[q]=dps;S1_SR[q]=src;S1_R[q]=rc||0}if(t>S1_T[q])S1_T[q]=t;E.s1m[j]|=1<<k;return}   // 同一个内部键（名字 + 叠不叠层）里层上限取大
+  let q=b+c,ka=0;if(c>=S1_K){let w=-1,wv=dps*(C>1?Math.min(C,n>0?n:1):1);for(let p=b;p<b+c;p++){if(S1_KD[p]!==k)continue;const v=S1_T[p]>0?S1_S[p]*S1_D[p]:0;if(v<wv){wv=v;w=p}}if(w<0)return;q=w;ka=S1_A[q]}else E.s1n[j]=c+1;   // 满了：顶掉同种里最弱的；它这一跳攒着的伤害 ka 留在这一格跟着这一种照常结算（R2 修：原来只顶「没攒着伤害的」，可生效的池子每帧都在攒，只有刚结算完那一帧能顶进来）
+  S1_NI[q]=nm;S1_KD[q]=k;S1_S[q]=C>1?Math.min(C,n>0?n:1):1;S1_C[q]=C;S1_D[q]=dps;S1_T[q]=t;S1_R[q]=rc||0;S1_A[q]=ka;S1_SR[q]=src;E.s1m[j]|=1<<k}
 // 兼容的写法：灼烧 / 流血 / 中毒（不叠层），名字不给 = 按出手的单位
 function burnE(j,dps,t,nm,rc,src){s1Add(j,0,nm,dps,t,1,1,rc,src)}   // function（不是 const）：测试会临时换掉它数调用
 function bleedE(j,dps,t,nm,n,cap,src){s1Add(j,2,nm,dps,t,n,cap,0,src)}
@@ -75627,25 +75629,27 @@ function s1Stk(j,k){const b=j*S1_K,c=E.s1n[j];let s=0;for(let q=b;q<b+c;q++)if(S
 function s1Dps(j,k){const b=j*S1_K,c=E.s1n[j];let s=0;for(let q=b;q<b+c;q++)if(S1_KD[q]===k&&S1_T[q]>0)s+=S1_S[q]*S1_D[q];return s}
 function s1Left(j,k){const b=j*S1_K,c=E.s1n[j];let s=0;for(let q=b;q<b+c;q++)if(S1_KD[q]===k&&S1_T[q]>0)s+=S1_S[q]*S1_D[q]*S1_T[q];return s}   // 剩余时间里还会打出的伤害（引爆 / 立刻结算用）
 function s1TMax(j,k){const b=j*S1_K,c=E.s1n[j];let s=0;for(let q=b;q<b+c;q++)if(S1_KD[q]===k&&S1_T[q]>s)s=S1_T[q];return s}
-function s1NmStk(j,k,nm){const b=j*S1_K,c=E.s1n[j];for(let q=b;q<b+c;q++)if(S1_NI[q]===nm&&S1_KD[q]===k&&S1_T[q]>0)return S1_S[q];return 0}   // 某一个名字的层数
+function s1NmStk(j,k,nm){const b=j*S1_K,c=E.s1n[j];let s=0;for(let q=b;q<b+c;q++)if((S1_NI[q]&S1_NMK)===nm&&S1_KD[q]===k&&S1_T[q]>0)s+=S1_S[q];return s}   // 某一个名字的层数
 // ===== 清掉 =====
+function s1SrFree(i){const b=i*S1_K;for(let q=b;q<b+S1_K;q++)S1_SR[q]=null}   // 亡灵死掉（engine/enemy.eKill）/ 出生（eSpawn）时把这只的来源单位置 null（R2）
 function s1Del(j,q){const b=j*S1_K,c=E.s1n[j]-1,l=b+c;if(q!==l){S1_NI[q]=S1_NI[l];S1_KD[q]=S1_KD[l];S1_S[q]=S1_S[l];S1_C[q]=S1_C[l];S1_D[q]=S1_D[l];S1_T[q]=S1_T[l];S1_R[q]=S1_R[l];S1_A[q]=S1_A[l];S1_SR[q]=S1_SR[l]}S1_SR[l]=null;S1_A[l]=0;E.s1n[j]=c}
 function s1Mask(j){const b=j*S1_K,c=E.s1n[j];let m=0;for(let q=b;q<b+c;q++)if(S1_T[q]>0)m|=1<<S1_KD[q];E.s1m[j]=m}
 // 按种类整类清（位：1 灼烧 · 2 中毒 · 4 流血，7 = 全部；攒着没结算的一起丢掉）——驱散 / 净化 / 复活 / 地图清状态（第四节）
 function s1Clr(j,mask){if(!(E.s1n[j]>0))return;if(mask===undefined)mask=7;const b=j*S1_K;for(let q=b+E.s1n[j]-1;q>=b;q--)if((mask>>S1_KD[q])&1)s1Del(j,q);s1Mask(j)}
-function s1ClrNm(j,k,nm){const b=j*S1_K;for(let q=b+E.s1n[j]-1;q>=b;q--)if(S1_NI[q]===nm&&S1_KD[q]===k)s1Del(j,q);s1Mask(j)}   // 按名字整池清
+function s1ClrNm(j,k,nm){const b=j*S1_K;for(let q=b+E.s1n[j]-1;q>=b;q--)if((S1_NI[q]&S1_NMK)===nm&&S1_KD[q]===k)s1Del(j,q);s1Mask(j)}   // 按名字整池清
 // 立刻结算：返回这一种所有池子剩下的伤害（含这一跳攒着没结算的），并清池（第二节「立刻结算」、引爆类）
 function s1Burst(j,k){const b=j*S1_K;let s=0;for(let q=b+E.s1n[j]-1;q>=b;q--){if(S1_KD[q]!==k)continue;s+=S1_A[q]+(S1_T[q]>0?S1_S[q]*S1_D[q]*S1_T[q]:0);s1Del(j,q)}s1Mask(j);return s}
 // 传染：把 i 身上这一种的池子抄给 j（每层伤害 × mul；同名按规矩合并），来源照旧算原来那只的
-function s1Copy(j,i,k,mul){const b=i*S1_K,c=E.s1n[i];for(let q=b;q<b+c;q++){if(S1_KD[q]!==k||!(S1_T[q]>0))continue;const nm=S1_NI[q];s1Add(j,k,nm,S1_D[q]*mul,S1_T[q],S1_S[q],S1_C[q],S1_R[q],S1_SR[q]);
-    if(S1_C[q]>1){const p=s1Find(j,k,nm);if(p>=0&&S1_S[p]<S1_S[q])S1_S[p]=S1_S[q]}}}   // 叠层的抄过去取两边较多的层数（不相加）
-function s1Find(j,k,nm){const b=j*S1_K,c=E.s1n[j];for(let q=b;q<b+c;q++)if(S1_NI[q]===nm&&S1_KD[q]===k)return q;return-1}
+function s1Copy(j,i,k,mul){const b=i*S1_K,c=E.s1n[i];for(let q=b;q<b+c;q++){if(S1_KD[q]!==k||!(S1_T[q]>0))continue;const nm=S1_NI[q];s1Add(j,k,nm&S1_NMK,S1_D[q]*mul,S1_T[q],S1_S[q],S1_C[q],S1_R[q],S1_SR[q]);
+    if(S1_C[q]>1){const p=s1FindK(j,k,nm);if(p>=0&&S1_S[p]<S1_S[q])S1_S[p]=S1_S[q]}}}   // 叠层的抄过去取两边较多的层数（不相加）
+function s1Find(j,k,nm){const b=j*S1_K,c=E.s1n[j];for(let q=b;q<b+c;q++)if((S1_NI[q]&S1_NMK)===nm&&S1_KD[q]===k)return q;return-1}   // 名字下的任一个池子（叠层的、不叠层的都算）
+function s1FindK(j,k,key){const b=j*S1_K,c=E.s1n[j];for(let q=b;q<b+c;q++)if(S1_NI[q]===key&&S1_KD[q]===k)return q;return-1}   // 按内部键找
 // 延长某一个名字的时间（沼雾法杖：绝命毒师的毒 +50% 时间）
-function s1Ext(j,k,nm,t){const q=s1Find(j,k,nm);if(q>=0&&S1_T[q]>0&&t>S1_T[q])S1_T[q]=t}
+function s1Ext(j,k,nm,t){const q=s1FindK(j,k,nm|S1_SB);if(q>=0&&S1_T[q]>0&&t>S1_T[q])S1_T[q]=t}   // 叠层的那个池子（绝命毒师 o.psn 叠的）
 // 这一种的池子都少 t 秒（黄沙海岸：水里灼烧烧得快）
 function s1Dec(j,k,t){const b=j*S1_K,c=E.s1n[j];for(let q=b;q<b+c;q++)if(S1_KD[q]===k&&S1_T[q]>0)S1_T[q]=Math.max(1e-6,S1_T[q]-t)}
 // 抬高某一个名字的每层伤害（炼毒天赋）
-function s1Up(j,k,nm,dps){const q=s1Find(j,k,nm);if(q>=0&&S1_T[q]>0&&dps>S1_D[q])S1_D[q]=dps}
+function s1Up(j,k,nm,dps){const q=s1FindK(j,k,nm|S1_SB);if(q>=0&&S1_T[q]>0&&dps>S1_D[q])S1_D[q]=dps}   // 叠层的那个池子
 // ===== 每帧（engine/enemy.eTick 调；E.s1n[i] > 0 才调） =====
 const S1_HRC=[{st:1,noFx:true,dot:true,mix:{fire:1},resCut:{fire:0}},{st:1,noFx:true,dot:true,mix:{poison:1},resCut:{poison:0}},{st:1,noFx:true,dot:true,pen:99,mix:{slash:1},resCut:{slash:0}}];   // 带无视抗性的池子单独结算用（每种一个，结算时改 resCut）
 let S1_PB=false;   // s1Tick 算出来：身上有没有中毒 / 流血的池子（含到期了还没结算的）
@@ -75696,10 +75700,10 @@ function s1FAdd(u,k,nm,dps,t,n,cap){if(!u||u.dead||!(dps>0)||!(t>0))return;const
   if(k===0){if(G.efWater||u.fireImm||(im&&im.burn))return;if(HH_W)t=hhCc(u,t,'burn');t*=ENV.burn*(G.efFire?CFG.elemForest.fire.mul:1)}   // fireImm：德拉贡不会被灼烧；ENV.burn：雨天时长 ×0.2；元素森林火之相时间翻倍
   else{if(u.psnImm||(im&&im.poison))return;if(HH_W)t=hhCc(u,t,'poison')}   // hhCc：黄虎「望穿千年」记灼烧 / 中毒、料势
   const sR=X&&X.sRes;if(sR){const r=k===0?sR.burn:sR.poison;if(r>0)dps/=1+r}   // 异常抗性：÷ 每跳伤害（原来缩短时长）
-  if(!(nm>0))nm=s1NmE(S1_EI);s1FSync(u);const F=u.s1F||(u.s1F=s1FNew()),C=cap>1?cap:1;
+  if(!(nm>0))nm=s1NmE(S1_EI);s1FSync(u);const F=u.s1F||(u.s1F=s1FNew()),C=cap>1?cap:1;nm=C>1?(nm&S1_NMK)|S1_SB:nm&S1_NMK;   // 内部键：同亡灵那边
   for(let q=0;q<F.n;q++){if(F.nm[q]!==nm||F.kd[q]!==k)continue;if(!(F.t[q]>0)){F.s[q]=0;F.d[q]=0}if(C>F.c[q])F.c[q]=C;const CC=F.c[q];F.s[q]=CC>1?Math.min(CC,F.s[q]+(n>0?n:1)):1;if(dps>F.d[q])F.d[q]=dps;if(t>F.t[q])F.t[q]=t;s1FSum(u);return}
-  let q=F.n;if(q>=S1_FK){let w=-1,wv=dps;for(let p=0;p<F.n;p++){if(F.kd[p]!==k||F.a[p]>0)continue;const v=F.t[p]>0?F.s[p]*F.d[p]:0;if(v<wv){wv=v;w=p}}if(w<0)return;q=w}else F.n++;
-  F.nm[q]=nm;F.kd[q]=k;F.s[q]=C>1?Math.min(C,n>0?n:1):1;F.c[q]=C;F.d[q]=dps;F.t[q]=t;F.a[q]=0;s1FSum(u)}
+  let q=F.n,ka=0;if(q>=S1_FK){let w=-1,wv=dps;for(let p=0;p<F.n;p++){if(F.kd[p]!==k)continue;const v=F.t[p]>0?F.s[p]*F.d[p]:0;if(v<wv){wv=v;w=p}}if(w<0)return;q=w;ka=F.a[q]}else F.n++;   // 满了同亡灵那边（R2 修）：顶掉同种最弱的，攒着的伤害留下
+  F.nm[q]=nm;F.kd[q]=k;F.s[q]=C>1?Math.min(C,n>0?n:1):1;F.c[q]=C;F.d[q]=dps;F.t[q]=t;F.a[q]=ka;s1FSum(u)}
 // 守军着火 / 中毒（兼容老的写法）：burnFriend(单位, 每秒, 秒, 名字)；poisonF(单位, {dps, t}, stack（true = 叠到 CFG.jungle.poison.maxStack、数字 = 叠到这么多层、false = 不叠）, 名字)
 function burnFriend(u,dps,t,nm){s1FAdd(u,0,nm,dps,t,1,1)}
 function poisonF(u,V,stack,nm){const mx=typeof stack==='number'?stack:stack?CFG.jungle.poison.maxStack:1;s1FAdd(u,1,nm,V.dps,V.t,1,mx)}
@@ -91438,7 +91442,7 @@ function obwComp(s){if(OBC_V!==G.structVer||OBC_G!==G||OBC_W!==G.wave||!OBC_M||!
         if(b&&!b.dead&&OBW_T.has(b.type)&&evo3On(b)&&!OBC_M.has(b)){OBC_M.set(b,comp);st.push(b)}}}}}
   return OBC_M.get(s)}
 // 黑曜屏障（twHurtS 里非城墙建筑那一段）：离它最近、5×5 格挨得着的黑曜城墙替它挡物理 99% / 法术 50%，按替伤取较小
-function obwBar(s,dmg,raw,o){if(s.trap||s.temp||!(dmg>0))return dmg;const L=obwList();if(!L.length)return dmg;const e=btEvo('obWall'),B=e&&e.obBar;if(!B)return dmg;
+function obwBar(s,dmg,raw,o){if(s.trap||s.temp||!(dmg>0)||o.st)return dmg;const L=obwList();if(!L.length)return dmg;const e=btEvo('obWall'),B=e&&e.obBar;if(!B)return dmg;   // o.st：R2 加，状态伤害（灼烧、中毒、流血、沼毒）不替伤（《异常状态重做》第一节 1）
   const R=B.r,n=s.fs||1;let best=null,bd=1e9;
   for(let i=0;i<L.length;i++){const w=L[i];if(w.dead||w.hp<=0||w.tx<s.tx-R||w.tx>s.tx+n-1+R||w.ty<s.ty-R||w.ty>s.ty+n-1+R)continue;const d=Math.abs(w.x-s.x)+Math.abs(w.y-s.y);if(d<bd){bd=d;best=w}}
   if(!best)return dmg;const t=dmg*(ufMg(o)?B.mag:B.phy);obwTake(best,t*fShK(best,s,raw,o),o);return dmg-t}
@@ -101942,7 +101946,7 @@ function elHealSeek(h){if(G.phase!=='wave'||h.hp>=h.maxHp*0.75||f4NoBack(h)){h.e
 const EL_WEAK=new Map();const elWeakEff=v=>{let e=EL_WEAK.get(v);if(!e){e={weak:v};EL_WEAK.set(v,e)}return e};
 // 减伤（陷阵、先登、我都记得）、先登免控
 feat('elite',{on:()=>!!(G&&((G.elites&&G.elites.length)||elMemOn())),hooks:{
-  dmgInF:(u,dmg,o)=>{if(u.isHero&&(u.elite||u.id==='scribe')){UF_DR+=elMemK()+u.clStK;if(u.elite){const S=u.d.elS||{};if(o&&(S.drP||S.drM))UF_DR+=ufMg(o)?(S.drM||0):(S.drP||0);if(S.ss&&u.elSs>0)UF_DR+=u.elSs*S.ss[1];if(S.dr)UF_DR+=S.dr;   // drP / drM：0.12.0 血脉的物理 / 法术减伤
+  dmgInF:(u,dmg,o)=>{if(u.isHero&&(u.elite||u.id==='scribe')){UF_DR+=elMemK()+u.clStK;if(u.elite){const S=u.d.elS||{};if(o&&!o.dot&&(S.drP||S.drM))UF_DR+=ufMg(o)?(S.drM||0):(S.drP||0);if(S.ss&&u.elSs>0)UF_DR+=u.elSs*S.ss[1];if(S.dr)UF_DR+=S.dr;   // drP / drM：0.12.0 血脉的物理 / 法术减伤
       if(S.xd){if(!(u.elXdU>G.time))u.elXdN=0;u.elXdN=Math.min(S.xd[2]/S.xd[0],(u.elXdN||0)+1);u.elXdU=G.time+S.xd[1];UF_DR+=u.elXdN*S.xd[0]}
       if(S.stk){if(!(u.elStkU>G.time))u.elStkN=0;u.elStkN=Math.min(S.stk[2],(u.elStkN||0)+1);u.elStkU=G.time+S.stk[1];UF_DR+=u.elStkN*S.stk[0]}UF_DR+=elDr2(u,S);if(S.hitSh&&dmg>0)elHitSh(u,S.hitSh)}}return dmg},   // stk：0.12.0 家族特性「每次受伤叠减伤」（不免控）
   ccInF:(u,t)=>u&&u.elite&&u.d.elS?(u.d.elS.xd?0:u.d.elS.ccR?t/(1+u.d.elS.ccR):t):t,   // ccR：0.12.0 训练「意志训练」
@@ -102986,8 +102990,9 @@ function fbTick(){FB_GA.length=0;let sk=0;const H=G.heroes;
   if(FB_MSH.size&&G.time>=FB_MT){FB_MT=G.time+1;for(const[u,v]of FB_MSH)if(v[1]<=G.time||u.dead)FB_MSH.delete(u)}}
 // 火炮集群：施加光环的精英 R 格内（含自己）的火炮单位
 function fbGunAmp(o){const a=o.hk||o.fu||o.su;if(!a||a.dead||!(o.hk?fbGunH(a):fbGunS(a)))return 0;for(let k=0;k<FB_GA.length;k++){const c=FB_GA[k],A=c.d.elS.gunAura;if(!c.dead&&Math.hypot(c.x-a.x,c.y-a.y)<=A[0]*16)return A[1]}return 0}
+const fbStart=()=>{FB_HOT.length=0;FB_GA.length=0;FB_FC.length=0;FB_SUM.length=0;FB_MSH.clear();FB_FH.clear();FB_SK=0;FB_SKT=0;FB_MT=0};
 feat('elFam14b',{ord:523,on:()=>!!(G&&G.heroes&&G.heroes.some(h=>h.elite)),hooks:{
-  start:()=>{FB_HOT.length=0;FB_GA.length=0;FB_FC.length=0;FB_SUM.length=0;FB_MSH.clear();FB_FH.clear();FB_SK=0;FB_SKT=0;FB_MT=0},
+  start:fbStart,
   waveEnd:()=>{FB_FH.clear()},
   tick:()=>{fbTick()},
   dmgBaseE:(i,d,o)=>{if(o.dot||o.fbX)return d;if(FB_GA.length){const v=fbGunAmp(o);if(v)UF_AX+=v}
@@ -103013,6 +103018,7 @@ feat('elFam14b',{ord:523,on:()=>!!(G&&G.heroes&&G.heroes.some(h=>h.elite)),hooks
   boomR:(rad,o)=>{const h=o&&o.atk&&o.hk;return h&&h.elite&&h.d&&h.d.elS&&h.d.elS.boomRA>0?rad*(1+h.d.elS.boomRA):rad},   // 重炮工程：普通攻击的爆炸范围
   healInF:(u,amt,src)=>{if(FB_SPL||!src||src===u||!src.elite||!src.d||!src.d.elS||!src.d.elS.healSplash||!(amt>0))return amt;const v=src.d.elS.healSplash,R=v[0]*16,L=G.friends,DS0=DS_CUR;   // 圣光治愈：波及 1 格内的友军（波及的那份不再吃治疗量加成、不再波及）
     FB_SPL=true;DS_CUR=null;try{for(let k=0;k<L.length;k++){const f=L[k];if(f===u||f.dead||f.hp>=f.maxHp||Math.hypot(f.x-u.x,f.y-u.y)>R)continue;healF(f,amt*v[1]);dsHeal(src,amt*v[1])}}finally{FB_SPL=false;DS_CUR=DS0}return amt}}});
+feat('elFam14bS',{ord:524,on:()=>true,hooks:{start:fbStart}});   // X1 修（0.14.5）：开局清状态——精英是开局以后才放出来的，上面那个的 start 赶不上（同 el_fam16a 的 elFam16aS）；原来 FB_SKT 从上一局带过来，这一局 G.time 追上之前召唤物不按精英属性换算、不乘 sumK
 function fbElem0(h,i,v){if(v>0&&E.alive[i]&&E.hp[i]>0)dealE(i,v,{hk:h,mix:h.ws.mix||{slash:1},sure:1,fbX:1})}   // 物理的额外一下（绝影匿踪）
 function fbMshAbs(u,dmg){const S=FB_MSH.get(u);if(!S)return dmg;if(S[1]<=G.time){FB_MSH.delete(u);return dmg}const a=Math.min(S[0],dmg);S[0]-=a;if(S[0]<=0.5)FB_MSH.delete(u);return dmg-a}
 // 特性、职业特性的说明
@@ -105344,7 +105350,7 @@ feat('f143',{ord:530,on:()=>!!(G&&G.heroes&&G.heroes.some(h=>h.elite&&h.d&&h.d.e
     if(S.qTk)UF_VN+=S.qTk;if(S.qWat&&f143Wet(u))UF_DR+=S.qWat;if(S.qSelfA)UF_DR+=S.qSelfA;
     if(S.qNear){const d=Math.hypot(u.x-G.base.x,u.y-G.base.y)/16;if(d<S.qNear[0])UF_DR+=(S.qNear[0]-d)*S.qNear[1]}
     if(S.qLoss&&u.maxHp>0){const L=1-u.hp/u.maxHp;if(L>0)UF_DR+=Math.min(S.qLoss[1],Math.floor(L*100+1e-9)*S.qLoss[0])}
-    const st=F143_S.get(u);if(st){const D=st.drag;UF_DR+=ufMg(o)?D.md:D.pd;if(st.lastU>G.time&&!o.tru)dmg*=1-S.qLast[2]}return dmg},
+    const st=F143_S.get(u);if(st){const D=st.drag;if(!o.dot)UF_DR+=ufMg(o)?D.md:D.pd;if(st.lastU>G.time&&!o.tru)dmg*=1-S.qLast[2]}return dmg},
   afterHurtF:(u,dmg,o)=>{if(!u.isHero||!u.elite||u.dead)return;const S=u.d.elS;if(!S||!S.f143on)return;const st=f143St(u);if(dmg>0)st.hurtT=G.time;
     if(S.qHide&&u.gst&&dmg>0){u.gst=0;if(!(u.stealthT>0))u.stealthed=false}
     const src=o&&o.src>=0&&E.alive[o.src]?o.src:-1;
@@ -107539,7 +107545,7 @@ function svDevDraw(cx0,cy0,cx1,cy1){const S=G.sv,h=svHero();if(!S||!S.dv)return;
     for(let k=0;k<n;k++){const a=S.ba+k/n*Math.PI*2,x=Math.round(h.x+Math.cos(a)*R),y=Math.round(h.y-4+Math.sin(a)*R*0.7);rectW(x-1,y-3,3,7,SVD_K.b2);rectW(x-3,y-1,7,3,SVD_K.b2);rectW(x,y-2,1,5,SVD_K.b);rectW(x-2,y,5,1,SVD_K.b)}}}
 // 伤害加成（队长、队员打出的）、减伤（队长、队员受到的）
 function svDmgOut(i,dmg,o){const S=G.sv;if(!S||!S.st||!o||!svSquadU(o.hk))return dmg;return dmg*(1+S.lvK+(o.magic?S.st.mag:S.st.phy))}
-function svDmgIn(u,dmg,o){const S=G.sv;if(S&&S.st&&svSquadU(u))UF_DR+=o&&o.magic?S.st.mdr:S.st.pdr;return dmg}
+function svDmgIn(u,dmg,o){const S=G.sv;if(S&&S.st&&svSquadU(u)&&!(o&&o.dot))UF_DR+=o&&o.magic?S.st.mdr:S.st.pdr;return dmg}   // !o.dot：R2 修（规则 3：物理 / 法术减伤只算直接伤害，0.14.5 s1 状态伤害第三类不吃；原来灼烧 / 中毒吃法术、流血吃物理）
 feat('svdev',{on:()=>!!(G&&G.mode==='survivor'),hooks:{tick:svDevTick,eDie:svDevXp,drawWorld:svDevDraw,dmgBaseE:svDmgOut,dmgInF:svDmgIn}});
 // —— 数值卡（每波打完）的效果：game/survivor.svApply 先问这里，返回 true = 处理了 ——
 function svDevCard(o){const c=o.c,S=G.sv;if(!c.sv||!S.st)return false;const v=c.qv&&c.qv.v?cardEff(o,'v'):0;
@@ -109723,7 +109729,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.4.1b',GAME_TAG='测试版',GAME_CODE=317,GAME_BUILD="fff8640",GAME_BUILT=1795599524703,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.5',GAME_TAG='稳定版',GAME_CODE=318,GAME_BUILD="8bda83c",GAME_BUILT=1795602467451,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
