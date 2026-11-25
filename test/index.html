@@ -2671,7 +2671,7 @@ Object.assign(CFG,{
   zoomSteps:[[1,'100%'],[1.25,'125%'],[1.5,'150%'],[1.75,'175%'],[2,'200%'],[2.5,'250%']],
   zoomMin:[640,300],   // v0.10.10 界面缩放后至少留出 640 × 300 的界面空间（Claude 定：常见手机横屏 125% 左右为止；ui/help.zoomFit）
   // 设置默认值
-  settingsDefault:{regCont:true, spdMax:3, kinMar:false, helpQ:true, buyCfm:true, oathOn:false, prepEvOn:true, music:0.45, sfx:0.8, uiZoom:1, uiFont:1, sfxFlat:false, fx:1, fps:60, popText:true, bossBars:true, shadows:true, unitBars:true, zoomFx:true, autoNext:false, autoAttack:true, unlockAll:false, devOn:false, shake:true, cardConfirm:true, autoECard:false, autoRepair:false, skipHfx:false, miniScale:1, miniHide:false, twoP:false,
+  settingsDefault:{regCont:true, spdMax:3, kinMar:false, helpQ:true, buyCfm:true, oathOn:false, prepEvOn:true, music:0.45, sfx:0.8, uiZoom:1, uiFont:1, sfxFlat:false, fx:1, fps:60, dprMax:2, popText:true, bossBars:true, shadows:true, unitBars:true, zoomFx:true, autoNext:false, autoAttack:true, unlockAll:false, devOn:false, shake:true, cardConfirm:true, autoECard:false, autoRepair:false, skipHfx:false, miniScale:1, miniHide:false, twoP:false,
     // v0.3.1 触屏操控：摇杆 跟手（按下位置）/ 固定；摇杆、技能按钮的大小（倍率）和离屏幕边缘的距离（像素）
     joyMode:'follow', joyS:1.15, joyM:16, btnS:1.15, btnM:10, heroBarHide:false,   // v0.4.0 heroBarHide：局内英雄头像栏收起
     keys:{up:'w', down:'s', left:'a', right:'d', attack:'j', skill1:'q', skill2:'e', skill3:'r', swap:'tab',
@@ -100180,6 +100180,24 @@ if(typeof document!=='undefined'){const f=()=>{try{if(typeof META!=='undefined'&
 function svmManual(){let ok=true;try{saveMeta()}catch(e){ok=false}try{if(typeof G!=='undefined'&&G&&running&&typeof saveRun==='function')saveRun()}catch(e){ok=false}
   const t=ok?'已存档':'存档出错，请看「问题报告」';svmFlush().then(m=>toast(m?t+'(安卓本机也备份了一份)':t)).catch(()=>toast(t))}
 
+// ---------- 0.14.5 安卓网页内核崩溃 / 被系统回收的记录（用户 11-25：玩家华为 Mate X6 很容易闪退）----------
+// 原生 MainActivity.hookRenderGone 接住网页内核（WebView 渲染进程）崩溃或被系统回收内存，不再整个应用退出，而是重开一次界面，
+// 并把原因记进应用私有目录的 sgcrash.json；这里启动时用 SiguoSave 插件读走（读完删掉），存进 localStorage 的 CRASH_K（留最近 10 条），
+// 提示玩家一句，「问题报告」（ui/dbginfo）里列出来，方便以后看闪退是内存不够还是内核崩了。电脑版、网页版没有插件，什么都不做。
+const CRASH_K='wlwc.crashLog';
+function crashLog(){try{const a=JSON.parse(localStorage.getItem(CRASH_K)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function crashWhy(x){return x&&x.why==='crash'?'画面内核崩溃':'手机内存紧张，被系统回收'}
+async function crashBoot(){const P=typeof svmPlug==='function'?svmPlug():null;if(!P)return;let r;try{r=await P.get({key:'sgcrash'})}catch(e){return}
+  if(!r||!r.val)return;let o=null;try{o=JSON.parse(r.val)}catch(e){}try{await P.del({key:'sgcrash'})}catch(e){}
+  const L=(o&&Array.isArray(o.list))?o.list:[];if(!L.length)return;
+  const all=crashLog().concat(L).slice(-10);try{localStorage.setItem(CRASH_K,JSON.stringify(all))}catch(e){}
+  const last=L[L.length-1];if(typeof toast!=='function')return;
+  toast(`上次画面意外退出(${crashWhy(last)})，已自动重新载入；局外进度不受影响，打到一半的局回到那一波开始前`);
+  if(typeof toastTimer!=='undefined'&&typeof toastEl!=='undefined'){clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),6000)}}   // 话长，多留几秒
+// 问题报告里的一行：最近几次的时间和原因
+function crashDbgLine(){const a=crashLog();if(!a.length)return'';
+  return'最近的画面意外退出：'+a.slice(-5).map(x=>`${typeof dbgDate==='function'?dbgDate(x.t):new Date(x.t).toLocaleString()} ${crashWhy(x)}(内核状态 ${x.pri}，安卓 ${x.sdk}，${x.dev||''})`).join('；')}
+
 // ---------- 存档管理（v0.2.2）：结构版本迁移、自动备份与损坏恢复、导出 / 导入 ----------
 // 本机一共 4 份存档（localStorage，键名前缀 wlwc 不能改；v0.6.0 起有三个存档位、11-10 起 CFG.profN = 6 个，2～N 号的键名是 wlwc.p2.… ～ wlwc.pN.…，见 game/game 的 PROFILE / PKEY）：
 //   META_KEY 局外进度（钱包、英雄、背包、科技、开拓地……）  SET_KEY 设置  BEST_KEY 各地图最好成绩  SAVE_KEY 局内存档（每波结束自动存）
@@ -108182,7 +108200,7 @@ let VW=0,VH=0,DPR=1,zoom=4,zoomBase=4,zoomDelta=0,zoomMin=1,zoomMax=8,CX=0,CY=0,
 const cam={x:512,y:336,follow:true};
 const CLR_BG=C('#0f0d14');
 function resize(){
-  DPR=window.devicePixelRatio||1;VW=Math.round(innerWidth*DPR);VH=Math.round(innerHeight*DPR);cv.width=VW;cv.height=VH;ov.width=VW;ov.height=VH;OVP_OK=false;
+  DPR=Math.min(window.devicePixelRatio||1,(typeof SET!=='undefined'&&SET&&SET.dprMax)||99);VW=Math.round(innerWidth*DPR);VH=Math.round(innerHeight*DPR);cv.width=VW;cv.height=VH;ov.width=VW;ov.height=VH;OVP_OK=false;   // 0.14.5 画面清晰度：像素比上限 SET.dprMax（2 = 标准，1.5 = 省电，0 = 不限；用户 11-25：大屏 / 折叠屏手机画布太大容易闪退）
   zoomBase=Math.max(1,Math.round(Math.min(VW,VH)/(TILE*17)));zoomMin=Math.max(1,Math.ceil(VW/MW),Math.ceil(VH/MH));zoomMax=Math.max(zoomMin,zoomBase+3);applyZoom();
   const m=$('#mini');if(m){m.width=Math.round(m.clientWidth*DPR)||176;m.height=Math.round(m.clientHeight*DPR)||110}
   checkRotate();
@@ -109729,7 +109747,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 
 // ---------- 界面（一）：战斗 HUD、准备阶段建造栏、选中面板、提示 / 横幅、弹窗框架 ----------
 // 营地与局外页面在 ui/hub.js；设置、暂停、选卡、结算与弹窗按钮分发（onSheetClick）在 ui/menus.js
-const GAME_VER='0.14.5',GAME_TAG='测试版',GAME_CODE=319,GAME_BUILD="7a9bc68",GAME_BUILT=1795603239900,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
+const GAME_VER='0.14.5',GAME_TAG='测试版',GAME_CODE=319,GAME_BUILD="1bf4246",GAME_BUILT=1795618580167,UI={ready:false},DEV=/[?&#]dev\b/.test(location.href);   // GAME_TAG：v0.7.4 标题界面版本号后面的字（测试版 / 稳定版）；GAME_BUILD / GAME_BUILT：构建号（git 短哈希）和打包时间，build.py 填；GAME_CODE：0.11.5 安卓 versionCode（build.py 从 app/android/app/build.gradle 读），新版本提示用
 // v0.3.4：建筑、兵种的「间隔」改成「攻速」= 每秒几次（英雄武器卡片仍写间隔）
 const atkRate=int=>{const r=1/Math.max(0.01,int);return(r>=10?r.toFixed(1):r>=1?r.toFixed(2).replace(/0$/,''):r.toFixed(2))+' 次/秒'};
 const wxTxt=$('#wxTxt'),hudEl=$('#hud'),goldEl=$('#gold'),goldLbl=$('#gold').nextElementSibling,baseFill=$('#baseFill'),baseTxt=$('#baseTxt'),waveTxt=$('#waveTxt'),phaseTxt=$('#phaseTxt');
@@ -111136,6 +111154,7 @@ function showSettings(from){if(from)setFrom=from;const K=SET.keys;
       <div class="sr"><span>伤害飘字${ui2Q('伤害飘字','亡灵受到伤害时头上飘数字：物理白色、法术蓝色、神圣金色，暴击换红 / 紫 / 橙色并加大，格挡带盾牌，偏斜是斜体，闪避显示 Miss；同一只 0.1 秒内的伤害合成一个数。仅精英、首领 = 只给精英亡灵、小首领、首领飘')}</span><span class="row2">${[['on','开启'],['off','关闭'],['elite','仅精英、首领']].map(([k,n])=>`<button class="px${(SET.dmgNum||'on')===k?' on':''}" type="button" data-act="sdmgn" data-v="${k}">${n}</button>`).join('')}</span></div>
       ${tg('popText','战斗提示文字','首领、精英放技能和被击败、英雄技能效果、掉落装备 / 打造书 / 英雄之魄的提示；关掉后不再弹出，波次和操作提示照常')}
       <div class="sr"><span>帧率${ui2Q('帧率','30 帧更省电、发热小；游戏逻辑照样按 60 次 / 秒结算，快慢不变')}</span><span class="row2">${[30,60].map(f=>`<button class="px${(SET.fps||60)===f?' on':''}" type="button" data-act="sfps" data-v="${f}">${f} 帧</button>`).join('')}</span></div>
+      <div class="sr"><span>画面清晰度${ui2Q('画面清晰度','标准：画布最多按 2 倍像素比画；省电：最多 1.5 倍，更省内存、发热小；原生：按屏幕的真实像素比画，最清楚但最吃内存。大屏、折叠屏手机容易闪退时选省电')}</span><span class="row2">${[[0,'原生'],[2,'标准'],[1.5,'省电']].map(([v,t])=>`<button class="px${(SET.dprMax??2)===v?' on':''}" type="button" data-act="sdpr" data-v="${v}">${t}</button>`).join('')}</span></div>
       <div class="sr"><span>卡顿时优先${ui2Q('卡顿时优先','跳帧：画面少画几帧，游戏速度不变(还追不上才放慢)；放慢：每帧都画，算不过来时游戏变慢')}</span><span class="row2">${[['skip','跳帧'],['slow','放慢']].map(([k,n])=>`<button class="px${(SET.lag||'skip')===k?' on':''}" type="button" data-act="slag" data-v="${k}">${n}</button>`).join('')}</span></div>
       </div>`;
   else if(setSec==='play')body=`<div class="setrows">
@@ -111231,7 +111250,8 @@ function onSheetClick(e){
   else if(a==='sfont'){SET.uiFont=+v;saveSettings();fontApply();showSettings()}
   else if(a==='szoom'){const old=UZ_ASK?UZ_ASK.old:zoomWant();SET.uiZoom=+v;zoomApply();showSettings();uzAsk(old)}   // v0.10.10 先试用，确认框里点「保留」才存（help.uzAsk）   // v0.10.5 界面缩放：立刻生效   // v0.10.5 字体大小：立刻生效
   else if(a==='sspdmax'){opSpdSet(+v);showSettings()}   // 代理 OP 加：倍速上限（ui/op_pop）
-  else if(a==='sfps'){SET.fps=+v===30?30:60;saveSettings();showSettings()}   // v0.4.4 帧率
+  else if(a==='sfps'){SET.fps=+v===30?30:60;saveSettings();showSettings()}
+  else if(a==='sdpr'){const n=+v;SET.dprMax=n===0||n===1.5?n:2;saveSettings();resize();showSettings()}   // 0.14.5 画面清晰度（像素比上限，ui/draw.resize）   // v0.4.4 帧率
   else if(a==='szmlo'){zmnSet(v);showSettings()}   // 代理 M 加：最小比例尺档位（ui/zoomlo）
   else if(a==='svfxq'){SET.vfxQ=['high','mid','low','off'].includes(v)?v:'mid';SET.vfxLight=SET.vfxQ!=='off';saveSettings();showSettings()}   // 0.14.3 w143 光影画质 高 / 中 / 低 / 无（ui/vfx_25d.vxQFrame；vfxLight 跟着写，老版本读得懂开关）
   else if(a==='sdmgn'){SET.dmgNum=v==='off'||v==='elite'?v:'on';saveSettings();dnmApply();showSettings()}   // 代理 G 加：伤害飘字（engine/dmgnum）
@@ -114487,6 +114507,7 @@ function dbgPlat(){const CP=window.Capacitor;if(CP&&CP.isNativePlatform&&CP.isNa
 function dbgText(){const L=[],M=META||{};let lang='zh';try{lang=I18N.lang||'zh'}catch(e){}
   L.push(`【死国开拓者 调试信息】v${GAME_VER} ${GAME_TAG} · 构建 ${GAME_BUILD}${GAME_BUILT?`(打包于 ${dbgDate(GAME_BUILT)})`:''} · ${dbgDate(Date.now())}`);
   L.push(`设备：${dbgPlat()} · ${isTouchUI()?'触屏':'电脑'} · 屏幕 ${innerWidth}×${innerHeight}(像素比 ${+(window.devicePixelRatio||1).toFixed(2)})· 画面 ${R.mode} · 特效 ${Math.round((SET.fx??1)*100)}% · 语言 ${lang}`);
+  {const c=typeof crashDbgLine==='function'?crashDbgLine():'';if(c)L.push(c)}   // 0.14.5 安卓画面意外退出的记录（game/crash_rec）
   L.push(`浏览器：${navigator.userAgent.slice(0,200)}`);
   L.push(`存档位 ${PROFILE} · 局外：打过 ${M.runs||0} 局、通关 ${Object.keys(M.mapClear||{}).length} 张地图、存档结构 ${M.schema??'?'}${metaLock?' · 存档保护锁定中':''}${saveLock?' · 存档写入已停':''}`);
   if(running&&G){L.push('当前：对局中(下面是战报)');try{L.push(battleReport())}catch(e){L.push('(战报生成失败：'+e.message+')')}}
@@ -117604,7 +117625,7 @@ function frame(now){
   if(G&&running){IN_DRAW=1;try{hudT-=dt;if(hudT<=0){updateHud();coachTick(0.1);hudT=0.1}updateSkillHud();miniT-=dt;if(miniT<=0){drawMini();miniT=0.12}perfT-=dt;if(perfT<=0){updatePerfHud();perfT=0.25}}finally{IN_DRAW=0}}   // IN_DRAW：v0.8.10 界面刷新期间的随机用特效随机数
 }
 addEventListener('resize',resize);
-try{hotMarkOk();META_WOK=true;svmBootNote();metaLate();hkCheck();eabBuild();buildSprites();setupGore();packAtlas();initRenderer(/[?&#]canvas2d\b/.test(location.href));buildUI();resize();newGame({});showMenu();spriteBgIdle();requestAnimationFrame(frame);tcBoot();setTimeout(()=>{offCheck().catch(()=>{})},1500);svmBoot().catch(()=>{})}catch(e){if(HOT_ENV)hotLs('hotOk',null);bootFail(e)}   // offCheck：0.11.5 官方渠道（ui/official）；hotMarkOk：代理 HOT 加，热更包能用（game/hot.js 的失败回退）——用户 11-13 报（鸿蒙畅享 60X 退回了安装包自带的旧版）：原来要等画完精灵、进到开屏才记，慢手机加载久、玩家中途退出就被当成「没起来」删包退回旧版；改成脚本全部读完、开始初始化就记，初始化报错才撤销
+try{hotMarkOk();META_WOK=true;svmBootNote();metaLate();hkCheck();eabBuild();buildSprites();setupGore();packAtlas();initRenderer(/[?&#]canvas2d\b/.test(location.href));buildUI();resize();newGame({});showMenu();spriteBgIdle();requestAnimationFrame(frame);tcBoot();setTimeout(()=>{offCheck().catch(()=>{})},1500);svmBoot().catch(()=>{});crashBoot().catch(()=>{})}catch(e){if(HOT_ENV)hotLs('hotOk',null);bootFail(e)}   // offCheck：0.11.5 官方渠道（ui/official）；hotMarkOk：代理 HOT 加，热更包能用（game/hot.js 的失败回退）——用户 11-13 报（鸿蒙畅享 60X 退回了安装包自带的旧版）：原来要等画完精灵、进到开屏才记，慢手机加载久、玩家中途退出就被当成「没起来」删包退回旧版；改成脚本全部读完、开始初始化就记，初始化报错才撤销
 window.__wlwc={get G(){return G},E,PERF,CFG,update,startWave,tryBuild,setBuild,stressSpawn,stressClear,newGame,saveRun,readSave,loadRun,pickCard,
   get R(){return R},get PS(){return PS},get pm(){return pm},get em(){return em},legionMembers,setGlobalMode,get DIFF(){return DIFF},__upg:upgradeCost,__up:upgrade,__rep:repair,pickEnemyCard,
   castSkill,swapWeapon,heroRecalc,get META(){return META},get SET(){return SET},saveMeta,saveSettings,upgradeGroup,repairGroup,repairAll,sell,canUndo,sellValue,wallGroup,groupUpgradePlan,
