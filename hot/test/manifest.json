@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.6.1",
- "code": 322,
- "size": 24498052,
- "sha256": "69bf4f6fae522b3c4642004ba5bb73a0a6ed87efb4a30385a1e8b7c90209bb55",
+ "ver": "0.14.6.2",
+ "code": 324,
+ "size": 24526001,
+ "sha256": "340c5569954a787644965cd2562556cdd48d3a84af15befb6ec0919e9cbdd445",
  "minLoader": 1,
- "sig": "3cn/oQRa0+hjnruVPyx75gGFECITNw6ohdmYRbOUq+so+TrhWojyzlh2k7qnUsF1B3RBJfm3lXIfEJuTWeE8Ug==",
- "note": "0.14.6.1 测试版：战神勋章按最低记录算、勋章重画补画（战神勋章燃火）、屯驻大军削弱、超效经济只算非唯一数值卡、赤曜兵视野修正（赤曜合金加雷达）、电磁聚爆调整、英魂商店说明进问号、建筑详情防误触",
- "at": "2026-11-25 23:15 UTC"
+ "sig": "wTMNp9CVm1RKZCXDIZVzVw5YttiXy3N+sOeve7m77yPEMOp+PAr5GMTMmtyfizflaqMmH98qfKDIC8EZusMR5A==",
+ "note": "选卡框排版：小卡牌在左，右边「品质 卡名」一行、说明在下，卡高基本一致；0.14.6.2 重打（versionCode 324）",
+ "at": "2026-11-26 07:19 UTC"
 }
