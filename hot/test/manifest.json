@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.6.2",
- "code": 324,
- "size": 24526001,
- "sha256": "340c5569954a787644965cd2562556cdd48d3a84af15befb6ec0919e9cbdd445",
+ "ver": "0.14.6.3",
+ "code": 325,
+ "size": 24827534,
+ "sha256": "198c91b6cbd9711118d21f6b1e8838b818b97c335fd79c30cc073c7df505449c",
  "minLoader": 1,
- "sig": "wTMNp9CVm1RKZCXDIZVzVw5YttiXy3N+sOeve7m77yPEMOp+PAr5GMTMmtyfizflaqMmH98qfKDIC8EZusMR5A==",
- "note": "选卡框排版：小卡牌在左，右边「品质 卡名」一行、说明在下，卡高基本一致；0.14.6.2 重打（versionCode 324）",
- "at": "2026-11-26 07:19 UTC"
+ "sig": "aPkNiioEAIGp58bMbLoF9r3eLax08UYVN6mFM17S2VNfvNxnPIM3HtFqrD1D1rHJEIyqQmJxlZ/nOIbs+bdjvw==",
+ "note": "版本号 0.14.6.3（versionCode 325，测试版）",
+ "at": "2026-11-26 08:42 UTC"
 }
