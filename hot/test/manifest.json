@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.7.1",
- "code": 329,
- "size": 25362628,
- "sha256": "4c7e8bb88ba87a4961874f6c5afe1846be6c50da876eaabec306c75a7e2951ba",
+ "ver": "0.14.7.2",
+ "code": 331,
+ "size": 25371729,
+ "sha256": "acd25120d02ceb3506a8d4c3e286f67da9a7028e4fa2a9cbf30af015c96b706e",
  "minLoader": 1,
- "sig": "20P8J/VDAysHkE85KQcvfsh69SC864qs3yWQrwHnwC8QT9k3d8wkmhwEpGN72wbLdVfbpMeC8DOPFkWSzDgOjg==",
- "note": "0.14.7.1 测试版（安卓 329，同稳定版内容）",
- "at": "2026-11-27 09:24 UTC"
+ "sig": "10CctyXUCFl5L0Y1kX0zCQP63ErIrOlpgJ/CAv/J1m1v4gLEvMiPv/VvCwx8TTVTJ47I/VtJefTZSO59p3hgOw==",
+ "note": "0.14.7.2 热更测试版（GAME_TAG 测试版，versionCode 331）",
+ "at": "2026-11-27 15:48 UTC"
 }
