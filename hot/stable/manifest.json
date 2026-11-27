@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.14.7.1",
- "code": 328,
- "size": 25362628,
- "sha256": "4917ed9ee6ccfa038d3a8f17d2ee8202deea1ae2abe98e05f462f128fd9f8125",
+ "ver": "0.14.7.2",
+ "code": 330,
+ "size": 25371729,
+ "sha256": "164a38f73d6fa0d1e0941f62ca2d39abe5794fc838fd8ea1baaceb0735c65a26",
  "minLoader": 1,
- "sig": "Dlk7NZnmby0TMHi4S+8iNlwZ7CgJHFKdn++JLSt//YZ264s1VGWXhZb6i+Q7AhEJTxYWIIquswQTNHgW1LcXGg==",
- "note": "0.14.7.1 稳定版（安卓 328）",
- "at": "2026-11-27 09:10 UTC"
+ "sig": "kQhR2/jnjacoR/FCpK5gRwYziArOapzCE1yO6mxQqQm+m8JBPHU1JlYp/AU21evTI7u9IvtwEtlpoSaeeaeHag==",
+ "note": "0.14.7.2 热更稳定版（GAME_TAG 稳定版，versionCode 330）",
+ "at": "2026-11-27 15:38 UTC"
 }
