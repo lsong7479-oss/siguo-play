@@ -1,11 +1,11 @@
 {
  "ch": "test",
- "ver": "0.14.7.2",
- "code": 331,
- "size": 25371729,
- "sha256": "acd25120d02ceb3506a8d4c3e286f67da9a7028e4fa2a9cbf30af015c96b706e",
+ "ver": "0.14.7.3",
+ "code": 333,
+ "size": 25390973,
+ "sha256": "08f8885400f7d8b88a2a028206c48678a5bfa024d6a076186db2e3a9daba0433",
  "minLoader": 1,
- "sig": "10CctyXUCFl5L0Y1kX0zCQP63ErIrOlpgJ/CAv/J1m1v4gLEvMiPv/VvCwx8TTVTJ47I/VtJefTZSO59p3hgOw==",
- "note": "0.14.7.2 热更测试版（GAME_TAG 测试版，versionCode 331）",
- "at": "2026-11-27 15:48 UTC"
+ "sig": "Vp98tnbMlv38pO0BdWAljpbD7kcTTcbj9Rf2PXrO80uC03OiBpkkFEMG6/od2YD+rjRInE1K+2B+TSO0P55BiQ==",
+ "note": "0.14.7.3 热更测试版（GAME_TAG 测试版，versionCode 333）",
+ "at": "2026-11-27 16:47 UTC"
 }
