@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.14.7.2",
- "code": 330,
- "size": 25371729,
- "sha256": "164a38f73d6fa0d1e0941f62ca2d39abe5794fc838fd8ea1baaceb0735c65a26",
+ "ver": "0.14.7.3",
+ "code": 332,
+ "size": 25390973,
+ "sha256": "62cf3b6bc685b017bd1d9fe0659b0be2a26abb86440526ca2f896168dfc6bd3e",
  "minLoader": 1,
- "sig": "kQhR2/jnjacoR/FCpK5gRwYziArOapzCE1yO6mxQqQm+m8JBPHU1JlYp/AU21evTI7u9IvtwEtlpoSaeeaeHag==",
- "note": "0.14.7.2 热更稳定版（GAME_TAG 稳定版，versionCode 330）",
- "at": "2026-11-27 15:38 UTC"
+ "sig": "aRIISqJuKFvIT2zBBWCPVRdXP58LvTjCHWWffJOtmdHn5CuGGd2V4WQWBVlyqmnVWW4AaOr0ucEhYeX71aXEqg==",
+ "note": "0.14.7.3 热更稳定版（GAME_TAG 稳定版，versionCode 332）：「## 0」挪进 changelog_old、版本简史",
+ "at": "2026-11-27 16:41 UTC"
 }
