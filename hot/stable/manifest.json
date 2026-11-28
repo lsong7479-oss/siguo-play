@@ -1,11 +1,11 @@
 {
  "ch": "stable",
- "ver": "0.14.7.3",
- "code": 332,
- "size": 25390973,
- "sha256": "62cf3b6bc685b017bd1d9fe0659b0be2a26abb86440526ca2f896168dfc6bd3e",
+ "ver": "0.14.8",
+ "code": 334,
+ "size": 25690209,
+ "sha256": "b16c846dacb0a6f052c920f04103e28633296c3f241c3b01046755b778d5659f",
  "minLoader": 1,
- "sig": "aRIISqJuKFvIT2zBBWCPVRdXP58LvTjCHWWffJOtmdHn5CuGGd2V4WQWBVlyqmnVWW4AaOr0ucEhYeX71aXEqg==",
- "note": "0.14.7.3 热更稳定版（GAME_TAG 稳定版，versionCode 332）：「## 0」挪进 changelog_old、版本简史",
- "at": "2026-11-27 16:41 UTC"
+ "sig": "nU/zILlZMpTKxxPIY01JUYX/q4VtnDfQZmoPLvw6QEsGpbbR599f3F/e3duqmwDAl8Mm9TCbnSNtkeoOwy8rkg==",
+ "note": "0.14.8：十阶源能研究所、英雄突破第二批 14 位和艾琳进阶、结算存档加固等",
+ "at": "2026-11-28 06:08 UTC"
 }
